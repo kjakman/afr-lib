@@ -1,0 +1,106 @@
+/* Site CSS for Apartments-for-rent */
+
+/* Site Dim */
+.screen_width                {width: 1000px;}
+.content_width, .container, #content      {width: 940px;}
+
+.inner_width                  {width: 714px;}
+.inner_width_narrow           {width: 662px;}
+.inner_width_wide             {width: 766px;}
+
+.column_width                 {width: 216px;}
+.column_width_narrow          {width: 164px;}
+.column_width_wide            {width: 268px;}
+                              
+.center_column_width          {width: 488px;}
+.center_column_width_narrow   {width: 436px;}
+.center_column_width_wide     {width: 540px;}
+                              
+.thumb_pic_width              {width: 65px;}
+.small_pic_width              {width: 120px;}
+.big_pic_width                {width: 640px;}
+.full_pic_width               {width: 1280px;}
+
+.middle_column                {padding-left:10px;}
+
+
+/* Site Scheme */
+body                  {background-color: #FFFFFF;color: #000000;text-align:left;font-size:12px;font-family:Arial, Verdana, Helvetica, sans-serif;;line-height:1.5em;}
+.background_color     {background-color: #FFFFFF;}
+.box_lite_color       {background-color: #FFFFFF;}
+.box_light_color      {background-color: #FFFFFF;}
+.box_medium_color     {background-color: #F3F3F3;}
+.box_dark_color       {background-color: #AEAEAE;}
+.box_border           {border: 1px solid #AEAEAE;box-sizing:border-box;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;}
+.text_color           {color: #000000;}
+.link_color           {color: #9F1726;}
+.link_hilite_color    {color: #67450C;}
+.theme_color2         {color: #3572A2;}
+.theme_color          {color: #9C6B00;}
+
+.title                {color: #FFF;font-size: 18px;font-weight: bold}
+.title_color          {color: #FFF;}
+.title_bg_color       {background-color: #5794C4;}
+
+.title_box            {background-color: #23538A;color: #FFF}
+.title_box_top_image  {background-image: url(23538A);}
+.title_box_content    {background-color: #fff;}
+.title_box_border     {border: 1px solid #;} 
+
+._title_box_top      {color #FFF; background-color: #23538A;_border: 1px solid #;}
+
+.subheading          {background-color: #5794C4;color: #FFF;text-align:left;font-size:15px;font-family:Arial, Verdana, Helvetica, sans-serif;;line-height:1.5em;margin: 8px 0;padding: 4px;}
+
+
+/* Font size */
+.tiny  {font-size:10px;}
+.small {font-size:11px;}
+.normal, body {font-size:12px;}
+.big, H3, H4 {font-size:15px;}
+.bigger, H2 {font-size:18px;}
+.biggest, H1, .biggest A, A.biggest {font-size:24px;}
+
+/* Padding / Margin / Position */
+
+.abs_left{position:absolute;left:8px;}
+.abs_right{position:absolute;right:8px;}
+.abs_top_left{position:absolute;top:0px !important;left:0px !important;}
+.abs_top_right {position:absolute;top:8px;right:8px;}
+.abs_bottom_right {position:absolute;bottom:8px;right:8px;}
+.abs_bottom_left{position:absolute;bottom:8px;left:8px;}
+.abs_bottom {position:absolute;bottom:8px;}
+
+.top {bottom: 8px}
+.bottom {bottom: 8px}
+
+.padding, .pad {padding-top:8px;padding-right:8px;padding-bottom:8px;padding-left:8px;}
+.pad_top,.padding_top {padding-top:8px}
+.pad_right,.padding_right {padding-right:8px}
+.pad_bottom,.padding_bottom {padding-bottom:8px}
+.pad_left,.padding_left {padding-left:8px}
+.pad_half, .padding_half {padding:4px;}
+
+.margin {margin-top:8px;margin-right:8px;margin-bottom:8px;margin-left:8px;}
+.margin_top {margin-top:8px}
+.margin_right {margin-right:8px}
+.margin_bottom {margin-bottom:8px}
+.margin_left {margin-left:8px}
+.margin_h {margin-top:0px;margin-right:8;margin-bottom:0;margin-left:8px;}
+.margin_v {margin-top:8px;margin-right:0;margin-bottom:8px;margin-left:0;}
+.margin_auto {margin-top:8px;margin-right:auto;margin-bottom:8px;margin-left:auto;}
+
+.content_margin {margin-top:15px;margin-right:30px;margin-bottom:15px;margin-left:30px;}
+.content_margin_top {margin-top:15px}
+.content_margin_right {margin-right:30px}
+.content_margin_bottom {margin-bottom:15px}
+.content_margin_left {margin-left:15px}
+         
+
+/* Property List */
+
+.propertyLeft   {width: 120px; float: left; padding-left: 2px;}
+.propertyCenter {width: 274px; float: left; padding-left: 8px;line-height:15px;}
+.propertyRight  {width: 216px; padding-left: 8px; border-left: 2px solid #918f90;}
+
+
+

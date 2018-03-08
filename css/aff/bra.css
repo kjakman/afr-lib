@@ -1,0 +1,9 @@
+BODY { background-color: #17052D; color: #000;
+       font-family: Verdana, Arial, Helvetica, sans-serif;
+       font-size:10px; font-style: normal; font-weight: normal; font-variant: normal;
+       line-height: normal; text-align: left }
+
+.heading {color:#fff;background-color:#0e7ec2;}
+.subheading {color:#fff;background-color:#0e7ec2;}
+.subsection {color: #fff;}
+#box_menu {width:550px;background-color:#F5F5F5;}

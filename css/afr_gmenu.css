@@ -1,0 +1,312 @@
+.gmenu {
+	font-size:14px;
+	color:#FFF;
+}
+.gmenu ul {
+	list-style:none;
+	color:#FFF;
+	width:auto;
+}
+
+.gmenu ul li {
+}
+
+.gbutton {
+}
+
+.gmenu ul li a {
+}
+
+.gmenu ul li a {
+	font-size: 10px !important;
+	color:#666;
+	font-weight:bold;
+	text-decoration:none;
+	padding:7px 12px;
+	position:relative;
+	display:inline-block;
+	/*Background*/
+	background:#f3f3f3;
+	background:-webkit-gradient(linear,0% 40%,0% 70%,from(#F5F5F5),to(#F1F1F1));
+	/*linear-gradient*/
+	background:-webkit-gradient(linear,left top,left bottom,from(from(#F5F5F5)),to(to(#F1F1F1)));
+	background:-webkit-linear-gradient(linear,0% 40%,0% 70%,from(#F5F5F5),to(#F1F1F1));
+	background:-moz-linear-gradient(linear,0% 40%,0% 70%,from(#F5F5F5),to(#F1F1F1));
+	background:-o-linear-gradient(linear,0% 40%,0% 70%,from(#F5F5F5),to(#F1F1F1));
+	background:linear-gradient(linear,0% 40%,0% 70%,from(#F5F5F5),to(#F1F1F1));
+	border:solid 1px #dcdcdc;
+	/*border-radius*/
+	-webkit-border-radius:2px;
+	-moz-border-radius:2px;
+	border-radius:2px;
+	margin-right:10px;
+}
+.gmenu ul li a:hover {
+	color:#333;
+	border-color:#999;
+	/*box-shadow*/
+	-webkit-box-shadow:0 2px 0 rgba(0,0,0,0.2) -webkit-box-shadow:0 2px 5px rgba(0,0,0,0.2);
+	-moz-box-shadow:0 2px 0 rgba(0,0,0,0.2) -moz-box-shadow:0 2px 5px rgba(0,0,0,0.2);
+	box-shadow:0 2px 0 rgba(0,0,0,0.2) box-shadow:0 2px 5px rgba(0,0,0,0.2);
+}
+/* styling for the left buttons(buttons which are joined)*/
+.gmenu ul li a.left {
+	-webkit-border-top-right-radius:0;
+	-moz-border-radius-topright:0;
+	border-top-right-radius:0;
+	-webkit-border-bottom-right-radius:0;
+	-moz-border-radius-bottomright:0;
+	border-bottom-right-radius:0;
+	margin: 0;
+}
+/* styling for the middle buttons(buttons which are joined)*/
+.gmenu ul li a.middle {
+	/*border-radius*/
+	-webkit-border-radius:0;
+	-moz-border-radius:0;
+	border-radius:0;
+	border-left:solid 1px #f3f3f3;
+	margin:0;
+	border-left:solid 1px rgba(255,255,255,0);
+}
+.gmenu ul li a.middle:hover,.gmenu ul li a.right:hover {
+	border-left: solid 1px #999;
+}
+/* styling for the right buttons(buttons which are joined)*/
+.gmenu ul li a.right {
+	-webkit-border-top-left-radius:0;
+	-moz-border-radius-topleft:0;
+	border-top-left-radius:0;
+	-webkit-border-bottom-left-radius:0;
+	-moz-border-radius-bottomleft:0;
+	border-bottom-left-radius:0;
+	border-left:solid 1px #f3f3f3;
+	border-left: solid 1px rgba(255,255,255,0);
+}
+/*style for the arrow pointing downward*/
+.garrow {
+	border:thick;
+	border-color:#777777 transparent white;
+	border-style:solid dashed dashed;
+	margin-left:5px;
+	position:relative;
+	top: 10px;
+	height: 10px;
+}
+
+
+/* undelete button*/
+.gmenu ul li a.undelete {
+	background:url(/images/icons/gmenu/undelete.png) 10px 4px no-repeat #f3f3f3;
+	width: 17px;
+}
+
+/* sharing button*/
+.gmenu ul li a.sharing {
+	background:url(/images/icons/gmenu/link.png) 10px 4px no-repeat #f3f3f3;
+	width: 17px;
+}
+
+/* trash button*/
+.gmenu ul li a.trash {
+	background:url(/images/icons/gmenu/trash.png) 10px 4px no-repeat #f3f3f3;
+	width: 17px;
+}
+
+/* publish button*/
+.gmenu ul li a.publish {
+	background:url(/images/icons/gmenu/publish.png) 10px 4px no-repeat #f3f3f3;
+}
+
+/* exhibit button*/
+.gmenu ul li a.exhibit {
+	background:url(/images/icons/gmenu/exhibit.png) 10px 4px no-repeat #f3f3f3;
+}
+
+/* folder button*/
+.gmenu ul li a.folder {
+	background:url(/images/icons/gmenu/folder.png) 10px 4px no-repeat #f3f3f3;
+}
+
+/* button with checkbox*/
+.gmenu ul li a.gcheck {
+	padding:0px 5px 0px 0px; /* Kjetil: removed bottom padding to make less high */
+	_padding:0 !important; /* Kjetil: removed bottom padding to make less high */
+	_position:relative;
+	_display:inline-block;
+	margin-right: 10px; 
+  overflow: hidden; /* Kjetil: for some reason the arrow has a little box underneath it */	
+}
+
+.gmenu .big-text {
+}
+  
+/* dropdown */
+.gmenu ul li a.gdropdown {
+	text-align: right;
+	width: 75px;
+}
+
+.gmenu ul li a.gdropdown_medium {
+	text-align: right;
+	margin-right: 10px !important;
+}
+
+/* dropdown */
+.gmenu ul li a.gdropdown_narrow {
+	text-align: right;
+	width: 35px;
+}
+
+/* delete button*/
+.gmenu ul li a.delete {
+	background:url(/images/icons/delete_tiny.png) 10px 4px no-repeat #f3f3f3;
+	width: 17px;
+}
+
+.gmenu ul li a.trash-full {
+	background:url(/images/icons/gmenu/trash-full.png) 10px 4px no-repeat #f3f3f3;
+	width: 17px;
+}
+
+/* rotate button*/
+.gmenu ul li a.rotate_left {
+	background:url(/images/icons/gmenu/rotate_left.png) 10px 4px no-repeat #f3f3f3;
+	width: 17px;
+}
+
+.gmenu ul li a.rotate_right {
+	background:url(/images/icons/gmenu/rotate_right.png) 2px 4px no-repeat #f3f3f3;
+	width: 17px;
+}
+
+/*refresh button*/
+.gmenu ul li a.refresh {
+	background:url(/images/icons/gmenu/refresh.png) 10px 4px no-repeat #f3f3f3;
+	width: 17px;
+}
+/* previous button*/
+.gmenu ul li a.previous, .gmenu ul li a.gprevious  {
+	background:url(/images/icons/gmenu/previous.png) 5px 4px no-repeat #f3f3f3;
+	width: 4px;
+}
+
+.gmenu ul li a.previous2 {
+	background:url(/images/icons/gmenu/previous2.png) 4px 4px no-repeat #f3f3f3;
+	width: 4px;
+}
+
+/*next button */
+.gmenu ul li a.next, .gmenu ul li a.gnext {
+	background:url(/images/icons/gmenu/next.png) 2px 4px no-repeat #f3f3f3;
+	width: 4px;
+}
+
+.gmenu ul li a.next2 {
+	background:url(/images/icons/gmenu/next2.png) 2px 4px no-repeat #f3f3f3;
+	width: 4px;
+}
+
+/*showing the number of emails in inbox(eg:1–50 of 52)*/
+.gmenu ul li a.glink, .gmenu ul li span.glink { 
+	position:relative;
+	display:inline-block;
+	border: none;
+	text-shadow:none;
+	text-decoration: underline;
+	background: transparent;
+	padding: 0 !important;
+	margin: 0 !important;
+}
+
+.gmenu ul li span.glink, .gmenu ul li span.gtext, .gmenu ul li A.gtext {
+  font: bold 12px arial,sans-serif;
+  color: #000;
+}  
+
+.gmenu ul li a.num {
+	color:#000;
+	font:normal 80% arial,sans-serif;
+	text-decoration:none;
+	padding:7px 12px;
+	position:relative;
+	display:inline-block;
+	text-shadow:none;
+	background:#FFF;
+	margin-right:10px;
+	border: none;
+}
+/* hide the dropdown*/
+.gmenu ul li ul {
+	display: none;
+	background-color: white;
+	border: 1px solid grey;
+	z-index: 999;
+}
+
+/*changing the background of the button(which has a dropdown) to creyish gradient when we hover the mouse over it*/
+.gmenu_off ul li:hover a.gdropdown {
+	background:#888888;
+	/* Old browsers */
+	background:-moz-linear-gradient(top,#888888 0%,#8e8e8e 43%,#7a7a7a 45%,#989898 100%);
+	/* FF3.6+*/
+	background:-webkit-gradient(linear,left top,left bottom,color-stop(0%,#888888),color-stop(43%,#8e8e8e),color-stop(45%,#7a7a7a),color-stop(100%,#989898));
+	/* Chrome,Safari4+*/
+	background:-webkit-linear-gradient(top,#888888 0%,#8e8e8e 43%,#7a7a7a 45%,#989898 100%);
+	/* Chrome10+,Safari5.1+*/
+	background:-o-linear-gradient(top,#888888 0%,#8e8e8e 43%,#7a7a7a 45%,#989898 100%);
+	/* Opera 11.10+*/
+	background:-ms-linear-gradient(top,#888888 0%,#8e8e8e 43%,#7a7a7a 45%,#989898 100%);
+	/* IE10+*/
+	background:linear-gradient(top,#888888 0%,#8e8e8e 43%,#7a7a7a 45%,#989898 100%);
+	/* W3C */
+	filter:progid:DXImageTransform.Microsoft.gradient( startColorstr='#888888',endColorstr='#989898',GradientType=0 );
+	/* IE6-9 */ border:1px solid #989898;
+	color:#000;
+}
+
+.gmenu ul li:hover ul {
+	display:block;
+	position:absolute;
+	margin-left:0px;
+	margin-top:-1px;
+	-webkit-box-shadow:0 4px 10px #8b8b8b;
+	-moz-box-shadow:0 4px 10px #8b8b8b;
+	box-shadow:0 4px 10px #8b8b8b;
+	padding:1px;
+	max-height: 250px;
+	overflow-y: auto;
+	overflow-x: visible;
+  z-index: 200;	
+}
+.gmenu ul li:hover ul li a {
+	display:block;
+	color:#000000;
+	background:#ffffff;
+	border:none;
+	margin-right:1px;
+	white-space: nowrap;
+}
+.gmenu ul li:hover ul li a:hover {
+	background: #EEEEEE;
+}
+/*the first item in dropdown must not have a border on top */
+.gmenu ul li ul li:first-child a {
+	border-top: none;
+}
+/* now let us define the widths of various dropdown*/
+.width-1 li a {
+	width:55px;
+}
+.width-2 li a {
+	width: 125px;
+}
+.width-3 li a {
+	width: 165px;
+}
+
+/* by Kjetil */
+.gmenu ul li.ghide {
+  display: none;
+}
+

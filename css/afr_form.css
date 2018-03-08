@@ -1,0 +1,74 @@
+/** soon to be deprecated, still used by classic dialog in calendar */
+
+.fieldset_top {}
+.fieldset_top .fieldset_div label {display: block;margin-bottom:4px}
+.fieldset_top .fieldset_div {float: left;margin-right:8px;margin-bottom:4px;}
+.fieldset_top .fieldset_div label.error { display:block; float: none !important; color: red; text-align: left !important; vertical-align: top !important; }
+
+.fieldset_left {}
+.fieldset_left .fieldset_div label {width: 50px;float: left;text-align: right;margin-right: 0.5em;}
+.fieldset_left .fieldset_div {margin-right:4px;margin-bottom:4px;}
+
+.fieldset_left_wide {}
+.fieldset_left_wide .fieldset_div label {text-align: right;float: left;margin-right: 0.5em; min-width: 90px !important;}
+.fieldset_left_wide .fieldset_div {}
+
+.fieldset_left_extra_wide {}
+.fieldset_left_extra_wide .fieldset_div label {text-align: right;float: left;margin-right: 0.5em; min-width: 190px !important;}
+.fieldset_left_extra_wide .fieldset_div {clear: both}
+
+.fieldset_placeholder {}
+.fieldset_placeholder .fieldset_div label {display: none;}
+.fieldset_placeholder .fieldset_div {}
+.fieldset_placeholder .fieldset_div label.error { display:block !important; float: none !important; color: red; margin-right: 0; text-align: left !important; padding-left: .5em; margin-left: .5em}
+
+.fieldset_placeholder .fieldset_div label.error, 
+.fieldset_left .fieldset_div label.error, 
+.fieldset_left_wide .fieldset_div label.error,
+.fieldset_left_extra_wide .fieldset_div label.error { float: none !important; color: red; margin-right: 0; text-align: left !important; padding-left: .5em; margin-left: .5em}
+
+.fieldset_big {font-size: 18px !important;}
+.fieldset_big .fieldset_div label {width: 40px;text-align: right;margin-right: 0.5em;font-weight:bold; white-space:nowrap;font-size: 18px !important;}
+.fieldset_big .fieldset_div span {text-align: left !important;margin-right: 0.5em;}
+.fieldset_big .fieldset_div {margin-right:4px;margin-bottom:4px;clear:both}
+
+.fieldset_uhuru {font-size: 14px; border: 2px solid black;padding: 10px 20px; margin:20px 0;/*width:680px*/}
+.fieldset_uhuru .fieldset_div > label {float:left;width: 200px !important;text-align: left;margin-right: 0.5em;font-weight:normal; white-space:nowrap;font-size: 14px;}
+.fieldset_uhuru .fieldset_div span {text-align: left !important;margin-right: 0.5em;}
+.fieldset_uhuru .fieldset_div {margin: 8px 0;position:relative}
+.fieldset_uhuru .fieldset_div label.error { position: absolute; right: 50px; color: red}
+.fieldset_uhuru legend  {
+  padding: 0.2em 0.5em;
+  border:2px solid black;
+  color:white;
+  background-color: #858585;
+  text-align:left;
+  }
+
+.checkbox_group {
+  display: inline;
+}
+
+.label_checkbox_pair {
+  margin-right: 10px;
+}
+
+.checkedform .fieldset_div  label.error {
+  background:url("/images/gif/unchecked.gif") no-repeat 0px 0px; display: block !important;
+  padding-left: 16px !important;
+  padding-bottom: 2px;
+  font-weight: bold;
+  color: #EA5200;
+}
+
+.checkedform .fieldset_div label.checked {
+  background:url("/images/gif/checked.gif") no-repeat 0px 0px; display: inline !important;
+}
+
+.ui-timepicker {font-size: 1em !important}
+.ui-timepicker-table td a {width: 2em !important}
+.ui-dialog-titlebar-close {color: #000 important;}
+.date_input {width:120px;background-image:url(/images/buttons/calendar_button.png);background-repeat:no-repeat;background-position:right;}
+.time_input {width:74px;background-image:url(/images/buttons/clock_button.png);background-repeat:no-repeat;background-position:right;}
+
+

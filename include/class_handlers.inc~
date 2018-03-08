@@ -1,0 +1,3799 @@
+<?php
+
+// filters
+// obligatory class filters - returns valid set of a class (nothing to do with logged in user)
+
+// returns the object status type of the given object type
+/** unsused - automatic comment added on  */
+function object_status_objtype($obj_type) {
+  switch($obj_type) {
+    case 'enquiry':
+      return 'enq_status';
+    case 'event':
+      return 'event_status';
+    case 'invoice':
+      return 'inv_status';
+    case 'payment':
+      return 'payment_status';
+    case 'property':
+      return 'property_status';
+    case 'reservation':
+      return 'res_status';
+    case 'res_exception': // hack for calendar
+      return 'res_status';
+    case 'transaction':
+      return 'tx_status';
+    default:
+      return NULL;
+  }
+}
+
+/** unsused - automatic comment added on  */
+function object_type_objtype($obj_type) {
+  switch($obj_type) {
+    case 'cc':
+      return 'cc_type';
+    case 'property_description':
+      return 'description_type';
+    case 'enquiry':
+      return 'enq_type';
+    case 'event':
+      return 'event_type';
+    case 'property_facility':
+      return 'facility_type';
+    case 'hotel':
+      return 'hotel_type';
+    case 'invoice':
+      return 'inv_type';
+    case 'lineitem':
+      return 'lineitem_type';
+    case 'payment':
+      return 'payment_type';
+    case 'property':
+      return 'property_type';
+    case 'reservation':
+      return 'res_type';
+    case 'room':
+      return 'room_type';
+    case 'boat':
+      return 'boat_type';
+    default:
+      return NULL;
+  }
+}
+
+function object_timefields($obj_type) {
+  switch($obj_type) {
+    case 'event' :
+      $start_field = 'start_time';
+      $end_field   = 'end_time';
+      break;
+    case 'reservation' :
+      $start_field = 'checkin';
+      $end_field   = 'checkout';
+      break;
+    case 'invoice' :
+      $start_field = 'start_date';
+      $end_field   = 'end_date';
+      break;
+    case 'res_exception' :
+      $start_field = 'start';
+      $end_field   = 'end';
+      break;
+    default:
+      break;
+  }
+  return array($start_field, $end_field);
+}
+
+/** Add mandatory filters to search, primarily client_id */
+/** if search is true, return search style (assoc array), else old filter style (plain array) */
+function class_filters($obj_type, $search = false) {
+  global $u_id, $__SITE_ID, $__CLIENT_ID;
+    
+  $auth_sites = $_SESSION['auth_sites'] ?: $__SITE_ID;    
+
+  $searchArray = [];
+  $tbl = get_object_table($obj_type);  
+  if($u_id != SYSTEM_USER_ID && object_has_attribute($obj_type, 'client_id')) { /** add client ID */
+    $ignore = ['auth_log', 'user', 'provider_profile'];
+    if($__CLIENT_ID && !in_array($obj_type, $ignore)) $searchArray[$tbl.'.client_id'] = $__CLIENT_ID;
+  } elseif(0 && object_has_attribute($obj_type, 'site_id')) { /** site ID, should not really be needed: make sure all classes have client_id */
+    $ignore = ['auth_log', 'source', 'user','affiliate', 'provider_profile', 'dictionary'];
+    //if($__CLIENT_ID && !in_array($obj_type, $ignore)) $searchArray[$tbl.'.site_id'] = $__SITE_ID;
+  }
+  $result = $search ? $searchArray : search2filters($searchArray);
+
+  //if($obj_type == 'reservation') print_log("class_filters: {$obj_type}".dump($result,true), 'debug', LOG_LEVEL_TEST);
+  //if($obj_type == 'mail_queue') print_log("Filters for mail_queue:".dump($result,true), 'mail', LOG_LEVEL_TEST);
+  
+  return $result;
+}
+
+// returns the filters (restrictions) for properties for given user
+function user_filters_property() {
+  global $u_filters;
+  global $u_level;
+  global $u;
+  if(!$u) return $filters; // only applies to back-end, not front end
+
+  $filters = array();
+  if($u_level == USER_LEVEL_SYSTEM) return $filters;
+  $cities = $u_filters['cities'] ? $u_filters['cities'] : 0;
+  if($cities) $filters[] = "city_id IN ($cities)";
+  return $filters;
+}
+
+function user_filters_site() {
+  global $u_filters;
+  global $u_level;
+  global $u;
+  if(!$u) return $filters; // only applies to back-end, not front end
+  $filters = array();
+  if($u_level == USER_LEVEL_SYSTEM) return $filters;
+  //if($sites = $u_filters['sites']) $filters[] = "id IN ($sites)";
+  $sites = $u_filters['sites'] ? $u_filters['sites'] : 0;
+  $filters[] = "site.id IN ($sites)";
+  return $filters;
+}
+
+// object filters - returns restrictions on records authorized for this user and user_level
+// todo; split up by class, look up permissions in 3rd table
+function get_object_filters($type, $user_level, $user_id) {
+  global $u;
+  global $u_level;
+  global $u_type;
+  global $u_personid;
+  global $u_guestid;
+  global $u_hostid;
+  global $u_agentid;
+  global $u_affid;
+  global $u_staffid;
+  global $u_adminid;
+  global $u_guestorg;
+  global $u_orgid;
+  $filters = array();
+  $key = get_object_key($type);
+  $type=strtolower($type);
+  $table = get_object_table($type);
+
+  // add owner_if filter to 'reservation', 'shortstay', 'room', 'bed', 'facilities'
+  if(is_property_type($type)) {
+    if($u_level < USER_LEVEL_SYSTEM) $filters = user_filters_property();
+  } elseif(in_array($type, array('reservation', 'enquiry'))) {
+    if($user_level < USER_LEVEL_GUEST) {
+      $filters[] = "$key IS NULL"; // exclude all
+    } elseif($user_level == USER_LEVEL_GUEST) {
+      $filters[] = "$table.guest_id = $u_guestid";
+    } elseif($user_level == USER_LEVEL_ORG) {
+      $filters[] = "$table.org_id = $u_orgid";
+    } elseif($user_level == USER_LEVEL_OWNER) {
+      $filters[] = "$table.host_id = $u_hostid";
+    } elseif($user_level == USER_LEVEL_AFFILIATE) {
+      $filters[] = "$table.aff_id = $u_affid";
+    } elseif($user_level == USER_LEVEL_AGENT) {
+      $filters[] = "$table.agent_id = $u_agentid";
+    } elseif($user_level == USER_LEVEL_STAFF) {
+    } elseif($user_level == USER_LEVEL_ADMIN) {
+    }
+  }
+
+  if($u_level < USER_LEVEL_SYSTEM && $type == 'site') $filters = user_filters_site();
+
+  // add id filter to guest
+  if($type=='guest') {
+    if($user_level < USER_LEVEL_GUEST) {
+      $filters[] = "$key IS NULL"; // exclude all
+    } elseif($user_level == USER_LEVEL_GUEST) {
+      $filters[] = "$table.id = $u_guestid";
+    }
+  }
+
+  // add guest_id filter to invoice
+  if(in_array($type, array('invoice', 'draft_invoice', 'payment', 'withdrawal', 'inv_lineitem', 'event', 'checkout', 'checkin', 'cleaning', 'transport', 'maintenance'))) {
+    if($user_level < USER_LEVEL_GUEST) {
+      $filters[] = "$key IS NULL"; // exclude all
+    } elseif($user_level == USER_LEVEL_GUEST) {
+      $filters[] = "$table.guest_id = $u_guestid";
+    } elseif($user_level == USER_LEVEL_OWNER) {
+      $filters[] = "$table.host_id = $u_hostid";
+    } elseif($user_level == USER_LEVEL_ORG) {
+      $filters[] = "$table.org_id = $u_orgid";
+    } elseif($user_level == USER_LEVEL_AFFILIATE) {
+      $filters[] = "$table.aff_id = $u_affid";
+    } elseif($user_level == USER_LEVEL_AGENT) {
+      $filters[] = "$table.agent_id = $u_agentid";
+    }
+  }
+  
+  // add id filter to credit cards
+  if($type=='cc') {
+    if($user_level == USER_LEVEL_GUEST) {
+      $filters[] = "$table.guest_id = $u_guestid";
+    } elseif($user_level < USER_LEVEL_ADMIN) {
+      $filters[] = "$key IS NULL"; // exclude all
+    }
+  }
+
+
+  // additional filters
+  switch($type) {
+
+    case "reservation":
+      break;
+
+    default:
+      break;
+  }
+  return $filters;
+}
+
+
+// special override handler for actions
+/** unsused - automatic comment added on  */
+function auth_action_pet_profile($action, $id, $user_level) {
+  global $u_id, $u_level;
+  if($u_level >= USER_LEVEL_STAFF) return true;
+  return $u_id == get_object('pet_profile', $id, 'user_id');
+}
+
+/** unsused - automatic comment added on  */
+function auth_action_user_profile($action, $id, $user_level) {
+  global $u_id, $u_level;
+  if($u_level >= USER_LEVEL_STAFF) return true;
+  return $u_id == get_object('user_profile', $id, 'user_id');
+}
+
+function auth_action_chat($action, $id, $user_level) {
+	$chatObj = get_object('chat', $id);
+
+	// todo: first check if auth res - FOR NOW ASSUME
+
+	if($chatObj->sender_level == $user_level) return true; // can always see msgs sent by self (same level)
+  if(!$chatObj->receiver_level) return true; // public
+  if($user_level == USER_LEVEL_GUEST && $chatObj->receiver_level != USER_LEVEL_GUEST) return false;
+  if($user_level == USER_LEVEL_OWNER && $chatObj->receiver_level != USER_LEVEL_OWNER) return false;
+  return true;
+
+}
+
+/** are we allowed to manage this (mini)site ? */
+function auth_site($siteObj_or_id) {
+  global $u_id, $u_level;
+  if(!$u_id || $u_level < USER_LEVEL_ADMIN) return false;
+  if($u_level >= USER_LEVEL_ADMIN) return true;
+  $siteObj = any2obj('site', $siteObj_or_id);
+  print_log("site: {$siteObj->id} u_level:{$u_level} admin: {$siteObj->admin_user_id}", 'set_env', LOG_LEVEL_TEST); 
+  
+  if($siteObj->minisite && $siteObj->admin_user_id && ((is_array($siteObj->admin_user_id) && in_array($u_id, $siteObj->admin_user_id)) || $siteObj->admin_user_id == $u_id)) return true; 
+  return false;
+}
+
+function auth_rental($aptObj_or_id, $userObj_or_id=0) {  
+	global $u_id, $u_level;
+	$aptObj = any2obj('property', $aptObj_or_id);
+	$user_id = $userObj->id ?: $u_id;
+	$user_level = $userObj ? $userObj->user_level : $u_level;
+	
+  if(!$aptObj) return 0;
+  if(!$user_level || !$user_id) return 0;	
+	if($user_level == USER_LEVEL_SYSTEM) return USER_LEVEL_SYSTEM;
+	if($user_level >= USER_LEVEL_STAFF) return $user_level;
+	if($user_level < USER_LEVEL_OWNER) return 0;
+  if($_SESSION['client_id'] != $aptObj->client_id) return 0;
+	
+	if($aptObj->host_id == $user_id) return USER_LEVEL_OWNER; // host can view/edit
+
+	//if($aptObj->user_id == $u_id) return $u_level; // author can view/edit
+	
+	// shortcut for anke/sicco
+	if($aptObj->host_id == 1284 && in_array($user_id, array(402, 3960, 20080))) return $user_level;
+                                
+  $hostObj = get_object('user', $aptObj->host_id);	
+  if($linked_users = linked_users($hostObj)) { // todo: filter by role = owner
+    if(in_array($user_id, $linked_users)) return USER_LEVEL_OWNER; // host has given permission to this user
+  }
+	
+	return 0;
+}
+
+// Is this user allowed to edit account another user?
+function auth_user_account($otherUserObj_or_id, $thisUserObj_or_id=0) {  
+	global $u_id, $u_level;
+	
+	$thisUserObj = any2obj('user', $thisUserObj_or_id);
+	$otherUserObj = any2obj('user', $otherUserObj_or_id);
+		
+	$this_user_id = $thisUserObj->id ?: $u_id;
+	$other_user_id = $otherUserObj->id;
+	
+	if($this_user_id == $other_user_id) return $u_level;
+	if($u_level == USER_LEVEL_SYSTEM) return true;
+  
+	$search = ['site_id' => $_SESSION['site_id'], 'user_id' => $this_user_id, 'host_user_id' => $other_user_id, 'verified' => 1];
+  if($auth_user = find_object('user_map', $search)) {
+    $perms = json_decode($auth_user->permissions);
+    return $perms->account == 'edit';
+  }
+  return false;
+}
+
+// Is this user allowed to edit profile another user?
+function auth_user_profile($thisUserObj_or_id, $otherUserObj_or_id=0) {  
+	global $u_id, $u_level;
+	
+	$thisUserObj = any2obj('user', $thisUserObj_or_id);
+	$otherUserObj = any2obj('user', $otherUserObj_or_id);
+		
+	$this_user_id = $thisUserObj->id ?: $u_id;
+	if($this_user_id == $u_id) return $u_level;
+	
+	$other_user_id = $otherUserObj->id;
+	
+	if($this_user_id == $other_user_id) return $u_level;
+	if($u_level >= USER_LEVEL_ADMIN) return $u_level;
+  
+	$search = ['site_id' => $_SESSION['site_id'], 'user_id' => $this_user_id, 'host_user_id' => $other_user_id, 'verified' => 1];
+  if($auth_user = find_object('user_map', $search)) {
+    $perms = json_decode($auth_user->permissions);
+    return $perms->profile == 'edit';
+  }
+  return false;
+}
+
+// Is this user allowed to login as another user?
+function auth_login($otherUserObj_or_id, $thisUserObj_or_id=0) {  
+	global $u_id, $u_level;
+	
+	$thisUserObj = any2obj('user', $thisUserObj_or_id);
+	$otherUserObj = any2obj('user', $otherUserObj_or_id);
+		
+	$this_user_id = $thisUserObj->id ?: $u_id;
+	$other_user_id = $otherUserObj->id;
+	
+	if($this_user_id == $other_user_id) return $u_level;
+	if($u_level == USER_LEVEL_SYSTEM) return true;
+  
+	$search = ['site_id' => $_SESSION['site_id'], 'user_id' => $this_user_id, 'host_user_id' => $other_user_id, 'verified' => 1];
+  if($auth_user = find_object('user_map', $search)) {
+    $perms = json_decode($auth_user->permissions);
+    return $perms->login == 'full';
+  }
+  return false;
+  
+  //$count = count($auth_user);
+  //return "<br><br><br><br>gh: this:$this_user_id other: $other_user_id c=$count".dump($auth_user,true).dump($perms, true);
+}
+
+// returns user_level (guest,owner,or higher) if authorized to view corresponding invoice/reservation
+/** unsused - automatic comment added on  */
+function auth_payment($paymentObj_or_id, $userObj_or_id=0) {  
+	global $u_id, $u_level;
+	
+	$paymentObj = any2obj('payment', $paymentObj_or_id);
+	if(!$paymentObj || !$u_id) return 0;
+	if($u_level == USER_LEVEL_SYSTEM) return USER_LEVEL_SYSTEM;
+	if($invObj->user_id == $u_id || $invObj->guest_id == $u_id || $invObj->host_id == $u_id) return $u_level;
+
+	if($paymentObj->inv_id) return auth_invoice($paymentObj->inv_id);
+	if($paymentObj->res_id) return auth_res($paymentObj->res_id);    
+  return auth_action("payment", $paymentObj->id, "edit");
+}
+
+
+// returns user_level (guest,owner,or higher) if authorized to view corresponding reservation, otherwise auth_edit (true/false)
+function auth_invoice($invObj_or_id, $userObj_or_id=0) {  
+	global $u_id, $u_level;	
+	$invObj = any2obj('invoice', $invObj_or_id);
+	if(!$invObj || !$u_id) return 0;
+	if($u_level == USER_LEVEL_SYSTEM) return USER_LEVEL_SYSTEM;
+	if($u_level >= USER_LEVEL_STAFF) return $u_level;
+	if($invObj->user_id == $u_id || $invObj->guest_id == $u_id || $invObj->host_id == $u_id) return $u_level;
+  $parent_type = $invObj->parent_type;
+  $parent_id = $invObj->parent_id;
+  switch($parent_type) {
+  case 'reservation':
+    if($parent_id) return auth_res($parent_id);
+    break;
+  default:
+    break;
+  }
+    
+  return auth_action("invoice", $invObj->id, "edit");
+}
+
+function auth_mail($mailObj_or_id, $userObj_or_id=0) {  
+	global $u_id, $u_level, $__SITE, $__USER;
+			
+	$mailObj = any2obj('mail_queue', $mailObj_or_id);
+	if(in_array($u_id, [$mailObj->sender_id,$mailObj->receiver_id,$mailObj->user_id])) return $__USER->user_level;
+	
+	if(!$mailObj || !$u_id) return 0;
+	if($u_level == USER_LEVEL_SYSTEM) return USER_LEVEL_SYSTEM;
+	
+	if($u_level >= USER_LEVEL_STAFF && $userObj->client_id == $mailObj->client_id) return $u_level;
+
+  $parent_type = $mailObj->parent_type;
+  $parent_id = $mailObj->parent_id;
+  switch($parent_type && $parent_id) {
+  case 'reservation':
+    return auth_res($parent_id);
+    break;
+  case 'invoice':
+    return auth_invoice($parent_id);
+    break;
+  default:
+    return auth_action($parent_type, 'edit', $parent_id, $u_level, false);
+    break;
+  }
+    
+
+	return 0;
+}
+
+function auth_event($obj_or_id) {
+  global $u_level;
+  $auth = auth_object('event', $obj_or_id);
+  if($auth === false) return false;
+  if($auth > 0) return $auth;
+  
+  return $u_level >= USER_LEVEL_EDITOR;
+}
+
+function auth_article($obj_or_id) {
+  global $u_level;
+  $auth = auth_object('article', $obj_or_id);
+  if($auth === false) return false;
+  if($auth > 0) return $auth;
+  
+  return $u_level >= USER_LEVEL_EDITOR;
+}
+
+// use if we already have resObj (in calendar for example - for efficiency);
+// returns authorization level:
+// 0: no auth
+// 10: guest
+// 20: owner
+// 30 or higher: admin
+
+function auth_res($resObj_or_id, $userObj_or_id=0) {  
+	global $u_id, $u_level;
+	$resObj = any2obj('reservation', $resObj_or_id);
+	
+  if(!$resObj) return 0;
+  if(!$u_level || !$u_id) return 0;	
+	if($u_level == USER_LEVEL_SYSTEM) return USER_LEVEL_SYSTEM;
+	if($u_level >= USER_LEVEL_STAFF) return $u_level;
+	
+	if($resObj->guest_id == $u_id) return USER_LEVEL_GUEST; // guest can view/edit
+	if($resObj->host_id == $u_id) return USER_LEVEL_OWNER; // host can view/edit
+
+	if($resObj->user_id == $u_id) return $u_level; // author can view/edit
+	
+	// shortcut for anke/sicco
+	if($resObj->host_id == 1284 && in_array($u_id, array(402, 3960, 20080))) return $u_level;
+                                
+  $hostObj = get_object('user', $resObj->host_id);	
+  if($linked_users = linked_users($hostObj)) { // todo: filter by role = owner
+    if(in_array($u_id, $linked_users)) return USER_LEVEL_OWNER; // host has given permission to this user
+  }
+	
+	return 0;
+}
+
+/** unsused - automatic comment added on  */
+function auth_action_invoice($action, $id, $user_level=0) {
+	global $u_level;
+  if(!$user_level) $user_level=$u_level;
+	$invObj = get_object('invoice', $id);
+  $locked = invoice_locked($invObj);
+	if($action == 'del' && $locked) return false;	
+  return auth_action('invoice', $action, $id, $user_level, false);
+}
+
+function auth_action_reservation($action, $id, $user_level=0) {
+	global $u_level;
+	
+  if(!$user_level) $user_level=$u_level;
+	$resObj = get_object('reservation', $id);
+  $auth_level = auth_res($resObj);
+	if($action == 'del' || $action == 'delete') return $auth_level >= USER_LEVEL_OWNER && $resObj->status == STATUS_BLOCKED; // can only delete blocks
+  
+  return $auth_level ? true : false;
+}
+
+function pre_add_mail_campaign($obj_type, $data) {
+  $max = 1000;  
+  $errors = array();
+  $site_id = $data['site_id'];
+  $template = $data['template'];
+
+  $message = strip_blank($data['main_message']);
+  if(!strlen($message)) return [$data, ["Message cannot be empty"]];
+  
+  return [$data, $errors];
+}
+
+function pre_edit_mail_campaign($obj_type, $data, $orgObj) {
+  $errors = array();
+  if(isset($data['recipients'])) {
+    $recipients = json_decode($data['recipients']) ?: [];
+    $count = 0;
+    foreach($recipients as $recipient) {
+      list($email, $name) = parse_recipient($recipient);
+      if($email) {
+        $count++;
+      } else {
+        $errors[] = "'".htmlspecialchars($recipient)."' is not a valid email recipient";
+      }
+    }
+    $data['receiver_count'] = $count;
+  }
+  return [$data, $errors];
+}
+
+function pre_add_artwork($obj_type, $data) {
+  $editions = $data['editions'] ?: 0;
+  if(isset($data['edition'])  && $editions >= 1 &&  $data['edition'] > $editions) return [$data, ["Edition No. cannot be greater than {$editions}"]];
+}
+
+function pre_edit_artwork($obj_type, $data, $orgObj) {
+  $editions = $data['editions'] ?: $orgObj->editions;
+  if(isset($data['edition']) && $editions >= 1 && $data['edition'] > $editions) return [$data, ["Edition No. cannot be greater than {$editions}"]];
+  
+}
+
+
+//function post_add_mail_campaign($id) {   
+//}
+
+function pre_add_feedback($obj_type, $data) {
+  $errors = array();
+  $apt_id = $data['apt_id'];
+  $city_id = $data['city_id'];
+  if($apt_id && !$city_id) $data['city_id'] = get_object('property', $apt_id, 'city_id');
+  
+  return array($data, $errors);
+}
+  
+function post_edit_feedback($id, $changes) {
+  if($changes['published']) {
+    $obj = get_object('feedback', $id);
+    if($obj->parent_type && $obj->parent_id && $obj->published) { // this is directly added
+      update_object_review($obj->parent_type, $obj->parent_id);
+    }
+  }
+}
+
+function post_add_feedback($id) {  
+  $obj = get_object('feedback', $id);
+  if($obj->source_id) return;
+  print_log("New feedback: ptype={$obj->parent_type} pid={$obj->parent_id} published={$obj->published}", 'feedback', LOG_LEVEL_ALWAYS);
+  if($obj->parent_type && $obj->parent_id && $obj->published) { // this is directly added
+    update_object_review($obj->parent_type, $obj->parent_id);
+  } else {
+    //send_feedback_received_mail($id);
+  }
+
+}
+
+function pre_add_shortstay($obj_type, $data) {
+  
+  /** no idea why this is needed */
+  $host_id = $data['host_id'];
+  $user_id = $data['user_id'] ?: $host_id;
+  
+  if($profileObj = find_user_profile($host_id)) {
+    $profile_id = $profileObj->id;
+  } else {
+    $profile_id = 0;
+  }
+  $data['user_id'] = $user_id ?: $host_id; 
+  $data['user_profile_id'] = $profile_id;
+
+  $ng = $data['num_guests'] ?: 1;
+  if($data['rate_day'] > 0) $data['rate_person'] = $data['rate_day'] / $ng;
+
+  return pre_add_property($obj_type, $data);
+  
+}
+
+function pre_add_property($obj_type, $data) {
+  global $u_id, $pTypeArray;
+  if(!$data['host_id']) $data['host_id'] = $u_id;
+    
+  //$pTypeId = array_search($obj_type, $pTypeArray);
+  //if(!$pTypeId) return array($data, array("'$obj_type' is not a property type"));  
+  $pTypeObj = find_object('property_type', array('name' => $obj_type));
+
+  $name = trim($data['name']);
+  $shortname = trim($data['shortname']);
+  $city_id = $data['city_id'];
+  
+  if(!$city_id && $data['address_country'] && $data['location_lat'] && $data['location_long']) { // find nearest city
+    $data['city_id'] = $city_id = rental_find_city($data['address_country'], array2obj($data));
+    if($city_id) $data['city_name'] = get_object('geo_city', $city_id, 'name');
+  }
+         
+  $street = $data['address_street'];
+  $num = $data['address_number'];
+  $suf = $data['address_suffix'];
+  if(!isint($num)) {
+    list($number, $ext) = number_extension_split($num);    
+    $data['address_number'] = $number;
+    $data['address_suffix'] = $ext ?: $data['address_suffix'];    
+  }
+  
+  if(!$name) {
+    if($pTypeObj->bookable) {
+    } else { // make name from address
+      $name = "$street $num";
+      if($num && $suf) $name.= "-$suf"; // don't add suffix if number is missing
+      $data['name'] = $name;
+    }
+  }
+
+  if(!$data['guid']) $data['guid'] = uniqid();
+  //if($obj_type == 'shortstay') {echo("pre_add_property($obj_type) sn='$data[shortname]'");}
+
+  if(!$shortname) $data['shortname'] = property_shortname($obj_type, $city_id, $name, $shortname);
+  
+  if(!$data['host_id']) $data['host_id'] = $u_id;
+
+  print_log("pre_add_property data: ".dump($data,true), 'rental', LOG_LEVEL_DEV);
+  
+  // todo: look up, make sure it's unique. Otherwise, make unique
+  return array($data, $errors);
+}
+
+function pre_add_media_collection_map($obj_type, $data) {
+  $errors = array();
+  $media_id = $data['media_id'];
+  $media_collection_id = $data['media_collection_id'];
+  $collection_type = $data['collection_type'];
+
+  $mapSearch = array('media_collection_id' =>$media_collection_id, 'media_id' => $media_id);
+  //if($product_id = $data['product_id']) $mapSearch
+  $variant_id = $data['variant_id'];
+  if($mapObj = find_object($obj_type, $mapSearch)) {
+    $collectionObj = get_object('media_collection', $media_collection_id);      
+    $mediaObj = get_object('media', $media_id);
+    $collection_type = get_object('media_collection_type', $collectionObj->type, 'name') ?: 'collection';
+    $image_title = $mediaObj->name ?: $media_id;    
+    $errors[] = "Image $image_title is already in the $collection_type $collectionObj->title.";
+  }
+  
+  if($media_id && !$errors) {
+    $mediaObj = get_object('media', $media_id);
+    if(!$data['artist_id']) $data['artist_id'] = $artist_id = $mediaObj->artist_id ?: $mediaObj->user_id;
+    if(!$data['artist_name'] && $artist_id) $data['artist_name'] = user_display_name($artist_id);
+
+    if(!$data['original_year']) $data['original_year'] = $mediaObj->original_year;
+    if(!$data['original_technique']) $data['original_technique'] = $mediaObj->original_technique;
+
+    if($collection_type == MEDIA_COLLECTION_TYPE_EXHIBITION && $media_collection_id) {  
+      $collectionObj = get_object('media_collection', $media_collection_id);
+      if(!$data['curator_id']) $data['curator_id'] = $curator_id = $collectionObj->user_id;
+      if(!$data['curator_name']) $data['curator_name'] = user_display_name($curator_id);    
+    }    
+  }
+  
+  return array($data, $errors);
+}
+  
+function pre_edit_user($obj_type, $data, $orgObj) {
+  if($site_id = $data['site_id'] ?: $orgObj->site_id) $search['site_id'] = $site_id; // todo: sketchy
+  $username = $search['username'] = trim($data['username']);
+  $email = trim($data['email_address']);
+  if($username && $username != $orgObj->username && find_object('user', $search)) {
+    $errors[] = "Username $username already exists".($site_id ? " for this site." : ".");
+  }
+  if($email && !is_email($email)) return array($data, array("$email is not a valid email address."));
+  
+  if(!$orgObj->email_address && is_email($username)) $data['email_address'] = $email = $username; // copy to address_email
+  //$debug = "un=$username email=$email".dump($data,true).dump($orgObj, true); $errors[] = $debug;
+  return array($data, $errors);
+}
+
+function pre_add_cc($obj_type, $data) {
+  $errors = array();
+  //$data['cc_crypt'] = $data['cc_number'];
+  $data['cc_number'] = str_replace(array(' ', '-'), '', $data['cc_number']);
+  if(strlen($data['cc_exp_year']) == 2) $data['cc_exp_year'] = "20".$data['cc_exp_year'];  // ok, won't work in 86 years ;)
+  if($error = check_cc_validity($data)) $errors[] = $error;
+  $num = $data['cc_number'];
+  if(!$errors) {
+    $data['cc_number'] = "xxxx-xxxx-xxxx-".substr($num, strlen($num)-4, 4);
+    $data['cc_cvv2'] = '';
+  }
+  return array($data, $errors);    
+}
+
+function post_add_cc($id) {
+  $ccObj = get_object('cc', $id);
+  if($ccObj->user_id && $ccObj->default_card) db_query("UPDATE cc SET default_card=0 WHERE user_id=$ccObj->user_id AND id != $id"); // set others as not default
+}
+
+function post_add_class($id) {
+  $classObj = get_object('class', $id);
+  $table = $classObj->table;
+  $tables = db_getCol("show tables");
+  if(in_array($table, $tables)) return; /** already exists */
+
+  $key = $classObj->key;
+  $query = 
+  "CREATE TABLE $table (
+    `$key` INT(11) NOT NULL,
+    PRIMARY KEY ($key)
+  ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+  ";
+  db_query($query);
+  
+  //if($ccObj->user_id && $ccObj->default_card) db_query("UPDATE cc SET default_card=0 WHERE user_id=$ccObj->user_id AND id != $id"); // set others as not default
+}
+
+function post_add_attribute($id) {
+  $attObj = get_object('attribute', $id);
+  $class = $attObj->class;
+  $field = $attObj->field;
+  $default = $attObj->default_value;
+  $classObj = get_object('class', $class);
+  $table = $classObj->table;
+  
+  $cols1 = db_getAll("show columns from $table");
+  $cols = array_find_key($cols1, 'Field');
+  if(in_array($field, $cols)) return; /** already exists */
+  
+  //echo("Class=$class Field=$field cols=".dump($cols, true));die();
+  $key = $classObj->key;
+  $type = $attObj->type;
+  if(in_array($type, array('dummy', 'one2many', 'many2many'))) return; /** no db field for these */
+    
+  if($field == $key) return; // this is added when class is created
+  $dbTypeObj = get_object('attribute_type', $type);
+  //dump($dbTypeObj);die();
+  $db_type = $dbTypeObj->db_type;
+  $length = $attObj->length ?: $dbTypeObj->length;
+  
+  if($db_type) {
+    if(in_array($db_type, array('int','varchar','char'))) {
+      if(!$length) $length = $db_type == 'int' ? 11 : 128;
+      $db_type = "$db_type($length)";
+    }
+    if($default && strpos($default, '__') === false) {
+      $default_term = " DEFAULT '$default'";
+    } elseif(in_array($db_type, array('int','tinyint','smallint','mediumint','bigint','float','decimal'))) {
+      $default_term = " DEFAULT 0";
+    } elseif(in_array($db_type, array('char','varchar','text','blob'))) {
+      $default_term = " DEFAULT ''";
+    }
+    $not_null = in_array($type, ['date', 'datetime']) ? "" : "NOT NULL";
+    $query = "ALTER TABLE $table ADD COLUMN `$field` $db_type $not_null".$default_term;
+    echo($query.html_break());
+    db_query($query);
+  } else {
+    //die("post_add_attribute: No db_type found for $type in $class");
+  }
+  //if($ccObj->user_id && $ccObj->default_card) db_query("UPDATE cc SET default_card=0 WHERE user_id=$ccObj->user_id AND id != $id"); // set others as not default
+}
+
+/** not in use, phpauth handles adding users */
+function pre_add_user($obj_type, $data) {
+  //dump($data);
+  $tbl = get_object_table('user');
+  if($site_id = $data['site_id']) $search["{$tbl}.site_id"] = $site_id;
+  $username = $search['username'] = $data['username'];
+  if(find_object('user', $search)) {
+    $errors[] = "Username $username already exists".($site_id ? " for this site." : ".");
+  }
+  $password = $data['password'] ?: $data['pass']; // plain text
+  if(!$password) {
+    $password = substr(generateHash($username), 0, 8); // generate random password
+    $data['auto_password'] = 1;
+  }
+  
+  $data['pass'] = $password; // for now
+  $data['password'] = 'xxxx';
+
+  /**
+  $username = trim($data['username']);
+  $email = trim($data['email_address']);
+  if($email && !is_email($email)) return array($data, array("$email is not a valid email address."));
+  if(is_email($username) && !$email) $email = $data['email_address'] = $username; // copy to address_email
+  if(!$email) $errors[] = "You must enter a valid email address, either in the username field, or else in the email field.";
+  */
+  
+  return array($data, $errors);
+}
+
+function pre_add_user_profile($obj_type, $data) {
+  $data['description'] = safe_text($data['description']);
+  return array($data, $errors);                                                
+}
+
+function pre_edit_user_profile($obj_type, $data, $orgObj) {
+  $errors = array();
+  $photo = $data['photo'];
+  if($photo && $photo != $orgObj->photo) {
+    //list($success, $errors, $messages) = update_profile_picture();
+  }
+  $data['description'] = safe_text($data['description']);
+  return array($data, $errors);                                                
+}
+                                                                    
+function post_add_user_profile($id) {
+  return;
+  
+  $obj = get_object('user_profile', $id);
+
+  // create user directory
+  $path = user_profile_path($obj);
+  $dir = clean_path($_SERVER['DOCUMENT_ROOT'].$path);
+  if(!mkdir($dir, 0777, true)) die("Couldn't make user profile directory $dir");
+  
+  if($photo = $obj->photo) {
+    if(!media_make_size_dirs()) die("Couldn't make media size directories");
+    $path = user_profile_path($obj);
+    $src = clean_path($_SERVER['DOCUMENT_ROOT'].$photo);
+    if(!is_file($src)) die("Couldn't find profile photo $src");
+    $filename = url_safe(array_pop(explode('/', $photo)));
+    $dst = clean_path($_SERVER['DOCUMENT_ROOT'].$path."org/".$filename);
+    if(!rename($src, $dst)) die("Couldn't move $src to $dst");
+
+    // add to media (this will handle resizing)
+    $mediaData['parent_type'] = 'user_profile';
+    $mediaData['parent_id'] = $id;
+    $mediaData['path'] = $path;
+    $mediaData['filename'] = $filename;
+    $mediaData['src'] = 'profile_pic_'.$id;
+                                   
+    list($id, $errors) = add_object('media', $mediaData);
+    if($errors) {
+     dump($errors); 
+     mydie("post_add_user_profile: failed to add media");
+    }
+  }      
+}
+
+function post_add_user_map($id) {
+  $mapObj = get_object('user_map', $id);
+  $verified = $mapObj->verified;
+  if($verified) { // send confirmation to user
+    // send_account_upgrade_confirmation($mapObj);
+  } else { // send mail to host, asking to verify
+    send_account_upgrade_request($mapObj);
+  }
+  
+}
+
+function post_edit_user_map($id, $changes=NULL) {
+  if($changes['verified'] && $changes['verified']['new']) {
+    $mapObj = get_object('user_map', $id);
+    $user_id = $mapObj->user_id;
+    $host_id = $mapObj->host_user_id;
+    send_account_upgrade_confirmation($mapObj);
+  }
+}
+
+
+function post_edit_user_profile($id, $changes=NULL) {
+  if($changes['display_name']) {
+    $profileObj = get_object('user_profile', $id);
+    $userObj = get_user($profileObj->user_id);
+    if(user_has_role($userObj, USER_ROLE_ARTIST)) {
+      update_objects('media_collection_map', ['artist_name' => $profileObj->display_name], ['artist_id' => $profileObj->user_id]); 
+    }
+    if(user_has_role($userObj, USER_ROLE_CURATOR)) {
+      update_objects('media_collection_map', ['curator_name' => $profileObj->display_name], ['curator_id' => $profileObj->user_id]); 
+    }
+  }
+}
+
+function post_add_user($id) {
+  $userObj = get_object('user', $id);
+  //send_new_account_mail($userObj);
+}
+
+function pre_add_property_description($obj_type, $data) {
+  $lang    = $data['language'];
+  $pid     = $data['property_id'];
+  $desc_id = $data['type'];        
+  $site_id = $data['site_id'] ?: 0; 
+  
+  if($descObj = property_description($site_id, $pid, $lang, array('type' => $desc_id, 'force_language' => true))) {
+    $desc_name = get_object('description_type', $desc_id, 'name');
+    $lang_name = get_lang_name($lang);
+    if($site_id) $site_name = get_object('site', $site_id, 'name');
+    $errors[] = "There is already a $desc_name in $lang_name for this property ".($site_id ? " on $site_name" : "");
+  }
+    
+  //$qs = "SELECT id FROM property_description WHERE  property_id=$pid AND language='$lang' AND type=$desc_id  AND site_id=$site_id";
+  //if(db_getOne($qs)) {
+  return array($data, $errors);
+}
+
+function pre_add_dictionary($obj_type, $data) {
+  $term = strip_tags(strtolower(str_replace(' ', '_', $data['term'])));
+  $lang = $data['language'];
+  if(db_getOne("SELECT term FROM dictionary WHERE term='$term' AND language='$lang'")) {
+    $lang_name = get_lang_name($lang);
+    $errors[] = "There is already a $lang_name term '' in the dictionary.";
+  }
+  return array($data, $errors);
+}
+
+
+// defaulters
+// prepopulates and empty object (e.g. for the add form)
+// must be explicitly called if form is not used
+/** unsused - automatic comment added on  */
+function defaulter_media_off($obj_type, $data) {
+  die("defaulter_media not in use");
+}
+
+function pre_edit_media($obj_type, $data, $orgObj) {
+  $errors = array();
+
+  // create new folders if needed
+  $path = $data['path'];
+  $id = $orgObj->id;
+  $org_path = $orgObj->path;
+  print_log("Pre_edit_media $id data:".dump($data, true)." org: ".dump($orgObj, true), 'media', LOG_LEVEL_TEST);
+  if($path && $org_path && $path != $org_path) {
+    list($result, $errors) = move_media($orgObj, $path);
+    print_log("Moving $id from $org_path to $path: result=$result", 'media', LOG_LEVEL_TEST);
+    if(!$result) $errors[] = "Couldn't move media to $path";
+  }
+  return array($data, $errors);
+}
+
+// run build gallery and update count
+function post_edit_media($id, $changes=NULL) {
+  if($changes['digital_price'] || $changes['name']) {
+    $obj = get_object('media', $id);
+    $product_id = $obj->product_id;
+    $site_id = $obj->site_id;
+    if($site_id && $product_id) media2product($site_id, $id);
+  }
+
+  // update media collection map
+  $mapData = [];
+  $mapFields = ['name', 'original_year', 'original_technique'];
+  foreach($mapFields as $mapField) {
+    if($changes[$mapField]) $mapData[$mapField] = $changes[$mapField]['new'];
+  }
+  if($mapData) update_objects('media_collection_map', $mapData, ['media_id' => $id]); 
+    
+}
+
+// pre add
+// download file from client computer or URL
+// if success, set the required src and filename attributes
+// data paramaters:
+/* url: for upload
+   resize:
+   site_id:
+   parent_id:
+   parent_type:
+   parent_field:
+   descriptiontype_id:
+   min_size:  
+   allowed_extensions:  
+   path: path relative to docroot where to upload
+*/
+
+function pre_add_media($obj_type, $data) {
+  $debug = true;
+  $search = array();
+  $site_id = $data['site_id'] ?: $_SESSION['site_id'];  
+  if(!$site_id) return array($data, array("Add media: missing site ID"));
+  $siteObj = get_object('site', $site_id);
+  //if($debug) print_log("running pre add media\n");
+  print_log("running pre_add_media with data\n".print_r($data, true), 'add-media', LOG_LEVEL_TEST);
+  print_log("pre_add_media stack: ".caller_stack(), 'resize',  LOG_LEVEL_TEST);
+  //return array($data, array('test'));
+
+  if(isset($data['ajax_upload'])) {
+    $ajax_uploader = true;
+    unset($data['ajax_upload']);
+  }
+
+
+  // echo("Calling pre_add_media".dump($data));
+  // $thumb_size = $_SESSION['media_thumb_size'] ?: 96;
+  // $big_size = $_SESSION['media_big_size'] ?: 640;
+  $min_size = $_SESSION['media_min_size'];
+  
+  $parent_id    = $data['parent_id'];
+  $parent_type  = $data['parent_type'] ?: $data['property_type']; // todo: get rid of propety type
+  $parent_field = $data['parent_field'];
+  $desc_type    = $data['descriptiontype_id'];
+  $errors = array();
+  $allowedExtensions = $data['allowed_extensions'] ?: array('jpg', 'jpeg', 'png', 'gif');
+
+  if(!$parent_id) return array($data, array("Cannot add media: ID is missing"));
+  if($url = $data['url']) { // url if downloaded from web
+    $filename = basename(strip_query_string($url));
+  } else if($user_file = $data['user_filename'] ?: $data['filename']) { // uploaded from PC, the name on the user's disk
+    $url = '';
+    $filename = $upload_filename = basename($user_file); 
+    if($data['user_filename'] && $data['filename'] && $data['user_filename'] != $data['filename']) $upload_filename = basename($data['filename']); // file uploaded (on disk) differs from that on user's disk (number added by fine-uploader)
+    
+    if(is_array($allowedExtensions)) { // only do this for file upload, not URL
+      $allowed_str = implode(', ', $allowedExtensions);
+      if(!is_allowed_extension($filename, $allowedExtensions)) return array($data, array("Illegal file type in '$filename'; allowed types are $allowed_str."));
+    }
+    
+  } else {
+    return array($data, array('No URL or file specified'));
+  }
+                                 
+  if(!$data['user_filename']) $data['user_filename'] = $filename;
+  $filename = url_safe($filename);
+  
+  $data['allowed_extensions'] = ''; // or add_object will get confused.
+  
+  list($root, $extension) = split_filename(strtolower($filename));   // get extension
+
+  //$filename = file_safe($filename);    
+  if($parent_id && $parent_type) $parentObj = get_object ($parent_type, $parent_id); // get parent    
+  
+  $imagepath = trim($data['path']);
+  if(!$imagepath && is_property_type($parent_type) && $parent_id) {
+    $imagepath = $_SESSION['media_path'].image_type_dir($parentObj->type).get_image_path_tail($parentObj);
+  }
+  
+  if(!$imagepath) return array($data, array('No path specififed.'));
+  $imagedir = trim($data['directory']); // file system full directory
+  $site_dir = site_directory($siteObj) ?: $_SERVER['DOCUMENT_ROOT'];
+  if(!$imagedir) $imagedir = clean_path($site_dir.$imagepath);
+  if(!$imagedir) return array($data, array('No directory specififed.'));
+  
+  if(!is_dir($imagedir) && !mkdir_recursive($imagedir)) return array($data, array("Couldn't make upload directory $imagedir"));  
+  
+  if($parentObj) { // get parent
+    //$parentObj = get_object ($parent_type, $parent_id);    
+    $data['property_type'] = $data['parent_type'] = $parent_type; // todo: get rid of property_type
+    $data['source_id'] = $parentObj->source_id;
+    $data['city_id'] = $parentObj->city_id;
+    $data['estate_agent_id'] = $parentObj->estate_agent_id;
+    $data['host_id'] = $parentObj->host_id;
+    if(!$data['user_id']) $data['user_id'] = $parentObj->user_id;
+
+    $where = "$parent_type $parent_id";
+    $search['parent_id'] = $parent_id;
+    $search['parent_type'] = $parent_type;
+    if($desc_type) $search['descriptiontype_id'] = $desc_type;
+    if($parent_field) $search['parent_field'] = $parent_field;
+    $rank = rank_next('media', array_merge($search, array('active' => 1)));
+    if(is_property_type($parent_type)) { // use name of property
+      $aptObj = $parentObj;
+      $src = property_media_name($aptObj, $filename, $rank);
+      if($debug) print_log("media name of $aptObj->name rank $rank = $src<br>", 'add-media', LOG_LEVEL_TEST);
+      if(!$src) return array($data, array("pre_add_media: Did not receive new name for media: Apt url = aptObj->shortname, filename=$filename"));
+    } else {
+      $src = $data['src'] ? url_safe(basename($data['src'])) : $filename;
+    }
+        
+  } else { // no parent_id or type
+    $where = 'this site';
+    //$site_id = $search['site_id'] = $data['site_id'];
+    //if(!$site_id) return array($data, array('No site specifed.'));
+    if($page_id = $data['page_id']) {
+      $search['page_id'] = $page_id; // optional: to allow several galleries per site (but one per page for now)
+      $where = 'this page';
+    }    
+    $rank = rank_next('media', array_merge($search, array('active' => 1)));
+    $src = $data['src'] ? url_safe(basename($data['src'])) : $filename;
+  }
+
+  $data['rank'] = $rank;
+  // if(!is_dir($org_dir) && !mkdir_recursive($org_dir)) return array($data, array("Couldn't make $org_dir"));  
+  // all ok, fetch file if needed (with Ajax file-uploader, this is already done...)
+  // $org_src = $imagedir.$src;
+
+
+  $org_src = $imagedir.$filename; // this is the name of the file we'll store on our disk in the org/ folder 
+
+  if($url) {  // upload from URL
+    
+    if($parent_id) $search['parent_id'] = $parent_id;
+    if($parent_type) $search['parent_type'] = $parent_type;
+    $url_search = array_merge($search, array('url' => $url));
+    //dump($search);dump($url_search);die();
+    if($mObj = find_object('media', $url_search)) return array($data, array("The url $url is already in gallery for $where:".dump($mObj, true)));    
+    if(!download($url, $org_src)) return array($data, array("Download from $url to $org_src failed."));
+    $uploaded_file = $org_src; // download photo from URL 
+  } else { // upload from file
+    $uploaded_file = $imagedir.$upload_filename; // this file must exist on the disk   
+    $file_uploaded = $uploaded_file && is_file($uploaded_file);
+    if(!$file_uploaded) return array($data, array("Could not find $upload_filename in $imagedir"));
+  
+    print_log("User-file: $user_file Filename=$filename src=$src full=$org_src", 'add-media', LOG_LEVEL_TEST);
+    if($oldMediaObj = find_object('media', array_merge($search, array('user_filename' => $user_file)))) { // found media with same file name, check if the same file    
+      $old_src = clean_path($site_dir.$oldMediaObj->path.($oldMediaObj->resize ? 'org/' : '').$oldMediaObj->filename);
+      $old_file_exist = $old_src && is_file($old_src);
+      print_log("Found existing media object with".dump($search, true)." filename=$old_src exists=$old_file_exists", 'add-media', LOG_LEVEL_TEST);
+  
+      if($file_uploaded && $old_file_exist) {
+        $identical = files_identical($uploaded_file, $old_src);
+        print_log("Found existing media object $old_src identical=$identical", 'add-media', LOG_LEVEL_TEST);
+        $exist_error = $ajax_uploader ? "already uploaded." : "$filename is already in gallery for $where";
+        if($identical) return array($data, array($exist_error));
+      }
+    }
+  }
+
+  if(!$url && !$extension) return array($data, array("Missing extension for $filename."));
+
+  $mime_type = $mime = $data['mime'] = mime_content_type($org_src); // actual mime
+  if(!$mime) return array($data, array("Missing or unknown mime '$mime' for $filename extension='$extension'."));
+
+  $typeObj = find_object('mime_type', ['mime' => $mime_type]);
+  $type = $data['type'] = $typeObj->type; // actual type
+  if(!$type) return array($data, array("Missing or unknown type, mime '$mime' for $filename extension='$extension'."));
+
+  $mime_ext = mime_extension($mime_type);
+   
+  /** add extension if not set */
+  if(!$extension && $mime_ext) { 
+    $extension = $mime_ext;
+    $filename .= ".{$mime_ext}";  
+    $upload_filename .= ".{$mime_ext}";    
+    $src .= ".{$mime_ext}";
+  } 
+      
+  if(!$extension) return array($data, array("Missing extension for $filename"));
+
+  /** correct wrong extension */
+  if($extension != $mime_ext) {
+  }
+  
+  //$mime = $data['mime'] ?: mime_type($filename);  
+  //if(!$mime) return array($data, array("Missing or unknown mime '$mime' for $filename extension='$extension'."));
+  //                                                                                                        
+  //$type = $data['type'] ?: find_object('mime_type', array('extension' => $extension), 'type');             
+  //if(!$type) return array($data, array("Missing or unknown type '$type' for $filename extension=$extension."));
+
+  
+  // move up/downloaded file to correct location
+  $parent_path = $parentObj->path;
+  if($parent_path && $parent_path != $imagepath) {
+    $new_path = clean_path($parent_path."$parent_field/$type/");
+    $new_dir = clean_path($site_dir.$new_path);
+
+    print_log("Moving $src from $uploaded_file to $new_dir", 'add-media', LOG_LEVEL_TEST);
+
+    if(!is_dir($new_dir) && !mkdir_recursive($new_dir)) {
+      print_log("Couldn't make new directory $new_dir", 'add-media', LOG_LEVEL_TEST);
+      return array($data, array("Couldn't make new directory $new_dir"));
+    }
+    if(!rename($uploaded_file, $new_dir.$upload_filename)) {
+      print_log("Couldn't move $uploaded_file to $new_dir".$upload_filename, 'add-media', LOG_LEVEL_TEST);
+      return array($data, array("Couldn't move $uploaded_file to $new_dir".$upload_filename));
+    }
+    print_log("Moved $uploaded_file to $new_dir", 'add-media', LOG_LEVEL_TEST);
+    $uploaded_file = $new_dir.$upload_filename;
+    $imagepath = $new_path;
+    $imagedir = $new_dir;
+  }
+  
+   
+   
+  /*
+  if($_FILES && !$file_uploaded) { // file upload from client computer (old style: not ajax - in which case it has already been uploaded in app_data.php)
+    return array($data, $data);
+    list($upload_error, $upload_errors) = upload_user_file($org_dir, $allowedExtensions);
+    // dump($upload_errors); echo("upload errors: $upload_error_msg<br>");
+    if($upload_errors) return array($data, $upload_errors);
+  }
+ */
+
+
+  // mime type according to the extension  
+  
+  //$mimeTypeObj = mime_type($org_src, '');
+  //$mime_type = $mimeTypeObj->mime;
+  //$data['mime'] = $correct_mime_type;
+  
+  print_log("type=$type mime=$mime_type extension=$extension uploaded_file=$uploaded_file file=$filename src=$src", 'add-media', LOG_LEVEL_TEST);
+  $data['type'] = $type;
+  $data['mime'] = $mime_type;
+  $data['filesize'] = $data['filesize'] ?: filesize($uploaded_file);
+  $data['filename'] = $filename;
+  $data['path'] = $imagepath;
+  $data['directory'] = $imagedir;
+  $data['uploaded_file'] = $uploaded_file;
+  
+  if(!$data['src']) $data['src'] = $src ?: $filename;
+
+  // check mime type
+  switch($type) {
+  case 'image':
+    $img_info_array = getimagesize($uploaded_file); // size of original
+    $actual_mime_type = $img_info_array['mime'];
+    if($actual_mime_type && $mime && $mime != $actual_mime_type) {
+      // turns out Google profile photos are listed as .jpg, but are actually .png. Allow for this  
+      $actual_type  = find_object('mime_type', array('mime' => $actual_mime_type), 'type');
+      if($actual_type == 'image') {
+        $data['mime'] = $actual_mime_type;
+      } else {
+        return array($data, array("Illegal mime_type '$actual_mime_type' for $filename - should be '$mime' according to the extension."));
+      }
+    }
+    // resize or move as needed
+    $data['width'] = $width = $img_info_array[0];
+    $data['height'] = $height = $img_info_array[1];
+    $data['depth'] = $img_info_array['bits'];
+    $data['channels'] = $img_info_array['channels'];  
+    
+    if($min_size && max($height, $width) < $min_size) return array($data, array("The resolution is too low for use on this site. Please choose an image whose longest side is at least $min_size pixels."));
+  
+    if(0) { /** Moved to app_data.php after json output for speed */
+      // return array($data, array("All ok: org-src=$org_src h=$height w=$width type=$mime_type"));
+      $resize = $data['resize'];
+      if(is_array($resize)) $resize = array_filter($resize); // some weirdness in json params passed
+  
+      //print_log("pre_add_media: data=".dump($data, true), 'add-media', LOG_LEVEL_TEST);
+      print_log("pre_add_media: resize=".dump($resize, true), 'add-media', LOG_LEVEL_TEST);
+          
+       
+      if($resize) { // array where key->value is directory->size
+        //if(!is_array($resize)) $resize = $_SESSION['resize_array']; // use default if not false and not array
+        global $resizeArray;
+        if($resize === 1 || $resize === true) $resize = $resizeArray ?: resize_array(); // use default array if 1 or true 
+        $resize_options['skip_small'] = $data['skip_small']; // don't resize to bigger image if original is too small
+        $resize_options['resize']    = $resize;
+        $resize_options['path']      = $data['path']; // array where key->value is directory->size
+        $resize_options['directory'] = $data['directory']; // array where key->value is directory->size
+        print_log("running resize media with data ".dump($data, true)." and options\n".print_r($resize_options, true), 'add-media', LOG_LEVEL_TEST);
+        print_log("pre_add_media: resize2=".dump($resize_options, true), 'add-media', LOG_LEVEL_TEST);
+        
+        list($result, $resize_errors, $resize_messages) = resize_media($siteObj, array2obj($data), $resize_options);
+        if($debug) print_log("resize media result = ".dump($result,true).dump($resize_errors, true).dump($resize_messages, true), 'add-media', LOG_LEVEL_TEST);
+        //dump($resize_errors);dump($resize_messages);
+        if(!$result || $resize_errors) return array($data, array_merge($errors, $resize_errors));
+        $data['resize'] = $result['resize'] ?: 1;
+        if($data['resize']) $data['resized'] = 1;
+      }
+    }
+    break;
+    
+  case 'video':
+    print_log("video: fetching av_data ft $uploaded_file", 'add-media', LOG_LEVEL_TEST);
+    $av_data = get_av_data($uploaded_file);
+    print_log("video: av_data of $uploaded_file=".dump($av_data, true), 'add-media', LOG_LEVEL_TEST);
+    if(!$av_data) return array($data, array_merge($errors, array("No ffmpeg info for $org_src.")));        
+    $av_data['frame_rate'] = round($av_data['frame_rate']);
+    $data = array_merge($data, $av_data);    
+    $data['resize'] = 0;
+    break;
+  case 'audio':
+    $av_data = get_av_data($uploaded_file);
+    if(!$av_data) return array($data, array_merge($errors, array("No ffmpeg info for $org_src.")));        
+    $av_data['frame_rate'] = round($av_data['frame_rate']);
+    $data = array_merge($data, $av_data);    
+    $data['resize'] = 0;
+    break;
+  default:
+    $data['resize'] = 0;  
+    break;    
+  }
+  //unset($data['resize']);
+  unset($data['allowed_types']);
+  unset($data['allowed_extentions']);
+  //dump($data);die();
+  
+  if(0) { // disabled: fails if path was changed due to parent path
+    if(!$data['resize'] && $uploaded_file != $org_src) { // move, we don't like spaces in our filenames
+      print_log("Moving $uploaded_file to $org_src", 'add-media', LOG_LEVEL_TEST);       
+      if(!rename($uploaded_file, $org_src)) {
+        $errors[] = "Failed to move uploaded file";
+        print_log("Moving Failed", 'add-media', LOG_LEVEL_TEST);       
+      } 
+    }
+  }
+  
+  print_log("Done running pre_add media..."); // with data\n".print_r($data, true)." Errors".dump($errors, true), 'upload', LOG_LEVEL_TEST);       
+  return array($data, $errors);
+}
+
+// if parent_type/id/field is set, update parent's field with list of media
+function update_parent_media_list($obj_or_id) {
+  $obj = any2obj('media', $obj_or_id);
+  
+  $parent_type  = $obj->parent_type; 
+  $parent_id    = $obj->parent_id; 
+  $parent_field = $obj->parent_field;
+  //print_log("update_parent_media_list: pt=$parent_type pid=$parent_id pf=$parent_field media_id={$obj->id}", 'media', LOG_LEVEL_TEST);
+
+  if($parent_type && $parent_id && $parent_field) { // update parent object with list of new media
+    $mediaSearch['parent_type']  = $parent_type; 
+    $mediaSearch['parent_id']    = $parent_id; 
+    $mediaSearch['parent_field'] = $parent_field; 
+    $mediaSearch['active'] = 1;
+    $mediaIdAr = find_objects('media', $mediaSearch, array('sort' => 'rank', 'fields' => 'id'));
+    $media_ids = count($mediaIdAr) ? implode(',',$mediaIdAr) : '';
+    $parentData = [$parent_field => $media_ids];
+    $parentObj = get_object($parent_type, $parent_id);
+    //print_log("update_parent_media_list: pt=$parent_type pid=$parent_id obj_id={$parentObj->id}", 'media', LOG_LEVEL_TEST);
+    if(isset($parentObj->media_json)) {
+      if($mediaJson = media2json($parent_type, $parentObj)) $parentData['media_json'] = $mediaJson;
+    }
+    list($pid, $perrors) = update_object($parent_type, $parentData, $parent_id);
+    
+  }
+}
+
+function pre_add_page_element($obj_type, $data) {
+  $errors = array();
+  if($data['media'] && !isset($data['resize'])) $data['resize'] = 1;
+  if($data['type'] == 'html') {
+    $data['content'] = safe_text($data['content']); // strip html tags we don't allow etc
+  }
+  return array($data, $errors);
+}
+
+function post_add_page_element($id) {
+  $obj = get_object('page_element', $id);
+  if($obj->media) {
+    $path = "/user/page/$obj->page_id/$obj->name/";
+    list($count, $errors) = object_image_uploader('page_element', $id, $path, array('resize' => $obj->resize));
+    if($errors) dump($errors);
+    //echo("Added $count media to page_element $id with path=$path<br>");
+  }
+  $site_id = $obj->site_id;
+  smarty_save_page_element($obj);
+}
+
+function post_edit_page_element($id, $changes) {
+  if($changes['content']) {
+    $obj = get_object('page_element', $id);
+    smarty_save_page_element($pageElement);
+  }
+}
+
+/**
+function pre_add_golf_course($obj_type, $data) {
+  $errors = array();
+  if($data['image'] && !$data['images']) $data['images'] = $data['image']; // copy main image to list
+  return array($data, $errors);
+}
+*/
+
+function pre_add_golf_club($obj_type, $data) {
+  $errors = array();
+  if($data['name'] && !$data['slug']) {    
+    $data['slug'] = object_slug($obj_type, $data['name']); // slug for URL
+  }
+  return array($data, $errors);
+}
+
+function pre_edit_golf_club($obj_type, $data, $orgObj) {
+  $errors = array();
+  if($data['name'] && ($data['name'] != $orgObj->name || !$orgObj->slug)) { // named changed, or org has no slug
+    $data['slug'] = object_slug($obj_type, $data['name']); // slug for URL
+  }
+  return array($data, $errors);
+}
+
+/**
+function post_add_golf_course($id) {
+  $path = "/photos/golf_course/$id/";  
+  object_image_uploader('golf_course', $id, $path, array('field' => 'images'));  
+}
+
+function post_edit_golf_course($id, $changes) {
+  $errors = array();
+  $chImages = $changes['images'];
+  if($chImages['old'] && !$chImages['new']) { // deleted
+    // not implemented
+  } elseif($chImages['new']) { // changed or new
+    $path = "/photos/golf_course/$id/";  
+    object_image_uploader('golf_course', $id, $path, array('field' => 'images'));
+  }
+}
+*/
+
+function post_add_golf_club($id) {
+  $path = "/photos/golf_club/$id/";
+  $map = array('filename' => 'url');
+  object_image_uploader('golf_club', $id, $path, array('field' => 'images', 'format' => 'json', 'map' => $map));
+    
+  golf_location_updater("golf_club", $id);
+}
+
+function post_edit_golf_club($id, $changes) {
+  $errors = array();
+
+  $loc_fields = array('location_lat','location_long','location_radius', 'name', 'description', 'address_formatted', 'golf_courses');
+  if(1 || array_intersect(array_keys($changes), $loc_fields)) {
+    golf_location_updater("golf_club", $id, $changes);
+  }
+  
+  $chImages = $changes['images'];
+  if($chImages['new']) { // changed or new
+    $map = array('filename' => 'url');    
+    $path = "/photos/golf_club/$id/";  
+    object_image_uploader('golf_club', $id, $path, array('field' => 'images', 'format' => 'json', 'map' => $map));
+  }
+}
+
+/**
+function post_edit_location($id, $changes='') {
+  $obj_type = 'location';
+  $obj = get_object($obj_type, $id);
+}
+
+function post_add_location($id) {
+  $obj_type = 'location';
+  $obj = get_object($obj_type, $id);
+
+  if($address && !($lat && $lng)) { // geocode
+    list($status, $acc, $lat, $long, $bounds) = google_geocode($address);
+    if($status==200) {
+    }
+    // if($lat && $lng && !$bounds) $bounds = json_encode(radius2bounds($obj, DEFAULT_RADIUS));
+  }  
+}
+
+*/
+
+function pre_add_location($obj_type, $data) {
+  $errors = array();
+
+  $lat = $data['location_lat'];
+  $lng = $data['location_long'];
+  $radius = $data['location_radius'] = $data['location_radius'] ?: DEFAULT_RADIUS;
+  if($lat && $lng && !$data['location_bounds']) $data['location_bounds'] = json_encode(radius2bounds($data, $radius));
+  return array($data, $errors);
+}
+
+function golf_location_updater($obj_type, $id) {
+  $obj = get_object($obj_type, $id);
+  $loc_id = find_object("location", array("parent_type" => "golf_club", "parent_id" => $id), "id");
+  $loc_data = (array) $obj;
+  $loc_data['parent_type'] = $obj_type;
+  $loc_data['parent_id'] = $id;
+  $loc_data['alt_names'] = $obj->name;
+  $loc_data['slug'] = $obj->slug;
+  if($obj->golf_courses) $loc_data['alt_names'] .= ", ".$obj->golf_courses;
+  if($loc_id) {
+    list($loc_id, $errors) = update_object("location", $loc_data, $loc_id);
+    //if($loc_id) echo("Updated loc $loc_id for $obj_type $id<br>");
+  } else {
+    list($loc_id, $errors) = add_object("location", $loc_data);
+    //if($loc_id) echo("Added loc $loc_id for $obj_type $id<br>");
+  }
+  if($errors) {
+    dump($errors);
+    die("Location_updater");
+  }
+  return array($loc_id, $errors);
+}
+
+// run build gallery and update count
+function post_add_media($id) {
+  update_parent_media_list($id);
+  $mediaObj = get_object('media', $id);
+  $mime = $mediaObj->mime;
+  
+  print_log("Exif for media $id ($mime)".dump($mediaObj, true), 'exif', LOG_LEVEL_ALWAYS);
+  
+  if($mediaObj && in_array($mime, array('image/jpeg', 'image/tiff'))) {
+    $org_dir = $mediaObj->resize ? "org/" : '';
+    $org_src = clean_path($_SERVER['DOCUMENT_ROOT'].$mediaObj->path.$org_dir.$mediaObj->src);  
+    if($exif = is_file($org_src) ? @exif_read_data($org_src) : "No file found at $org_src") {
+      list($id, $errors) = update_object('media', array('exif' => json_encode($exif)), $mediaObj->id);      
+    }
+    
+    print_log("Exif for media $id at $org_src=".dump($exif, true), 'exif', LOG_LEVEL_ALWAYS);
+  }
+  
+  /** add to media_collection_map */
+  if($mediaObj->parent_type = 'media_collection' && $mediaObj->parent_field == 'media' && $mediaObj->parent_id > 0) {
+    require_once("helpers_gallery.inc");
+    gallery_publish_image($mediaObj->site_id, $mediaObj->id, $mediaObj->parent_id);
+  }
+  
+  //post_edit_media($id);
+}
+
+//	$obj_type = 'media';
+//	$obj = get_object($obj_type, $id);
+//  if($obj->descriptiontype_id == 10) {
+//    $ptype = pick_first($obj->parent_type, $obj->property_type); // todo: get rid of property_type
+//    if(is_property_type($ptype)) {
+//      $pid   = $obj->parent_id;
+//      build_gallery($ptype, $pid); // PHOTO ALBUM
+//      update_gallery_count($ptype, $pid);
+//    
+//    }
+//  }
+
+function post_delete_media_collection($obj_type, $obj) {
+  $errors = array();
+  if($collection_id = $obj->id) db_query("DELETE from media_collection_map WHERE media_collection_id=$collection_id");
+  return;
+}
+
+function pre_delete_media($obj_type, $obj) {
+  $errors = array();
+  if($mapObj = find_object('media_collection_map', array('media_id' => $obj->id))) {
+    $collection_id = $mapObj->media_collection_id;
+    if($collectionObj = get_object('media_collection', $collection_id)) {
+      $collection_type_name = get_object('media_collection_type', $collectionObj->type, 'name');
+      $siteObj = get_object('site', $collectionObj->site_id);
+      $col_url = gallery_collection_link($siteObj, $collectionObj);
+      $collection_link = html_link($col_url, $collectionObj->title, array("target" => "new"));      
+      $errors[] = "Cannot delete media; published in $collection_link";
+    }
+  }
+  return array($data, $errors);  
+}
+  
+
+function post_add_media_collection_map($id) {
+  if($collection_id = get_object('media_collection_map', $id, 'media_collection_id')) {
+    $collectionObj = get_object('media_collection', $collection_id);
+    $site_id = $collectionObj->site_id; 
+    $collection_type = $collectionObj->type; 
+    //if($site_id && $collection_type && in_array($collection_type, array(MEDIA_COLLECTION_TYPE_EXHIBITION))) collections2products($site_id,$collection_id);
+  }
+}
+
+function pre_add_chat($obj_type, $data) {
+  //global $u_id;
+  //if(!$data['sender_id']) $data['sender_id'] = $u_id;
+  $errors = array();
+  $sender_id = $data['sender_id'] ?: 0;
+  $receiver_id = $data['receiver_id'] ?: 0;
+  if(!$sender_id && !$receiver_id) $errors[] = "Sender or Receiver is required";
+  else if($sender_id == $receiver_id) $errors[] = "Sender == Receiver";
+  $data['thread'] = chat_thread_id($data);
+  return array($data, $errors);
+}
+
+function pre_add_gallery($obj_type, $data) {
+  $errors = array();
+  if($parent_id = $data['parent_id']) {
+    $parentObj = get_object('gallery', $parent_id);
+    if(!$parentObj) return array($data, array("Could not find parent $parent_id"));
+    $path = $parentObj->path;
+    if(!$path) return array($data, array("No path for parent $parent_id"));
+  } else {
+    $user_id = $data['user_id'];
+    if(!$user_id) return array($data, array("No user_id for gallery"));
+  }
+	return array($data, $errors);
+}
+
+function post_add_gallery($id) {
+  $galleryObj = get_object('gallery', $id);  
+  if($parent_id = $data['parent_id']) {
+    $parent_path = get_object('gallery', $parent_id, 'path');
+    $path = $parent_path."$id/";   
+  } else {
+    $user_id = $galleryObj->user_id;
+    $path = "/user/$user_id/vault/$id/";
+  }
+  list($id, $errors) = update_object('gallery', array('path' => $path), $id);
+  $new_dir = clean_path($_SERVER['DOCUMENT_ROOT'].$path);
+  if(is_dir($new_dir)) die("Could not create gallery folder $new_dir: already exists");
+  mkdir_recursive($new_dir);
+  return;
+}
+
+
+function pre_delete_gallery($obj_type, $obj) {
+  $errors = array();
+  $messages = array();
+
+  // delete sub folders
+  if($gallery_ids = find_objects('gallery', array('parent_id' => $obj->id), array('fields' => 'id'))) {
+    list($del_count, $errors) = delete_objects('gallery', $gallery_ids);
+    if($del_count) $messages[] = "Deleted $del_count galleries ($gallery_ids))";
+  }
+  
+  // delete media
+  if($media_ids = find_objects('media', array('parent_type' => 'gallery', 'parent_id' => $obj->id), array('fields' => 'id'))) {
+    list($del_count, $m_errors) = delete_objects('media', $media_ids);
+    if($m_errors) $errors = array_merge($errors, $m_errors);
+    if($del_count) $messages[] = "Deleted $del_count media ($media_ids))";
+  }
+  return array($messages, $errors);  
+}
+
+function post_edit_gallery ($id, $changes) {
+  $errors = array();
+  $chAc = $changes['active'];
+  if($chAc && !$chAc['new']) { // deactivated
+    // db_query("UPDATE media SET active=0 WHERE parent_type='gallery' AND parent_id=$id"); // deactivate media
+  }
+}
+
+function post_delete_gallery($obj_type, $obj) {
+  if($obj->path) recursiveDelete(clean_path($_SERVER['DOCUMENT_ROOT'].$obj->path));
+  return;  
+}
+
+function update_gallery_count($property_type, $property_id) {
+  $count = db_getOne("SELECT count(*) FROM media WHERE property_type='$property_type' AND parent_id='$property_id' AND active=1 AND descriptiontype_id=10");
+  $table = get_object_table($property_type);
+  db_query("UPDATE $table SET gallery=$count WHERE id=$property_id");
+}
+
+// delete files, run build gallery
+function post_delete_media($obj_type, $obj) {
+	//$obj_type = 'media';
+	//$obj = get_object($obj_type, $id);
+	//dump($obj);
+	$mediaObj = $obj;
+	global $resizeArray;
+	$path = $obj->path;
+	$src = $obj->src;                              
+	if($site_id = $obj->site_id) {
+	  $siteObj = get_object('site', $site_id);
+	  $doc_root = site_directory($siteObj) ?: $_SERVER['DOCUMENT_ROOT'];
+	} else {
+	  $doc_root = $_SESSION['media_dir'] ?: $_SERVER['DOCUMENT_ROOT'];
+	}
+
+  @unlink($doc_root.$path.$obj->filename);
+  @unlink($doc_root.$path.$obj->src);
+  if($obj->resize) {  
+    foreach($resizeArray as $dir => $rAr) {
+      @unlink($doc_root.$path."$dir/".$obj->filename);
+      @unlink($doc_root.$path."$dir/".$obj->filename);
+    }
+  }
+  update_parent_media_list($obj);
+  
+  /** remove from media_collection_map */
+  if($mediaObj->parent_type = 'media_collection' && $mediaObj->parent_field == 'media' && $mediaObj->parent_id > 0) {
+    db_query("DELETE from media_collection_map WHERE media_id={$mediaObj->id} AND media_collection_id={$mediaObj->parent_id}");
+  }
+  
+  return;
+  /*
+  $imagedir = get_media_file($obj);
+  $org_file   = $imagedir.image_size_dir('org').$obj->filename;
+  ////echo("Imagedir for media $id = $imagedir<br>org_flie=$org_file<br>");
+  //echo("removing $org_file");
+  @unlink($org_file);
+  if($obj->resize) {
+    $thumb_file = $imagedir.image_size_dir('thumb').$obj->src;
+    $small_file = $imagedir.image_size_dir('small').$obj->src;
+    $big_file   = $imagedir.image_size_dir('big').$obj->src;
+    @unlink($big_file);
+    @unlink($small_file);
+    @unlink($thumb_file);
+  }
+
+  if($obj->descriptiontype_id == 10) {
+    ////echo("post add media $id rebuilding gallery<br>");
+    $ptype = $obj->property_type;
+    $pid   = $obj->parent_id;
+    build_gallery($ptype, $pid); // PHOTO ALBUM
+    update_gallery_count($ptype, $pid);
+  }
+  */
+}
+
+function pre_add_link($obj_type, $data) {
+	if($url = $data['url']) {
+    $url2 = add_http($url);
+	  if(!is_url($url2)) return array($data, array("$url is not a valid URL"));
+	  if(!url_exists($url2)) return array($data, array("$url does not exist."));
+	  $data['url'] = $url2;
+	}
+	return array($data, $errors);
+}
+
+function pre_add_invoice($obj_type, $data) {
+	$data['duedate'] = sql_add_days(today(), 30); // due in 30 days by default
+  $data['booking_pin'] = generate_booking_pin(); // unique pin for each invoice
+  
+  $cc1 = $data['country'];
+  
+  if(isset($data['country'])) $data['country'] = fix_country($data['country']);
+  $parent_type = $data['parent_type'];
+  $parent_id = $data['parent_id'];
+  if(!$parent_type || !$parent_id) {
+    if($parent_id = $data['res_id']) {
+      $data['parent_id'] = $parent_id;
+      $data['parent_type'] = 'reservation';
+    } elseif($parent_id = $data['order_id']) {
+      $data['parent_id'] = $parent_id;
+      $data['parent_type'] = 'payment_order';
+    }
+  } elseif($parent_type && $parent_id) {
+    if($parent_type == 'reservation') {
+      $data['res_id'] = $parent_id;
+      unset($data['order_id']);
+    } elseif($parent_type == 'payment_order') {
+      $data['order_id'] = $parent_id;
+      unset($data['res_id']);
+    }
+  }
+  $legal_id = $data['legal_entity_id'];
+  if($legal_id && !isset($data['charge_tax'])) { // charge tax not set, look at legal entity
+    $legalObj = get_object('legal_entity', $legal_id);
+    $charge_tax   = $data['charge_tax'] = $legalObj->charge_tax;    
+    $tax_included = $data['tax_included'] = $legalObj->tax_included;    
+    print_log("pre_add_invoice. Legal id=$legal_id charge_tax=$charge_tax tax_included=$tax_included", 'invoice', LOG_LEVEL_DEBUG);    
+  }
+
+  if(isset($data['country']) && $_SESSION['debug_invoice_address']) {
+    $cc2 = $data['country'];
+    print_log("pre_add_invoice: before=$cc1 after=$cc2", "address", LOG_LEVEL_ALWAYS);        
+  }
+  
+	return array($data, $errors);
+}
+
+function pre_add_payment_order($obj_type, $data) {
+  $data['booking_pin'] = generate_booking_pin(); // unique pin for each invoice
+  if($payment_type = $data['payment_type']) $data['gateway_id'] = payment_type2gateway_id($payment_type);
+  if(!$data['invoice_currency'] && $data['currency']) $data['invoice_currency'] = $data['currency']; 
+	return array($data, $errors);
+}
+
+function pre_edit_payment_order($obj_type, $data, $orgObj) {
+  return array($data, $errors);
+}
+
+function post_add_order_row($id) {
+  if($order_id = get_object('order_row', $id, 'order_id')) update_order_total($order_id);
+}
+
+function post_edit_order_row($id, $changes) {
+  if($order_id = get_object('order_row', $id, 'order_id')) update_order_total($order_id);
+}
+
+function post_delete_order_row($obj_type, $obj) {
+	update_order_total($obj->order_id);
+}
+
+function post_add_cart_row($id) {
+  if($cart_id = get_object('cart_row', $id, 'cart_id')) update_cart_total($cart_id);
+}
+
+function post_edit_cart_row($id, $changes) {
+  if($cart_id = get_object('cart_row', $id, 'cart_id')) update_cart_total($cart_id);
+}
+
+function post_delete_cart_row($obj_type, $obj) {
+	update_cart_total($obj->cart_id);
+}
+
+function update_order_total($id) {
+  $orderObj = get_object('payment_order', $id);  
+  $paid = $orderObj->paid ?: 0;
+  $total = db_getOne("SELECT SUM(total) FROM order_row WHERE order_id=$id") ?: 0;
+  $balance = $total - $paid;
+  if($orderObj->invoice_currency == $orderObj->currency) $inv_term = "invoice_amount=$total, "; 
+  db_query("UPDATE payment_order SET $inv_term total = $total, balance=$balance, count=(SELECT count(id) FROM order_row WHERE order_id=$id) WHERE id=$id");
+}
+
+function update_cart_total($id) {
+  db_query("UPDATE cart SET total = (SELECT SUM(total) FROM cart_row WHERE cart_id=$id), count=(SELECT count(id) FROM cart_row WHERE cart_id=$id) WHERE id=$id");
+}
+
+function pre_add_order_row($obj_type, $data) {
+  $quantity = $data['quantity'] ?: 1;
+  $data['total'] = $quantity * $data['amount'];
+  return array($data, $errors);  
+}
+
+function pre_edit_order_row($obj_type, $data, $orgObj) {
+  $quantity = $data['quantity'] ?: 1;
+  $data['total'] = $quantity * $data['amount'];
+  return array($data, $errors);  
+}
+
+function pre_add_cart_row($obj_type, $data) {
+  $quantity = $data['quantity'] ?: 1;
+  $data['total'] = $quantity * $data['amount'];
+  return array($data, $errors);  
+}
+
+function pre_edit_cart_row($obj_type, $data, $orgObj) {
+  $quantity = $data['quantity'] ?: 1;
+  $data['total'] = $quantity * $data['amount'];
+  return array($data, $errors);  
+}
+
+
+
+function pre_edit_res_exception($obj_type, $data, $orgObj) {
+  $errors = array();  
+  //if(!is_date(strip_time($start)) || !is_date(strip_time($end))) return array($data, $errors); // we now allow +1 DAY
+  return array($data, $errors);
+}
+
+function pre_edit_reservation($obj_type, $data, $orgObj) {
+  $errors = array();
+  //$errors[] = $changes;
+  //return array($data, array(dump($data, true)));
+
+  $ptype = $orgObj->property_type;
+  $apt_id = $orgObj->apt_id;
+  $aptObj = $ptype && $apt_id ? get_object($ptype, $apt_id) : NULL;
+
+  if(isset($data['country'])) $data['country'] = fix_country($data['country']);
+  
+  $guest_id = $data['guest_id'];
+  if($guest_id && $guest_id != $orgObj->guest_id) { // copy address to reservation
+    $guestObj = get_user($guest_id);
+    $addressData = get_address_data($guestObj);
+    foreach($addressData as $k => $v) {
+      if(!$data[$k]) $data[$k] = $v;
+    }
+  }
+  
+  $res_id = $orgObj->res_id;
+  
+  // accept pending booking, try to capture payment
+  if($orgObj->status == STATUS_PENDING && $data['status'] == STATUS_RESERVED) {
+    $authorized = $orgObj->authorized;
+    if($authorized < INV_TOLERANCE) return array($data, array("Failed to capture payment: Reservation authorization not set"));
+    
+    $invObj = find_booking_invoice($res_id);
+    if(!$invObj) return array($data, array("Failed to capture payment: No invoice found"));
+   
+    $paymentObj = find_booking_authorization($invObj);
+    if(!$paymentObj) return array($data, array("Failed to capture payment: No authorization found"));
+    
+    if(abs($paymentObj->amount - $authorized) > INV_TOLERANCE) return array($data, array("Failed to capture payment: Amount mismatch. Found $paymentObj->amount, expected $authorized"));   
+    if($resObj->currency != $paymentObj->curency) return array($data, array("Failed to capture payment: Currency mismatch. Found $paymentObj->currency, expected $resObj->currency"));   
+
+    // capture payment
+    $inputVars = array();
+    list($payment_id, $charge_error, $charge_message) = add_payment($paymentObj->currency, $paymentObj->amount, $invObj, PAYMENT_TYPE_CREDIT_CARD_CAPTURE, $inputVars, $paymentObj);
+    if($charge_error) return array($data, array("Failed to capture payment: $charge_error"));
+    
+    if($payment_id) {
+      $paymentObj = get_object('payment', $payment_id);
+      if($paymentObj->status == PAYMENT_STATUS_COMPLETED) $data['authorized'] = 0;
+    }
+    print_log("pre_edit_reservation: captured payment $payment_id: $charge_message", 'payment', LOG_LEVEL_ALWAYS);
+    
+  }
+    
+
+  // promote remote booking, check with provider that still available...
+  if($orgObj->status < STATUS_PROPOSED && $data['status'] >= STATUS_PROPOSED) {
+          
+    // check remote availability
+    switch($dest_id) {
+      case SOURCE_ID_TEQA:        
+        //list($obj, $errors, $messages) = obj_remote_upload(SOURCE_ID_TEQA, $obj_type, $data);
+        break;
+      case SOURCE_ID_INTERHOME:
+        $guid = $aptObj->guid;
+        $status = $data['status'];
+        $type = $orgObj->type;
+        
+        if($guid && $type == RES_TYPE_DIRECT && in_array($status, [STATUS_PROPOSED, STATUS_RESERVED]))
+          $result = intherome_live_availability($guid, strip_time($orgObj->checkin), strip_time($orgObj->checkout), $orgObj->num_guests);
+          if($result->success) {
+            $total = $data['total'] = $result->total;
+            $currency = $data['total'] = $result->currency;
+            $rate_day = $data['rate_base'] = $total / $resObj->num_days;
+            $service_fee = $data['fee_service'] = service_fee($total);
+          } else {
+            $errors[] = $result->error ?: "Unknown error from Booking Partner";
+          }          
+        break;
+      default;
+        break;
+    }
+  }
+  
+  
+  // property changed
+  if(isset($data['apt_id']) && $data['apt_id'] != $orgObj->apt_id) {
+    $ptype = $orgObj->property_type;
+    $new_apt_id = $data['apt_id'] ;
+    $aptObj = $ptype && $new_apt_id ? get_object($ptype, $new_apt_id) : NULL;
+    $data = apt2res($data, $aptObj, false); // copies from apartment
+  }
+  
+  if($orgObj->property_type == 'shortstay') {
+    /** not in use
+    $ci = pick_first($data['checkin'], $orgObj->checkin);
+    $at = pick_first($data['arrival_time'], $orgObj->arrival_time);
+    $ap = pick_first($data['arrival_property'], $orgObj->arrival_property);
+
+    if($ci && $at)  $data['arrival_time']     = timefield_defaulter($at, $ci);
+    //if($ci && $ap)  $data['arrival_property'] = $data['checkin'] = timefield_defaulter($ap, $ci);
+    if($ci && $ap)  {
+      $nap = $data['arrival_property'] = timefield_defaulter($ap, $ci);
+      // echo("ci = $ci, ap=$ap new new ap=$nap");
+    }
+    */
+    
+    if($orgObj->status == STATUS_COMPLETE && $data['status'] < STATUS_COMPLETE) {
+      $data['status'] = STATUS_COMPLETE;
+      // don't trigger the error, or we lose other changes
+      //$errors[] = "Status is complete and cannot be set to ".get_object('res_status', $data['status'], 'name');
+    }
+  }
+
+
+  $in = $data['checkin'] ?: $orgObj->checkin;
+  $out = $data['checkout'] ?: $orgObj->checkout;
+  if($in != $orgObj->checkin || $out != $orgObj->checkout) {
+    
+    // figure out num day/months/hours
+    //if(!is_date(strip_time($in)) || !is_date(strip_time($out))) return array($data, $errors); // we now allow +1 DAY
+    
+    $start = strip_date($in);
+    $end   = strip_date($out);
+      
+    //$hourly = $data['rate_type'] == 'hour' || $data['num_hours'] > 0 || $data['hourly'] || $data['billing_period'] == BILLING_HOUR || !$num_days; // && ($num_days == 0 || $data['billing_period'] == BILLING_HOUR || 
+    if($orgObj->hourly) {
+      if(!$start) $errors[] = "Missing start time for hourly reservation";
+      if(!$end) $errors[] = "Missing end time for hourly reservation";
+      if($start && $end) $num_hours = period_diff($in, $out, 'hour');;
+      if(!$num_hours) $errors[] = "Hourly reservation: zero hours";
+  
+      $data['num_hours'] = $num_hours;
+      $data['num_days']   = 0;
+      $data['num_months'] = 0;
+    } else {
+      $num_days = period_diff($in, $out, 'day');
+      //$errors[] = "Daily reservation: $num_days days between $in and $out";
+      if($num_days <= 0) $errors[] = "Daily reservation: zero or negative days between $in and $out";
+      $data['num_hours']  = 0;
+      $data['num_days']   = $num_days;
+      $data['num_months'] = period_diff($in, $out, 'month');
+    }
+  }
+
+  if(!$orgObj->org_currency && isset($data['rate_base']) && $data['rate_base'] > 0) {
+    $data['org_currency'] = $data['currency'] ?: $orgObj->currency;
+    $data['org_rate_type'] = $data['rate_type'];
+    $data['org_rate_base'] = $data['rate_base'] ?: $orgObj->rate_base;
+    $data['org_fee_cleaning'] = $data['fee_cleaning'] ?: $orgObj->fee_cleaning;
+  }
+  
+  
+  return array($data, $errors);
+}
+
+
+function pre_add_reservation($obj_type, $data) {
+  global $u_id;
+  $errors = array();
+ 
+  //echo("running pre_add_reservation<br>");
+  //dump($data);
+  $apt_id=$data['apt_id'];
+  $ptype =$data['property_type'];
+  $type = $data['type'];
+  $status = $data['status'];
+  $admin = $type == RES_TYPE_ADMIN;
+  
+  // copy from property
+  if($apt_id && $ptype) {
+    $aptObj = get_object($ptype, $apt_id);
+  } elseif($apt_id) {
+    $aptObj = get_object('property', $apt_id);
+    $ptype = $data['property_type'] = $aptObj->type;
+    $aptObj = get_object($ptype, $apt_id);
+  }        
+  $data = apt2res($data, $aptObj, true); // copies from apartment
+  
+  if(!$data['language'])        $data['language'] = $_SESSION['language'];
+  if(!$data['author_id'])       $data['author_id'] = $data['user_id'] = $u_id;
+
+ 
+  if($data['host_id'] && $data['host_id'] == $data['guest_id']) {
+    $errors[] = phrase("you cannot book your own property", CAPITALIZE);
+    return array($data, $errors);
+  }
+          
+  $data['arrival_time']     = timefield_defaulter($data['arrival_time'], $data['checkin']);
+  $data['arrival_property'] = timefield_defaulter($data['arrival_property'], $data['checkin']);
+  
+  // figure out num day/months/hours  
+  $in = $data['checkin'];
+  $out = $data['checkout'];
+  $start = strip_date($in);
+  $end   = strip_date($out);
+  $num_days = period_diff($in, $out, 'day');  
+
+  $hourly = $data['rate_type'] == 'hour' || $data['num_hours'] > 0 || $data['hourly'] || $data['billing_period'] == BILLING_HOUR || !$num_days; // && ($num_days == 0 || $data['billing_period'] == BILLING_HOUR || 
+  if($hourly) {
+    if(!$start) $errors[] = "Missing start time for hourly reservation";
+    if(!$end) $errors[] = "Missing end time for hourly reservation";
+    if($start && $end) $num_hours = period_diff($in, $out, 'hour');;
+    if(!$num_hours) $errors[] = "Hourly reservation: zero hours";
+
+    $data['num_hours'] = $num_hours;
+    $data['num_days']   = 0;
+    $data['num_months'] = 0;
+    $data['billing_period'] = BILLING_HOUR;
+  } else {
+    if(!$num_days) $errors[] = "Daily reservation: zero days";
+    $data['num_hours']  = 0;
+    $data['num_days']   = $num_days;
+    $data['num_months'] = period_diff($in, $out, 'month');
+    if(!$data['billing_period']) $data['billing_period'] = BILLING_DAY; // todo: allow week, month, etc
+  }
+  
+  $data['hourly'] = $hourly ? 1 : 0;
+  
+  //echo("ct=$data[charge_tax] ti=$data[tax_included]<br>");
+
+  // client id && legal id
+  $site_id = $data['site_id'] ?: $_SESSION['site_id']; 
+  if($site_id) {
+    $siteObj = get_object('site', $site_id);
+    $client_id  = $data['client_id'] = $siteObj->client_id; 
+    $legal_id = $data['legal_entity_id'] = $siteObj->legal_entity_id;
+    //echo("gh: client=$client_id, legal=$legal_id");
+  } else {
+    die("pre_add_res: no site_id");
+    $legal_id = $data['legal_entity_id'] = $_SESSION['legal_entity_id'];
+  }
+
+  if(!$client_id) $data['client_id'] = $aptObj->client_id ?: $_SESSION['client_id']; 
+
+  // special for Sicco
+  if($aptObj->host_id == 1284) {
+    $legal_id = $data['legal_entity_id'] = $aptObj->licensed ? LEGAL_ENT_YAH : LEGAL_ENT_HOUSIST; // YAH or Housist
+    //if($num_days > 0 && $num_days <= 4) {
+    //  $legal_id = $data['legal_entity_id'] = LEGAL_ENT_OPAO; // OPAO, no tax
+    //} else { // more than 6 days
+    //}
+  } 
+  
+  if($legal_id) {
+    $legalObj = get_object('legal_entity', $legal_id);
+    if(!isset($data['charge_tax'])) $data['charge_tax'] = $charge_tax = $legalObj->charge_tax; // && $aptObj->charge_tax;
+    if(!isset($data['tax_included'])) $data['tax_included'] = $charge_tax = $legalObj->tax_included; // && $aptObj->charge_tax;
+  } else {
+    $errors[] = "Missing legal entity";
+  }
+
+  /**
+  if(isset($data['charge_city_tax'])) {
+    $data['city_tax'] = $data['charge_city_tax'] ? fn() : 0;
+  }
+  if(isset($data['charge_tax']) && isset($data['tax_included'])) {
+    if(isset($data['tax_included'])) {
+      $data['tax'] = 0;
+      $data['tax_of_which'] = 0;
+    } else {
+    }
+  }
+  */
+  
+  if(!$data['booking_pin']) {
+    //echo("pre-add: generating pin");
+    $data['booking_pin'] = generate_booking_pin();
+  }
+
+  
+	switch($status) {
+	case STATUS_UNCONFIRMED:
+	  $data['expires'] = date("Y-m-d H:i:s", time() + STATUS_PENDING_EXPIRES);
+	  break;
+	case STATUS_PROPOSED:
+	  if(!$admin) $data['expires'] = date("Y-m-d H:i:s", time() + STATUS_PROPOSED_EXPIRES);
+	  break;	
+  case STATUS_BLOCKED: // no accounting for blocks
+    global $u_name;
+    $data['rate_base'] = 0;
+    if(!strlen($data['notes'])) $data['notes'] = "Blocked by $u_name";
+    $data['fee_json'] = '';
+    $data['fees'] = 0;
+  default:
+    break;
+  }
+  
+  // this property's availability is maintained by another party - check if ok to book
+  if(!$data['source_id'] && !$data['dest_id']) $data['dest_id'] = $aptObj->dest_id ?: 0;
+  if(!$errors) {
+    
+    switch($data['dest_id']) {
+      case SOURCE_ID_TEQA:
+        list($obj, $errors, $messages) = obj_remote_upload(SOURCE_ID_TEQA, $obj_type, $data);
+        break;
+      case SOURCE_ID_INTERHOME:
+        $guid = $aptObj->guid;
+        $in = strip_time($data['checkin']);
+        $out = strip_time($data['checkout']);
+        $ng = $data['num_guests'];
+        
+        
+        
+        if($guid && $type == RES_TYPE_DIRECT && in_array($status, [STATUS_PROPOSED, STATUS_RESERVED]))
+          json_error("OK: pre_add_res - calling intherome_live_availability: guid=$guid in=$in out=$out ng=$ng type={$type} status={$status}");
+          $result = intherome_live_availability($guid, $in, $out, $ng);
+          if($result->success) {
+            $total = $data['total'] = $result->total;
+            $currency = $data['total'] = $result->currency;
+            $rate_day = $data['rate_base'] = $total / $resObj->num_days;
+            $service_fee = $data['fee_service'] = service_fee($total);
+          } else {
+            $errors[] = $result->error ?: "Unknown error from Booking Partner";
+          }          
+        break;
+      default;
+        break;
+    }
+    
+    if($obj) $data = obj2array($obj);    
+    $org_id = $data['org_id'];
+    $contact_id = $data['contact_id'];  
+    if($org_id && !$contact_id) { // automatically add corporate contact
+      list($cid, $cerrors) = add_object('contact', $data);
+      if($cerrors) $errors = array_merge($erorrs, $cerrors);
+      else $data['contact_id'] = $cid;
+    }
+    
+  }
+  
+  if(isset($data['rate_base']) && $data['rate_base'] > 0) {
+    $data['org_currency'] = $data['currency'];
+    $data['org_rate_type'] = $data['rate_type'];
+    $data['org_rate_base'] = $data['rate_base'];
+    $data['org_fee_cleaning'] = $data['fee_cleaning'];
+  }
+
+  //print_log("pre-add final data".dump($data,true), 'booking', LOG_LEVEL_TEST);
+  
+  print_log("pre-add final ct={$data['charge_tax']} ti={$data['tax_included']} city={$data['city_tax']} ", 'booking', LOG_LEVEL_TEST);
+  
+  return array($data, $errors);
+}
+
+function obj_remote_upload($dest_id, $obj_type, $array_obj_or_id, $changes='') {  
+  $obj = any2obj($obj_type, $array_obj_or_id);
+  //$dest_id = $obj->dest_id;
+  $messages = array();
+  $errors = array();
+  $debug = true;
+
+  if($dest_id != SOURCE_ID_TEQA) return; // not implemented
+  
+  require_once('xml_ireserve.inc');
+  $send = $_SESSION['dev'] ? false : true;
+  $echo  = $_SESSION['dev'] ? true : false;
+  $test = false;
+
+  //$echo = false;
+  $send = true;
+
+
+  switch($obj_type) {
+    case 'reservation':
+        
+      if($obj->fid) { // existing booking
+        if(!$changes) break; // nothing to do
+        $customer_id = $obj->iReserve_customer_id = $obj->fgid;
+        $booking_id = $obj->iReserve_booking_id = $obj->fid;
+        $booking_fields = array('checkin', 'checkout', 'apt_id', 'extra_info', 'notes');
+        if(object_changed($changes, $booking_fields)) {
+          list($bmessages, $berrors, $fResObj) = iReserve_xml('update_booking', $obj, $send, $echo, $test);
+          $messages = array_merge($messages, $bmessages);
+          $errors = array_merge($errors, $berrors);
+        }
+        $customer_fields = array('first_name', 'last_name', 'address1', 'address2', 'city', 'state', 'zip', 'country', 'email_address', 'phone', 'title', 'organization');
+        if(object_changed($changes, $customer_fields)) {
+          if($customer_id) { // existing customer
+            list($cmessages, $cerrors, $fResObj) = iReserve_xml('update_customer', $obj, $send, $echo, $test);
+            $messages = array_merge($messages, $cmessages);
+            $errors = array_merge($errors, $cerrors);
+          } else { // new customer
+            list($cmessages, $cerrors, $fResObj) = iReserve_xml('add_customer', $obj, $send, $echo, $test);
+            $messages = array_merge($messages, $cmessages);
+            $errors = array_merge($errors, $cerrors);
+          }
+        }
+        if($changes['status']) {
+          list($smessages, $serrors, $fResObj) = iReserve_xml('booking_status_update', $obj, $send, $echo, $test);
+          $messages = array_merge($messages, $smessages);
+          $errors = array_merge($errors, $serrors);
+        }
+      } else { // new booking              
+        if($obj->status == STATUS_BLOCKED || $obj->status <= STATUS_UNCONFIRMED) return array($obj, $errors);
+        list($messages, $errors, $fResObj) = iReserve_xml('add_booking', $obj, $send, $echo, $test);
+      }
+      if($errors) {
+        return array($obj, $errors);
+      } else {
+        $obj->fid = $fResObj->booking_id;
+        $obj->fgid = $fResObj->customer_id;
+      }              
+      break;
+               
+    case 'payment':
+      //echo("teqa payment<br>");dump($obj);
+      $ignore_payment_types = array(PAYMENT_TYPE_REFUND, PAYMENT_TYPE_TRANSFER, PAYMENT_TYPE_CORRECTION, PAYMENT_TYPE_AGENT_OWES);
+      if($obj->payment_status != PAYMENT_STATUS_COMPLETED) return array($obj, array(), array("Ignoring payment status"));
+      if(in_array($obj->payment_type, $ignore_payment_types)) return array($obj, array(), array("Ignoring payment type"));
+
+      if($resObj = get_object('reservation', $obj->res_id)) {
+        echo("teqa payment - sending<br>");
+        $customer_id = $obj->iReserve_customer_id = $resObj->fgid;
+        $booking_id = $obj->iReserve_booking_id = $resObj->fid;
+        list($cmessages, $cerrors, $fResObj) = iReserve_xml('add_payment', $obj, $send, $echo, $test);
+        $messages = array_merge($messages, $cmessages);
+        $errors = array_merge($errors, $cerrors);           
+      }
+      break;
+
+    default:    
+      break;
+  }
+  return array($obj, $errors, $messages);
+}
+
+function post_edit_shortstay ($id, $changes) {  
+  if($changes['media']) {
+    if($mediaJson = media2json('shortstay', $id)) {
+      list($pid, $perrors) = update_object('shortstay', ['media_json' => $mediaJson], $id);
+    }
+  }
+  if(isset($changes['active']) && $changes['active'] && $changes['active']['new']) { /** just activated */
+    rental_mail($id, $changes);
+  }  
+}
+
+function post_add_shortstay ($id) {
+  $obj_type = 'shortstay';
+	$obj = get_object($obj_type, $id);
+  $userObj = get_object('user', $obj->host_id);
+  if(!user_has_role($userObj, USER_ROLE_OWNER)) user_add_role($userObj, USER_ROLE_OWNER);  // promote to host (owner) 
+  rental_mail($obj, ['new' => 1]);
+  
+  /** move to pre-add 
+  if(!($obj->location_lat && $obj->location_long)) { // geocode
+    require_once('geocode.inc');
+    print_log("New, no lat/long, geocoding:".dump($obj,true), 'rental', LOG_LEVEL_DEV);
+    $messages = geocode($obj, $table);
+  }
+  */
+}
+
+function post_add_message($id) {  
+  //message_mail($id);
+}
+
+function pre_add_server ($obj_type, $data) {
+  $errors = array();
+  $host = $data['hostname'];
+  $ip = gethostbyname($host);
+  if($ip == $host) {
+    $errors[] = "Could not find the host $";
+  } else {
+    $data['ip'] = $ip;   
+    $data['country'] = geoip_country_code_by_name($host);
+  }
+  return array($data, $errors);
+}
+
+function pre_add_res_exception($obj_type, $data) {
+  $errors = array();
+
+  $in_values = array_filter(array_values(array_copy($data, array('start', 'end', 'num_months', 'num_days','num_hours','num_guests','fit_between', 'fit_next_to', 'days_from_now','days_from_now_gt'))));
+  if(!$in_values) return array($data, "Please fill in at least one condition"); // .dump($data,true)
+    
+  $out_values = array_filter(array_values(array_copy($data, array('min_stay','max_stay','changeover','max_guests','rate_day','rate_extraperson','rate_change','surcharge', 'rate_weekend', 'rate_week', 'rate_month'))));
+  if(!strlen($data['book_direct']) && !$out_values) return array($data, "Please fill in at least one rule");
+
+  if($data['rate_week'] || $data['rate_month']) {
+    $start = $data['start'];
+    $end = $data['end'];
+    $num_days = period_diff($start, $end, 'day');
+    
+    if(!($start && $end)) return array($data, "Weekly/Monthly rates require dates to be set");
+    if(count($out_values) > 1) return array($data, "Weekly/Monthly rates cannot be used in combination with other rules (yet)");
+    $weekly = $data['rate_week'] ? true : false;
+    if($weekly) { // weekly
+      if($num_days != 7) return array($data, "Weekly rates must be for a period 7 days (got $num_days)");
+      // todo: check that dates fall on ISO week boundaries (starting on Monday)
+      
+    } else { // monthly
+      list($year,$month,$first_day) = explode('-', $start);
+      list($year,$month,$last_day) = explode('-', $end);
+      $days_in_month = get_daysofmonth($start);
+      if($first_day != 1) return array($data, "Monthly rates must be start on the 1st of month");
+      if($last_day != 1) return array($data, "Monthly rates must end on the first of day of the next month");
+      if($num_days != $days_in_month) return array($data, "Monthly rates must be for one month (got $num_days, expected $days_in_month)");
+    }
+  }
+         
+    
+  $flds = array('rate_day' => phrase('price', CAPITALIZE), 'rate_hour' => phrase('price', CAPITALIZE), 'discount' => phrase('discount', CAPITALIZE), 'surcharge' => phrase('surcharge', CAPITALIZE));
+  $rate_values = array_filter(array_intersect_key($data, $flds));
+  if(count($rate_values) > 1) return array($data, "You can only use one of the following rules: ".implode(', ', array_unique(array_values($flds))));
+    
+  // for backward compat - for now, delete after we're live
+  if($pc = $data['rate_change']) {
+    list($abs_change, $perc_change) = split_discount($pc);
+    if($perc_change > 0) {
+      $data['surcharge'] = $pc;
+    } elseif($perc_change < 0) {
+      $data['discount'] = $pc;
+    }
+  }
+  
+  $apt_id = $data['apt_id'];
+  if($apt_id && !$data['host_id']) $data['host_id'] = get_object('property', $apt_id, 'host_id');
+  
+  print_log("before:".dump($data,true), 'debug', LOG_LEVEL_TEST);
+  foreach($data as $key => $val) if(!trim($val)) unset($data[$key]); // = ATT_DEFAULT_NULL; // use NULL instead of 0 or ''
+  print_log("after:".dump($data,true), 'debug', LOG_LEVEL_TEST);
+  return array($data, $errors);
+}
+
+function site_autobuild_filters($obj) {
+  $city_id = $obj->city_id ? $obj->city_id : 1000;
+  $type = $obj->property_type ? $obj->property_type : 'shortstay';
+  $filters = array();
+  $filters[] = "hide=0";
+  $filters[] = "active=1";
+  $filters[] = "city_id=$city_id";
+  $filters[] = "type='$type'";
+  $rate_field = property_price_field($type);
+  if($obj->min_price) $filters[] = "$rate_field >= '$min_price'";
+  if($obj->max_price) $filters[] = "$rate_field <= '$max _price'";
+  return implode(';', $filters);
+}
+
+function pre_edit_property_description($obj_type, $data, $orgObj) {
+  $site_id = $data['site_id'];
+  if($site_id && $orgObj->site_id && $site_id != $orgObj->site_id) {
+    $errors[] = "site_id mismatch";  // add error to prevent editing original
+  }
+  
+  return array($data, $errors);
+}
+
+
+function pre_edit_shortstay($obj_type, $data, $orgObj) {
+  $max_stay = $data['max_stay'];
+  $min_stay = $data['min_stay'];
+  if($data['rate_day'] && !$data['currency']) {
+    $errors[] = "Please specify a currency.";  // add error to prevent editing original
+  }
+    
+  if($min_stay && $max_stay && $min_stay >= $max_stay) {
+    $errors[] = "Minimum stay must be longer than maximum stay.";  // add error to prevent editing original
+  }
+
+  if($data['rate_day'] > 0) {
+    $ng = pick_first($data['num_guests'], $orgObj->num_guests, 1);
+    $data['rate_person'] = $data['rate_day'] / $ng;
+  }
+  
+  return array($data, $errors);
+}
+
+function pre_edit_site($obj_type, $data, $orgObj) {
+  $data['auto_build_filters'] = site_autobuild_filters($data);
+  return array($data, $errors);
+}
+
+function pre_add_site($obj_type, $data) {
+  $domain = $data['domain'];
+  $data['shortname'] = trim(strtolower($data['shortname'])) ?: $domain;
+  $data['url']                = $url = 'www.'.$domain;
+  $data['test_url']           = $test_url = 'test.'.$domain;
+  $data['dev_url']            = $test_url = 'dev.'.$domain;
+  $data['directory']          = '/websites/www.'.$domain.'/';
+  $data['test_directory']     = '/websites/test.'.$domain.'/';
+  $data['dev_directory']      = '/websites/test.'.$domain.'/';
+  $data['email_address']      = 'info@'.$domain;
+  // $data['remote_server']      = 'diz.knxx.net';
+
+  if($data['auto_build']) {
+    $localServerObj  = get_object('server', $data['local_server']);
+    $remoteServerObj = get_object('server', $data['remote_server']);
+    $data['auto_build_filters'] = site_autobuild_filters($obj);
+    //$data['googlemap_live_key'] = get_google_key($url);
+    //data['googlemap_test_key'] = get_google_key($test_url);
+
+  }
+  return array($data, $errors);
+}
+
+
+function post_edit_site($id, $changes='') {
+  $obj_type = 'site';
+  $obj = get_object($obj_type, $id);
+
+  if($changes['show_types'] || $changes['show_cities'] || $changes['allow_user_login'] || $changes['allow_user_register'] || $changes['languages']) {  
+    if($obj->auto_build) list($errors, $messages) = site_add_default_pages($obj);
+  }
+  
+  if($changes['languages'] || $changes['default_language']) { // change languages to have default first    
+    $languages = json_decode($obj->languages) ?: array($obj->default_language);
+    sort($languages);
+    array_unshift($languages, $obj->default_language);
+    $languages = array_unique($languages);
+    $languages_json = json_encode($languages);
+    if($languages_json != $obj->languages) {
+      $qs = "UPDATE site_config SET languages='$languages_json' WHERE id=$obj->config_id";
+      if($obj->config_id) db_query($qs);
+    }
+    list($cid, $cerrors) = site_update_content($obj); // adds/removes language specific content pages
+  }
+  
+
+  if($changes['live_server'] || $changes['dev_server']) {
+    global $u_id;
+    if($u_id == SYSTEM_USER_ID) {      
+      echo("Auto build for $domain<br>");  
+      $result = site_server_setup($obj, true, true); // this will setup local + remote servers
+    }
+  }
+}
+  
+function post_add_site($id) {
+  $obj_type = 'site';
+  $obj = get_object($obj_type, $id);
+  $domain = $obj->domain;
+  global $u_id;
+  // echo("Post add for $domain<br>");  
+
+  if($obj->auto_build) {
+    list($perrors, $messages) = site_add_default_pages($obj);
+    if($u_id == SYSTEM_USER_ID) {      
+      echo("Auto build for $domain<br>");  
+      $result = site_server_setup($obj, true, true); // this will setup local + remote servers
+    }
+  }
+
+  list($cid, $cerrors) = site_add_content($obj); // adds language specific content pages
+  $errors = array_merge($cerrors, $perrors);
+  return $errors;
+}
+
+/* start CMS */
+
+function pre_add_article($obj_type, $data) {
+  $data['post_date'] = $data['post_date'] ? date2sql($data['post_date']) : now();   
+  $data['link'] = url_safe($data['title']); // todo: check uniqueness  
+  return array($data, $errors);
+}
+
+// site_layout; rebuild CSS file
+function post_edit_site_layout($id, $changes) {
+  $css = layout2css($id);
+  db_query("UPDATE site_layout SET css='$css' WHERE id=$id");
+}
+
+//function post_edit_site_layout ($id) {return post_add_site_layout($id);}
+
+//function post_add_site_layout ($id) {
+//  require_once("sitebuilder.inc");
+//  $site_id = get_object_field('site_layout', $id, 'site_id');
+//  $siteObj = get_object('site', $site_id);
+//  // site_make_css($siteObj);
+//}
+
+function post_add_site_page($id) { 
+  $obj = $pageObj = get_object('site_page', $id);  
+  $site_id = $pageObj->site_id;
+  $siteObj = get_object('site', $site_id);
+  //echo("Post_add_site_page: running site_add_content<br>");
+  list($cid, $cerrors) = site_add_content_pages($siteObj, $pageObj); // adds language specific content pages
+}
+
+function post_edit_dictionary($id, $changes='') {
+  global $__SITE, $__LANG;
+  generate_dictionary($__SITE, $__LANG);
+}
+
+function post_add_dictionary($obj_type, $data) {
+  global $__SITE, $__LANG;
+  generate_dictionary($__SITE, $__LANG);
+}
+
+function pre_add_site_page($obj_type, $data) {
+  $errors = array();
+  
+  if(!$data['name'] && $data['page_type']) $data['name'] = get_object('page_type', $data['page_type'], 'name'); 
+  if($pageObj = find_object('site_page', ['site_id' => $data['site_id'], 'name' => $data['name']])) {
+    $errors[] = "There is already a page with the name {$data['name']} for this site, please choose a unique name";
+    return array($data, $errors);
+  }
+  //if($pageObj = find_object('site_page', ['site_id' => $data['site_id'], 'path' => $data['path']])) {
+  //  $errors[] = "There is already a page with the path {$data['path']} for this site, please choose a unique path";
+  //  return array($data, $errors);
+  //}
+  
+  $site_id   = $search['site_id']   = $data['site_id'];
+  $parent_id = $search['parent_id'] = $data['parent_id'];
+  $data['rank'] = rank_next($obj_type, $search);
+  //$data['level'] = $parent_id ? get_object('site_page', $parent_id, 'level') + 1 : 0;
+
+   // defaults from parent page
+  /**
+  if($parent_id = $data['parent_id']) {
+    $parentPage = get_object('site_page', $parent_id);
+    $keys = array('template', 'template_id', 'controller', 'page_type', 'secure', 'framework');
+    foreach($keys as $key) if(!$data[$key]) $data[$key] = $parentPage->$key;    
+  }
+  
+  // default from site
+  $keys = array('template_id', 'framework');
+  foreach($keys as $key) if(!$data[$key]) $data[$key] = $siteObj->$key;
+  */
+  
+  $data['template_id'] = $siteObj->template_id;
+  
+  /** copy template file to site's template dir */
+  $template = $data['template'];
+  $local = false;
+  if($template) {                         
+    $local = $data['local'];
+    print_log("Template for page $name = $template", "page", LOG_LEVEL_TEST);
+    $is_file = strpos($template, 'file://') === 0;
+    if($is_file && !is_file($filename)) return array($data, array("$filename not found"));
+  }
+  
+  /** 
+  local = user generated from add-page. save in pages/user
+  is_file: raw html template (without our own tags {{ }} 
+  !is_file: this template is already prepared
+  
+  */
+  
+  if($local || $is_file) {
+    $name = $data['name'];
+    $filename = $is_file ? substr($template, 7) : $template;   
+    $dest = site_directory($site_id)."pages/";
+    if($local) { /** user generated, make unique copy in pages/user */
+      $template_name = "user/".url_safe($name);
+      //$dest .= "user/";
+    } else { /** not user generated, use template in pages/ */
+      list($template_name, $ext) = split_filename(strtolower($filename));
+    }
+    if(!$is_file) { // find template
+      if(!strpos($template, ".html")) $template .= ".html";
+      $docroot = docroot();
+      $approot = $_SESSION['app_root'];
+      $site_template_file = "$docroot/pages/$template";
+      $app_template_file = "$approot/pages/$template";
+      if(file_exists($site_template_file)) {
+        $filename = $site_template_file;
+      } else if(file_exists($app_template_file)) {
+        $filename = $app_template_file;
+      } else {
+        $debug = '';
+        $debug = "<br>{$site_template_file}<br>{$app_template_file}";
+        return array($data, array("Template $template not found".$debug));
+      }
+    }
+    
+    if(!is_file($filename)) return array($data, array("$filename not found"));
+    
+    $dest_file = $dest.$template_name.".html";
+    $prepared = $is_file ? false : true;
+    list($success, $error) = site_template_prepare($site_id, $filename, $dest_file, $prepared);
+    print_log("Template for page $name = $template_name local=$local file:$dest_file. Success=$success prepared=$prepared Errors:".dump($errors,true), "page", LOG_LEVEL_TEST);
+    
+    if($success) $data['template'] = $template_name;
+    else if($error) $errors[] = $error;
+  }
+  
+  return array($data, $errors);
+}
+
+function pre_add_page_content($obj_type, $data) {
+  return array($data, $errors);
+}
+
+function post_add_page_content($id) {
+  //site_write_sitemap($siteObj);
+  //return post_edit_page_content($id);
+}
+
+function post_edit_page_content($id, $changes='') {
+	/**
+  $obj_type = 'page_content';
+	$obj = get_object($obj_type, $id);
+	$siteObj = get_object('site', $obj->site_id);
+  */                  
+  // if($changes['path']) site_write_sitemap($siteObj);  
+}
+
+function post_edit_site_page ($id, $changes) {
+  /**
+  if($changes['active']) { // if we activate/deactiate, recrusively do the same to all children
+     $active = $changes['active']['new'];
+     object_update_children('site_page', $id, array('active' => $active), 'parent_id');
+     db_query("UPDATE page_content SET active='$active' WHERE page_id='$id'");
+  }
+  */
+  /**
+  if($changes['parent_id']) { // page was moved, update rank and level
+    $pageObj = get_object('site_page', $id);
+    $siteObj = get_object('site', $pageObj->site_id);
+    $parentObj = $pageObj->parent_id ?  get_object('site_page', $parent_id) : NULL;
+    site_update_page_rank($siteObj, $parentObj);
+    // site_update_page_level($siteObj, $parentObj);
+
+    // update the URL
+    site_update_content($siteObj, $pageObj);
+  }
+  */
+}
+
+function post_delete_site_layout ($obj_type, $obj) {
+  require_once("sitebuilder.inc");
+  $site_id = $obj->site_id;
+  $siteObj = get_object('site', $site_id);
+  sb_make_css($siteObj);
+}
+
+/* end CMS */
+
+function pre_add_longstay_enquiry ($obj_type, $data) { return pre_add_enquiry($obj_type, $data); }
+function pre_add_realestate_enquiry ($obj_type, $data) { return pre_add_enquiry($obj_type, $data); }
+function pre_add_enquiry($obj_type, $data) {
+  $data['language'] = $_SESSION['language'];
+  $data['booking_pin'] = generate_booking_pin();
+  //if(!$data['booking_pin']) $data['booking_pin'] = generate_booking_pin();
+  return array($data, $errors);
+}
+
+function post_add_longstay_enquiry ($id) { return enquiry_handler('longstay', $id); }
+function post_add_realestate_enquiry ($id) { return enquiry_handler('longstay', $id); }
+
+// common handler for post add xxx_enquiry
+// this will not be invoked directly automatically
+function enquiry_handler($type, $id, $changes='') {
+
+  $apt_id = $inputVars['apt_id'];
+  $aptObj = get_object('property', $apt_id);
+
+  $inputVars['city_id']           = $aptObj->city_id;
+  $inputVars['property_type']     = $aptObj->type;
+	$inputVars['first_apt_id']	    =	$aptObj->id;
+	$inputVars['first_apt_price']   = $type=='realestate' ? $aptObj->sales_price	:	$aptObj->rental_price;
+	$inputVars['estate_agent_id']   = $aptObj->estate_agent_id;
+	$inputVars['apartment']         = $aptObj->shortname;
+	$inputVars['apartment_name']	  =	$aptObj->name	?	$aptObj->name	:	$aptObj->shortname;
+	$inputVars['apt_currency']	    =	$aptObj->currency;
+	$inputVars['num_rooms']         = $aptObj->num_rooms;
+}
+
+
+
+
+function post_delete_reservation($obj_type, $obj) {
+  //dump($data);
+  require_once("db_invoice.inc");
+  delete_reservation_invoices($obj->res_id);
+}
+
+function post_add_invoice($id) {
+  $obj = $invObj = get_object('invoice', $id);
+  $legal_entity_id = $obj->legal_entity_id;
+  if(!$legal_entity_id && $obj->site_id) $legal_entity_id = $data['legal_entity_id'] = get_object('site', $obj->site_id, 'legal_entity_id');  
+
+  if($_SESSION['debug_invoice_address']) {
+    $cc1 = $obj->country;
+    print_log("post_add_invoice $id:  cc=$cc1", "address", LOG_LEVEL_ALWAYS);        
+  }
+  
+}
+
+function post_edit_invoice($id, $changes='') {
+    
+  if(!$changes) return;
+  $invObj = get_object('invoice', $id);
+  $type = $invObj->type;
+  $res_id = $invObj->res_id;
+  $debug = $_SESSION['dev'];
+  $log = '';
+  $resObj = null;
+  if($debug) $log .= "Running post_edit_invoice res_id = $res_id type=$type".PHP_EOL;
+  $resObj = $res_id ? get_object('reservation', $res_id) : null;
+  if($resObj) {   // these changes apply to reservation invoices only  
+    $tax_fields     = array('charge_tax', 'charge_city_tax', 'tax_included');
+    $date_fields    = array('start_date', 'end_date');
+  
+    $tax_change     = array_intersect_key($changes, array_flip($tax_fields)); 
+    $date_change    = array_intersect_key($changes, array_flip($date_fields)); 
+    
+    $changed = $tax_change || $date_change;    
+    
+    //print_log("Changes:".dump($changes, true), 'invoice', LOG_LEVEL_TEST);
+    //print_log("invoice {$inv_id} tax changes:".dump($tax_change,true)." date_changes:".dump($date_change,true), 'invoice', LOG_LEVEL_TEST);
+    ///die();
+    
+    if($type == INV_TYPE_BOOKING && $changed) {
+      $resObj = get_object('reservation', $res_id);
+      if($debug) $log .= "Booking invoice changed".PHP_EOL;
+    
+      if($date_change || $tax_change) { // update invoice lineitems to reflect new dates
+        $liArray = array();
+        $dateArray = array('start_date' => $invObj->start_date, 'end_date' => $invObj->end_date);
+        $rent_lineitem = res2li_rent($id, $resObj, $dateArray); // add rent (or package)
+        $liArray[] = $rent_lineitem;
+        $li_errors = add_or_update_invoice_lineitems($id, $liArray);
+        if($_SESSION['dev']) {
+          $log .= "post_edit_invoice id=$id start=$invObj->start_date end=$invObj->end_date lineitem = ".dump($rent_lineitem, true); 
+        }
+        if($inv_errors) mydie("add_or_update_invoices: failed to add lineitems".dump($li_errors, true));
+
+        $delete_li_types = array(LI_TYPE_DEPOSIT, LI_TYPE_BALANCE);
+        if($invObj->charge_city_tax) add_city_tax($id); // add city tax
+        else $delete_li_types[] =  LI_TYPE_CITY_TAX; // remove city tax
+        delete_lineitem_types($id, $delete_li_types); //we don't use these any more
+      }    
+      //if($invObj->charge_city_tax) add_city_tax($id); // add city tax
+    }
+  }
+
+  // these changes apply to all invoices
+  
+  
+  $addObj = null;
+  if($changes['org_id']) {
+    if($org_id = $invObj->org_id) $addObj = get_object('org', $org_id);
+  }
+  
+  if($changes['bill_to'] || $changes['contact_id'] || $changes['agent_id'] || $changes['site_id'] || $changes['legal_entity_id'] || $changes['org_id']) {
+    $addData = [];
+    $guest_id = $invObj->guest_id ?: $resObj->guest_id;
+    $org_id = $invObj->org_id ?: $resObj->org_id;      
+    $contact_id = $invObj->contact_id ?: $resObj->contact_id;
+    $agent_id = $invObj->agent_id ?: $resObj->agent_id;
+    $bill_to = $changes['bill_to'] ? $changes['bill_to']['new'] : $invObj->bill_to;
+    switch($bill_to) {
+    case BILLTO_GUEST:
+      $addObj = $resObj;
+      break;
+    case BILLTO_ORG:
+      if($org_id) $addObj = get_object('org', $org_id); 
+      break;
+    case BILLTO_CONTACT:
+      if($org_id && $contact_id) $addObj = get_object('contact', $contact_id);
+      break;
+    case BILLTO_AGENT:
+      if($agent_id) $addObj = get_object('agent', $agent_id);
+      break;
+    default:
+      break;
+    }    
+    
+    if(!isset($addObj->organization) && isset($addObj->name)) $addObj->organization = $addObj->name; /** agent. org */
+    if($addObj) {
+      $addData = copy_address($addObj);    
+      if($addData) update_object('invoice', $addData, $invObj->id);
+    }
+
+    print_log("BillTo: $bill_to Res: $res_id agent:$agent_id org:$org_id  contact:$contact_id Data:".dump($addData, true), 'invoice', LOG_LEVEL_TEST);
+    //die();
+  }
+  
+  if($debug) print_log($log, 'invoice', LOG_LEVEL_DEBUG);
+
+  
+}
+
+function pre_add_product($obj_type, $data) {
+  if($tax_cat = $data['tax_category']) $data['tax_percentage'] = get_tax_rate($tax_cat); // get_object('tax_category', $tax_cat, 'percentage');
+  return array($data, $errors);
+}
+
+
+function pre_add_inv_lineitem($obj_type, $data) {
+  $inv_id = $data['inv_id'];
+  $start_date = get_object('invoice', $inv_id, 'start_date'); // todo: remove (BTW October 1 2012)
+
+  if($tax_cat = $data['tax_category']) $data['tax_percentage'] = get_tax_rate($tax_cat, $start_date); // get_object('tax_category', $tax_cat, 'percentage');
+
+  list($amount, $subtotal, $tax, $tax_of_which, $errors) = li_tax($data); // this function might change the amount if a product includes tax, but the invoice not (or vice versa)
+  if($errors) return array($data, $errors);
+  
+  print_log("pre_add_inv_lineitem: li_tax returned amount=$amount subtotal=$subtotal tax=$tax tow=$tax_of_which", 'invoice', LOG_LEVEL_DEBUG);    
+  $discount = $data['discount'];
+  if(clean_num($discount) == 0 || $discount == '0%') $data['discount'] = '';
+  
+  $data['amount'] = $amount;
+  $data['tax'] = $tax;
+  $data['tax_of_which'] = $tax_of_which;
+  $data['subtotal'] = $subtotal;
+  $data['total'] = $subtotal + $tax + $data['shipping'] + $data['handling']; 
+  if($inv_id && !$data['block_id']) $data['block_id'] = get_object('invoice', $inv_id, 'block_id'); 
+  $data['account_number'] = lineitem_account_number($data);
+  return array($data, $errors);  
+}
+
+function post_add_plugin($id) {  
+  $obj_type = 'plugin';
+  $obj = get_object($obj_type, $id);
+  $id = $obj->id;
+  $site_id = $obj->site_id ?: SITE_ID_AFR;
+  $siteObj = get_object('site', $site_id);
+  $site_url = site_full_url($siteObj);
+  $url = "{$site_url}/vp.js.php?shid={$id}&amp;pid={$obj->parent_id}";
+  if($obj->parent_type != 'media_collection') $url.="&amp;pt={$obj->parent_type}";
+  $short_url = url_shorten($url);
+  db_query("UPDATE $obj_type SET url='$url', full_url='$url', shorturl='$short_url' WHERE id=$id");
+}
+
+// special handlers - pre/post add/update/delete
+function post_delete_inv_lineitem($obj_type, $obj) {
+	//update_invoice_total($obj->inv_id);
+	print_log("post_delete_inv_lineitem: $obj_type id=".$obj->id, "invoice", LOG_LEVEL_TEST);
+  update_invoice_total($obj->inv_id); // run always to make sure tax is correctly calculated
+}
+
+function post_add_inv_lineitem($id) {
+  return post_edit_inv_lineitem($id);	
+}
+
+function post_edit_inv_lineitem($id, $changes='') {
+  //echo("post_edit_inv_lineitem: running post_edit_inv_lineitem $id<br>");
+  $liObj = get_object("inv_lineitem", $id);
+  $li_type = $liObj->type;
+  $inv_id = $liObj->inv_id;
+  $li_types = array(LI_TYPE_DEPOSIT,LI_TYPE_BALANCE,LI_TYPE_RENT,LI_TYPE_CHANGE_LENGTH,LI_TYPE_CHANGE_GUESTS,LI_TYPE_CHANGE_PROPERTY,LI_TYPE_CHANGE_RATE,LI_TYPE_CHANGE_DISCOUNT,LI_TYPE_CHANGE_TOTAL);
+
+	print_log("post_edit_inv_lineitem: $obj_type id=$id inv_id=$inv_id", "invoice", LOG_LEVEL_TEST);
+
+  update_lineitem_total($id); // run always to make sure tax is correctly calculated
+  if($inv_id && in_array($li_type, $li_types)) {
+    add_city_tax($inv_id); // add, update, or remove city tax 
+  }
+}
+
+function post_add_landmark($id) {
+	require_once("geocode.inc");
+	$lmObj = get_object('landmark', $id);
+	$key = get_object_key('landmark');
+	$table = get_object_table('landmark');
+	$mapObj = geocode_address($lmObj);
+	
+	//dump($mapObj);die();
+	if($mapObj->status==200 || $mapObj->status =='OK') db_query("UPDATE $table SET location_accuracy='$mapObj->location_accuracy', location_lat='$mapObj->location_lat', location_long='$mapObj->location_long', location_bounds='$mapObj->location_bounds' WHERE $key=$id");
+  return $errors;
+}
+
+// PayPal IPN notifcations
+function post_add_transaction($id) {
+  global $apt_path;
+  $ts = now();
+  
+  //echo("running post_add_transaction $id<br>");
+	$obj_type = 'transaction';
+	$txObj = get_object($obj_type, $id);
+	$txn_id     = $txObj->txn_id;
+  $txn_type   = $txObj->tx_type;
+  $tx_st      = $txObj->tx_st;
+  $tx_gateway = $txObj->tx_gateway;
+  $inv_id     = $txObj->inv_id;
+  $host_id    = $txObj->host_id;
+  $order_id   = $txObj->order_id;
+  $site_id    = $txObj->site_id;
+  $refund_amount = $txObj->refund_amount; 
+  $tx_payment_status = $txObj->payment_status;
+  
+  $set_accounting = true; // update payment accounting except for masspay
+  $add = true; // if not update, then add
+
+  $payment_data = array();  
+  $payment_data['order_id'] = $order_id;
+  $payment_data['payment_date'] = now();
+
+  print_log("Running post_add_transaction: TxSt=$tx_st TxnType = '$txn_type' TxnId= '$txn_id' id=$id timestamp=".now()."", 'tx');
+
+  if($inv_id) $invObj = get_object('invoice', $txObj->inv_id);
+  if(!$invObj) {
+    print_log("post_add_transaction: Invoice '$inv_id' not found<br>", 'tx', LOG_LEVEL_ERROR);
+    return;
+  }
+  $payment_data['apt_id'] = $invObj->apt_id;
+  
+  if($tx_st != TX_ST_OK) {
+    print_log("post_add_transaction: Exiting because Tx_status = ".get_object('tx_status', $txObj->tx_st, 'name')."($txObj->tx_st)", 'tx');
+    return;
+  }
+
+
+  // already in payment table - update (maybe pending e-check cleared, or we now have fee for cc payments)
+  if($paymentObj = find_object('payment', array('txn_id' => $txn_id))) {
+    $payment_id = $paymentObj->id;
+    //echo("Found payment with txn_id=$txn_id - updating payment id $payment_id");
+    print_log("Found payment with txn_id=$txn_id - updating payment id $payment_id", 'tx', LOG_LEVEL_INFO);
+    $update = true;
+    if($paymentObj->payment_status == PAYMENT_STATUS_PENDING && $tx_payment_status == PAYMENT_STATUS_COMPLETED) {
+      $payment_data['payment_status'] = PAYMENT_STATUS_COMPLETED;
+      print_log("Pending payment now complete:".dump($payment_data, true), 'tx', LOG_LEVEL_INFO);
+    }
+
+  } else {
+    print_log("No payment found with txn_id=$txn_id gateway=$tx_gateway type=$txn_type status=$tx_payment_status ", 'tx', LOG_LEVEL_INFO);
+    $tx_data = obj2array($txObj);
+    if($site_id) $payment_data['site_id'] = $site_id;
+    
+    $parent_id = 0;
+    if($parentTxn = $txObj->parent_txn_id) $parent_id = find_object('payment', array('txn_id' => $parentTxn), 'id'); // find parent payment
+
+    if($tx_gateway == "MOLLIE") {
+      $payment_data['gateway_id'] = GATEWAY_MOLLIE;
+      $payment_data['payment_status'] = $tx_payment_status;
+      $payment_data['amount_remaining'] = $txObj->amount_remaining;
+      
+      if($parent_id && $refund_amount > 0) { /** for refunds, update the parent payment */
+
+        //$payment_data['payment_type'] = PAYMENT_TYPE_REFUND;
+        //$payment_data['payment_status'] = PAYMENT_STATUS_COMPLETED;
+        
+        $parentObj = get_object('payment', $parent_id);
+        $sum_refund = sum_refund($parent_id);
+        $total_refund = $sum_refund + $refund_amount;
+        $parent_amount = $parentObj->amount;
+        $parent_status = $total_refund >= $parent_amount ? PAYMENT_STATUS_REFUNDED : PAYMENT_STATUS_PARTIALLY_REFUNDED;
+        update_object('payment', array('payment_status' => $parent_status), $parent_id); // update status of parent
+        $payment_data['parent_id'] = $parent_id;
+        print_log("Mollie Refund: this=$refund_amount other=$sum_refund total=$total_refund parent_amount=$parent_amount parent_id=$parent_id parent_status=$parent_status", 'mollie', LOG_LEVEL_ERROR);        
+        
+      }       
+      switch($txn_type) {
+        case 'ideal':
+          $payment_data['payment_type'] = PAYMENT_TYPE_IDEAL;
+          break;
+        case 'mistercash':
+          $payment_data['payment_type'] = PAYMENT_TYPE_BANCONTACT;
+          break;
+        case 'sofort':
+          $payment_data['payment_type'] = PAYMENT_TYPE_SOFORT;
+          break;
+        case 'banktransfer':
+          $payment_data['payment_type'] = PAYMENT_TYPE_SEPA;
+          break;
+        case 'directdebit':
+          $payment_data['payment_type'] = PAYMENT_TYPE_SEPA_DIRECT;
+          break;
+        case 'belfius':
+          $payment_data['payment_type'] = PAYMENT_TYPE_BELFIUS;
+          break;
+        case 'paypal':
+          $payment_data['payment_type'] = PAYMENT_TYPE_PAYPAL;
+          break;
+        case 'bitcoin':
+          $payment_data['payment_type'] = PAYMENT_TYPE_BITCOIN;
+          break;
+        case 'paysafecard':
+          $payment_data['payment_type'] = PAYMENT_TYPE_PAYSAFECARD;
+          break;
+        case 'creditcard':
+          $payment_data['payment_type'] = PAYMENT_TYPE_CREDIT_CARD;
+          break;
+        default:
+          print_log("Mollie: Missing or unknown txn_type '$txn_type'", 'tx', LOG_LEVEL_ERROR);        
+          $set_accounting = false;
+          break;          
+      }
+      
+    } else {
+      /** old paypal code */
+      switch($txn_type) {
+        case 'web_accept':
+          $payment_data['gateway_id'] = GATEWAY_PAYPAL;
+          $payment_data['payment_type'] = PAYMENT_TYPE_CREDIT_CARD;
+          $payment_data['payment_status'] = PAYMENT_STATUS_COMPLETED;
+          
+          break;
+        case 'virtual_terminal':
+          $payment_data['gateway_id'] = GATEWAY_PAYPAL;
+          $payment_data['payment_type'] = PAYMENT_TYPE_CREDIT_CARD;
+          $payment_data['payment_status'] = PAYMENT_STATUS_COMPLETED;
+          break;
+        case 'cart':
+          $payment_data['gateway_id'] = GATEWAY_PAYPAL;
+          $payment_data['payment_type'] = PAYMENT_TYPE_PAYPAL;
+          break;
+        case 'send_money':
+          $payment_data['gateway_id'] = GATEWAY_PAYPAL;
+          $add = false;
+          $payment_data['payment_type'] = PAYMENT_TYPE_PAYPAL;
+          $set_accounting = false;
+          break;
+        case 'express_checkout':
+          $payment_data['gateway_id'] = GATEWAY_PAYPAL;
+          $payment_data['payment_type'] = PAYMENT_TYPE_PAYPAL;
+          break;
+        case 'masspay':
+          $payment_data['gateway_id'] = GATEWAY_PAYPAL;
+          $add = false; // don't add any payment
+          if($payment_id = $tx_data['payment_id']) { // update status of parent payment            
+            print_log("Looking for withdrawal with payment_id = $payment_id and net=$txObj->mc_gross", 'tx', LOG_LEVEL_INFO);
+            if($withdrawalObj = find_object('withdrawal', array('payment_id' => $payment_id, 'net' => $txObj->mc_gross))) $withdrawal_id = $withdrawalObj->id;
+          } elseif($withdrawal_id = $tx_data['withdrawal_id']) {
+            $withdrawalObj = get_object('withdrawal', $withdrawal_id);
+          }
+          if($withdrawalObj) { 
+            $withdrawal_id = $withdrawalObj->id;
+            print_log("Found withdrawal object $withdrawal_id", 'tx', LOG_LEVEL_INFO);
+            // update withdrawal object
+            $w_data['gateway_ts'] = $txObj->payment_date;
+            $w_data['gateway_fee'] = $txObj->mc_fee;
+            $w_data['tx_id'] = $id;
+            $w_data['txn_id'] = $txObj->txn_id;
+            list($wid, $werrors) = update_object('withdrawal', $w_data, $withdrawal_id);
+          }
+            
+          print_log("Payment ID = $payment_id", 'tx', LOG_LEVEL_INFO);
+          // $paymentObj = get_object('payment', $payment_id);
+          $payment_data['withdrawal_tx_id'] = $id;
+          if($withdrawal_id) $payment_data['withdrawal_id'] = $withdrawal_id;
+          //$payment_data['withdrawal_fee'] = $txObj->mc_fee; // store our fee with PaymentObj, PayPal fee with txObj
+          $payment_data['withdrawal_type'] = PAYMENT_TYPE_PAYPAL;
+          $update = true;
+          $set_accounting = false;
+          break;
+  
+        case 'refund':
+          $payment_data['gateway_id'] = GATEWAY_PAYPAL;
+          $payment_data['payment_type'] = PAYMENT_TYPE_REFUND;
+          if($txObj->payment_status == PAYMENT_STATUS_REFUNDED) $payment_data['payment_status'] = PAYMENT_STATUS_COMPLETED;
+  
+          if($parent_id) { // update status of parent payment
+            $parentObj = get_object('payment', $parent_id);
+            //list($parent_cur, $parent_amount) = payment_currency_amount($parentObj);
+            $sum_refund = sum_refund($parent_id);
+            $this_refund = -1 * $payment_amount; // it's negative
+            $parent_status = $sum_refund + $this_refund >= $parentObj->amount ? PAYMENT_STATUS_REFUNDED : PAYMENT_STATUS_PARTIALLY_REFUNDED;
+            update_object('payment', array('payment_status' => $parent_status), $parent_id); // update status of parent
+            $payment_data['parent_id'] = $parent_id;
+          }
+          break;
+        case 'bitcoin':
+          $payment_data['gateway_id'] = GATEWAY_BITPAY;
+          $payment_data['payment_status'] = $txObj->payment_status;
+          $payment_data['payment_type'] = PAYMENT_TYPE_BITCOIN;
+          print_log("Bitcoin payment for order $order_id status = $txObj->payment_status", 'tx', LOG_LEVEL_INFO);        
+          break;
+        default:
+          print_log("Missing or unknown txn_type '$txn_type'", 'tx', LOG_LEVEL_ERROR);        
+          $set_accounting = false;
+          break;          
+      }
+    }
+  }
+
+  // set gateway      
+  //if(!$paymentObj || (!$paymentObj->gateway_id && !$payment_data['gateway_id'] && $tx_gateway )) {
+  //   if($tx_gateway == "PAYPAL") $payment_data['gateway_id'] = GATEWAY_PAYPAL;
+  //   else $payment_data['gateway_id'] = find_object('gateway', array('name' => $txObj->tx_gateway)); // not case sensitive
+  //   
+  //   print_log("Gateway id ", 'tx');        
+  //}
+
+  // handle
+  // [receiver_email] => test@kjakman.com
+  // [business] => test@kjakman.com
+  // [residence_country] => US
+  // [first_name] => foo
+  // [last_name] => foo
+  // [residence_country] => US
+
+  if($txObj->pending_reason) $payment_data['pending_reason'] = $txObj->pending_reason;
+
+  // set common payment data
+  // if(!$payment_id) $set_accounting = true; // always update if new
+  if($set_accounting) {
+    $payment_data['tx_id'] = $id; // this makes the payment verified (overwrites previous tx_id if any)
+    if($txObj->mc_currency      ) $payment_data['payment_currency'] = $payment_currency  = $txObj->mc_currency;
+    if($txObj->mc_gross         ) $payment_data['payment_gross']    = $payment_gross     = $txObj->mc_gross;
+    if($txObj->mc_fee           ) $payment_data['payment_fee']      = $payment_fee       = $txObj->mc_fee;
+    if($txObj->mc_gross > 0)      $payment_data['payment_net']      = $payment_net       = $txObj->mc_gross - $txObj->mc_fee; 
+    if($txObj->settle_amount > 0) $payment_data['settle_amount']    = $settle_amount     = $txObj->settle_amount;
+    if($txObj->settle_currency  ) $payment_data['settle_currency']  = $settle_currency   = $txObj->settle_currency;
+    if($txObj->exchange_rate  )   $payment_data['exchange_rate']    = $exchange_rate     = $txObj->exchange_rate;
+    
+    // if(!$paymentObj) { // don't set amount if already exists
+    // set currency/amount - deal with currency
+    $currency = $payment_data['currency'] = $invObj->currency; // the payment currency is always in invoice currency
+    if($payment_currency == $invObj->currency) {
+      $amount = $payment_gross;
+      //$payment_data['exchange_rate'] = 1;
+    } elseif($settle_amount > 0 && $settle_currency == $currency) { // use currency received as reported by gateway paypal
+      $amount = $settle_amount;
+      $payment_data['exchange_rate'] = $txObj->exchange_rate ?: $settle_amount / $payment_gross; // ? check this
+    } else { // convert to invoice currency
+      $payment_data['exchange_rate'] = $exchange_rate = get_exchange_rate($payment_currency, $currency, 1, false); // no skimming
+      $amount = $exchange_rate * $payment_gross; // no skimming
+      print_log("Converting payment currency $payment_currency $payment_gross to invoice currency $currency = $amount (rate: $exchange_rate)", 'tx', LOG_LEVEL_INFO);        
+    }
+    if($amount && !$payment_id) $payment_data['amount'] = $amount; // don't change amount for existing payments
+    //}
+    print_log("Set Accounting: payment data=".print_r($payment_data, true), 'tx', LOG_LEVEL_DUMP);        
+
+  } else {
+    print_log("Set Accounting is off", 'tx', LOG_LEVEL_INFO);
+  }
+
+  $action = '';
+  $payment_data['verified'] = $txObj->tx_st == TX_ST_OK && $txObj->txn_res == "VERIFIED" ? 1 : 0;
+  // add or update payment object
+  if($update && $payment_id && $payment_data) {
+    $action = 'Update';
+    print_log("Updating payment $id", 'tx', LOG_LEVEL_INFO);        
+    print_log("$ts: post_add_transaction: Update payment $payment_id for transaction ($txn_type) $id data=".dump($payment_data, true), 'payment', LOG_LEVEL_ALWAYS);        
+    
+    update_object('transaction', array('payment_id' => $payment_id), $id);
+    list($pay_id, $pay_errors) = update_object('payment', $payment_data, $payment_id);
+    if($pay_id) print_log("Updated payment $pay_id", 'tx', LOG_LEVEL_INFO);        
+  } elseif($add) {
+    $action = 'Add';
+    $copy_vars = array('tx_id', 'inv_id', 'res_id', 'cc_id', 'host_id', 'txn_id', 'order_id', 'site_id', 'client_id', 'legal_entity_id');
+    foreach($copy_vars as $var) $payment_data[$var] = $txObj->$var;
+    $payment_data['description'] = $txObj->item_name;
+    $payment_data['status'] = $txObj->tx_st == 1 ? PAYMENT_STATUS_COMPLETED : PAYMENT_STATUS_FAILED;        
+    print_log("$ts:  post_add_transaction: Adding payment $id", 'tx', LOG_LEVEL_INFO);        
+    print_log("$ts: post_add_transaction: Adding payment for transaction $id", 'payment', LOG_LEVEL_ALWAYS);        
+    print_log("$ts: payment data:".dump($payment_data,true), 'payment', LOG_LEVEL_TEST);        
+    list($pay_id, $pay_errors) = add_object('payment', $payment_data);
+    if($pay_id) print_log("Added payment $pay_id", 'tx', LOG_LEVEL_INFO);        
+  }
+
+  if($pay_errors) print_log("$action payment errors".print_r($pay_errors, true), 'payment', LOG_LEVEL_ALWAYS);        
+  if($pay_errors) print_log("$action payment errors".print_r($pay_errors, true), 'tx', LOG_LEVEL_ERROR);        
+
+  // logging
+  if($pay_id) {
+    print_log("$action payment $pay_id for $txn_type transaction $id ($txn_id)", 'tx', LOG_LEVEL_INFO);
+    $freshPaymentObj = get_object('payment', $pay_id); // get fresh
+  } elseif($action) {
+    print_log("$action payment failed", 'tx', LOG_LEVEL_ERROR);
+    print_log(print_r($pay_errors, true), 'tx', LOG_LEVEL_ERROR);
+  } else  {
+    print_log("Neither adding nor updating payment $payment_id", 'tx', LOG_LEVEL_INFO);
+  }
+
+  print_log(print_r($payment_data, true), 'tx', LOG_LEVEL_DUMP);
+  if($pay_id) update_object('transaction', array('payment_id' => $pay_id), $id);
+
+
+  print_log("-------------------------------------", 'tx');
+  return;
+}
+
+
+function post_add_provider_profile($id) {
+  $debug = 0;
+  $profileObj = get_object('provider_profile', $id);
+  $user_id = $profileObj->user_id;
+  $photo = $profileObj->photo;
+  if($user_id && $photo && is_url($photo)) {
+    if($debug) echo("post_add_provider_profile: found photo $photo for user=$user_id<br>");
+    $userObj = get_user($user_id); // this will also fetch our user profile
+    $profile_id = $userObj->profile_id;
+    if($profile_id && (!$userObj->photo || !is_whole_number($userObj->photo))) { // download photo and store in our profile
+      if($debug) echo("post_add_provider_profile: Adding image to profile from $photo<br>Path=$path");
+      $userObj->provider_photo = $photo; // copy to object to pass to object_image_uplaoder
+      $userObj->id = $profile_id; // id points to user object, we want profile
+      $path = "/user/$user_id/object/user_profile/$profile_id/photo/";
+      list($count, $errors) = object_image_uploader('user_profile', $userObj, $path, array('field' => 'provider_photo', 'target_field' => 'photo', 'src' => $photo));
+      
+      if($debug) {
+        if($errors) echo("Errors: ".dump($errors, true));
+        else if($count) echo("Added $count images to profile from $photo<br>");
+        else echo("Neither $count nor errors from object_image_uploader<br>");
+      }
+    }
+  }
+}
+    
+
+function post_add_client($id) {
+  $clientObj = get_object('client', $id);
+  $data = (array) $clientObj;
+  $data['client_id'] = $clientObj->id;
+  add_object('legal_entity', $data);
+}
+
+function post_add_reservation($id) {
+  ////echo("running post_add_reservation<br>");
+  if($obj->source_id) return;
+  
+  
+	$errors = array();
+	$obj_type = 'reservation';
+	$obj = get_object($obj_type, $id);
+	$ptype = $obj->property_type;
+	$aptObj = get_object($obj->property_type, $obj->apt_id);
+
+	if($ptype == 'shortstay' && $aptObj->id && $obj->status > STATUS_PROPOSED) {
+	  $res = rental_update_calendar($aptObj);
+	  print_log("Updated calendar_availability for {$aptObj->id}:".dump($res,true), 'calendar', LOG_LEVEL_TEST);
+	}
+	if($obj->status == STATUS_BLOCKED) return;  // no accounting for blocks - rate + fees set to zero in pre_add
+  
+  booking_update_total($id); // checks num guests, sets apt_name, day rate
+
+  $status = $obj->status;
+  $our_reservation = !($obj->source_id || $obj->fid); // don't add invoices if not our reservation
+  if($our_reservation && ($status==STATUS_RESERVED || $status==STATUS_PROPOSED)) {
+    $inv_ids = add_reservation_invoices($id);
+    if(!$inv_ids) {
+      echo("post_add_reservation: Failed to created invoice(s) <br>");
+    }
+  }
+
+  //if($ptype == 'shortstay' && !($obj->source_id || $obj->fid)) list($evt_ids, $evt_errors) = add_reservation_events($obj);
+  if($evt_errors) $errors = array_merge($errors, $evt_errors);
+
+  
+  if(strip_blank($obj->extra_info)) {
+    $chatData['receiver_id'] = $obj->host_id;
+    $chatData['sender_id'] = $obj->guest_id;
+    $chatData['parent_id'] = $obj->res_id;
+    $chatData['parent_type'] = 'reservation';
+    $chatData['message'] = $obj->extra_info;
+    $chatData['notify'] = 0;
+    $chatData['status_change'] = $obj->status;
+    add_object('chat', $chatData); // add to chat (message from guest to host)
+  }
+  
+  
+  if(strip_blank($obj->message)) {
+    $chatData['sender_id'] = $obj->host_id;
+    $chatData['receiver_id'] = $obj->guest_id;
+    $chatData['parent_id'] = $obj->res_id;
+    $chatData['parent_type'] = 'reservation';
+    $chatData['message'] = $obj->message;
+    $chatData['notify'] = 0;
+    $chatData['status_change'] = $obj->status;
+    add_object('chat', $chatData); // add to chat (message from host to guest)
+  }
+  
+  
+  // staff
+  if($obj->skipper_id) {
+  }
+  
+  // update 3rd party
+  /**
+  if(!$errors && !$_SESSION['dev'] && $obj->status >= STATUS_RESERVED) {
+    //if(!$obj->source_id && $obj->dest_id == SOURCE_ID_TEQA) list($obj, $errors, $messages) = obj_remote_upload($obj->dest_id, $obj_type, $obj);
+    if($kigo_apt_id = object_foreign_id('property', $obj->apt_id, SOURCE_ID_KIGO, 'fids')) { // same as kigo_property_id($obj->apt_id)
+    //if($kigo_apt_id = kigo_property_id($obj->apt_id)) {
+      require_once('helpers_kigo.inc');
+      list($kigo_id, $kigo_errors) = kigo_create_reservation($obj);
+    }
+  }
+  */
+  
+  //if($obj->block_id) block_update($id);
+  //print_log("post_add_reservation data ".dump($obj, true), 'calendar', LOG_LEVEL_DEBUG);
+
+  if($obj->send_email) {
+    booking_mail($id);
+    booking_sms($id);
+  }
+  return $errors;
+}
+
+
+function post_add_chat($id) {
+  global $__USER;
+  $obj = get_object('chat', $id);
+  if($obj->notify) chat_mail($obj);
+}
+
+// takes a datetime containing the time (from time-picker) and adds it to date portion of the init_date
+function timefield_defaulter($time_val, $init_date) {
+  $date = strip_time($init_date);
+  $time = trim(strip_date($time_val));
+  if(!$time || !$date) return ''; // remove if blank, otherwise it saves 0000-00-00 00:00:00
+  return $date.' '.$time; // we have a time, use date from $init_date, time from $time_field
+}
+
+function pre_edit_invoice($obj_type, $data, $obj) {
+  $errors = array();  
+  if(isset($data['country'])) {
+    $cc1 = $data['country'];
+    $data['country'] = fix_country($data['country']);
+    if($_SESSION['debug_invoice_address']) {
+      $cc2 = $data['country'];
+      print_log("pre_edit_invoice cc is set. {$data['id']}: before=$cc1 after=$cc2 stack=".caller_stack(), "address", LOG_LEVEL_ALWAYS);        
+    }
+  }
+  
+  // if($obj->status == INV_STATUS_COMPLETE) $errors[] = 'The invoice is already paid in full and cannot be edited.';
+  return array($data, $errors);
+}
+
+function pre_add_event($obj_type, $data) {
+  $errors = array();
+  if(trim(!$data['title'])) $data['title'] = ucfirst($obj_type);
+  if($data['start_time'] >= $data['end_time']) return [$data, ["Start time > End time"]];
+  $data['num_hours'] = period_diff($obj->start_time, $obj->end_time, 'hour');
+  $lat = $data['location_lat'];
+  $lng = $data['location_long'];
+  $start = $data['start_time'];
+  //print_log("Add event $lat/$lng start=$start", 'collection', LOG_LEVEL_TEST);
+  
+  if($lat && $lng && $start && !$data['timezone']) {
+    $result = google_timezone($lat, $lng, strtotime($start));
+    print_log("Missing tz for $lat/$lng, found:".dump($result,true), 'collection', LOG_LEVEL_TEST);
+    $data['timezone'] = $result && isset($result->timeZoneId) ? $result->timeZoneId : '';
+  }
+  
+  if(!$data['booking_pin']) $data['booking_pin'] = generate_booking_pin();
+  
+  return array($data, $errors);
+}
+
+function pre_edit_event($obj_type, $data, $orgObj) {
+  $errors = array();
+  return array($data, $errors);
+}
+
+function post_edit_event($id, $changes) {
+  $obj = get_object('event', $id);
+  if($changes['status']) db_query("UPDATE event SET status_change_timestamp = '".now()."' WHERE id=$id"); // set status changed timestamp
+  if(($changes['start_time'] && $obj->reminder_period1) || $changes['reminder_period1']) set_reminder($obj, 1);
+  if(($changes['start_time'] && $obj->reminder_period2) || $changes['reminder_period2']) set_reminder($obj, 2);
+  //return post_add_event($id);
+}
+
+
+function set_reminder($obj, $field) {
+  $period_field = 'reminder_period'.$field;
+  $time_field = 'reminder_time'.$field;
+  list($interval_count, $interval_unit) = explode(' ', $obj->$period_field);
+  $reminder_time = $obj->start_time && $interval_count && $interval_unit ? "'".add_interval($obj->start_time, $interval_count, $interval_unit)."'" : "NULL";
+  db_query("UPDATE event SET $time_field = $reminder_time WHERE id=$obj->id");
+}
+
+function pre_add_withdrawal($obj_type, $data) {
+  if($payment_id = $data['payment_id']) { // copy data from payment
+    $paymentObj = get_object('payment', $payment_id);
+    if(!$data['payment_id']) $data['payment_id'] = $paymentObj->id;
+    if(!$data['host_id']  ) $data['host_id']   = $paymentObj->host_id;
+    if(!$data['res_id']    ) $data['res_id']     = $paymentObj->res_id;
+    if(!$data['agent_id']  ) $data['agent_id']   = $paymentObj->agent_id;
+    if(!$data['org_id']    ) $data['org_id']     = $paymentObj->org_id;
+    if(!$data['inv_id']    ) $data['inv_id']     = $paymentObj->inv_id;
+  }
+  if($data['gross'] <= 0) $errors[] = "Gross amount must be positive:";
+  if(!$data['net']) $data['net'] = $data['gross'] - $data['fee'];
+  return array($data, $errors);
+}
+
+function pre_add_payment($obj_type, $data) {
+  $inv_id       = $data['inv_id'];
+  $res_id       = $data['res_id'];
+  $order_id     = $data['order_id'];
+  $pay_currency = $data['currency'];
+  $pay_amount   = $data['amount'];
+
+  if($res_id) $resObj = get_object('reservation', $res_id);
+  if($order_id) $orderObj = get_object('payment_order', $order_id);
+  if($inv_id) $invObj = get_object('invoice', $inv_id);
+  
+  if($inv_id) {
+    $parentObj = $invObj; 
+  } elseif($res_id) {
+    $parentObj = $resObj;      
+    $inv_id = $parentObj->inv_id; // invoice ID from reservation
+  } elseif($order_id) {
+    $parentObj = $orderObj;      
+    $inv_id = $parentObj->inv_id; // invoice ID from reservation
+  }
+  //echo("res agent=$resObj->agent_id");
+  
+  if($parentObj) { // copy from invoice or res  
+    $accepted_currency = $parentObj->currency;
+    if(!$data['host_id']  ) $data['host_id']   = $parentObj->host_id;
+    if(!$data['res_id']    ) $data['res_id']     = $res_id = $parentObj->res_id;
+    if(!$data['guest_id']    ) $data['guest_id'] = $guest_id = $parentObj->guest_id;
+    if(!$data['order_id']  ) $data['order_id']   = $order_id = $parentObj->order_id;
+    if(!$data['agent_id']  ) $data['agent_id']   = $parentObj->agent_id;
+    if(!$data['org_id']    ) $data['org_id']     = $parentObj->org_id;
+    if(!$data['inv_id']    ) $data['inv_id']     = $inv_id;
+    if(!$data['block_id']  ) $data['block_id']   = $parentObj->block_id;
+    if($data['block_id'] && $data['payment_type'] != PAYMENT_TYPE_BLOCK) $data['block_parent']  = $blockInvObj->id;
+    $data['invoice_id']  = $parentObj->invoice_id;
+  }
+
+  if($res_id && !$resObj) $resObj = get_object('reservation', $res_id); 
+
+  if($invObj->type == INV_TYPE_AGENT) { // also done in class handlers
+    $data['payment_source'] = PAYMENT_SOURCE_AGENT;
+    $data['source_id'] = $invObj->agent_id ?: $resObj->agent_id;
+  }
+  
+  // check payment currency - convert to invoice or reservation currency if needed
+  if($accepted_currency && $accepted_currency != $pay_currency) {
+    $new_amount = get_exchange_rate($pay_currency, $accepted_currency, $pay_amount, false); // no skimming
+    $data['currency'] = $accepted_currency;
+    $data['amount']   = $new_amount;
+
+    $data['payment_currency'] = $pay_currency;
+    $data['payment_gross']    = $pay_amount;
+
+  }
+  //dump($parentObj);
+  //dump($data);
+  //die('gh');
+
+  return array($data, $errors);
+}
+
+function post_delete_site_page ($obj_type, $obj) {
+  $id = $obj->id;
+  $kids = find_objects('site_page', ['parent_id' => $id]);
+  foreach($kids as $kid)  { /** use cascade delete ? */
+    delete_object('site_page', $kid->id);
+  }
+  db_query("DELETE FROM page_content WHERE page_id=$id");
+  db_query("DELETE FROM page_element WHERE page_id=$id");
+}
+
+function post_delete_payment($obj_type, $obj) {
+  $inv_id = $obj->inv_id;
+  return update_invoice_payments($inv_id);
+}
+
+// handle update of payment status ('pending' => complete)
+function post_edit_payment($id, $changes) {
+  //echo("running post_edit_payment<br>");
+  //dump($changes);
+  print_log('post_edit_payment:'.dump($changes, true), 'payment', LOG_LEVEL_TEST);
+  
+	$obj_type = 'payment';
+	$paymentObj = get_object($obj_type, $id);
+
+  if($order_id = $paymentObj->order_id) update_paid($order_id);
+  if($res_id = $paymentObj->res_id) update_reservation_paid($res_id);
+  if($inv_id = $paymentObj->inv_id) update_invoice_payments($inv_id);
+
+  // if($changes['payment_gross'] || $changes['payment_fee']) update_object('payment', array('payment_net' => $paymentObj->payment_gross - $paymentObj->payment_net), $id); // set net
+  $st_change = $changes['payment_status'];
+	if($st_change && $st_change['new'] == PAYMENT_STATUS_COMPLETED) { // went from pending to complete 
+    payment_mail($paymentObj, ['changes' => $changes]);
+  }
+
+  return;
+}
+
+function post_edit_payment_order($id, $changes) {
+	$obj_type = 'payment_order';
+	$orderObj = get_object($obj_type, $id);
+	$st_change = $changes['status'];
+	//dump($st_change);
+	if($st_change && $st_change['new'] == ORDER_STATUS_COMPLETE) { // create invoice if doesn't exist
+	  $inv_id = $orderObj->inv_id;
+	  if(!$inv_id && $invObj = find_order_invoice($orderObj)) {
+	    $inv_id = $invObj->id;
+	  } else {
+      list($inv_id, $errors) = order2invoice($id);  // no invoice (because zero amount, not payments), create it
+	  }
+    if($inv_id) db_query("UPDATE payment_order SET inv_id=$inv_id WHERE id=$id");
+	}
+  return;
+}
+
+// receive payment, update invoices, reservation paid etc
+function post_add_payment ($id) {
+  //echo("running post_add_payment $id<br>");return;
+	$obj_type = 'payment';
+	$paymentObj = get_object($obj_type, $id);
+  $inv_id = $paymentObj->inv_id;
+  $res_id = $paymentObj->res_id;
+  $order_id = $paymentObj->order_id;
+  $cc_id = $paymentObj->cc_id;
+  $payment_type = $paymentObj->payment_type;
+  $ts = now();
+  print_log("$ts: post_add_payment id=$id rid=$res_id inv=$inv_id order=$order_id cc=$cc_id", 'payment', LOG_LEVEL_ALWAYS);
+  
+  if($cc_id) db_query("UPDATE cc SET last_charge='".now()."' WHERE id=$cc_id"); // store timestamp with cc
+  if($inv_id) $rerrors = update_invoice_payments($inv_id);
+  /**
+  if($res_id) {
+    if($paymentObj->payment_status == PAYMENT_STATUS_PENDING) {    
+      $alert = "Pending payment! ".get_object('reservation', $res_id, 'alert');
+      update_object('reservation', array('alert' => $alert), $res_id);
+    }
+    $ignore_payment_types = array(PAYMENT_TYPE_REFUND,PAYMENT_TYPE_TRANSFER, PAYMENT_TYPE_CORRECTION,PAYMENT_TYPE_AGENT_OWES);
+    if($paymentObj->payment_status == PAYMENT_STATUS_COMPLETED && !in_array($paymentObj->payment_type, $ignore_payment_types)) { 
+      $resObj = get_object('reservation', $res_id);
+      if(!$resObj->source_id && $resObj->dest_id == SOURCE_ID_TEQA) {
+        //echo("calling oru payment<br>");
+        list($obj, $errors, $messages) = obj_remote_upload(SOURCE_ID_TEQA, $obj_type, $paymentObj);
+      }
+    }
+  }  
+  */
+  
+  if($order_id) update_paid($order_id);  
+  if($res_id) update_reservation_paid($res_id);
+  
+  if($payment_type == PAYMENT_TYPE_TRANSFER) {
+    $data = (array) $paymentObj;
+    $sender_id = $data['sender_id'];
+    $recipient_id = $data['recipient_id'];
+    if($sender_id && $recipient_id) {    
+      //unset($data['sender_id']);
+      //unset($data['recipient_id']);
+      $data['parent_id'] = $paymentObj->id;
+      unset($data['id']);
+      $data['payment_type'] = PAYMENT_TYPE_CORRECTION;
+      $data['host_id'] = $recipient_id;
+      list($id, $errors) = add_object('payment', $data); // correction: add to recipient
+      
+      $data['host_id'] = $sender_id;
+      $keys = array('amount', 'payment_gross', 'payment_net', 'payment_fee');
+      foreach($keys as $key) $data[$key] = -1 * $data[$key]; 
+      list($id, $errors) = add_object('payment', $data); // correction: subtract from for sender
+    }
+  }
+    
+  payment_mail($paymentObj);
+  return $rerrors;
+}
+
+function post_add_withdrawal($id) {
+  $obj = get_object('withdrawal', $id);
+  if($payment_id = $obj->payment_id) {
+    $paymentObj = get_object('payment', $payment_id);
+    list($pid, $pay_errors) = update_object('payment', array('withdrawal_currency' => $obj->currency, 'withdrawal_fee' => $obj->fee, 'withdrawal_amount' => $obj->gross + $paymentObj->withdrawal_amount, 'withdrawal_date' => now(), 'withdrawal_recipient' => $paymentObj->recipient_id), $paymentObj->id);
+  }
+  return $pay_errors;
+}
+
+
+// todo: only run if checkin/out changes
+// if apt or num_guests changes - we might need to change the rate
+function post_edit_reservation($id, $changes) {
+  global $u;
+  global $u_level;
+  //dump($changes);
+  $time_start = microtime(true);
+  $debug = true;
+
+  //echo("running post_edit_reservation<br>".dump($changes, true));
+  
+  $errors = array();
+
+	$obj_type = 'reservation';
+	$obj = get_object($obj_type, $id);
+	$ptype = $obj->property_type;
+	$apt_id = $obj->apt_id;
+	
+	if($ptype == 'shortstay' && $apt_id && $changes['status']) {
+	  $aptObj = get_object($ptype, $apt_id);
+	  $res = rental_update_calendar($aptObj);
+	  print_log("Post edit res - Updated calendar_availability for {$apt_id}:".dump($res,true), 'calendar', LOG_LEVEL_TEST);
+	}
+	
+	if(!$obj) die("post_edit_reservation: reservation $id not found");
+	if($changes['status']['old'] == STATUS_BLOCKED || $obj->status == STATUS_BLOCKED) return; // no accounting for blocks
+                 
+  $update_total = false;
+  
+  if(!$obj->rate_locked && ($changes['apt_id'] || $changes['num_guests'] || $changes['checkin'] || $changes['checkout'])) {
+    $resData = booking_update_rate($obj);
+    $update_total = true;
+  }
+
+  $update_total = $update_total || $changes['rate_base'] || $changes['rate_type'] || $changes['fee_json'] || $changes['fee_service'] || $changes['city_tax'] || $changes['charge_city_tax'] || $changes['charge_tax'] || $changes['tax_included'] || $changes['discount'];
+  if($update_total) {
+    booking_update_total($id);
+    add_reservation_invoices($obj);
+  }
+  $update_invoice = $changes['site_id'] || $changes['agent_id'] || $changes['legal_entity_id'] || $changes['org_id'];
+  if($update_invoice) {
+    $terms = array_tuplets(['site_id' => $obj->site_id, 'agent_id' => $obj->agent_id, 'legal_entity_id' => $obj->legal_entity_id, 'org_id' => $obj->org_id]);
+    db_query("UPDATE invoice SET $terms WHERE res_id={$obj->res_id}");
+    
+  }
+
+  $status = $obj->status;
+
+  // object might have changed, compare reloaded object to original
+  $newObj = get_object($obj_type, $id); // get fresh post-edit object
+  $origObj = clone $obj;
+  foreach($changes as $key => $change) $origObj->$key = $change['old']; // restore pre-edit original object
+  $all_changes = compare_objects('reservation', $origObj, $newObj, true, false, true); // compare, return change-details, do not log changes, include  relations
+  foreach($all_changes as $key => $new_change) { // the original $changes object has useful data like the ID of the changelog and pretty-print change string, so use these if exists and same new value
+    if(($org_change = $changes[$key]) && $org_change['new'] == $new_change['new']) $all_changes[$key] = $org_change;
+  }
+  
+  $our_reservation = !($obj->source_id || $obj->fid); // don't add invoices if not our reservation
+  if($our_reservation && $obj->status >= STATUS_PROPOSED) {     
+    $create_invoice = $changes['status']['old'] <= STATUS_UNCONFIRMED && $changes['status']['new'] >= STATUS_PROPOSED; // ADD invoices if status changes UP to proposed or higher, or UPDATE if accounting or address changed
+    $invoice_changes = $changes['org_id'] || $changes['agent_id'] || $changes['invoice_contact'] || $changes['monthly_billing'] || $changes['site_id'] || $changes['legal_entity_id'];
+    if($create_invoice || $update_total || $address_change || $invoice_changes) { // if total, address, or org changed, update invoice
+      add_reservation_invoices($id);
+    }
+  }
+  $notify_on = ['num_guests', 'checkin', 'checkout', 'arrival_method', 'arrival_time']; //, 'rate_base', 'discount', 'total');
+  $mail_changes = array_flip($notify_on);
+  $res_changes = array_intersect_key($all_changes, $mail_changes);
+
+  $new_status = 0;
+  if($st_change = $changes['status']) {
+    $old_status = $st_change['old'];
+    $new_status = $st_change['new'];
+    
+  	$table = get_object_table($obj_type);
+  	$key = get_object_key($obj_type);
+  	$now = now();
+  	
+  	$expires = 'NULL';
+  	if($new_status == STATUS_PENDING) {
+  	  $expires = "'".date("Y-m-d H:i:s", time() + STATUS_PENDING_EXPIRES)."'";
+  	} else if($new_status == STATUS_REQUEST) {
+  	  $expires = "'".date("Y-m-d H:i:s", time() + STATUS_REQUEST_EXPIRES)."'";
+  	} else if($new_status == STATUS_PROPOSED) {
+  	  $expires = "'".date("Y-m-d H:i:s", time() + STATUS_PROPOSED_EXPIRES)."'";
+  	} 
+  	  	
+  	/** set timetamps, expiration */
+  	$resData = ['status_change_timestamp' => $now];
+  	if($expires) $resData['expires'] = $expires;
+  	if($old_status < STATUS_RESERVED && in_array($new_status, [STATUS_RESERVED,STATUS_COMPLETE])) $resData['booked_timestamp'] = $now;
+  	else if($old_status > 0 && $new_status < 0) $resData['cancel_timestamp'] = $now;  	
+    $db_terms = array_tuplets($resData);
+    $qs = "UPDATE reservation SET $db_terms WHERE res_id=$id";
+    
+    booking_mail($id);
+    booking_sms($id);
+
+    // cancel invoices if status changes DOWN from proposed or higher
+    if($old_status >= STATUS_PROPOSED && $status < 0) { // also cancel invoices
+      cancel_reservation_invoices($id);
+    }
+
+  } elseif(in_array($status, [STATUS_RESERVED,STATUS_COMPLETE]) && $res_changes) {
+    print_log("post_edit_reservation sending mail for $id: res=".dump($res_changes, true), "reservation", LOG_LEVEL_DEV);
+    booking_mail($id, ['changes' => $res_changes]);
+  }
+  
+  //print_log("post_edit_res changes=".dump($changes,true), 'reservation', LOG_LEVEL_TEST);
+  if($info_change = $changes['extra_info']) {
+    $old = $info_change['old'];
+    $new = $info_change['new'];
+    //print_log("info_change old=$old new=$new", 'reservation', LOG_LEVEL_TEST);
+    if(strip_blank($old) != strip_blank($new)) {
+      $chatData['receiver_id'] = $obj->host_id;
+      $chatData['sender_id'] = $obj->guest_id ?: 0;
+      $chatData['parent_id'] = $obj->res_id;
+      $chatData['parent_type'] = 'reservation';
+      $chatData['message'] = $info_change['new'];
+      if($new_status) $chatData['status_change'] = $new_status;
+      $chatData['notify'] = 0;
+      list($chat_id, $chat_errors) = add_object('chat', $chatData); // add to chat (message from guest to host)
+      //print_log("new chat id=$chat_id errors=".dump($chat_errors, true), 'reservation', LOG_LEVEL_TEST);
+    }
+  }
+  
+  
+  if($message_change = $changes['message']) {
+    if(strip_blank($message_change['old']) != strip_blank($message_change['new'])) {
+      $chatData['sender_id'] = $obj->host_id;
+      $chatData['receiver_id'] = $obj->guest_id ?: 0;
+      $chatData['parent_id'] = $obj->res_id;
+      $chatData['parent_type'] = 'reservation';
+      $chatData['message'] = $message_change['new'];
+      if($new_status) $chatData['status_change'] = $new_status;
+      //$chatData['notify'] = 0;
+      add_object('chat', $chatData); // add to chat (message from host to guest)
+    }
+  }
+
+  /** Interhome */
+  
+  // ratify booking if payment is made
+  $fid = $obj->fid; // gets set on booking
+
+  $interhome = $obj->dest_id == SOURCE_ID_INTERHOME;
+  $book_interhome = $interhome && !$fid && $obj->status == STATUS_PROPOSED;
+  $ratify_interhome = $interhome && $fid && $obj->paid > 0 && $obj->balance < INV_TOLERANCE && in_array($new_status, [STATUS_RESERVED,STATUS_COMPLETE]);
+  $cancel_interhome = $interhome && $fid && $obj->status < STATUS_PROPOSED;
+
+  if($book_interhome) {
+    require_once("xml_interhome.inc");
+    $result = interhome_booking($obj); // add interhome booking
+    print_log("Interhome booking result:".dump($result,true), "interhome", LOG_LEVEL_ALWAYS);
+    if($result->success && $result->fid) {
+      $fid = $result->fid;
+      db_query("UPDATE reservation SET fid='{$fid}' WHERE res_id={$id}");
+    }
+  } elseif($ratify_interhome) {
+    require_once("xml_interhome.inc");
+    $result = interhome_ratify_booking($obj);      
+    print_log("Interhome ratify booking {$fid} result:".dump($result,true), "interhome", LOG_LEVEL_ALWAYS);
+  } elseif($cancel_interhome) {
+    require_once("xml_interhome.inc");
+    $result = interhome_cancel_booking($obj);      
+    print_log("Interhome cancel booking {$fid} result:".dump($result,true), "interhome", LOG_LEVEL_ALWAYS);
+  }
+
+  // 3rd party
+  //if($changes && !$errors && !$obj->source_id && $obj->dest_id == SOURCE_ID_TEQA) list($obj, $errors, $messages) = obj_remote_upload(SOURCE_ID_TEQA, $obj_type, $id, $changes);
+  /** KIGO OFF 
+  $kigo_changes = array_flip(array('first_name', 'last_name', 'checkin', 'checkout', 'num_guests', 'alert', 'notes', 'extra_info', 'apt_id', 'status')); // changes Kigo cares about
+  if(!$_SESSION['dev'] && array_intersect_key($all_changes, $kigo_changes)) {
+    require_once('helpers_kigo.inc');
+
+    $kigo_res_id = kigo_reservation_id($obj);
+    $kigo_apt_id = kigo_property_id($obj);
+
+    $kigo_cancel = false;
+    $kigo_create = $kigo_res_id ? false : true;
+    $kigo_update = $kigo_res_id ? true : false; 
+    
+    // special cases: 
+    // 1) Moved from kigo property to non-kigo property or vice versa
+    if($apt_change = $changes['apt_id']) {
+      $kigo_update = false; // cannot update apt_id in kigo
+      
+      $old_kigo_apt_id = object_foreign_id('property', $apt_change['old'], SOURCE_ID_KIGO, 'fids');
+      $new_kigo_apt_id = object_foreign_id('property', $apt_change['new'], SOURCE_ID_KIGO, 'fids');
+      if($kigo_res_id) kigo_cancel_reservation($obj); // always cancel old on change, kigo doesn't allow edit apt_id
+      
+      if($new_kigo_apt_id) { // moved from kigo apt to non-kigo apt, delete
+        $kigo_create = true; // create new reservation
+      }
+    }
+
+    // 2) Status changed from across reserved boundary
+    if($st_change = $changes['status']) {
+      $old_status = $st_change['old'];
+      $new_status = $st_change['new'];
+      if($old_status >= STATUS_RESERVED && $new_status < STATUS_RESERVED) { // delete
+        $kigo_cancel = true; // cancel old  
+      } else if($old_status < STATUS_RESERVED && $new_status >= STATUS_RESERVED) { // add
+        $kigo_create = true; // cancel old  
+      }
+    }           
+
+    if($kigo_cancel) list($kigo_id, $kigo_errors) = kigo_cancel_reservation($obj);
+    if($kigo_update) list($kigo_id, $kigo_errors) = kigo_update_reservation($obj, $kigo_res_id);
+
+    if($kigo_create) {
+      $obj->fids = ''; // remove kigo_res_id, or else will automatically update
+      list($kigo_id, $kigo_errors) = kigo_create_reservation($obj);
+    }    
+
+  }  
+  */
+  
+  //if($obj->block_id) block_update($id);
+  
+  return $errors;
+}
+
+
+// reservation post-edit handlers
+
+function generate_booking_pin($length = 4) {
+  $start = pow(10, $length - 1);
+  $end = pow(10, $length)  - 1;
+  return rand($start, $end);
+}
+
+
+
+/** unsused - automatic comment added on  */
+function class_actions_invoice($obj_type, $data, $context='recordset', $ref_name='', $ref_link='') {
+	global $u_level;
+	$actions = array();
+	//$dim = $context == 'recordset' ? 16 : 48;
+	$big_class = $context == 'recordset' ? "" : " fa-4x";	
+	$this_id = $data->id;
+	$url = page_link(PAGE_INVOICE);
+  $actions[] = html_link($url.$this_id, "".html_i("", "fa fa-globe".$big_class), array("class" => "", "title" => phrase('view_web', CAPITALIZE)));
+  return $actions;
+}

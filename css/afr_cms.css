@@ -1,0 +1,121 @@
+/* CMS: new site model */
+.ie_edit_link {position:absolute;z-index:100;display: none;top: 0px;right: 0px}
+A.__edit_link {position:absolute;display:none;z-index:7000}
+
+/** new 2017 */
+.__edit_button {
+  position: fixed;
+  z-index: 32000;
+  top: 0;
+  left: 0;
+}
+
+#site_edit_panel {
+  position: absolute;
+  z-index: 1050;
+  height: 500;
+  background: #cfc;
+  opacity: 0.9;
+  color: white;
+}
+
+#page_edit_panel {
+  position: absolute;
+  top: 20px;
+  width: 28px;
+  border: 1px dotted white;
+  text-align: center !important;
+  background-color: black;
+  z-index: 999;
+}
+
+#page_edit_button {
+  z-index: 998;
+}
+
+DIV.jquery-file-uploader-container {
+  position:relative;
+  z-index: 100;
+}
+
+DIV.jquery-file-uploader-container TABLE.file-table {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  z-index: 110;
+}
+
+.__edit {
+  background-color: #DFEAF3 !important;
+  color: #444 !important;
+  cursor: pointer;
+}
+
+.__edit.__dic {
+  background-color: #FFEAF3 !important;
+  color: #444 !important;
+  cursor: pointer;
+}
+
+.__edit:hover {
+  background-color: #ced9e2 !important;
+  color: #000 !important;
+}
+
+.__add_selected {
+  background-color: #ff4444 !important;
+  border-color: black !important;
+  cursor: pointer;
+}
+
+.__edit_selected {
+  background-color: #DFEAF3 !important;
+  color: #444 !important;
+  cursor: pointer;
+}
+
+.__edit_selected:hover {
+  background-color: #ced9e2 !important;
+  color: #000 !important;
+}
+
+.css_save {  
+}
+
+.css_cancel {
+  clear: both;
+}
+
+.css_saving {  
+}
+
+.layout-accordion {
+  position: absolute;
+  left: -1000px; /* hide */
+  _display: none;
+}
+
+.layout-accordion label {
+  font-weight: black;
+}
+
+.layout-accordion input {
+  margin: 5px 10px 5px 5px !important;
+}
+
+.layout-accordion .slider {
+}
+
+#page_layout_panel {
+  display: none;
+  text-align:left;
+}
+
+.browse-button {
+  cursor: default;
+  
+}
+
+.browse-button:hover {
+  background-color: #f00; 
+}
+

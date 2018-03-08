@@ -1,0 +1,118 @@
+div.st_div { /* redundant rules for bad browsers  */  
+  font-family: verdana,sans-serif;
+	font-size:    x-small;
+	voice-family: "\"}\"";
+	voice-family: inherit;
+	font-size: small;
+	color: #333;
+}  
+
+.st_main {
+	border: 1px solid #666;
+	clear: both;
+	background: #eee;
+	padding: 10px;
+}
+
+#contents {
+	padding: 1.5em;
+	background: #eee;
+	min-height: 300px;
+}
+
+.st_header {
+	position: relative;
+	width: 100%;
+	height: 3em;
+	width: 45em; /* a width is required for Opera, older Mozilla browsers, and Konqueror browsers */
+}
+
+.st_header ul.st_primary {
+	margin: 0;
+	padding: 0;
+	position: absolute;
+	bottom: -1px;
+	width: 45em; /* a width is required for Opera, older Mozilla browsers, and Konqueror browsers */
+  cursor:pointer;
+}
+
+.st_header ul.st_primary li  {
+	display: inline;
+	list-style: none;
+}
+
+.st_header ul.st_primary a,.st_header ul.st_primary span,.st_header ul.st_primary a.current {
+	width: 8em;
+	display: block;
+	float: left;
+	padding: 4px 0;
+	margin: 1px 2px 0 0;
+	text-align: center;
+	font-family: tahoma, verdana, sans-serif;
+	font-size: 100%;
+	text-decoration: none;
+	color: #333;
+}
+
+.st_header ul.st_primary span.current,.st_header ul.st_primary a.current,.st_header ul.st_primary a.current:hover {
+	border: 1px solid #666;
+	border-bottom: none;
+	background: #eee;
+	padding-bottom: 6px;
+	margin-top: 0;
+}
+
+.st_header ul.st_primary a, .st_header ul.st_primary span.off {
+	background: #FFFAE1;
+	border: 1px solid #AAA;
+	border-bottom: none;
+}
+
+.st_header ul.st_primary a:hover {
+	margin-top: 0;
+	border-color: #666;
+	background: #FFF7CD;
+	padding-bottom: 5px;
+}
+
+.st_header ul#secondary {
+	position: absolute;
+	margin: 0;
+	padding: 0;
+	bottom: -1.4em;
+	left: 1px;
+	width: 50em; /* a width is required for Opera, older Mozilla browsers, and Konqueror browsers */
+}
+
+.st_header ul#secondary li a,.st_header ul#secondary li span {
+	width: auto;
+	display: block;
+	float: left;
+	padding: 0 10px;
+	margin: 0;
+	text-align: auto;
+	border: none;
+	border-right: 1px dotted #AAA;
+	background: none;
+
+}
+
+.st_header ul#secondary li a {
+	color: #00f;
+	text-decoration: underline;
+}
+
+.st_header ul#secondary li a:hover {
+	color: #333;
+	background: transparent;
+	padding: 0 10px;
+	border: none;
+	border-right: 1px dotted #AAA;
+}
+
+.st_header ul#secondary li a:active {
+	color: #000;
+	background: transparent;
+}
+
+.st_header ul#secondary li:last-child a { border: none; }
