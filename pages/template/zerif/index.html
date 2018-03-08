@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="description" content="Syspensa - Software Development and Consultancy" />
+  <meta name="keywords" content="Syspensa, software, development, amsterdam"/>
+  <meta name="author" content="Kjetil Larsen" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Syspensa - Software Development and Consultancy</title>
+  
+  <link rel="shortcut icon" href="images/icons/favicon.ico">
+  <link rel="apple-touch-icon" href="images/icons/apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="images/icons/apple-touch-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="images/icons/apple-touch-icon-114x114.png">
+  
+  <link rel="stylesheet" href="/zerif/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/zerif/css/owl.theme.css">
+  <link rel="stylesheet" href="/zerif/css/owl.carousel.css">
+  <link rel="stylesheet" href="/zerif/css/jquery.vegas.min.css">
+  <link rel="stylesheet" href="/zerif/css/animate.min.css">
+  
+  <link rel="stylesheet" href="/zerif/assets/icon-fonts/styles.css"> 
+  <link rel="stylesheet" href="/zerif/css/pixeden-icons.css"> 
+  <link rel="stylesheet" href="/afr/bower/fontawesome/css/font-awesome.min.css"> 
+  
+  <link rel="stylesheet" href="/zerif/css/styles.css">
+  <link rel="stylesheet" href="/zerif/css/styles.css">
+
+  <link rel="StyleSheet" href="/afr/css/afr_base.css" type="text/css" media="screen"/>
+  <link rel="stylesheet" href="/css/site.css">
+  <link rel="StyleSheet" href="/afr/bower/fancybox/source/jquery.fancybox.css" type="text/css" media="screen"/>
+{if ($user.id)}
+  <link rel="StyleSheet" href="/afr/css/afr_cms.css" type="text/css" media="screen"/>
+{/if}
+  
+  <link href='//fonts.googleapis.com/css?family=Lato:300,400,700,400italic|Montserrat:700,400|Homemade+Apple' rel='stylesheet' type='text/css'>
+  
+  <!--[if lt IE 9]>
+        <script src="js/html5shiv.js"></script>
+        <script src="js/respond.min.js"></script>
+      <![endif]-->  
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  
+</head>
+<body id="page_{$page.name|lower}">
+  <div id="_site_data" data-data='{["site_id" => $site.id, "user_id" => $user.id, "user_level" => $user.user_level]|@json_encode}' style="display:none:"></div>
+{if ($page.name == 'Home')}
+  {$home = 1}
+  <div class="preloader">
+    <div class="status">&nbsp;</div>
+  </div>
+{/if}
+
+  <header id="home" class="header">
+  {{"include": "template/zerif/header.html"}}    
+  {{"include": "callout.html"}}    
+  </header>
+  {include file="$page_template"}    
+  
+  <footer>
+  {{"include": "template/zerif/footer.html"}}    
+  </footer>
+<!-- SCRIPTS -->
+<script src="/zerif/js/bootstrap.min.js"></script>
+<script src="/zerif/js/wow.min.js"></script>
+<script src="/zerif/js/jquery.nav.js"></script>
+<script src="/zerif/js/jquery.knob.js"></script>
+<script src="/zerif/js/owl.carousel.min.js"></script>
+<script src="/zerif/js/smoothscroll.js"></script>
+{if (1 || $user.id)}
+  <script type="text/javascript" src="/afr/bower/fancybox/source/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/afr/js/afr.js"></script>
+  <script type="text/javascript" src="/afr/js/afr_cms.js"></script>
+{/if}
+
+{if ($home)} 
+<script src="/zerif/js/jquery.vegas.min.js"></script>
+<script src="/zerif/js/zerif.js"></script>  
+{/if}
+
+
+</body>
+</html>

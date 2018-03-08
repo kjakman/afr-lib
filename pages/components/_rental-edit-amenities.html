@@ -1,0 +1,26 @@
+                        <form id="facilities_form" class="checkbox_group ajax-submit" data-obj_type="{$scope.rental.type}" data-obj_id="{$scope.rental.id}"  
+                              data-handler="save" data-reload_link="#rental-photos" data-message='Saved! <a href="javascript:void(0);" class="linkref" data-target="#rental-photos">Click here for next step.</a>'>
+                          <input name="obj_type" type="hidden" value="{$scope.rental.type}">
+                          <input name="id" type="hidden" value="{$scope.rental.id}">
+                          <input name="facilities" type="hidden" id="facilities" value="{$scope.facilities}" class="cb_target form-control">
+                          {foreach from=$scope.amenities key=k item=facs}
+                          <div class="row table">
+                              <div class="col-md-5 table-cell">
+                                  <h4>{$k|translate:'c'}</h4>
+                              </div>              
+                              <div class="col-md-7 table-cell">
+                              {foreach from=$facs item=fac}
+                                  <div class="checkbox">                                
+                                       <label><input name="fac_{$fac.id}" data-id="{$fac.id}" data-target="#facilities" value="{$fac.id}" type="checkbox" 
+                                       {if ($fac.value==1)}checked{/if}
+                                       />{$fac.name|translate:'c'}</label>
+                                  </div>
+                              {/foreach} 
+                              </div>
+                          </div>
+                          {/foreach}
+                            <hr>
+                            <input type="submit" class="btn btn-primary" value="Save Changes">
+                          
+                        </form>
+                                                                                                                               

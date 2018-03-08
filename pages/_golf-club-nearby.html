@@ -1,0 +1,18 @@
+                                <div class="booking-item booking-item-small">
+                                    <div class="row">
+                                        <div class="col-xs-4">
+                                            <img src="{$golf.media|photo:small|default:'/img/golf2.jpg'}" alt="{$golf.name}" title="{$golf.name}" />
+                                        </div>
+                                        <div class="col-xs-5">
+                                            <h5 class="booking-item-title">{$golf.name}</h5>
+                                                <input type="number" readonly class="rating" 
+                                                   value="{$golf.review_score}"
+                                                   data-min="0" data-max="10"
+                                                   data-size="xxs" data-show-clear="false"
+                                                   data-show-caption="false">
+                                        </div>
+                                        <div class="col-xs-3"><span class="booking-item-price">{$golf.currency|currency}{$golf.fee_weekday}</span><br>{$golf.distance|string_format:"%.1f"}km
+                                        </div>
+                                    </div>
+                                </div>
+

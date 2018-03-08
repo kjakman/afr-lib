@@ -1,0 +1,78 @@
+  {{"extend": "base/full.html"}}
+  {block name=content}
+  
+          <div class="container container-full">
+            <div class="row">
+              <div class="col-sm-5 hidden-xs" id="property_left">
+                <div class="overview-map-cont">
+                  <div id='search_result_map' style="height:100%;width:100%" data-bounds='{$scope.bounds}' data-options='{$global.map_options|@json_encode}'>
+                  {if (!$scope.bounds)}
+                    <br><br><br>
+                    {'Missing map data'|error}
+                  {/if}
+                  </div>
+                </div>              
+              </div>
+              <div class="col-sm-7 col-xs-12" id="property_right" style="padding-top: 80px">
+                <div class="hidden-md hidden-lg hidden-sm" style="height:140px;width:100%"></div><!--spacer x-small-->
+                <div class="hidden-md hidden-lg hidden-xs" style="height:20px;width:100%"></div><!--spacer small -->
+                                                                                    
+                <form id="rental_search_form" class="ajax-submit searchbar" action="{$smarty.const.PAGE_RENTAL_SEARCH|link}" method="get" data-handler="property-search" data-success_handler="property_search_handler">
+  
+                  <div class="clearfix" style="margin-left: -15px;margin-bottom:15px;">
+                    <!--h5 class="booking-filters-title inline">Dates</h5--> 
+                    {{"include": "_rental-searchbar.html"}}
+                    <div class="col-md-1 col-xs-6 relative nogutter mt10">
+                      <a class="btn btn-primary btn-sm" data-toggle="collapse" data-parent="#accordion" href="#search-more">
+                         {*<i class="fa fa-search-plus"></i>*}{'more filters'|translate:'c'} <i class="fa fa-caret-down"></i>
+                      </a>
+                    </div>
+                  </div>
+                  
+                  <div id="search-more" class="collapse out">
+                    <div class="panel-body">
+                    {{"include": "_rental-advanced-search.html"}}
+                    </div>
+                  </div>
+                </form>
+                
+                {$location = $scope.location}
+                {if ($location.description)}
+                <div class="mb20">
+                  {if ($location.description_id)}
+                    {$location.description|editable:"object_description":$location.description_id:"description"}
+                  {/if}
+                </div>
+                {/if}
+                
+                {if ($scope.error)}
+                  {$scope.error|error}
+                {/if}
+                
+                <div id="property-list">
+                  {if ($scope.loaded)}
+                    {{"include": "_rental-list.html"}}                    
+                  {else}
+                  <div class='gap'></div>
+                  <h2><i class="fa fa-spinner fa-spin"></i> {'searching'|translate:'c'}...</h2>
+                  {/if}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <script>         
+          // immedieately show empty map for best responsiveness and to figure out bounds
+          var g_deployment = '{$deployment}';
+          rental_map();
+          var rentals = {$scope.rentals|@json_encode}; // load map
+          var gmarkers = map_add_markers(rentals); // load rental markers
+          var bounds = '{$scope.bounds}';              
+
+          var loc_types = $('#loc_types').length ? $('#loc_types').html() : '';
+          console.log("inline: loc types=" + loc_types + " len=" + $('#loc_types').length + " bounds_str=" + bounds);
+          if(loc_types && bounds) map_add_locations(loc_types, bounds); // load other markers  
+            
+          </script>
+  {/block}
+            

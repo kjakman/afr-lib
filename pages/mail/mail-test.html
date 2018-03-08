@@ -1,0 +1,37 @@
+
+                                      {{"extend": "mail/mail-base-sub-2-cols.html"}}
+
+                                      {block name=main_image}
+                                        <img src="http://placehold.it/600x200">
+                                      {/block}
+                                      
+                                      {block name=main_text}
+                                        <h1 style="display: block;margin: 0;padding: 0;color: #202020;font-family: Helvetica;font-size: 26px;font-style: normal;font-weight: bold;line-height: 125%;letter-spacing: normal;text-align: left;">
+                                        Dear dude,
+                                        </h1>
+                                        <b>Personal note to you!</b>
+                                        <hr>
+                                        Main text: Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum
+                                      {/block}
+                                      
+                                      {block name=sub_left}
+                                        Left sub: Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum    
+                                      {/block}
+                                      
+                                      {block name=sub_right_image}
+                                        <img src="http://placehold.it/264x150">
+                                      {/block}
+                                      
+                                      {block name=sub_right_text}
+                                        Sub right text Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum
+                                      {/block}
+                                      
+                                      
+                                      {block name=footer}
+                                        <br>
+                                        {if ($scope.newsletter)}
+                                          Want to change how you receive these emails?<br>
+                                          You can <a href="*|UPDATE_PROFILE|*" style="mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;color: #656565;font-weight: normal;text-decoration: underline;">update your preferences</a> or <a href="*|UNSUB|*" style="mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;color: #656565;font-weight: normal;text-decoration: underline;">unsubscribe from this list</a><br>
+                                          <br>
+                                        {/if}
+                                      {/block}

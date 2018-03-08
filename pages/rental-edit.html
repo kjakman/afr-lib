@@ -1,0 +1,78 @@
+  {{"extend": "base/subview.html"}}
+  
+  {$rental = $scope.rental}
+  
+  {block name=subview_top}
+    {if ($scope.host_id)}
+    <div class="container">
+      <h2>Common Descriptions</h2>
+      <div class="row">
+        <div class="col-xs-12">      
+        {$here = 'here'|translate}
+        <p>
+        {'if you have multiple rentals with the same House Rules, Checkin instructions, or Interaction with guests, you can fill in a generic version %s.'|transplace:'c':$here}         
+        </p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-xs-12">
+        {{"include": "_rental-edit-guide-generic.html"}}
+        </div>
+    </div>
+    {/if}
+      
+    <div class="container hidden-xs">
+      
+      {if ($rental.source_id > 0)}
+        <div class="mb10">
+          {$source_name = $rental.source_id|get:"source":"name"}
+          <p>
+            {"This rental is automatically imported from `$source_name` daily. Any change will be overwritten on next import unless you 
+            <a href='?view=_rental-edit-locked.html' class='click-target' data-target='#rental-locked-link'>lock the field.</a>"|alert:"warning"}
+          </p>
+          First Imported: {$rental.activation_timestamp|datetime} Last Imported: {$rental.import_timestamp|datetime}
+          {$importData = ['site_id' => $site.id, 'property_type' => $rental.type, 'apt_id' => $rental.id, 'source_id' => $rental.source_id]}
+          <a href='{$scope.import_url}' class="btn btn-success ajax-link" data-handler="rental-import" data-reload="1" data-data='{$importData|@json_encode}' target='import'>Import Now</a>
+          {if ($rental.source_id == $smarty.const.SOURCE_ID_INTERHOME)}
+            <a href='https://www.interhome.com/{$rental.guid}' class="btn btn-primary"  target='interhome'>View on Interhome</a>
+          {/if}
+        </div>
+      {/if}
+    </div>
+    
+  {/block}
+  
+  {block name=subview_title}
+    Edit Rental: {$rental.name}
+  {/block}
+  
+  {block name=subview_left_top}
+ {/block}
+
+  {block name=subview_aside}
+      <div class="user-profile-avatar text-center hidden-xs">
+        <img src="{$rental.media|photo:small|default:'/traveler/img/800x600.png'}" id="property_profile_photo" alt="{$rental.name}" title="AMaze" />
+        <h5><a href="{$rental|property_link}" >{$rental.name}</a></h5>
+        <p>Listed Since {$rental.created|date}</p>
+      </div>
+      <div class="visible-xs pull-left">
+        <h5>Edit <a href="{$rental.property_link}" >{$rental.name}</a></h5>
+      </div>
+  
+  {/block}
+
+  {block name=subview_left_bottom}
+  {/block}
+  
+  {block name=subview_nav}
+    {{"include": "_rental-edit-nav.html"}}
+  {/block}
+  
+  {block name=subview_container}
+    {{ "subviews":["location","description","terms","pricing","amenities","photos","guide","calendar","reviews","locked","import","list"],"prefix": "_rental-edit-" }}          
+  {/block}
+  
+  {block name=subview_bottom}
+  {/block}
+
+  

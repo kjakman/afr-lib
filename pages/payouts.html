@@ -1,0 +1,482 @@
+  {{"extend": "base/admin.html"}}
+  {block name=content}
+
+          {$currency = $scope.currency}
+          {$hosts = $scope.hosts}
+          {if ($scope.host_name)}
+          {$host_string = "for "|cat:$scope.host_name}
+          {/if}
+
+          {if ($scope.system_user)}{$scope.paypal_balance|dump}{/if}
+          
+          <form class="form-horizontal" role="form">
+            {if ($scope.currencies|@count > 1)}
+              <div class="form-group col-md-3">
+              {html_options name="currency" class="form-control" options=$scope.currencies selected=$scope.currency}
+              </div>
+            {/if}
+    
+            {if ($scope.system_user)}
+              <div class="form-group col-md-3">
+              {html_options name="host_id" class="form-control" options=$scope.outstanding_hosts selected=$scope.host_id}
+              </div>
+            {/if}
+            <div class="form-group col-md-2 form-group-icon-left">
+              <input type="text" value="{$get.ostart}" class="form-control datepicker" id="ostart" name="ostart" placeholder="From">
+              <i class="fa fa-calendar input-icon click-parent-datepicker"></i>
+            </div>
+            <div class="form-group col-md-2 form-group-icon-left">
+              <input type="text" value="{$get.oend}" class="form-control datepicker" id="oend" name="oend" placeholder="To">
+              <i class="fa fa-calendar input-icon click-parent-datepicker"></i>
+            </div>
+            <div class="form-group col-md-2">
+              <input type="submit" class="btn btn-primary" value="Go">
+              {if ($scope.currency || $scope.host_id || $get.ostart ||  $get.oend)}<a href="{$this_path}" class="btn btn-danger">Clear</a>{/if}              
+            </div>
+            
+          </form>
+          <div class="gap"></div>
+          
+          <h2>Outstanding Payments {if ($currency)} ({$currency}){/if} {$host_string}</h2>          
+          <table class="table outstanding" 
+             data-name="outstanding"
+             data-toggle="table" 
+             data-url="{$scope.outstanding_url}" 
+             data-cache="false" 
+             data-pagination="false"
+             data-striped="true"
+             data-side-pagination="server"             
+             data-page-list="[5, 10, 20, 50, 100, 200]"
+             data-search="true">
+             
+            <thead>     
+              <tr>
+                <th data-formatter="bstCheckboxFormatter"><input type="checkbox" class="check-all" checked></th>
+                <th data-field="id" data-sortable="true">Number</th>
+                <th data-field="created" data-sortable="true">Date</th>
+                <th data-field="host_id">Host</th>
+                <th data-field="payment_status">Status</th>
+                <th data-field="payment_type">Type</th>
+                <th data-field="inv_id" data-sortable="true" data-formatter="bstInvoiceFomatter">Invoice</th>
+                <th data-field="res_id" data-sortable="true" data-formatter="bstBookingFomatter">Booking</th>
+                <th data-field="currency">Inv. Currency</th>
+                <th data-field="amount" data-formatter="bstAmountCurrencyFormatter">Inv. Amount</th>
+                <th data-field="payment_currency">Currency</th>
+                <th data-field="payment_gross" data-formatter="bstPaymentCurrencyFormatter">Gross</th>
+                <th data-field="payment_fee" data-formatter="bstPaymentCurrencyFormatter">Fee</th>
+                <th data-field="payment_net" data-formatter="bstPaymentCurrencyFormatter">Net</th>
+                <th data-field="description">Description</th>
+                
+              </tr>
+            </thead>
+            <tfoot>     
+              <tr>
+                <th></th>
+                <th>Total</th>
+                <th></th>
+                <th></th>
+                <th></th>         
+                <th></th>
+                <th></th>         
+                <th></th>
+                <th></th>         
+                <th data-total-field="amount"></th>
+                <th></th>         
+                <th data-total-field="payment_gross"></th>
+                <th data-total-field="payment_fee"></th>
+                <th data-total-field="payment_net" id="payment_net_outstanding"></th>
+                <th></th>                
+              </tr>
+            </tfoot>
+          </table>
+         
+          <div class="gap"></div>
+          
+          <h2>Outstanding Corrections {if ($currency)} ({$currency}){/if} {$host_string}</h2>
+          {if ($scope.system_user)}
+          <a href="#" class="btn btn-success btn-sm" 
+             data-toggle="modal" data-target="#correction_modal"
+             >Add Correction</a>
+             
+          <a href="#" class="btn btn-success btn-sm" 
+             data-toggle="modal" data-target="#transfer_modal"
+             >Add Transfer</a>
+
+          <a href="#" class="btn btn-success btn-sm" 
+             data-toggle="modal" data-target="#payment_modal"
+             >Add Payment</a>
+          {/if}
+          <table class="table correction" 
+             data-name="correction"
+             data-toggle="table" 
+             data-url="{$scope.correction_url}" 
+             data-cache="false" 
+             data-pagination="true"
+             data-striped="true"
+             data-side-pagination="server"             
+             data-page-list="[5, 10, 20, 50, 100, 200]"
+             data-search="true">
+             
+            <thead>     
+              <tr>
+                <th data-field="id" data-sortable="true">Number</th>
+                <th data-field="created" data-sortable="true">Date</th>
+                <th data-field="host_id">Host</th>
+                <th data-field="sender_id" data-sortable="true">Sender</th>
+                <th data-field="recipient_id" data-sortable="true">Recipient</th>
+                <th data-field="payment_status">Status</th>
+                <th data-field="payment_type">Type</th>
+                <th data-field="currency">Inv. Currency</th>
+                <th data-field="amount" data-formatter="bstAmountCurrencyFormatter">Inv. Amount</th>
+                <th data-field="payment_currency">Currency</th>
+                <th data-field="payment_gross" data-formatter="bstPaymentCurrencyFormatter">Gross</th>
+                <th data-field="payment_fee" data-formatter="bstPaymentCurrencyFormatter">Fee</th>
+                <th data-field="payment_net" data-formatter="bstPaymentCurrencyFormatter">Net</th>
+                <th data-field="description">Description</th>
+                
+              </tr>
+            </thead>
+            <tfoot>     
+              <tr>
+                <th>Total</th>
+                <th></th>
+                <th></th>
+                <th></th>         
+                <th></th>
+                <th></th>         
+                <th></th>
+                <th></th>         
+                <th data-total-field="amount" id="payment_correction"></th>
+                <th></th>         
+                <th data-total-field="payment_gross"></th>
+                <th data-total-field="payment_fee"></th>
+                <th data-total-field="payment_net"></th>
+                <th></th>                
+              </tr>
+            </tfoot>
+          </table>
+
+          <div class="gap"></div>
+         
+          {if ($scope.host_id && $currency)}
+          <h2>Total Outstanding for  to {$scope.host_name} ({$scope.host.paypal_id}): {$currency} <span class="payout-total">0</span></h2>
+                    
+            {if ($scope.system_user)}
+            <form class="ajax-submit" data-handler="add-payout">
+              <input type="hidden" name="site_id" value="{$site.id}">
+              <input type="hidden" name="host_id" value="{$scope.host_id}">
+              <input type="hidden" name="user_id" value="{$user.id}">
+              <input type="text" name="currency" class="form-control" value="{$scope.currency}">
+              <input type="text" name="amount" class="form-control" id="payout_total">
+              <input type="text" name="payment_ids" class="form-control" id="payment_ids">
+              <button type="submit" class="btn btn-success">Go</button>
+            </form>
+            {/if}
+          {/if}
+
+          <div class="gap"></div>
+
+          <h2>{$scope.title}  {if ($currency)} ({$currency}){/if} {$host_string}</h2>
+          <form class="form-horizontal" role="form">
+              <div class="form-group col-md-3">
+                {"status"|object_select:"inv_status":["class" => "form-control", "value" => $get.status, "sort" => "id", "first" => "Select Status..."]}
+              </div>
+              <div class="form-group col-md-3">
+                {"org_id"|object_select:"org":["class" => "form-control", "value" => $get.org_id,  "first" => "Select Company...", "search" => ["org.id" => $scope.org_ids]]}
+              </div>
+              <div class="form-group col-md-2 form-group-icon-left">
+                <input type="text" value="{$get.start}" class="form-control datepicker" id="start" name="start" placeholder="From">
+                <i class="fa fa-calendar input-icon click-parent-datepicker"></i>
+              </div>
+              <div class="form-group col-md-2 form-group-icon-left">
+                <input type="text" value="{$get.end}" class="form-control datepicker" id="end" name="end" placeholder="To">
+                <i class="fa fa-calendar input-icon click-parent-datepicker"></i>
+              </div>
+              <div class="form-group col-md-2">
+                <button type="submit" class="btn btn-success">Go</button>
+                {if ($scope.filters)}<a href="{$this_path}" class="btn btn-danger">Clear</a>{/if}
+              </div>
+          </form>
+          <div class="gap"></div>
+              <!--label for="inputCity" class="col-lg-2 control-label">Status</label>
+              <label for="inputCity" class="col-lg-2 control-label"><i class="fa fa-building-o"></i> Company</label>
+              <label for="inputType" class="col-lg-1 control-label"><i class="fa fa-calendar"></i> From</label>
+              <label for="inputType" class="col-lg-1 control-label"><i class="fa fa-calendar"></i> To</label></label-->
+          
+          
+          
+          <table class="table payout" 
+             data-name="payout"
+             data-toggle="table" 
+             data-url="{$scope.data_url}" 
+             data-cache="false" 
+             data-pagination="true"
+             data-striped="true"
+             data-side-pagination="server"             
+             data-page-list="[5, 10, 20, 50, 100, 200]"
+             
+           data-toolbar="#toolbar"
+           data-search="true"
+           data-show-refresh="true"
+           data-show-toggle="true"
+           data-show-columns="true"
+           data-show-export="true"
+           data-detail-view="true"
+           data-detail-formatter="detailFormatter"
+           data-show-pagination-switch="true"
+             
+             data-search="true">
+             
+            <thead>     
+              <tr>
+                <th data-field="id" data-sortable="true" data-formatter="bstInvoiceFomatter">Number</th>
+                <th data-field="created" data-sortable="true">Created</th>
+                <th data-field="host_id" data-sortable="true">Host</th>
+                <th data-field="recipient" data-sortable="true">Recipient</th>
+                <th data-field="currency">Currency</th>
+                <th data-field="gross" data-formatter="bstAmountCurrencyFormatter">Gross</th>
+                <th data-field="fee" data-formatter="bstAmountCurrencyFormatter">Fee</th>
+                <th data-field="net" data-formatter="bstAmountCurrencyFormatter">Net</th>
+                <th data-field="notes">Notes</th>
+                
+              </tr>
+            </thead>
+            <tfoot>     
+              <tr>
+                <th>Total</th>
+                <th></th>
+                <th></th>
+                <th></th>            
+                <th></th>            
+                <th></th>            
+                <th data-total-field="gross"></th>
+                <th data-total-field="fee"></th>
+                <th data-total-field="net"></th>
+                <th></th>
+                <th></th>                
+              </tr>
+            </tfoot>
+          </table>
+<script>
+
+function bstBookingFomatter(value, row, index) {
+  if(!value) return '';
+  return '<a href="/booking/'+ value +'" target="new">' + value + '</a>';
+}
+
+function bstRentalFomatter(value, row, index) {
+  if(!value) return '';
+  var print_val = row.apartment_name || value;
+  return '<a href="{$smarty.const.PAGE_RENTAL_DEATAIL|link}'+ value +'" target="new">' + value + '</a>';
+}
+
+function bstCheckboxFormatter(value, row, index) {
+  return '<input type="checkbox" checked class="" data-value="' + row.id + '">';
+}
+
+function bstInvoiceFomatter(value, row, index) {
+  if(!value) return '';
+  var print_val = row.invoice_id || value;
+  return '<a href="/invoice/'+ value +'" target="new">' + print_val + '</a>';
+}
+
+function bstAmountCurrencyFormatter(value, row, index) {
+  return currency_formatter(row.currency, value);
+}
+
+function bstPaymentCurrencyFormatter(value, row, index) {
+  return currency_formatter(row.payment_currency, value);
+}
+
+function currency_formatter(currency, value) {
+  if(!value || !currency) return value;
+  value = currency == 'BTC' ? accounting.toFixed(value, 8) : accounting.toFixed(value, 2);
+  var symbol = currency2symbol(currency);
+  return accounting.formatMoney(value, symbol);
+}
+
+$(document).ready(function() {  
+  var $tables = $("TABLE.table");
+  var idArray = [];
+  
+  console.log("tables:", $tables);
+  $.each($tables, function(i,table) {
+    var $table = $(this);
+    var name = $table.data('name');
+    //console.log("table name=", name);
+    
+    $table.bootstrapTable().on('load-success.bs.table', function(e, data) {
+      //console.log("Data=", data);
+      var totals = data.totals || [];
+      var rows = data.rows;
+      $.each(rows, function(k, row) {        
+        if(name == 'outstanding' || name=='correction') {
+          var id = row.id;
+          //console.log("Name = " + name + " id=" + id + " row=", row);
+          idArray.push(row.id);
+        }
+      });
+      
+      $.each(totals, function(k, v) {
+        console.log("total k=" + k + " v=" + v);
+        if(v) {
+          v = parseFloat(v);
+          v = v.toFixed(2);
+          var $target = $table.find("TH[data-total-field='" + k + "']");
+          if(v && $target.length) {
+            $target.html(v);
+          }
+        }
+      });
+      if(i == 2) bstUpdateTotal(idArray);
+      
+    });
+  });
+});
+
+function bstUpdateTotal(idArray) {  
+  // compute total payout (outstanding payments + corrections/transfers
+  var outstanding = $("#payment_net_outstanding").html();
+  var correction = $("#payment_correction").html();
+  var total = 0;
+  
+  if(outstanding && parseFloat(outstanding)) total += parseFloat(outstanding);
+  if(correction && parseFloat(correction)) total += parseFloat(correction);
+
+  console.log("outstanding = " + outstanding + " correction=" + correction + " = " + total);
+  $(".payout-total").html(total);
+  $("#payout_total").val(total);
+  $("#payment_ids").val(idArray.join(','));
+}
+
+</script>
+
+<div id="correction_modal" class="modal fade" tabindex="-1" data-replace="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form class="form-horizontal ajax-submit" id="correction_form" data-handler="add-payment" data-reload="1">
+        <input type="hidden" name="payment_type" value="{$smarty.const.PAYMENT_TYPE_CORRECTION}">
+        <input type="hidden" name="site_id" value="{$site.id}">
+        <input type="hidden" name="user_id" value="{$user.id}">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+          <b id="overlay_title">Add Correction</b>
+        </div>
+        <div class="modal-body" class="container-fluid">
+          <div class="form-group col-sm-12">
+            <label>Host</label>
+            {html_options name="host_id" class="form-control" options=$scope.hosts selected=$scope.host_id}                                            
+            
+          </div>
+          <div class="form-group col-sm-6">
+            <label>Currency</label>
+            {"currency"|object_select:"currency":["class" => "form-control", "value" => $scope.currency, "search" => ["accepted" => 1]]}
+          </div>
+          <div class="form-group col-sm-6">
+            <label>Amount</label>
+            <input name="amount" class="form-control" type="text" />
+          </div>
+          <div class="form-group col-sm-12">
+            <label>Description</label>
+            <input name="description" class="form-control" maxlength="255"/>      
+          </div>
+          <br>
+          <input type="submit" class="btn btn-primary" value="Save Changes">       
+          <button type="button" data-dismiss="modal" class="btn btn-danger">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+  
+<div id="transfer_modal" class="modal fade" tabindex="-1" data-replace="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form class="form-horizontal ajax-submit" id="transfer_form" data-handler="add-payment" data-reload="1">
+        <input type="hidden" name="payment_type" value="{$smarty.const.PAYMENT_TYPE_TRANSFER}">
+        <input type="hidden" name="site_id" value="{$site.id}">
+        <input type="hidden" name="user_id" value="{$user.id}">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+          <b id="overlay_title">Add Transfer</b>
+        </div>
+        <div class="modal-body" class="container-fluid">
+          <div class="form-group col-sm-12">
+            <label>From Host (Sender)</label>
+            {html_options name="sender_id" class="form-control" options=$scope.hosts selected=$scope.host_id}                                            
+          </div>
+          <div class="form-group col-sm-12">
+            <label>To Host (Recipient)</label>
+            {html_options name="recipient_id" class="form-control" options=$scope.hosts selected=$scope.host_id}
+          </div>
+          <div class="form-group col-sm-6">
+            <label>Currency</label>
+            {"currency"|object_select:"currency":["class" => "form-control", "value" => $scope.currency, "search" => ["accepted" => 1]]}
+          </div>
+          <div class="form-group col-sm-6">
+            <label>Amount</label>
+            <input name="amount" class="form-control" type="text" />
+          </div>
+          <div class="form-group col-sm-12">
+            <label>Description</label>
+            <input name="description" class="form-control" maxlength="255"/>      
+          </div>
+          <br>
+          <input type="submit" class="btn btn-primary" value="Save Changes">       
+          <button type="button" data-dismiss="modal" class="btn btn-danger">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+      
+<div id="payment_modal" class="modal fade" tabindex="-1" data-replace="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form class="form-horizontal ajax-submit" id="payment_form" data-handler="add" data-reload="1">
+        <input type="hidden" name="payment_type" value="{$smarty.const.PAYMENT_TYPE_PAYMENT}">
+        <input type="hidden" name="obj_type" value="payment">
+        <input type="hidden" name="site_id" value="{$site.id}">
+        <input type="hidden" name="user_id" value="{$user.id}">
+        <input type="hidden" name="tx_id" value="1">
+        <input type="hidden" name="payment_status" value="{$smarty.const.PAYMENT_STATUS_COMPLETED}">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+          <b id="overlay_title">Add Payment</b>
+        </div>
+        <div class="modal-body" class="container-fluid">
+          <div class="form-group col-sm-6">
+            <label>Type</label>
+            {"payment_type"|object_select:"payment_type":["class" => "form-control", "value" => $smarty.const.PAYMENT_TYPE_CREDIT_CARD]}
+          </div>
+          <div class="form-group col-sm-6">
+            <label>Host</label>
+            {html_options name="host_id" class="form-control" options=$scope.hosts selected=$scope.host_id}                                            
+            
+          </div>
+          <div class="form-group col-sm-6">
+            <label>Currency</label>
+            {"currency"|object_select:"currency":["class" => "form-control", "value" => $scope.currency, "search" => ["accepted" => 1]]}
+          </div>
+          <div class="form-group col-sm-6">
+            <label>Amount</label>
+            <input name="amount" class="form-control" type="text" />
+          </div>
+          <div class="form-group col-sm-12">
+            <label>Description</label>
+            <input name="description" class="form-control" maxlength="255"/>      
+          </div>
+          <div class="form-group col-sm-12">
+            <label>Private Notes</label>
+            <input name="notes" class="form-control" maxlength="255" value="Manually Entered - fake Transaction ID"/>      
+          </div>
+          <br>
+          <input type="submit" class="btn btn-primary" value="Save Changes">       
+          <button type="button" data-dismiss="modal" class="btn btn-danger">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+  {/block}
+  

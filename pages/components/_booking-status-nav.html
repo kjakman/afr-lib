@@ -1,0 +1,44 @@
+                          
+                          {$booking = $scope.booking}
+                          {$p = "`$smarty.const.PAGE_STATUS|link``$scope.obj_id`"}
+                          <ul class="list user-profile-nav">
+                            <li class="class-filter active"><a id="booking-status-overview" href="{$p}/overview{$pin}"><i class="fa fa-user"></i>Overview</a></li>
+                            {if ($user.user_level >= $smarty.const.USER_LEVEL_STAFF)}
+                            <li class="class-filter"><a id="booking-status-edit" href="{$p}/edit"><i class="fa fa-pencil-square"></i>Edit</a></li>
+                            {elseif ($scope.can_cancel)}
+                            <li class="class-filter"><a id="booking-status-alter" href="{$p}/alter{$pin}"><i class="fa fa-pencil-square-o"></i>Alter {$type_name}</a></li>                            
+                            {/if}                            
+
+                            {if (0 && $status == $smarty.const.STATUS_PROPOSED)} {* Proposed,  Reserved or complete *}
+                            <li class="class-filter"><a href="{$p}/send-proposal"><i class="fa fa-paper-plane"></i>Send Proposal</a></li>                              
+                            {/if}
+                            
+                            {if ($status == $smarty.const.STATUS_PROPOSED || $status == $smarty.const.STATUS_RESERVED || $status == $smarty.const.STATUS_COMPLETE)} {* Proposed,  Reserved or complete *}
+                              {if ($status == $smarty.const.STATUS_PROPOSED)}
+                                {$what = "Proposal"}
+                              {else}
+                                {$what = "Confirmation"}
+                              {/if}
+                            
+                            <li class="class-filter"><a href="{$p}/send{$pin}"><i class="fa fa-paper-plane"></i>View {$what}</a></li>
+                              {if ($status == $smarty.const.STATUS_RESERVED || $status == $smarty.const.STATUS_COMPLETE)} {* Reserved or complete *}                            
+                            <li class="class-filter"><a href="{$p}/itinerary{$pin}"><i class="fa fa-file-pdf-o"></i>Print Itinerary</a></li-->
+                              {/if}
+                              {if ($booking.checkout < $today)}
+                            <li class="class-filter"><a href="{$p}/feedback{$pin}"><i class="fa fa-star"></i>Feedback</a></li>
+                              {/if}
+                            {/if}
+                            {if (1 || $booking.guest_id || $booking.email_address)}
+                            <li class="class-filter"><a id="booking-status-chat" href="{$p}/chat{$pin}"><i class="fa fa-weixin"></i>Message History</a></li>
+                            {/if}
+                            {if ($user.user_level >= $smarty.const.USER_LEVEL_STAFF && $site.property_site == $smarty.const.PROPERTY_SITE_CORPORATE)}
+                            <li class="class-filter"><a id="booking-status-share" href="{$p}/share"><i class="fa fa-link"></i>Share Link</a></li>                            
+                            <li class="class-filter"><a id="booking-status-recalculate" href="{$p}/recalculate"><i class="fa fa-calculator"></i>Recalculate</a></li>                            
+                            <li class="class-filter"><a id="booking-status-upload" href="{$p}/upload"><i class="fa fa-upload"></i>Upload Documents</a></li>                            
+                            {/if}
+                                                        
+                            {if ($scope.can_cancel)}
+                            <li class="class-filter"><a id="booking-status-cancel" href="{$p}/cancel{$pin}"><i class="fa fa-times-circle-o"></i>Cancel {$type_name}</a></li>
+                            {/if}                            
+                        </ul>
+                                                                                      

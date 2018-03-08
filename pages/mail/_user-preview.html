@@ -1,0 +1,13 @@
+
+                                      <h4 class="booking-item-booking-title">
+                                        <a href="{$site_url}{$smarty.const.PAGE_PROFILE|link}{$thisuser.id}" target="_new" style="color:#FFF;font-weight:bold">
+                                        {$thisuser.display_name}
+                                        </a>
+                                      </h4>
+                                      <p>{$thisuser.description}</p>
+                                      
+                                      {if (0 && $booking && $booking.status == $smarty.const.STATUS_RESERVED || $booking.status == $smarty.const.STATUS_COMPLETE)}                                           
+                                        <a href="http://maps.google.com/?q={$rental|address:',':0:0}" style="color:#FFF !important;" target="_new">
+                                          {$rental|address}
+                                        </a>
+                                      {/if}

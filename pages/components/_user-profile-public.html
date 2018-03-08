@@ -1,0 +1,219 @@
+
+{$profile = $scope.profile}
+<div class="container">
+  <div class="row">
+    <div class="col-lg-3 col-md-4 hide-sm">
+      <div id="user" class="mb20">
+        <div>
+          <div class="mb10" id="user-media-container">
+            <div id="slideshow" class="slideshow">
+              <div class="slideshow-preload"></div>
+              <ul class="slideshow-images list">
+                <li class="media-photo media-photo-block active">
+                  <img class="img-responsive" src="{$profile.id|userphoto:'square'}" alt="" width="" height="">
+                </li>                
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {if ($scope.auth_edit_user)}
+      <div class="mb20">
+        <a href="{$smarty.const.PAGE_EDIT_PROFILE|link}{$profile.user_id}/" class="btn btn-success"><i class="fa fa-pencil-square"></i> {'edit'|translate:'c'}</a>
+      </div>
+      
+        {if ($scope.auth_login && $user.id != $profile.user_id)}
+        <div class="mb20">
+          <form class="ajax-submit" data-handler="backdoor-login">
+            <input type="hidden" name="user_id" value="{$profile.user_id}">
+            <button type="submit" class="btn btn-success"><i class="fa fa-key"></i> Log in as {$profile.user_id|username}</button>
+          </form>
+        </div>
+        {/if}
+      {/if}
+      
+      {if ($user.user_level >= $smarty.const.USER_LEVEL_STAFF)}
+      <div class="panel panel-default mb20">
+        <div class="panel-heading">
+          {'visible to staff only'|translate:'t'} 
+        </div>
+        <div class="panel-body">
+          <dl>
+            <dt>{'email'|translate:'c'}</dt>
+            <dd>{$profile.email_address}</dd>
+            <dt>{'phone'|translate:'c'}</dt>
+            <dd>{$profile.phone}</dd>
+          </dl>
+        </div>
+      </div>
+      {/if}
+      
+      {{"include": "_user-verifications.html"}}
+
+      <div class="panel panel-default mb20">
+        <div class="panel-heading">
+          {'about me'|translate:'c'}
+        </div>
+        <div class="panel-body">
+          <dl>
+            <dt>{'languages'|translate:'t'}</dt>
+            <dd>{$profile.languages}</dd>
+          </dl>
+        </div>
+      </div>
+
+      {* 
+      <div class="listings mb10 mt20">
+        <h2 class="mb20">
+          {'rentals'|translate:'t'}
+          <small>({$scope.host_listings_count})</small>
+        </h2>
+        <ul class="hostings-list list">
+          {foreach from=$scope.host_listings item=rental}
+          <li class="mb10">
+            "include": "_rental-list-item-small.html"
+          </li>
+          {/foreach}
+        </ul>
+      </div>
+       *}
+       
+       
+    </div>
+
+    <div class="col-lg-9 col-md-8 col-sm-12">
+      <div class="row mb20">
+        <div class="col-sm-8 col-md-12 col-lg-12" style="margin-top:-13px">
+          <h1>
+            {'hello, I am'|translate} {$profile.user_id|username}!
+          </h1>
+          <div class="h5 mt10">
+            {if ($profile.country || $profile.city)}
+              {$profile.country|flag} {[{$profile.city}, {$profile.country|get:countries:name}]|array_filter|join:', '}
+          · {/if}
+            <span class="text-normal">
+              {'member since'|translate:'c'} {$profile.created|date}
+            </span>
+          </div>
+          <div class="mt10">
+            {$profile.description|strip_style}
+          </div>
+          
+        </div>
+
+        <div class="mb40 mt40 row row-condensed">
+        
+          {if ($review_count)}
+          <div class="col-md-3 col-sm-4">
+            <a class="link-reset" rel="nofollow" href="#reviews">
+              <div class="text-center text-wrap">
+                <div class="badge-pill h3">
+                  <span class="badge-pill-count">{$review_count}</span>
+                </div>
+                <div class="mt10">{'reviews'|translate:'t'}</div>
+              </div>
+            </a>
+          </div>
+          {/if}
+          
+          {if ($profile.passport_verified || $profile.passport)}
+          <div class="col-md-3 col-sm-4">
+            <a class="link-reset" rel="nofollow">
+              <div class="text-center text-wrap" id="verified-id-icon">
+                <br>          
+                <span class="text-success"><i class="fa fa-2x fa-check"></i></span>
+                <div class="mt10">{if ($profile.passport_verified)}{'Verified ID'|translate}{else}{'Uploaded ID'|translate}<br>({'not yet verified'|translate}){/if}</div>
+              </div>
+            </a>
+          </div>
+          {/if}
+        </div>
+
+      {$review_count = $scope.host_reviews|@count + $scope.guest_reviews|@count}
+      {if ($review_count)}
+      <div class="social_connections_and_reviews">
+        <div class="reviews mb20" id="reviews">
+          <h2>
+            {'reviews'|translate:'t'}
+            <small>({$review_count})</small>
+          </h2>
+          <div>          
+            {if ($scope.guest_reviews|@count)}
+            <div class="reviews_section as_host">
+              <h4 class="mb20">
+                {'reviews from guests'|translate:'t'}
+              </h4>
+              <div class="reviews">
+                {foreach from=$scope.guest_reviews item=review}
+                  {{"include": "_rental-review-item.html"}}                  
+                {/foreach}
+              </div>
+            </div>
+            {/if}
+
+            {if ($scope.host_reviews|@count)}            
+            <div class="reviews_section as_guest mt10">
+              <h4 class="mb20">
+                {'reviews from hosts'|translate:'t'}
+              </h4>
+              <div class="reviews">
+                {foreach from=$scope.host_reviews item=review}
+                  {{"include": "_rental-review-item.html"}}                  
+                {/foreach}
+              </div>
+            </div>
+            {/if}
+
+          </div>
+        </div>
+      </div>
+      {/if}
+      
+      
+    </div>
+  </div>
+</div>
+
+{if ($scope.host_listings_count)}
+<div class="row">
+  <div class="col-xs-12">
+    <h2 class="mb20">
+      {'listings'|translate:'t'}
+      <small>({$scope.host_listings_count})</small>
+    </h2>
+
+    <ul id="light-slider">
+    {foreach from=$scope.host_listings item=rental}
+
+      <li>
+        <a href="{$rental|property_link}" class="media-photo media-photo-block mt10">
+          <img alt="{$rental.name}" class="img-responsive" height="144" width="144" src="{$rental.media|photo:square}" title="{$rental.name}" >
+          <div class="media-caption">
+            <div>
+              {$rental.name}, {$rental.address_city}
+            </div>
+            <div class="text-normal">
+            </div>
+          </div>
+        </a>
+      </li>
+    {/foreach}
+    </ul>
+  </div>
+</div>
+{/if}
+
+<script type="text/javascript">
+  $(document).ready(function() {
+    $("#light-slider").lightSlider({
+      item: 4,
+      pager: false,
+      slideMove:4,
+      easing: 'cubic-bezier(0.25, 0, 0.25, 1)',
+      speed:600,
+      autoWidth: false,
+      slideMargin: 10
+    });
+  });
+</script>

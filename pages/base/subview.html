@@ -1,0 +1,46 @@
+  {{"extend": "base/default.html"}}
+  {block name=content}
+
+    {block name=subview_top}
+    {/block}
+     
+    <div class="container">
+      <h2>
+      {block name=subview_title}{/block}
+      </h2>
+    </div>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-md-3">
+          {block name=subview_left_top}{/block}        
+          <aside class="user-profile-sidebar">
+            {block name=subview_aside}{/block}
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#side-nav">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+            </div>
+            <div class="collapse navbar-collapse" id="side-nav" style="max-height: 420px !important">          
+              <nav data-target="#subview-container" class="subview-nav" data-pin_code="{$scope.pin_code}" data-success_handler="traveler_ready">
+              {if ($scope.pin_code)}
+                {$pin = "?pin=`$scope.pin_code`"}              
+              {/if}              
+              {block name=subview_nav}{/block}               
+              </nav>
+            </div>
+          </aside>
+          {block name=subview_left_bottom}{/block}          
+        </div>
+        <div class="col-md-9" id="subview-container">
+          {block name=subview_container}{/block}               
+        </div>
+      </div>
+    </div>
+    <div class="gap"></div>
+    {block name=subview_bottom}{/block}
+  {/block}
+  

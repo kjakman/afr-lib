@@ -1,0 +1,91 @@
+
+    {$mail = $scope.mail}
+    {$sender = $mail.sender|default:$mail.from}
+    {$recipient = $mail.recipient|default:$mail.to}
+    {if (!$mail || !$mail.template)}
+      {'missing mail template'|error}
+    {else}
+    {$send_disabled = "disabled"}
+    {if ($user && $mail.recipient)}
+      {$send_disabled = ""}
+    {/if}
+    <form method='post' id="mail_form" class="mail-form ajax-submit" data-handler="mail-preview-send" data-success_handler="close">
+      <input name='user_id'    type='hidden' value="{$user.id}">
+      <input name='site_id'    type='hidden' value="{$site.id}">
+      <input name='sender_id' type='hidden' value="{$user.id}" id='sender_id'>
+
+      <input name="obj_id"     id="mail_obj_id"     type="hidden" value="{$mail.obj_id}" />
+      <input name="obj_type"   id="mail_obj_type"   type="hidden" value="{$mail.obj_type}" />
+      <input name="obj_name"   id="mail_obj_name"   type="hidden" value="{$mail.obj_name|default:$scope.obj_type}" />
+      <input name='template'   id="mail_template" type="hidden" value="{$mail.template}">
+      <input name='controller' id="mail_controller" type="hidden" value="{$mail.controller}">
+      <input name='main_message' id="main_message" type="hidden" value="{$mail.subject}">
+            
+    {if ($user)}
+    <input name='sender' type='hidden' value="{$sender|escape:'html'}">
+    <a href="{$this_url|add_query_var:'act':'logout'|remove_query_var:'provider'}" class="btn btn-danger">{'log_out'|translate:'c'} {$user|display_name}</a>
+    <div class="gap gap-small"></div>
+    {else}
+      <div class="row">
+        <div class="form-group col-xs-6">
+          <label for='sender'>From (your e-mail)</label>      
+          <input name='sender' type='text' value="{$mail.sender}" class="form-control auto-preview" placeholder="your@email.com">
+        </div>
+        <div class="form-group col-xs-6">
+          <label for='sender_name'>Your Name</label>      
+          <input name='sender_name' type='text' value="{$mail.sender_name}" class="form-control auto-preview" placeholder="Alice Smith">
+        </div>
+      </div>  
+    
+    <!--div class="row">
+      <div class="form-group col-xs-12">
+        <label for='sender'>From</label>      
+        <input name='sender' type='text' value="{$mail.sender}" class="form-control auto-preview" placeholder="your@email.com">
+      </div>
+    </div-->
+    
+    {/if}
+            
+    {if ($mail.recipient)} {* contact form *}
+      <input name='recipient' id="recipient" type="hidden" readonly class="form-control" value="{$mail.recipient}">
+    {else}  {* share form *}
+      
+      <div class="row">
+        <div class="form-group col-xs-6">
+          <label for='recipient'>To (e-mail)</label>      
+          <input name='recipient' type='text' value="{$mail.recipient}" class="form-control auto-preview" placeholder="bob@email.com">
+        </div>
+        <div class="form-group col-xs-6">
+          <label for='receiver_name'>Name (helps avoid spam)</label>      
+          <input name='receiver_name' type='text' value="{$mail.receiver_name}" class="form-control auto-preview" placeholder="Bob Smith">
+        </div>
+      </div>  
+    {/if}
+    
+      {if ($scope.hide_subject)}
+      <input name='subject' id="subject" type="hidden" readonly class="form-control" value="{$mail.subject}">
+      {else}
+      <div class="row">
+        <div class="form-group col-xs-12">
+          <label for='subject'>Subject</label>      
+          <input name='subject' type='text' value="{$mail.subject|escape:'html'}" class="form-control auto-preview">
+        </div>
+      </div>  
+      {/if}
+      
+      <div class="row">
+        <div class="form-group col-xs-12">
+          <label for='from'>Message</label>      
+          <textarea name="personal_message" id="personal_message" class="form-control auto-preview" rows="3" placeholder="Say something about this..."></textarea>
+        </div>
+      </div>
+      
+      <div class="row">
+        <div class="col-xs-12">
+          <input type="submit" id="mail_send" class="btn btn-success set-target-value" {$send_disabled} value="Send Now" >
+        </div>
+      </div>
+      
+      
+    </form>        
+    {/if}

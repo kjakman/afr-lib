@@ -1,0 +1,32 @@
+
+                                    {{"extend": "mail/mail-base.html"}}
+                                    
+                                    {block name=main_text}
+                                      <h1 class="mail-title" style="color: #202020;font-family: Helvetica;font-weight: bold;line-height: 125%;margin: 0;margin-bottom: 5px;font-size: 16px;text-align: left;text-transform: capitalize;display: block;padding: 0;font-style: normal;letter-spacing: normal;">
+                                      {if ($scope.mail_title)}
+                                        {$scope.mail_title}
+                                      {else}
+                                        {$default_name = 'user'|translate:'c'}
+                                        {'dear'|translate:'c'} {$scope.receiver_name|default:$default_name},                                          
+                                      {/if}
+                                      </h1>
+                                      <br>
+                                      
+                                      {if ($scope.main_message)}
+                                        {$scope.main_message}
+                                        <hr>
+                                      {/if}
+                                      {if ($scope.personal_message)}
+                                        <p><b>{'personal message'|translate:'c'}:</b> {$scope.personal_message}</p>
+                                        <hr>
+                                      {/if}
+                                      
+                                      {if ($scope.main_image)}
+                                        Image: {$scope.main_image} @ {$scope.url}<br>
+                                        <a href="{$scope.url}" title="" class="" target="_blank" style="mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;">
+                                          <img align="center" alt="" src="{$scope.main_image}" width="564" style="max-width: 640px;padding-bottom: 0;display: inline !important;vertical-align: bottom;border: 0;height: auto;outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;" class="mcnImage">
+                                        </a>
+                                      
+                                      {/if}
+                                      
+                                    {/block}

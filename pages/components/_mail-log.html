@@ -1,0 +1,16 @@
+                      {$rows = []}
+                      {$rows[] = ["Sent", "From", "To", "Subject"]}
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">
+                          Mail Log
+                        </div>
+                        <div class="panel-body">
+                          {foreach from=$mail_log item=log}
+                            {$subject = $log.subject|truncate:50}
+                            {$link_options = ["class" => "view-object", "data-obj_type" => "mail_queue", "data-obj_id" => $log.id, "data-fields" => ["sent_time", "sender", "recipient", "body"]]}
+                            {$row = [$log.sent_time|date, $log.sender|truncate:30, $log.recipient|truncate:30, '#'|anchor:$subject:$link_options]}
+                            {$rows[] = $row}
+                          {/foreach}
+                          {$rows|table:["class" => "table table-bordered table-striped table-booking-history"]}
+                        </div>
+                      </div>  

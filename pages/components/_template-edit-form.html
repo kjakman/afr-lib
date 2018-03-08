@@ -1,0 +1,14 @@
+
+    
+    <div class="hidden margin-top30 margin-bottom30" id="template_edit_container">
+      <h3 class="center" id="codemirror_title">Edit template {$scope.filename}</h3>
+      <form class="save-template" id="template_edit_form" data-handler="savefile" data-reload="1">
+        
+        <input type="hidden" name="filename" id="codemirror_filename" value="{$scope.filename}">
+        <input class="btn btn-primary" type="submit" value="Save" />
+        <input class="btn btn-danger template_edit_cancel" value="Cancel" data-dismiss="modal"/>      
+        <br>
+        <textarea name="content" id="codemirror_text" rows="40" cols="160" class="black">Loading...</textarea>
+      </form>
+    </div>
+

@@ -1,0 +1,149 @@
+<!doctype html>
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>{$page.title}</title>
+  <meta name="description" content="{$page.description}">
+  <meta name="author" lang="en" content="Kjetil Larsen">
+  <meta name="robots" content="index, follow">
+                                    
+  <link rel="StyleSheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/redmond/jquery-ui.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/afr/bower/summernote/dist/summernote.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/afr/bower/foundation-icons/foundation_icons_general/stylesheets/general_foundicons.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/afr/css/afr_base.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/afr/css/afr_tooltip.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="http://fonts.googleapis.com/css?family=Roboto:400,300,100,500,700" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,400,300,600" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/traveler/css/bootstrap.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/traveler/css/font-awesome.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/traveler/css/icomoon.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/traveler/css/styles.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/traveler/css/mystyles.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/afr/css/fontello-7a3c0263/css/fontello.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/afr/bower/fancybox/source/jquery.fancybox.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/afr/bower/bootstrap-toggle/css/bootstrap-toggle.min.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/afr/bower/bootstrap-modal/css/bootstrap-modal-bs3patch.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/afr/bower/bootstrap-modal/css/bootstrap-modal.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/afr/bower/smalot-bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/afr/bower/ionrangeslider/css/ion.rangeSlider.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/afr/css/google_pac.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/afr/bower/superslides/dist/stylesheets/superslides.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/afr/css/afr-air.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/afr/bower/foundation-icons/foundation_icons_general/stylesheets/general_foundicons.css" type="text/css" media="screen"/>    
+  <link rel="StyleSheet" href="/css/site.css" type="text/css" media="screen"/>
+  
+{foreach from=$styles item=style}
+  <link rel="StyleSheet" href="{$style}" type="text/css" media="screen"/>
+{/foreach}
+
+  
+  <link rel="canonical" href="http://test.hitabrick.com/serviced-apartment/" />
+  <script src="/afr/bower/modernizr/modernizr.js"></script>
+  <script type="text/javascript" src="/afr/bower/jquery/dist/jquery.min.js"></script>
+  <script type="text/javascript" src="/afr/bower/jquery-ui/ui/minified/jquery-ui.min.js"></script>
+  <script>
+    $.widget.bridge("uibutton", $.ui.button);$.widget.bridge("uitooltip", $.ui.tooltip);
+  </script>
+  <script type="text/javascript" src="/traveler/js/bootstrap.js"></script>
+  <script type="text/javascript" src="/afr/js/afr.js"></script>
+
+
+{foreach from=$scripts item=script}
+  <script type="text/javascript" src="{$script}"></script>
+{/foreach}
+
+{* reset scripts and styles so not listed again on bottom (set by page template) *}
+{$scripts = [] scope=global}
+{$styles = [] scope=global}
+
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="/afr/bower/respond/respond.js"></script>
+  <![endif]-->
+    
+</head>
+
+<body id="page_{$page.name|lower}">
+
+  <div class="global-wrap">
+    <header id="main-header">       
+    {{"include": "template/traveler/top.html"}}            
+    {*"include": "template/traveler/navigation.html"*}            
+    </header>
+    {* Page tpl={$page_template}<br>Tpl={$template|@var_dump}<br>*}
+    {include file="$page_template"}    
+    {if (!$scope.hide_footer) }
+    <footer id="main-footer">
+    {{"include": "template/traveler/footer.html"}}            
+    </footer>
+    {/if}
+  </div>
+
+  {if ($onload)}
+  <script>
+  $(function() { 
+  {$onload}
+  });
+  </script>
+  {/if}
+
+  <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?libraries=places"></script>
+  <script type="text/javascript" src="/afr/js/google_pac.js"></script>
+  <script type="text/javascript" src="/afr/bower/fancybox/source/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/afr/bower/summernote/dist/summernote.min.js"></script>
+  <script type="text/javascript" src="/afr/js/terms.js.php?ts=1425369981"></script>
+  <script type="text/javascript" src="/afr/js/afr_property.js"></script>
+{if ($user.id)}
+  <script type="text/javascript" src="/afr/js/afr_cms.js"></script>
+{/if}
+  <script type="text/javascript" src="/afr/bower/ckeditor/ckeditor.js"></script>
+  <script type="text/javascript" src="/afr/bower/ckeditor/adapters/jquery.js"></script>
+  <script type="text/javascript" src="/afr/ckfinder/ckfinder.js"></script>
+  <script type="text/javascript" src="/afr/bower/jquery-ui-map/ui/min/jquery.ui.map.full.min.js"></script>
+  <script type="text/javascript" src="/afr/js/afr_gmap.js"></script>
+
+  <script type="text/javascript" src="/js/main.js"></script>
+  <script type="text/javascript" src="/traveler/js/slimmenu.js"></script>
+  <script type="text/javascript" src="/traveler/js/nicescroll.js"></script>
+  <script type="text/javascript" src="/traveler/js/dropit.js"></script>
+  <script type="text/javascript" src="/traveler/js/icheck.js"></script>
+  <script type="text/javascript" src="/traveler/js/fotorama.js"></script>
+  <script type="text/javascript" src="/traveler/js/typeahead.js"></script>
+  <script type="text/javascript" src="/traveler/js/card-payment.js"></script>
+  <script type="text/javascript" src="/traveler/js/magnific.js"></script>
+  <script type="text/javascript" src="/traveler/js/owl-carousel.js"></script>
+  <script type="text/javascript" src="/traveler/js/fitvids.js"></script>
+  <script type="text/javascript" src="/traveler/js/tweet.js"></script>
+  <script type="text/javascript" src="/traveler/js/countdown.js"></script>
+  <script type="text/javascript" src="/traveler/js/gridrotator.js"></script>
+  <script type="text/javascript" src="/afr/bower/bootstrap-confirmation2/bootstrap-confirmation.js"></script>
+  <script type="text/javascript" src="/afr/bower/bootstrap-toggle/js/bootstrap-toggle.min.js"></script>
+  <script type="text/javascript" src="/afr/bower/bootstrap-modal/js/bootstrap-modalmanager.js"></script>
+  <script type="text/javascript" src="/afr/bower/bootstrap-modal/js/bootstrap-modal.js"></script>
+  <script type="text/javascript" src="/afr/lib/selectToAutocomplete/jquery.select-to-autocomplete.js"></script>
+  <script type="text/javascript" src="/afr/bower/smalot-bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js"></script>
+  <script type="text/javascript" src="/afr/bower/ionrangeslider/js/ion.rangeSlider.min.js"></script>
+
+{foreach from=$scripts item=script}
+  <script type="text/javascript" src="{$script}"></script>
+{/foreach}
+
+  <script type="text/javascript" src="/traveler/js/custom.js"></script>
+
+{foreach from=$styles item=style}
+  <link rel="StyleSheet" href="{$style}" type="text/css" media="screen"/>
+{/foreach}
+  
+  
+</body>
+
+</html>

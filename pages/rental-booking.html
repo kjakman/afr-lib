@@ -1,0 +1,38 @@
+{$booking = $scope.booking}
+
+{{"extend": "rental-request-base.html"}}
+  {$title = "contact host"|translate:'c'}
+  {block name='operation'}rental-booking{/block}
+
+  {block name=title}
+    {$title = "book %s now"|transplace:'c':$rental.name}                
+    <h2>{$title}</h2>
+  {/block}
+
+  {block name=top_text}
+    <h4>{{"name": "text-introduce", "type":"text", "value":"Please introduce yourself to"}} {$booking.host_id|username}</h4>
+  {/block}
+  {block name=main_text}
+  {/block}
+  {block name=button_text}
+    <i class="fa fa-bolt"></i> {'book now'|translate:'t'} 
+  {/block}
+  
+  {block name=bottom_text}
+                <ul class="list">
+                  {if ($action == 'authorize')}                  
+                  <li>{{"name": "text-line-1", "type":"text", "value":"You will only be charged if the host accepts your request. They’ll have 24 hours to reply."}}</li>
+                  <li>{{"name": "text-line-2", "type":"text", "value":"If the host declines or does not respond, no charge is made."}}</li>
+                  {/if}
+                  <li>{{"name": "text-line-3", "type":"text", "value":"By clicking on "Book Now", you agree to pay the total amount shown in the summary on the right, 
+                    which includes Occupancy Taxes and Service Fees, and agree to the Terms of Service and Cancellation Policy"}}
+                    {*
+                    <a href="/cancellation-policy/" target="new">Cancellation Policy</a>.
+                    <a href="{$smarty.const.PAGE_TERMS|link}" target="new">Terms of Service</a> 
+                    <a href="{$smarty.const.PAGE_TERMS|link}" target="new">House Rules</a>,
+                    *}                    
+                  </li>
+                </ul>
+                <p>{{"name": "text-line-4", "type":"text", "value":"If you would are not ready to book now but have a question for the host, "}} <a href="{$smarty.const.PAGE_INQUIRY|link}{$scope.rental.id}?{$qstr}"> {'click here'|translate}</a>.</p> 
+  {/block}
+                

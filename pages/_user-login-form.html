@@ -1,0 +1,23 @@
+
+
+          {if (0 && $smarty.session.phpauth)}
+          <h4><i class="fa fa-exclamation-triangle text-danger"></i> Important message:</h4>
+          <p>We have upgraded our user authentication system. Since we do not store passwords, existing users need to 
+             <a href="{$smarty.const.PAGE_PASSWORD|link}">reset their password</a>. We apologize for the inconvenience.
+          </p>
+          {/if}
+
+          <form class="ajax-submit signin-form" method="get" data-handler="user-login">
+            <div class="form-group form-group-icon-left"><i class="fa fa-user input-icon"></i>
+              <label>Username or email</label>
+              <input name="username" class="form-control" placeholder="e.g. johndoe@gmail.com" type="text" />
+            </div>
+            <div class="form-group form-group-icon-left"><i class="fa fa-lock input-icon"></i>
+              <label>Password</label>
+              <input name="password" class="form-control" type="password" placeholder="my secret password" />
+            </div>
+            <input name="redirect" type="hidden" value="{$get.ref|replace:'?act=logout':'?act=none'}" />
+            <input class="btn btn-primary" type="submit" value="Log in" />
+            <div class='gap gap-small'></div>                      
+          </form>
+

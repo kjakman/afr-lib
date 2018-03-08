@@ -1,0 +1,300 @@
+  {{"extend": "base/default.html"}}
+  {block name=content}
+  
+
+    {$club = $scope.golf_club}
+    
+    <div class="container">
+      <ul class="breadcrumb">
+        <li><a href="/">Home</a>
+        </li>
+        <li><a href="#">Golf Clubs</a>
+        </li>
+        <li class="active">{$club.name}</li>
+      </ul>
+      {$club.pager}
+      <div class="booking-item-details">
+        <header class="booking-item-header">
+          <div class="row">
+            <div class="col-md-9">
+              <h2 class="lh1em">{$club.name}</h2>
+              <p class="lh1em text-small"><i class="fa fa-map-marker"></i> {$club.address_formatted}</p>
+              <ul class="list list-inline text-small">
+                <li><a href="{$club.address_web}" target="golf"><i class="fa fa-home"></i> Website</a></li>
+                <li><i class="fa fa-phone"></i> {$club.phone}</li>
+              </ul>
+            </div>
+            <div class="col-md-3">
+              <p class="booking-item-header-price">
+                {if ($club.byg_rate_from > 0)}
+                  {'from'|translate} <span class="text-lg">{$club.byg_currency|currency}{$club.byg_rate_from}</span>
+                {else}
+                  <span class="text-lg">{$club.currency|currency}{$club.fee_weekday}</span> weekdays<br>
+                  <span class="text-lg">{$club.currency|currency}{$club.fee_weekend}</span> weekends
+                {/if}
+                </p>
+            </div>
+          </div>
+        </header>
+        <div class="row">
+          <div class="col-md-7">
+            <div class="tabbable booking-details-tabbable">
+              <ul class="nav nav-tabs" id="myTab">
+                <li class="active">
+                  <a href="#rental-photos" data-toggle="tab"><i class="fa fa-camera"></i>Photos</a>
+                </li>
+                <li>
+                  <a href="#rental-map" data-toggle="tab"><i class="fa fa-map-marker"></i>On the Map</a>
+                </li>
+                {if ($club.calendar)}
+                <li>
+                  <a href="#rental-calendar" data-toggle="tab"><i class="fa fa-calendar"></i>Calendar</a>
+                </li>
+                {/if}
+              </ul>
+              {$images = $club.media_json|@json_decode}
+              <div class="tab-content">
+                <div class="tab-pane fade in active" id="rental-photos">
+                  <div class="fotorama" data-allowfullscreen="true" data-nav="thumbs">
+                    {foreach from=$images item=image}
+                      <img src="{$image->filename}" alt="{$image->title}" title="{$image->title}" 
+                      {if ($image->copyright_name)}data-caption="{$image->copyright_name}"{/if}
+                      />                      
+                    {/foreach}
+                  </div>
+                </div>
+                <div class="tab-pane fade" id="rental-map">
+                  <div id="map-canvas" data-types="shortstay" data-lat={$club.location_lat} data-lng={$club.location_long} style="width:100%; height:500px;"></div>
+                </div>
+                {if ($club.calendar)}                
+                <div class="tab-pane fade" id="rental-calendar">
+                  {{"include": "_calendar.html"}}
+                </div>
+                {/if}
+              </div>
+            </div>
+          </div>
+          <div class="col-md-5">
+            {if ($club.review_score > 0)}
+            {$next_class = ''}
+            <a class="text-default" href="#reviews">
+              <div class="booking-item-meta" itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">
+                <meta itemprop="reviewCount" content="{$club.review_count|default:1}" />                   
+                <meta itemprop="bestRating" content="10" />                   
+                <meta itemprop="ratingValue" content="{$club.review_score}" />                   
+                <input type="number" readonly class="rating float-left"
+                     value="{$club.review_score}" 
+                     min=0 max=10 
+                     data-size="sm" 
+                     data-rtl="false" data-glyphicon="false" data-show-clear="false"                     
+                     data-show-caption="false">
+              
+                <!--h2 class="lh1em mt40">Exceptional!</h2>
+                <h3>{(($club.review_recommend/$club.review_count) * 100)|round} % <small >of guests recommend</small></h3-->
+                <div class="booking-item-rating">                       
+                    <span class="booking-item-rating-number"><b >{($club.review_score/2)|round:"1"}</b> / 5</span>
+                    {if ($club.review_count > 0)}        
+                    <span class="text-normal">based on {$club.review_count} {'reviews'|translate}</span>
+                    {/if}
+                  </a>
+                </div>
+              </div>
+            </a>
+            {else}
+             {* no rating *}
+            {/if}
+          
+            {* old 
+            <div class="booking-item-meta">
+              <!--h2 class="lh1em mt40">Exceptional!</h2>
+              <h3><small >of guests recommend</small></h3-->
+              <div class="booking-item-rating">
+                <input type="number" readonly class="rating" 
+                     value="{$club.review_score}" 
+                     min=0 max=5
+                     data-rtl="false" data-glyphicon="false" data-show-clear="false"                     
+                     data-show-caption="false">
+                     
+                <span class="booking-item-rating-number"><b >{($club.review_score)|round:"1"}</b> of 5 <small class="text-smaller">player rating</small></span>
+                <p><a class="text-default" href="#">based on {$club.review_count} reviews</a>
+                </p>
+              </div>
+            </div>
+            *}
+            
+            {if ($club.byg_url)}
+            <iframe src="https://hitabrick.bookyourgolf.net{$club.byg_url}" 
+                    width="100%" height="440" frameborder="0" style="border:none"></iframe>
+            <!--div class="panel panel-byg">
+              <div class="panel-heading">Book Your Golf</div>
+              <div class="panel-body-off mt10">
+              </div>
+            </div-->
+            {/if}
+            
+            {if ($club.booking_url)}
+            <div class="booking-item-dates-change">
+              <form id="booking-form" class="ajax-submit" data-handler="rental-booking">
+                <input type="hidden" name="guest_id" value="{$user.id}">                           
+                <input type="hidden" name="site_id" value="{$site.id}">                           
+                <input type="hidden" name="apt_id" value="{$club.id}">                           
+                <input type="hidden" name="t" value="{$club.property_type}">                           
+                <input type="hidden" name="ng" value="{$smarty.get.ng}">                           
+                <div class="input-daterange" data-date-format="MM d, DD">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="form-group form-group-icon-left"><i class="fa fa-calendar input-icon"></i>
+                        <label>Date</label>
+                        <input type="text" value="{$smarty.get.in_disp}" class="form-control datepicker hasDatepicker" id="in_disp" name="in_disp" placeholder="Date" data-dependent_field="out" autocomplete="off">
+                        <input type="hidden" value="{$smarty.get.in}" id="in" name="in">           
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group form-group-icon-left form-group-select-plus">
+                      <label>Players</label>
+                      <div class="btn-group btn-group-select-num{if ($smarty.get.ng >= 4)} hidden{/if}" data-toggle="buttons">
+                        {section name=ng start=1 loop=4 step=1}
+                          <label class="btn btn-primary{if ($smarty.get.ng == $smarty.section.ng.index)} active{/if}"><input type="radio" name="options" />
+                          {$smarty.section.ng.index}
+                          </label>
+                        {/section}                      
+                        <label class="btn btn-primary"><input type="radio" name="options" />4+</label>
+                      </div>
+                      <select class="form-control{if ($smarty.get.ng < 4)} hidden{/if}">
+                        {section name=ng start=1 loop=15 step=1}
+                          <option{if ($smarty.get.ng == $smarty.section.ng.index)} selected="selected"{/if}>{$smarty.section.ng.index}</option>
+                        {/section}                      
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div class="gap gap-small"></div>	
+                <a href="{$club.booking_url}" type="submit" class="btn btn-danger btn-lg">Book tee time</a>
+              </form>
+              
+              {if ($club.edit_link)}
+              <a href="{$club.edit_link}" type="submit" class="btn btn-danger btn-lg">Edit</a>
+              {/if}
+            </div>
+            {/if}
+            
+          </div>
+        </div>
+        <div class="gap"></div>
+        <div class="row">
+          <div class="col-md-3">
+            <h3>Amenities</h3>
+            <ul class="booking-item-features booking-item-features-expand mb30 clearfix">
+            {foreach from=$club.facs item=fac}
+              <li><i class="{$fac.icon}" id="fac_{$fac.id}"></i><span class="booking-item-feature-title">{$fac.name}</span></li>
+            {/foreach}
+            </ul>
+          </div>
+          <div class="col-md-9">
+            {if ($club.description)}
+            <h3>Description</h3>
+            {$club.description}
+            <div class="gap gap-small"></div>
+            {/if} 
+            {if ($scope.golf_courses)}
+            <h3>Courses</h3>
+            <table class="table table-bordered table-striped table-booking-history">
+              <thead>     
+                <tr>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th>Holes</th>
+                  <th>Par</th>
+                  <th>Slope</th>
+                  <th>Length</th>
+                  <th>Fee</th>
+                  <th>Fee Lo</th>
+                </tr>
+              </thead>
+              <tbody>
+{*
+  'green_fee_weekdays_high_season'=> 'fee_weekday',
+  'green_fee_weekends_high_season'=> 'fee_weekend',
+  'green_fee_weekdays_low_season'=> 'fee_weekday_low',
+  'green_fee_weekends_low_season'=> 'fee_weekend_low',
+  'course_type'=> 'course_type',
+  'par_men_yellow'=> 'par_men',
+  'par_ladies_red'=> 'par_women',
+  'course_rating_men_yellow'=> 'rating_men',
+  'course_rating_ladies_red'=> 'rating_women',
+  'slope_rating_men_yellow'=> 'slope_men',
+  'slope_rating_ladies_red'=> 'slope_women',
+  'architect'=> 'architect',
+  'number_of_holes'=> 'number_holes',
+  'length_ladies_red'=> 'length_men',
+  'length_men_yellow'=> 'length_women',  
+  'golf_course_description'=> 'description',  
+  'signature_hole'=> 'signature_hole',  
+*}
+
+              {foreach from=$scope.golf_courses item=course}
+                <tr>
+                  <td class="booking-history-title">{$course.name}</td>
+                  <td>{$course.course_type}</td>
+                  <td>{$course.number_holes}</td>
+                  <td>{$course.par_men}   / {$course.par_women}   </td>
+                  <td>{$course.slope_men} / {$course.slope_women} </td>
+                  <td>{$course.length_men} / {$course.length_women}</td>
+                  <td>{$course.fee_weekday} / {$course.fee_weekend}</td>
+                  <td>{$course.fee_weekday_low} / {$course.fee_weekend_low}</td>
+                </tr>
+              {/foreach}
+              </tbody>
+            </table>            
+            {/if}
+          </div>
+        </div>
+        <div class="gap gap-small"></div>
+    
+        <div class="row row-wrap">
+          <div class="col-md-8">
+            
+            {if ($scope.reviews|@count > 0)}
+            <h3 class="mb20">{$scope.reviews|@count} {if ($scope.reviews|@count == 1)}{'review'|translate:'c'}{else}{'reviews'|translate:'c'}{/if}</h3>                                    
+            <ul class="booking-item-reviews list" id="reviews">
+              {foreach from=$scope.reviews item=review}
+              <li>
+              {{"include": "_rental-review-item.html", "compact": "1"}}
+              </li>
+              {/foreach}
+            </ul>
+            {else}
+              {* <p>No reviews yet.</p> *}
+            {/if}
+          </div>
+          <div class="col-md-4">
+            <h4>Nearby golf courses</h4>
+            <ul class="booking-list">
+              {foreach from=$scope.nearby_golf item=golf}
+              <li>
+                <a href="{$smarty.const.PAGE_GOLF_CLUB|link}{$golf|property_geolink}{$query_string}">
+                {{"include": "_golf-club-nearby.html"}}
+                </a>
+              </li>
+              {/foreach}
+            </ul>
+            
+            <h4>Nearby properties</h4>
+            <ul class="booking-list">
+              {foreach from=$scope.nearby_apts item=apt}
+              <li>
+                <a href="{$apt|property_link}{$query_string}">
+                {{"include": "_rental-nearby.html"}}
+                </a>
+              </li>
+              {/foreach}
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="gap gap-small"></div>
+    </div>
+  {/block}

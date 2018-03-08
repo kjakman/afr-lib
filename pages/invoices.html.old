@@ -1,0 +1,93 @@
+
+          {$count = $scope.invoice_count}
+          {$start = $scope.start}
+          {$limit = $scope.limit}
+          {$last = min($scope.start + $scope.limit, $scope.invoice_count)}
+          {$pagination_options = ["link_class" => "linkref", "link_target" => "#profile_invoices_link"]}
+          
+          {if (!$count)}
+          <h4>You do not have any invoices yet</h4>
+          {else}
+          <h2>{$scope.title}</h2>
+          {$count} Invoices found {if ($scope.invoices|@count < $scope.invoice_count)}(Showing {$scope.start + 1} - {$last}){/if}
+          {$scope.invoice_count|pagination:$scope.start:$scope.limit:$pagination_options}
+          
+          {$verbose = 0}
+          <table class="table table-bordered table-striped table-invoice-history">
+            <thead>     
+              <tr>
+                <th>Number</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Total</th>
+                <th>Paid</th>
+                <th>Balance</th>
+                <th>Rental</th>
+                <th>Concerning</th>
+
+                {if ($verbose)}
+                <th>Created</th>
+                <th>Exported</th>
+                <th>Legal</th>
+                <th>Site</th>
+                <th>Type</th>
+                <th>Actions</th>
+                {/if}
+                
+              </tr>
+            </thead>
+            <tfoot>     
+              <tr>
+                <th>Total</th>
+                <th></th>
+                <th></th>         
+                <th>{$scope.sum_total}</th>
+                <th>{$scope.sum_paid}</th>
+                <th>{$scope.sum_balance}</th>
+                <th></th>
+                <th></th>
+
+                {if ($verbose)}
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                {/if}
+                
+              </tr>
+            </tfoot>
+            
+            <tbody>
+            {foreach from=$scope.invoices item=invoice}
+              {$rental = ($invoice.parent_type == 'reservation' && $invoice.apt_id) ? 1 : 0}
+
+              <tr>
+                <td><a href="{$smarty.const.PAGE_INVOICE|link}{$invoice.id}" target="invoice">{$invoice.invoice_id|default:$invoice.id}</a></td>
+                <td>{$invoice.invoice_date|date}</td>
+                <td>{$invoice.status|get:"inv_status":"name"}</td>
+                <td>{$invoice.currency|currency}{$invoice.total}</td>
+                <td>{$invoice.currency|currency}{$invoice.paid}</td>
+                <td>{$invoice.currency|currency}{$invoice.balance}</td>
+                
+                <td>{if ($rental)}<i class="fa fa-home"></i> {$invoice.apt_id|get:"property":"name"}: {$invoice.start_date|daterange:$invoice.end_date}{/if}</td>
+                <td>{$invoice.concerning}</td>
+                
+                {if ($verbose)}                
+                <td>{$invoice.created|date}</td>
+                <td>{$invoice.export_timestamp|datetime}</td>
+                <td>{$invoice.legal_entity_id|get:"legal_entity":"name"}</td>
+                <td>{$invoice.site_id|get:"site":"name"}</td>
+                <td><small>{$invoice.parent_type}</small></td>
+                <td></td>
+                {/if}
+
+                
+              </tr>
+            {/foreach}
+            </tbody>
+            
+          </table>          
+          {/if}
+          

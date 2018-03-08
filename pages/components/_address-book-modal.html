@@ -1,0 +1,45 @@
+<div id="addressBookModal" class="modal fade" tabindex="-1" data-replace="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form class="form-horizontal ajax-submit" id="calendar_simple_form" data-handler="calendar-update" data-success_handler="calendar_reload">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+          <b class="overlay-title">{'address book'|translate:'c'}</b>
+        </div>
+        
+        <div class="modal-body" class="container-fluid" style="height:600px">
+          <p>{'type the name of the person you are looking for'|translate:'c'}...</p>
+          <input type="text" name="name" class="form-control typeahead" autocomplete="off" 
+                 data-operation="address-book" data-min-length="3" data-target="#receiver_name" data-target_id="#receiver_id" data-target_email="#receiver_email">
+          <div class='typeahead-spinner collapse'><i class="fa fa-spinner fa-spin"></i></div>
+          
+        </div>
+      </form>   
+    </div>
+  </div>
+</div>
+
+{literal}
+   <script id="result-template" type="text/x-handlebars-template">
+      <div class="ProfileCard u-cf">
+        <img class="ProfileCard-avatar" src="{{profile_image_url_https}}">
+
+        <div class="ProfileCard-details">
+          <div class="ProfileCard-realName">{{first_name}} {{last_name}}</div>
+          <div class="ProfileCard-screenName">@{{display_name}}</div>
+          <div class="ProfileCard-description">{{description}}</div>
+        </div>
+
+        <div class="ProfileCard-stats">
+          <div class="ProfileCard-stat"><span class="ProfileCard-stat-label">Tweets:</span> {{statuses_count}}</div>
+          <div class="ProfileCard-stat"><span class="ProfileCard-stat-label">Following:</span> {{friends_count}}</div>
+          <div class="ProfileCard-stat"><span class="ProfileCard-stat-label">Followers:</span> {{followers_count}}</div>
+        </div>
+      </div>
+    </script>
+    
+    <script id="empty-template" type="text/x-handlebars-template">
+      <div class="EmptyMessage">Your search turned up 0 results. This most likely means the backend is down, yikes!</div>
+    </script>
+    
+{/literal}

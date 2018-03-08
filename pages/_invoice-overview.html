@@ -1,0 +1,196 @@
+                      {$invoice = $scope.invoice}
+                      {$start = $invoice.start_date}
+                      {$end = $invoice.end_date}
+
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">Details
+                        {if ($scope.auth_edit)}
+                        &nbsp;
+                        <a href="#" class="btn btn-success btn-sm edit-object" 
+                           data-obj_type="invoice" 
+                           data-obj_id="{$invoice.id}"
+                           data-fields='{["legal_entity_id", "invoice_date","concerning", "start_date", "end_date"]|@json_encode}'
+                           data-reload_link="#invoice-overview" 
+                           >Edit</a>
+                        {/if}
+                        
+                        </div>
+                        <div class="panel-body">
+                          {$invoice|invoice_details:$user.user_level|print_array}
+                          {if ($scope.auth_edit && !$invoice.invoice_id)}
+                          <br>
+                          <a href="#" class="btn btn-success btn-sm ajax-link" 
+                           data-load_text = "Setting..."
+                           data-reload_link = "#invoice-overview"
+                           data-handler = "set-invoice-id"
+                           data-data='{["inv_id" => $invoice.id,"user_id" => $user.id]|@json_encode}'
+                           ><i class="fa fa-plus"></i> Set Invoice Number</a>
+                          
+                          {/if}
+                        </div>
+                      </div>  
+
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">Billed To
+                        {if ($scope.auth_edit)}
+                        {$invoice_fields = ["address.salutation","address.first_name","address.last_name","address.organization","address.address1","address.address2","address.city","address.state","address.zip","address.country"]}
+                        {if ($user.user_level >= $smarty.const.USER_LEVEL_STAFF)}
+                        {$invoice_fields[] = "address.email_address"}
+                        {/if}
+                        &nbsp;
+                        <a href="#" class="btn btn-success btn-sm edit-object" 
+                           data-obj_type="invoice" 
+                           data-obj_id="{$invoice.id}"
+                           data-fields='{$invoice_fields|@json_encode}'
+                           data-reload_link="#invoice-overview" 
+                           >Edit</a>
+                        {/if}
+                        
+                        </div>
+                        <div class="panel-body">
+                          {$show_contact = $scope.show_contact}
+                          {$invoice|address_details:$show_contact|print_array}
+                        </div>
+                      </div>  
+
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">
+                          Invoice {$invoice.invoice_id|default:$invoice.id}: {$start|daterange:$end}
+                          &nbsp;
+                          {if ($scope.auth_edit)}
+                            {if ($invoice.locked)}
+                            <span class="label label-danger">Locked</span>
+                            <a class="btn btn-danger ajax-link" href="#" id="unlock-{$invoice.id}" 
+                              data-toggle="confirmation" 
+                              data-obj_type="invoice" data-obj_id="{$invoice.id}" data-handler="edit" 
+                              data-data='{["obj_type" => "invoice", "id" => $invoice.id, "locked" => 0]|@json_encode}'
+                              data-reload_link='#invoice-overview'
+                              rel="tooltip" data-placement="top" title="Are you sure? "><i class="fa fa-unlock"></i> Unlock
+                            </a>
+                            
+                            {else}
+                            <a href="#" class="btn btn-success edit-invoice bst-edit-link" data-toggle="modal" data-obj_type="inv_lineitem"
+                              data-target="#invoice_edit_dialog" data-url="{$scope.data_url}" data-edit_url="{$scope.edit_url}">Edit</a>
+                            {/if}
+                          {/if}
+
+                          <a href="{$smarty.const.PAGE_INVOICE|link}{$invoice.id}?view=_invoice-print.html" target="invoice" class="btn btn-primary btn-sm"><i class="fa fa-file-pdf-o"> View PDF</i></a>
+                        </div>
+                        <div class="panel-body">
+                          {$invoice|invoice:$scope.auth_edit}
+                          <br>
+                          {if ($scope.auth_edit)}
+                          <!--a href="#" class="btn btn-success btn-sm add-object" 
+                           data-obj_type="inv_lineitem" 
+                           data-data='{["inv_id" => $invoice.id,"user_id" => $user.id]|@json_encode}'
+                           data-fields='{["inv_id", "user_id","type","tax_category","currency", "quantity","amount","description"]|@json_encode}'
+                           data-reload_link="#invoice-overview" 
+                           ><i class="fa fa-plus"></i> Add Lineitem</a--> 
+
+                          <a href="#" class="btn btn-success btn-sm" 
+                             data-toggle="modal" data-target="#lineitem_modal"
+                             ><i class="fa fa-plus"></i> Add Lineitem</a>
+                           
+                          <a href="#" class="btn btn-success btn-sm ajax-link" 
+                           data-load_text = "Copying..."
+                           data-handler = "add-invoice"
+                           data-data='{["inv_id" => $invoice.id,"user_id" => $user.id]|@json_encode}'
+                           ><i class="fa fa-plus"></i> New Invoice</a>
+ 
+                           
+                         {/if}
+                          
+                        </div>
+                      </div>  
+                      
+
+                      {if (1 || $invoice.paid > 0)}
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">
+                          Payments
+                          <span class="label label-success">Paid: {$invoice.currency|currency}{$invoice.paid}</span>
+                        </div>
+                        <div class="panel-body">
+                          {$invoice|invoice_payments:$scope.auth_level}
+                        </div>
+                      </div>
+                      {/if}
+                      
+                      {if ($scope.mail_log|@count)}
+                      {$rows = []}
+                      {$rows[] = ["Sent", "From", "To", "Subject"]}
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">
+                          Mail Log
+                        </div>
+                        <div class="panel-body">
+                          {foreach from=$scope.mail_log item=log}
+                            {$subject = $log.subject|truncate:50}
+                            {$link_options = ["class" => "view-object", "data-obj_type" => "mail_queue", "data-obj_id" => $log.id, "data-fields" => ["sent_time", "sender", "recipient", "body"]]}
+                            {$row = [$log.sent_time|date, $log.sender|truncate:30, $log.recipient|truncate:30, '#'|anchor:$subject:$link_options]}
+                            {$rows[] = $row}
+                          {/foreach}
+                          {$rows|table:["class" => "table table-bordered table-striped table-booking-history"]}
+                        </div>
+                      </div>  
+                      {/if}
+
+                      {if ($scope.change_log|@count)}
+                      {$rows = []}
+                      {$rows[] = ["Date", "User", "Action"]}
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">
+                          Change Log
+                        </div>
+                        <div class="panel-body">
+                          {foreach from=$scope.change_log item=log}
+                            {$action = $log.action|truncate:50}
+                            {$link_options = ["class" => "view-object", "data-obj_type" => "changelog", "data-obj_id" => $log.id]}
+                            {$row = [$log.timestamp|datetime, $log.user_id|fullname|truncate:30, '#'|anchor:$action:$link_options]}
+                            {$rows[] = $row}
+                          {/foreach}
+                          {$rows|table:["class" => "table table-bordered table-striped table-booking-history"]}
+                        </div>
+                      </div>  
+                      {/if}
+                        
+                      
+                      <div id="lineitem_modal" class="modal fade" tabindex="-1" data-replace="true">
+                        <form class="form-horizontal ajax-submit" id="lineitem_form" data-handler="add" data-reload_link="#invoice-overview">
+                        <input type="hidden" name="obj_type" value="inv_lineitem">
+                        <input type="hidden" name="site_id" value="{$site.id}">
+                        <input type="hidden" name="user_id" value="{$user.id}">
+                        <input type="hidden" name="inv_id" value="{$invoice.id}">
+                        <input type="hidden" name="currency" value="{$invoice.currency}">
+                        <div class="modal-header">
+                          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                          <b id="overlay_title">Add Lineitem</b>
+                        </div>
+                        <div class="modal-body" class="container-fluid">
+                          <div class="form-group col-sm-12">
+                            <label>Type</label>
+                            {"type"|object_select:"lineitem_type":["class" => "form-control", "value" => $scope.currency, "search" => ["can_add" => 1]]}
+                          </div>
+                          <div class="form-group col-sm-4">
+                            <label>Tax Category</label>
+                            {"tax_category"|object_select:"tax_category":["class" => "form-control", "value" => $scope.currency, "search" => ["active" => 1]]}
+                          </div>
+                          <div class="form-group col-sm-4">
+                            <label>Quantity</label>
+                            <input name="quantity" class="form-control" type="text" />
+                          </div>
+                          <div class="form-group col-sm-4">
+                            <label>Amount</label>
+                            <input name="amount" class="form-control" type="text" />
+                          </div>
+                          <div class="form-group col-sm-12">
+                            <label>Description</label>
+                            <input name="description" class="form-control" maxlength="255"/>      
+                          </div>
+                          <br>
+                          <input type="submit" class="btn btn-primary" value="Save Changes">       
+                          <button type="button" data-dismiss="modal" class="btn btn-danger">Cancel</button>
+                        </div>
+                        </form>
+                      </div>
+                      

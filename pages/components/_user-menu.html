@@ -1,0 +1,60 @@
+        <nav class="nav">
+          <ul class="slimmenu {$slimmenu_class}" id="slimmenu">
+            <li><a href="{$smarty.const.PAGE_DASHBOARD|link}">Dashboard</a></li>
+            <li><a href="{$smarty.const.PAGE_INBOX|link}">{'inbox'|translate:'u'}</a></li>
+            {if ($user.user_level >= $smarty.const.USER_LEVEL_OWNER)}
+            <li><a href="#">{'hosting'|translate:'u'}</a>
+              <ul>
+                <li><a href="{$smarty.const.PAGE_RENTAL_LIST|link}">{'my listings'|translate:'u'}</a></li>
+                <li><a href="{$smarty.const.PAGE_BOOKINGS|link}">{'my bookings'|translate:'u'}</a></li>
+                {if ($user.user_level >= $smarty.const.USER_LEVEL_STAFF)} <li><a href="{$smarty.const.PAGE_CALENDAR|link}">{'calendar'|translate:'u'}</a></li>{/if}
+              </ul>
+            </li>
+            
+            {/if}
+            <li><a href="#">{'user'|translate:'u'}</a>
+              <ul>
+                <li><a href="{$smarty.const.PAGE_EDIT_PROFILE|link}{$user.id}">{'user profile'|translate:'u'}</a></li>
+                <li><a href="{$smarty.const.PAGE_ACCOUNT|link}{$user.id}">{'user account'|translate:'u'}</a></li>
+              </ul>
+            </li>
+            {if ($user.user_level >= $smarty.const.USER_LEVEL_ADMIN)}
+            <li><a href="#">{'accounting'|translate:'u'}</a>
+              <ul>
+                <li><a href="{$smarty.const.PAGE_INVOICES|link}">{'invoices'|translate:'u'}</a></li>
+                <li><a href="{$smarty.const.PAGE_PAYMENTS|link}">{'payments'|translate:'u'}</a></li>
+                <li><a href="{$smarty.const.PAGE_PAYOUT|link}">{'payout'|translate:'u'}</a></li>
+              </ul>
+            </li>
+            {/if}
+            {if ($user.user_level >= $smarty.const.USER_LEVEL_STAFF)}
+            <li><a href="#">{'system'|translate:'u'}</a>
+              <ul>
+                {if ($user.user_level >= $smarty.const.USER_LEVEL_STAFF)}
+                    <li><a href="{$smarty.const.PAGE_USERS|link}">{'users'|translate:'u'}</a></li>
+                    <li><a href="{$smarty.const.PAGE_DICTIONARY|link}">{'dictionary'|translate:'u'}</a></li>
+                {/if}
+                
+                {if ($user.user_level >= $smarty.const.USER_LEVEL_ADMIN)}
+                <li><a href="{$smarty.const.PAGE_EDIT_SITE|link}{$site.id}">{'edit site'|translate:'u'}</a></li>                
+                <li><a href="{$smarty.const.PAGE_ADMIN|link}">{'back end'|translate:'u'}</a>
+                  <ul>
+                  {foreach from=$scope.classes key=group item=classes}
+                     <li><a href="{$smarty.const.PAGE_ADMIN|link}?obj_group={$group}">{$group}</a>
+                        <ul>
+                        {foreach from=$classes key=name item=obj_type}
+                           <li><a href="{$smarty.const.PAGE_ADMIN|link}?obj_type={$obj_type}">{$name}</a></li>
+                        {/foreach}
+                        </ul>
+                     </li>
+                  {/foreach}
+                  </ul>
+                </li>
+                {/if}
+                
+              </ul>
+            </li>
+            {/if}
+          </ul>
+        </nav>
+

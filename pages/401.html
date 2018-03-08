@@ -1,0 +1,24 @@
+  {{"extend": "base/default.html"}}
+  {block name=content}
+  
+
+  <div class="full-center">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+          <!--p class="text-hero">Forbidden</p-->
+          <h1>Not authorized</h1>
+          <p>We're sorry, but this page could be displayed due to invalid credentials</p>
+          {if ($user.id)}
+          <p>Perhaps you're not logged in as the owner of this content?</p>
+          {$scope.error|alert:'error'}
+          {else}
+          <p>You are not currently logged in.</p>
+          {/if}
+          <a class="btn btn-success btn-ghost btn-lg mt5" href="/"><i class="fa fa-long-arrow-left"></i>Back to Homepage</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{/block}

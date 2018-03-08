@@ -1,0 +1,56 @@
+{if (!$scope.cal_properties)}
+  <h3>Calendar</h3>
+  <div class="gap gap-small"></div>
+  <div class="alert alert-danger" role="alert">
+    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+    You do not have any properties yet. Click <a href="{$smarty.const.PAGE_ADD_PROPERTY|link}">here</a> to add one.
+  </div>
+
+{else}
+  
+  <div id='admincal_full' data-options = '{$scope.cal_params|json_encode}'>
+  
+    {if ($scope.cal_params.cal_show.search)}
+    {{"include": "_calendar-search.html"}}  
+    <ul class="inline inline-list">
+    {foreach from=$scope.cal_search item=search}
+      <li><a href="{$search.link}" data-data='{$search.data|json_encode}' class="form-resubmit btn btn-default {$search.class}" 
+           data-target="#calendar_search_form"><i class="fa fa-times"></i> {$search.name}</a></li>
+    {/foreach}
+    </ul>
+    {else}
+    {/if}
+    
+    <div class='cal_debug'>{$scope.cal_params.debug}</div>
+    <div class='menu_container'>{$scope.cal_menu}</div>
+    <div id='cal_list'>{$scope.cal_list}</div>
+    {if (1)}
+    <div id="calendar" unselectable="on" style="-webkit-user-select: none;">
+      <!-- foreach i -->
+      <div id='admincal-0' class='admincal'>
+        <div id='calendar_grid-0' class='cal-container'>
+          <div class='cal-guide cell_w_font'>{$scope.cal_guide}</div>
+          <div class='cal-apts'>{$scope.cal_properties}</div>
+          <div class='cal-canvas' id='cal_canvas-0' data-index='0' 
+               data-size='{$scope.canvas_size|@json_encode}'
+               data-params='{$scope.cal_params|@json_encode}'>
+            <div id='cal_entries-0' class='cal-entries'>{$scope.cal_reservations}{$scope.cal_exceptions}</div>
+            <div id="cal_tip-0"class="cal-tip msg click-close"></div>
+          </div>
+        </div>
+        <div class='cal-footers title_margin canvas_w center'>
+        <ul class="month-links">{$scope.cal_month_links}</ul>
+        <div class="cal-links">{$scope.cal_action_links}</div>
+        </div>
+      </div>
+      <!-- end foreach -->  
+    </div>
+    {/if}
+  </div>
+  
+  {* $scope|dump *}
+  
+{/if} {* if($scope.cal_properties) *}
+
+{*$scope|dump*}  
+

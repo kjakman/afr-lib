@@ -1,0 +1,19 @@
+                {$rental = $scope.rental}
+                {if ($rental)}                  
+                <table cellspacing="3" cellpadding="0" border="0">
+                  <tbody>
+                    <tr>                
+                      <td width="140">{'rate'|translate:'c'}</td>
+                      <td width="200">{$rental.currency|currency}{$rental.rate_day} <small>/ {'day'|translate}</small></td>
+                    </tr>                    
+                    <tr>                
+                      <td width="140">{'sleeps'|translate:'c'}</td>
+                      <td width="200">{$rental.currency|currency}{$rental.rate_day} <small>{if ($rental.max_guests==1)}{'guest'|translate}{else}{'guests'|translate}{/if}</small></td>
+                    </tr>                    
+                    <tr>                
+                      <td width="140">{'minimum stay'|translate:'c'}</td>
+                      <td width="200">{$rental.min_stay} <small>{if ($rental.min_stay==1)}{'night'|translate}{else}{'nights'|translate}{/if}</small></td>
+                    </tr>                    
+                  </tbody>
+                </table>
+                {/if}

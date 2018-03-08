@@ -1,0 +1,37 @@
+<div id="overlay_content_month" class="modal fade dialog-simple" tabindex="-1" data-replace="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form class="form-horizontal ajax-submit" id="calendar_month_form" data-handler="calendar-pricing" data-success_handler="calendar_reload">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+          <b class="overlay-title">Monthly rate: </b>
+          <b class="overlay-title-range"></b>
+        </div>
+        
+        <div class="modal-body" class="container-fluid">
+          <div class="form-group-icon-left col-sm-4">
+            <i class="fa fa-eur input-icon"></i>
+            <input name="rate_month" class="form-control" placeholder="rate/month" type="text" id="rate_month">
+      
+          <input type="hidden" name="currency">
+          <input type="hidden" name='start'>
+          <input type="hidden" name='end'>
+          <input type="hidden" name='site_id' value="{$site.id}">
+          <input type="hidden" name='user_id' value="{$user.id}">
+          <input type="hidden" name='property_type'>
+          <input type="hidden" name='apt_id'>
+          <input type="hidden" name='host_id'>
+          <input type="hidden" name='owner_id'>
+          
+          
+        </div><!-- modal body-->
+      
+        <div class="modal-footer">
+          <input type="submit" class="btn btn-success" value="Save">
+          <button type="button" data-dismiss="modal" class="btn btn-danger">Cancel</button>
+        </div>
+      </form>      
+    </div>
+  </div>
+</div>
+

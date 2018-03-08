@@ -1,0 +1,19 @@
+  {{"extend": "base/default.html"}}
+  {block name=content}
+  
+
+  <div class="full-center">
+    <div class="container mb50">
+      <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+          <!-- p class="text-hero">Whoops</p-->
+          <h2>Something went wrong...</h2>
+          <p>We're sorry, but we could not fulfill your request.</p>
+          {if ($scope.error)}{$scope.error|alert:"error"}{/if}
+          <a class="btn btn-success btn-ghost btn-lg mt5" href="/"><i class="fa fa-long-arrow-left"></i>Back to Homepage</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{/block}

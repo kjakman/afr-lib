@@ -1,0 +1,11 @@
+  {{"extend": "base/default.html"}}
+  {block name=content}
+  
+    <div class="container">
+      <h2 class="page-title">Simple test 123</h2>
+      <p>{{"name": "test-heading", "type":"text", "value": "Testing 123"}}</p>
+      Hola
+      Scope: {$scope|dump}
+    </div>
+  {/block}
+

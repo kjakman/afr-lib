@@ -1,0 +1,119 @@
+<!-- Size -->    
+
+    <div class="row advanced-search-row">
+      <div class="col-md-2"><h4>Type</h4></div>
+      <div class="col-md-9 relative nogutter">    
+        {"pt"|object_select:"hosting_property_type":["class" => "form-control", "value" => $get.pt, "search" => ["active" => 1]]}
+          <span class="input-icon click-parent-select"><i class="fa fa-caret-down"></i></span>
+      </div>
+    </div>
+    <div class="row advanced-search-row">
+      <div class="col-md-2"><h4>Size</h4></div>
+      <div class="col-md-9 relative nogutter">    
+        <div class="col-md-4 relative nogutter">
+          <select class="form-control" id="nr" name="nr">
+            <option {if (!$smarty.get.nr)} selected="selected"{/if} value="0">Bedrooms</option>
+            {section name=nr start=1 loop=4 step=1}
+              <option{if ($smarty.get.nr == $smarty.section.nr.index)} selected="selected"{/if} value="{$smarty.section.nr.index}">{$smarty.section.nr.index} Bedroom{if ($smarty.section.nr.index != 1)}s{/if} </option>
+            {/section}                                            
+            <option {if ($smarty.get.nr >= 4)} selected="selected"{/if} value="4">4+ Bedrooms</option>
+          </select>
+          <span class="input-icon click-parent-select"><i class="fa fa-caret-down"></i></span>
+        </div>
+      
+        <div class="col-md-4 relative nogutter">
+          <select class="form-control" id="nb" name="nb">
+            <option {if (!$smarty.get.nb)} selected="selected"{/if} value="0">Bathrooms</option>
+            {section name=nb start=1 loop=4 step=1}
+              <option{if ($smarty.get.nb == $smarty.section.nb.index)} selected="selected"{/if} value="{$smarty.section.nb.index}">{$smarty.section.nb.index} Bathroom{if ($smarty.section.nb.index != 1)}s{/if} </option>
+            {/section}                                            
+            <option {if ($smarty.get.nb >= 4)} selected="selected"{/if} value="4">4+ Bathrooms</option>
+          </select>
+          <span class="input-icon click-parent-select"><i class="fa fa-caret-down"></i></span>
+        </div>
+
+        <div class="col-md-4 relative nogutter">
+          <select class="form-control" id="nbb" name="nbb">
+            <option {if (!$smarty.get.nbb)} selected="selected"{/if} value="0">Beds</option>
+            {section name=nbb start=1 loop=4 step=1}
+              <option{if ($smarty.get.nbb == $smarty.section.nbb.index)} selected="selected"{/if} value="{$smarty.section.nbb.index}">{$smarty.section.nbb.index} Bed{if ($smarty.section.nbb.index != 1)}s{/if} </option>
+            {/section}                                            
+            <option {if ($smarty.get.nbb >= 4)} selected="selected"{/if} value="4">4+ Beds</option>
+          </select>
+          <span class="input-icon click-parent-select"><i class="fa fa-caret-down"></i></span>
+        </div>
+
+      </div>    
+    </div>   
+    
+<!-- Price -->    
+    <div class="checkbox_group row advanced-search-row">
+      <div class="col-md-2"><h4>Price</h4></div>
+      <div class="col-md-10">
+        <input name="rate_day" 
+        data-min="0"
+        data-max="1000"
+        data-from="50"
+        data-to="900"
+        data-values_separator="-" data-prefix="€" data-max-postfix="+" type="text" id="price-slider">
+      </div>
+    </div>
+    
+<!-- Amenities -->    
+    <div class="checkbox_group row rental-amenities advanced-search-row">
+      <div class="col-md-2"><h4>Amenities</h4></div>
+      <div class="col-md-9">
+        <input name="fac" type="hidden" id="facilities" value="{$smarty.get.fac}" class="cb_target form-control">
+
+         {* first 3 manually *}
+          <div class="col-sm-4 no-padding">
+              <div class="checkbox">                                
+                   <label><input data-id="100" data-target="#facilities" value="100" type="checkbox">Air Conditioning</label>
+              </div>
+          </div>
+          <div class="col-sm-4 no-padding">
+              <div class="checkbox">                                
+                   <label><input data-id="170" data-target="#facilities" value="170" type="checkbox">Internet</label>
+              </div>
+          </div>
+          <div class="col-sm-4 no-padding">
+              <div class="checkbox">                                
+                   <label><input data-id="905" data-target="#facilities" value="905" type="checkbox">Kitchen</label>
+              </div>
+          </div>
+
+          {* rest automatic *}
+          <div class="collapse collapse-up-down" id="more-facs">
+        {assign var="shownfacs" value=[100,170,905]} {* already shown *} 
+        {assign var="selfacs" value=$smarty.get.fac}
+        {foreach from=$scope.amenities key=k item=facs}      
+            <!--div class="col-md-5 table-cell">
+                <h4>{$k|capitalize}</h4>
+            </div-->              
+            {foreach from=$facs item=fac}
+              {if in_array($fac.id, $shownfacs)} 
+                {* already shown, skip this iteration *}
+                {continue}
+              {/if}
+            
+            <div class="col-sm-4 no-padding">
+                <div class="checkbox">                                
+                     <label><input data-id="{$fac.id}" data-target="#facilities" value="{$fac.id}" type="checkbox" 
+                     {if (($selfacs|strpos:$fac.id) !== false)}checked{/if}
+                     />{$fac.name|capitalize}</label>
+                </div>
+            </div>
+            {/foreach} 
+        {/foreach}
+        </div><!-- more-facs -->
+      </div>
+      <div class="col-md-1">
+      <a data-toggle="collapse" data-target="#more-facs" aria-expanded="false" aria-controls="more-facs">
+        <i class="fa fa-caret-down fa-2x"></i>
+      </a>
+      </div>
+    </div>
+    
+    <input type="submit" class="btn btn-success pull-right" value="Apply Filters">
+
+    

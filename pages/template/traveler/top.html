@@ -1,0 +1,87 @@
+        <div class="header-top navbar navbar-default {$scope.nav_class}">
+        <div class="container">
+          <div class="row">
+            <div class="col-md-3">
+              <a class="logo" href="/">
+                <img src="/traveler/img/logo-invert.png" alt="Image Alternative text" title="Image Title" />
+              </a>
+            </div>
+            <div class="col-md-3 col-md-offset-2">
+            {if ($page.name != 'Home')} {* don't show on home page *}
+              <form class="main-header-search" action="/serviced-apartment/">
+                <input type="hidden" placeholder="site" name="site_id" value="{$site.id}">
+                <input type="hidden" placeholder="type" name="t" value="{$scope.property_type|default:'shortstay'}">
+                <input type="hidden" placeholder="center" name="center" id="center" class='location-center' value='{$smarty.get.center}'>
+                <input type="hidden" placeholder="bounds" name="bounds" id="bounds" class='location-bounds' size="40" data-target="location_id" data-target_display="loc"  value='{$smarty.get.bounds}'>
+                <input type="hidden" placeholder="loc_types" name="loc_types" value="{$scope.location_types|default:'golf_course,airport'}">
+                {{"include": "_rental-search-location.html"}}
+              </form>
+            {/if}
+            </div>
+            <div class="col-md-4">
+              <div class="top-user-area clearfix">
+                <ul class="top-user-area-list list list-horizontal list-border">
+                  {if ($user.id)}
+                  <li class="top-user-area-avatar">
+                    <a href="/profile/"><img class="origin round" src="{$user.profile_picture_small}" alt="{$user.full_name}" title="{$user.full_name}" />{$user.display_name_short}</a>
+                  </li>
+                  <li><a href="?act=logout">Sign Out</a></li>
+                  {else}
+                  <li><a class="popup-text" href="#login-dialog" data-effect="mfp-3d-unfold">Login</a></li>                  
+                  <div id="login-dialog" class="mfp-with-anim mfp-hide mfp-dialog">                      
+                    {{"include": "login-register.html"}}
+                  </div>
+                  {/if}
+                  <li class="nav-drop"><a href="#">USD $<i class="fa fa-angle-down"></i><i class="fa fa-angle-up"></i></a>
+                    <ul class="list nav-drop-menu">
+                      <li><a href="#">EUR<span class="right">€</span></a></li>
+                      <li><a href="#">GBP<span class="right">£</span></a></li>
+                      <li><a href="#">JPY<span class="right">円</span></a></li>
+                      <li><a href="#">CAD<span class="right">$</span></a></li>
+                      <li><a href="#">AUD<span class="right">A$</span></a></li>
+                    </ul>
+                  </li>
+                  <li class="top-user-area-lang nav-drop">
+                    <a href="#">
+                      <img src="/traveler/img/flags/32/uk.png" alt="Image Alternative text" title="Image Title" />ENG<i class="fa fa-angle-down"></i><i class="fa fa-angle-up"></i>
+                    </a>
+                    <ul class="list nav-drop-menu">
+                      <li>
+                        <a title="German" href="#">
+                          <img src="/traveler/img/flags/32/de.png" alt="Image Alternative text" title="Image Title" /><span class="right">GER</span>
+                        </a>
+                      </li>
+                      <li>
+                        <a title="Japanise" href="#">
+                          <img src="/traveler/img/flags/32/jp.png" alt="Image Alternative text" title="Image Title" /><span class="right">JAP</span>
+                        </a>
+                      </li>
+                      <li>
+                        <a title="Italian" href="#">
+                          <img src="/traveler/img/flags/32/it.png" alt="Image Alternative text" title="Image Title" /><span class="right">ITA</span>
+                        </a>
+                      </li>
+                      <li>
+                        <a title="French" href="#">
+                          <img src="/traveler/img/flags/32/fr.png" alt="Image Alternative text" title="Image Title" /><span class="right">FRE</span>
+                        </a>
+                      </li>
+                      <li>
+                        <a title="Russian" href="#">
+                          <img src="/traveler/img/flags/32/ru.png" alt="Image Alternative text" title="Image Title" /><span class="right">RUS</span>
+                        </a>
+                      </li>
+                      <li>
+                        <a title="Korean" href="#">
+                          <img src="/traveler/img/flags/32/kr.png" alt="Image Alternative text" title="Image Title" /><span class="right">KOR</span>
+                        </a>
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+

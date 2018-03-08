@@ -1,0 +1,19 @@
+
+      <table cellpadding='0' style='font-family:Courier, monospace'>
+        <tbody>
+          {if ($mail.replyto)}<tr><td></b>Reply-to:</b></td><td>{$mail.replyto|escape:'html'}</td></tr>{/if}
+          {if ($mail.cc)}<tr><td></b>CC:</b></td><td>{$mail.cc|escape:'html'}</td></tr>{/if}
+          <tr><td></b>To:</b></td><td>{$mail.recipient|escape:'html'}</td></tr>
+          <tr><td></b>Sent:</b></td><td>{$mail.sent_time|date_format:'%A, %e %B %Y %H:%M:%S'|capitalize}</td></tr>
+          <tr><td></b>Subject:</b></td><td>{$mail.subject|escape:'html'}</td></tr>
+          
+          {if ($mail.attachment)}
+            {$file = $mail.attachment}
+            {$icon = $file|file_icon}
+            {$name = $file|file_name}
+            {$size = $file|file_size|bytes2human}
+            <tr><td></b><i class="fa fa-paperclip"></i></b></td><td><a href="{$file}" download>{$icon} {$name}</a> ({$size})</td></tr>
+          {/if}                    
+
+        </tbody>
+      </table>

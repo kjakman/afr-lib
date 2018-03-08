@@ -1,0 +1,39 @@
+  {{"extend": "base/subview.html"}}
+
+  {block name=subview_top}
+    {$invoice = $scope.invoice}
+    {$obj = $invoice}    
+    {$booking = $scope.booking}
+    {$rental = $scope.rental}
+    {$start = $booking.start_date}
+    {$end = $booking.end_date}
+    {$in = $booking.checkin}
+    {$out = $booking.checkout}
+  {/block}
+  
+  {block name=subview_title}
+    {'invoice'|translate:'c'} {$invoice.invoice_id|default:$invoice.id}
+  {/block}
+  
+  {block name=subview_aside}
+    {if ($booking)}
+    {$obj_type = $scope.obj_type}            
+    {{"include": "_booking-sidebar.html"}}           
+    {/if}
+  {/block}
+  
+  {block name=subview_nav}
+    {{"include": "_invoice-nav.html"}}
+  {/block}
+  
+  {block name=subview_container}
+    {{ "subviews":["overview","print","receive","send","share","recalculate","export"],"prefix": "_invoice-" }}
+  {/block}
+  
+  {block name=subview_bottom}
+    {if ($scope.auth_edit_invoice)}
+      {{"include": "_invoice-edit-dialog.html"}}
+      {{"include": "_refund-dialog.html"}}
+      {{"include": "_verify-dialog.html"}}
+    {/if}
+  {/block}

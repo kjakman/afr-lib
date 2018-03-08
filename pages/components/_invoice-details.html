@@ -1,0 +1,54 @@
+                      <div class="panel panel-primary"  id="invoice_{$invoice.id}">
+                        <div class="panel-heading">
+                          Invoice {$invoice.invoice_id|default:$invoice.id}: {$start|daterange:$end}
+                          &nbsp;
+                          {if ($scope.auth_edit_invoice)}
+                            {if ($invoice.locked)}
+                            <span class="label label-danger">Locked</span>
+                            <a class="btn btn-danger ajax-link" href="#" id="unlock-{$invoice.id}" 
+                              data-toggle="confirmation" 
+                              data-obj_type="invoice" data-obj_id="{$invoice.id}" data-handler="edit" 
+                              data-data='{["obj_type" => "invoice", "id" => $invoice.id, "locked" => 0]|@json_encode}'
+                              data-reload_link='#invoice-overview'
+                              rel="tooltip" data-placement="top" title="Are you sure? "><i class="fa fa-unlock"></i> Unlock
+                            </a>
+                            
+                            {else}
+                            <a href="#" class="btn btn-success edit-invoice bst-edit-link" data-toggle="modal" data-obj_type="inv_lineitem"
+                              data-target="#invoice_edit_dialog" data-url="{$scope.data_url}" data-edit_url="{$scope.edit_url}">Edit</a>
+                            {/if}
+                          {/if}
+
+                          <a href="{$smarty.const.PAGE_INVOICE|link}{$invoice.id}/print{if ($scope.pin)}&amp;pin={$scope.pin}{/if}" 
+                             data-target='#invoice_pdf_link' target="invoice" class="btn btn-primary btn-sm click-target"><i class="fa fa-file-pdf-o"> View PDF</i></a>
+                        </div>
+                        <div class="panel-body">
+                          {* $invoice|invoice:$scope.auth_edit *}
+                          {* "include": "_invoice-table.html" *}
+                          {$scope.invoice_rows|table:['class' => 'accounting_table']}
+                          
+                          <br>
+                          {if ($scope.auth_edit_invoice)}
+                          <!--a href="#" class="btn btn-success btn-sm add-object" 
+                           data-obj_type="inv_lineitem" 
+                           data-data='{["inv_id" => $invoice.id,"user_id" => $user.id]|@json_encode}'
+                           data-fields='{["inv_id", "user_id","type","tax_category","currency", "quantity","amount","description"]|@json_encode}'
+                           data-reload_link="#invoice-overview" 
+                           ><i class="fa fa-plus"></i> Add Lineitem</a--> 
+
+                          <a href="#" class="btn btn-success btn-sm" 
+                             data-toggle="modal" data-target="#lineitem_modal"
+                             ><i class="fa fa-plus"></i> Add Lineitem</a>
+                           
+                          <a href="#" class="btn btn-success btn-sm ajax-link" 
+                           data-load_text = "Copying..."
+                           data-handler = "add-invoice"
+                           data-data='{["inv_id" => $invoice.id,"user_id" => $user.id]|@json_encode}'
+                           ><i class="fa fa-plus"></i> New Invoice</a>
+ 
+                           
+                         {/if}
+                          
+                        </div>
+                      </div>  
+                      

@@ -1,0 +1,35 @@
+									<!-- COMMENT FORM -->
+                  <form id="comment-form" class="ajax-submit sky-form boxed" data-handler="add" data-handler_options='{literal}{"reload": "1"}{/literal}'>
+                    <input name="obj_type" type="hidden" value="comment" />
+                    <input name="user_id" type="hidden" value="{$user.id}" />
+                    <input name="site_id" type="hidden" value="{$site.id}" />
+                    <input name="article_id" type="hidden" value="{$article.id}" />
+                    {if ($user)}
+                    <input name="first_name" type="hidden" value="{$user.display_name}" />
+                    <input name="email_address" type="hidden" value="{$user.email_address}" />
+                    {else}
+										<div class="row">
+                      <div class="col-md-4">
+                        <div class="form-group">
+                          <label>{'name'|translate:'c'}</label>
+                          <input class="form-control" type="text" name="first_name" />
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="form-group">
+                          <label>{'E-mail'|translate:'c'}</label>
+                          <input class="form-control" type="text" name="email_address" />
+                        </div>
+                      </div>
+                    </div>
+                    {/if}
+                    <div class="form-group">
+                      <label>{'comment'|translate:'c'}</label>
+                      <textarea class="form-control" name="content" ></textarea>
+                    </div>
+                    
+
+                    <input class="btn btn-primary" type="submit" value="{'leave a reply'|translate:'c'}" />
+                  </form>
+									<!-- /COMMENT FORM -->
+									

@@ -1,0 +1,39 @@
+			<!-- CONTENT -->
+			<section>
+				<div class="container">
+
+					<div class="row">
+
+						<div class="col-md-3">
+              {{"include": "_event-nav.html"}}                                
+						</div>
+
+						<div class="col-md-9">
+
+  						<!-- EVENT FORM -->
+              {if ($scope.auth_add_event)}
+                {$new_event = ["site_id" => $site.id, "user_id" => $user.id, "all_day" => 1, "start_time" => $today, "end_time" => $today]}
+              <button href="#event-form-modal" data-form="#event-form" data-backdrop="static" data-toggle="modal" type="button" data-reset="1" data-data='{$new_event|@json_encode}'              
+                      class="btn btn-success event-form-open"><i class="fa fa-plus"></i> {'add event'|translate:'t'}</button>            
+                                            
+              {/if}
+
+							<!-- Timeline -->
+							<div class="timeline">
+								<div class="timeline-left">
+								  
+								  {foreach from=$scope.events item=event}
+								  {{"include": "_event-list-item.html"}}
+									{/foreach}
+
+								</div>
+							</div>
+							<!-- /Timeline -->
+						</div>
+
+					</div>
+
+				</div>
+			</section>
+			<!-- /CONTENT -->
+

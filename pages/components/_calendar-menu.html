@@ -1,0 +1,48 @@
+      <div class="calendar-menu gmenu">
+        <ul>                         
+          <li><a href="#" class="gbutton previous2 cal_nav" title="Previous year">&nbsp;</a></li>
+          <li><a href="#" class="gbutton previous cal_nav"  title="Previous month">&nbsp;</a></li>
+          {$date_format = $smarty.const.DATEPICKER_FORMAT_SMARTY|default:'%d-%m-%Y'}
+          {$date = $scope.data.start|date_format:$date_format}
+          <li><input id="cal-current" class="datepicker mr10" data-date="{$date}" readonly data-onchange="calendar_change_date" value="{$date}"></li>
+          <li><a href="#" class="gbutton next cal_nav" title="Next month">&nbsp;</a></li>
+          <li><a href="#" class="gbutton next2 cal_nav" title="Next year">&nbsp;</a></li>
+          <li><a href="?refresh=1" id="cal_reload" class="gbutton rotate_right cal_nav reload">&nbsp;</a></li>
+          <li><a title="New reservation" class="left gbutton new-res big-text" href="#cal_dialog"> + </a> &nbsp;</li>
+          <li><a title="Stats" class="gbutton cal_nav view" href="?view=stats" data-value="stats"><i class="fa fa-line-chart"></i></a></li>
+          <li><a title="Invoice" class="gbutton cal_nav show" href="?show=invoice" data-value="invoice"><i class="fa fa-euro"></i></a></li>
+          <li><a title="Period" class="left gdropdown_medium gbutton" href="#">Period<span class="garrow"></span></a>
+            <ul class="cal_menu">    
+              <li><a class="cal_nav period active" data-value="1" href="/calendar/?p=2">1 month</a></li>
+              <li><a class="cal_nav period" data-value="2" href="/calendar/?p=2">2 months</a></li>
+              <li><a class="cal_nav period" data-value="3" href="/calendar/?p=3">3 months</a></li>
+              <li><a class="cal_nav period" data-value="4" href="/calendar/?p=4">4 months</a></li>
+              <li><a class="cal_nav period" data-value="6" href="/calendar/?p=6">6 months</a></li>
+              <li><a class="cal_nav period" data-value="12" href="/calendar/?p=12">12 months</a></li>
+            </ul>                 
+          </li>
+          <li><a title="Status" class="left gdropdown_medium gbutton" href="#">Status<span class="garrow"></span></a>
+            <ul class="cal_menu">
+              <li><a class="cal_nav status" data-value="-100" href="/calendar/?st=-100">All</a></li>
+              <li><a class="cal_nav status" data-value="1"  href="/calendar/?st=15">Unconfirmed</a></li>
+              <li><a class="cal_nav status active" data-value="15" href="/calendar/?st=15">Proposed</a></li>
+              <li><a class="cal_nav status" data-value="30" href="/calendar/?st=30">Reserved</a></li>
+            </ul>
+          </li>
+          {*
+          <li><a title="Starting" class="left gdropdown_medium gbutton" href="#">Starting<span class="garrow"></span></a>
+            <ul class="cal_menu">
+              <li><a class="noclick"><span class="ui-state-active">1st of month</span></a></li>
+              <li><a data-value="1" href="/calendar/?f=1">1 week ago</a></li>
+            </ul>
+          </li>
+          *}
+          <li><a title="Filters" class="left gdropdown_medium gbutton" href="#">Filters<span class="garrow"></span></a>
+            <ul class="cal_menu">
+              <li><a class="cal_nav filter-active{if ($scope.show_inactive)} active{/if}" data-value="1" href="/calendar/?si=1">Show inactive</a></li>
+              <li><a class="cal_nav filter-active{if (!$scope.show_inactive)} active{/if}" data-value="0" href="/calendar/?si=0">Hide inactive</a></li>
+            </ul>
+          </li>
+          <li><form method="post" id="cal-search-form"><input class="left" name="cal_search" type="text" id="cal_search" style="width: 80px;height:30px !important;color:#000 !important"> <button type="submit" class="btn btn-success btn-sm"><i class="fa fa-search" style=""></i></button></form></li>
+        </ul>
+      </div>

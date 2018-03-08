@@ -1,0 +1,126 @@
+              <!-- FORM -->
+							<h3>{{"name": "title", "type":"html", "value": "Please give us feedback."}}</h3>
+							
+							<!-- FORM -->
+              <form id="review-form" class="ajax-submit" data-handler="send-review" method="POST">
+                <input name="parent_type"        type="hidden" value="{$scope.parent_type}">
+                <input name="parent_id"          type="hidden" value="{$scope.parent_id}">
+                <input name="reviewed_obj_type"  type="hidden" value="{$scope.reviewed_obj_type}">
+                <input name="reviewed_obj_id"    type="hidden" value="{$scope.reviewed_obj_id}">
+                <input name="user_id" type="hidden" value="{$user.id}" />
+                <input name="site_id" type="hidden" value="{$site.id}" />
+                <input name="remote_ip" type="hidden" value="{$client_ip}" />
+                <input name="language" type="hidden" value="{$language}" />
+                {$debug = 0}
+                
+                {if ($booking)}
+                <input name="host_id" type="hidden" value="{$booking.host_id}" />
+                <input name="guest_id" type="hidden" value="{$booking.guest_id}" />
+                {/if}
+                {* $scope|dump *}
+                
+                {foreach from=$scope.items item=review_item}
+								<div class="row">
+									<div class="form-group">
+										<div class="col-md-4">
+										  <h4 class="mt10">{$review_item.name|translate:'c'}</h4>
+										</div>
+										<div class="col-md-8">
+										  <!--input type="text" name="review_{$review_item.id}" id="review_{$review_item.id}" class="star-rating" data-size="lg" -->
+								      <input type="number" name="score_{$review_item.id}" id="score_{$review_item.id}" class="rating" data-size="sm" data-step="1"
+                         min=0 max=5  required
+                         data-rtl="false" data-glyphicon="false" data-show-clear="false"                     
+                         data-show-caption="true">
+                         
+										</div>
+									</div>
+                </div>
+                {/foreach}
+                
+                {if (!$user_id)} {* only used if not logged in, or not known from parent object *}
+								<div class="row mt10">
+									<div class="form-group">
+										<div class="col-md-4">
+											<label>{'full name'|translate:'c'} *</label>
+											<input required type="text" name="reviewer_name"  class="form-control" data-msg-required="{'please enter your name'|translate:'c'}." maxlength="128">
+										</div>
+										<div class="col-md-4">
+											<label>{'email address'|translate:'c'} *</label>
+											<input required type="text" name="reviewer_email" class="form-control" data-msg-required="{'please enter your email address'|translate:'c'}." data-msg-email="{'please enter a valid email address'|translate:'c'}." maxlength="128">
+										</div>
+										<div class="col-md-4">
+											<label>{'phone number'|translate:'c'}</label>
+											<input type="text" name="reviewer_phone" class="form-control" maxlength="16">
+										</div>
+										<div class="col-md-4">
+											<label>{'city'|translate:'c'} *</label>
+											<input required type="text" name="reviewer_city" class="form-control"data-msg-required="{'please enter your home town'|translate:'c'}." maxlength="128" >
+										</div>
+										<div class="col-md-4">
+											<label>{'country'|translate:'c'} *</label>
+											<input required type="text" name="reviewer_country"  class="form-control"data-msg-required="{'please select your country'|translate:'c'}.">
+										</div>
+										
+									</div>
+								</div>
+								<div class="row mt10">
+									<div class="form-group">
+										<div class="col-md-12">
+											<label>{'subject'|translate:'c'} *</label>
+											<input required type="text" value="{if ($debug)}contact form test{/if}" data-msg-required="{'please enter the subject'|translate:'c'}." maxlength="100" class="form-control" name="subject" id="contact_subject">
+										</div>
+									</div>
+								</div>
+								<br />
+								{/if}
+								
+								<div class="row mt10">
+									<div class="form-group">
+										<div class="col-md-12">
+											<label>{'public feedback'|translate:'c'} ({'required'|translate})</label>
+											<textarea required maxlength="5000" data-msg-required="{'please write a public review of your experience'|translate:'c':0}"
+											          placeholder="{'please write a public review of your experience'|translate:'c':0}." 
+											          rows="10" class="form-control" name="review_comment" id="contact_comment"></textarea>
+										</div>
+									</div>
+								</div>
+
+								<div class="row mt10">
+									<div class="form-group">      
+										<div class="col-md-12">
+											<label>{'private feedback'|translate:'c'} <i class="fa fa-lock"></i></label>
+											<textarea maxlength="5000" placeholder="{'optional private feedback to the host'|translate:'c':0}." 
+											          rows="5" class="form-control" name="review_private" id="contact_comment"></textarea>
+										</div>
+									</div>
+								</div>
+								
+								<div class="row mt10">
+                  <div class="form-group">
+										<div class="col-md-12">
+                      <label>{'would you recommend this to others?'|translate:'c'}</label>
+                      <div class="btn-group radio-group" data-toggle="buttons">        
+                        <input type="radio" name='recommend' value="0" checked class="collapse"><!-- so we know in handler that we're asking -->
+                        <label class="btn danger">
+                          <input type="radio" name='recommend' value="-1">
+                          <i class="fa fa-thumbs-down fa-4x"></i> {'no'|translate:'c'}
+                        </label>
+                        <label class="btn success">
+                         <input type="radio" name='recommend' value="1">
+                         <i class="fa fa-thumbs-up fa-4x"></i> {'yes'|translate:'c'}
+                        </label>
+                      </div>                         
+                    </div>                         
+                  </div>   
+                </div>   
+								
+								<div class="row mt10">
+									<div class="col-md-12">
+										<input class="hidden" type="text" name="captcha" id="captcha" value="" /><!-- keep it hidden -->
+										<input type="submit" value="{'post review'|translate:'c':0}" class="btn btn-success btn-lg" />
+									</div>
+								</div>
+
+              </form>
+	
+						<!-- /FORM -->

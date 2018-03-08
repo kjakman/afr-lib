@@ -1,0 +1,30 @@
+
+                        {$p = "`$smarty.const.PAGE_EDIT_PROFILE|link``$scope.obj_id`"}
+                        <ul class="list user-profile-nav">
+                          <li class="class-filter active"><a href="{$p}/overview"></i>Overview</a></li>
+                        {if ($scope.auth_edit_user)}
+                          <li class="class-filter"><a href="{$p}/settings"></i>Basic Info</a></li>
+                          <li class="class-filter"><a href="{$p}/verification" id="user-verification-link"></i>Verification</a></li>                       
+
+                          {if ($site.property_site)}
+                          <li class="class-filter"><a href="{$p}/history"></i>My trips</a></li>
+                          {if ($user.user_level >= $smarty.const.USER_LEVEL_OWNER)}<li class="class-filter"><a href="{$p}/bookings"></i>My Bookings</a></li>{/if}
+                          <li class="class-filter"><a href="{$p}/wishlist"></i>Wishlist</a></li>                       
+                          <li class="class-filter"><a href="{$p}/inbox"></i>Inbox</a></li>
+                          {/if}
+                          {if ($scope.user|has_role:$smarty.const.USER_ROLE_ARTIST)}
+                          <li class="class-filter"><a href="{$p}/artist"></i>CV</a></li>                       
+                          {/if}
+                          {if (0 && $scope.user|has_role:$smarty.const.USER_ROLE_CURATOR)}
+                          <li class="class-filter"><a href="{$p}/gallery"></i>Gallery</a></li>                       
+                          {/if}
+                          {if (0 && $scope.user|has_role:$smarty.const.USER_ROLE_COLLECTOR)}
+                          <li class="class-filter"><a href="{$p}/collector"></i>Collector</a></li>                       
+                          {/if}
+
+                          <!--li><a href="{$p}/photos"></i>My Travel Photos</a>
+                          </li-->
+                        {else}
+                          <li class="class-filter"><a href="{$p}/inbox"></i>Send a message</a></li>
+                        {/if}
+                        </ul>

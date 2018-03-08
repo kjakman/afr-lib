@@ -1,0 +1,29 @@
+
+                              {$booking = $scope.booking}
+                              {if ($booking.expires)}
+                              {{"include":"_booking-expiration.html"}}
+                              {/if}
+
+                              {if ($user.id|in_array:$scope.user_ids)}
+                                <div class="row">
+                                  <div class="col-xs-1 table-cell">
+                                  </div>        
+                                  <div class="col-xs-10 table-cell">
+                                    <div class="panel panel-default">
+                                      <div class="panel-body">
+                                      {{"include": "_inbox-form.html"}}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div class="col-xs-1 table-cell user-avatar">
+                                  </div>
+                                </div>
+                              {else}
+                                <p>{'You are not in this conversation and cannot respond.'|alert}</p>
+                              {/if}
+                              
+                              <div id="inbox_thread_items">
+                              {foreach from=$scope.thread item=message}
+                              {{"include": "_inbox-thread-item.html"}}
+                              {/foreach}
+                              </div>

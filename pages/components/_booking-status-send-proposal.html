@@ -1,0 +1,44 @@
+                      {if (1)}
+                      NOT IN USE
+                      {else}
+                        
+                        {$booking = $scope.booking}
+                        {$start = $booking.start_date}
+                        {$end = $booking.end_date}
+                        {if (1 || $scope.auth_level >= $smarty.const.USER_LEVEL_GUEST)}       
+                        <div class="panel panel-primary">
+                          <div class="panel-heading">Send Proposal</div>
+                          <div class="panel-body">
+                              Click 'Send' to send the booking proposal to {$booking.email_address} or fill in another address. <br>
+                            <form id="send-form" class="ajax-submit" data-handler="send-mail" data-reset="1" method="POST">
+                              <input name="obj_type" type="hidden" value="reservation" />
+                              <input name="obj_id" type="hidden" value="{$booking.res_id}" />
+                              <input name="res_id" type="hidden" value="{$booking.res_id}" />
+                              <input name="user_id" type="hidden" value="{$user.id}" />
+                              <input name="site_id" type="hidden" value="{$site.id}" />
+                              <input name="action" type="hidden" value="reservation" />
+                              <input name="template" type="hidden" value="available_apartment" />
+                                
+                              <input name="recipient" class="form-control" value="{$booking.email_address}" type="email" />
+                              <br>
+                              <textarea name="message" class="form-control" placeholder="Write a message here (optional)..."></textarea>
+                              <br>
+                              <input type="submit" class="btn btn-success" value="Send"> 
+                            </form>
+                          </div>
+                        </div>  
+                        <div class="panel panel-primary">
+                          <div class="panel-heading">Preview</div>
+                          <div class="panel-body">
+                          <b>From:</b> {$scope.from}<br>
+                          <b>To:</b> {$scope.to}<br>
+                          <b>Subject:</b> {$scope.subject}<br>
+                          <hr>
+                          {$scope.preview}
+                          </div>
+                        </div>
+  
+                        {else}
+                        <span class="afr_error alert alert-danger"><i class="fa fa-exclamation-triangle"></i> Not authorized</span>                      
+                        {/if}
+                      {/if}

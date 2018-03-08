@@ -1,0 +1,64 @@
+<!DOCTYPE HTML>
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <title>{$page.title}</title>
+  <meta charset="utf-8">
+  <meta name="keywords" content="Template, html, premium, themeforest" />
+  <meta name="description" content="{$page.description}">
+  <meta name="robots" content="index, follow">
+  <meta name="author" lang="en" content="Kjetil Larsen">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"> 
+
+  <link rel="canonical" href="http://test.hitabrick.com/serviced-apartment/" />
+
+  {$html = $page.html} 
+  
+{foreach from=$html->header_styles item=style}
+  <link rel="StyleSheet" href="{$style}" type="text/css" media="screen"/>
+{/foreach}
+ 
+{foreach from=$html->header_scripts item=script}
+  <script type="text/javascript" src="{$script}"></script>
+{/foreach}
+
+{* reset scripts and styles so not listed again on bottom (set by page template) *}
+  {*$scripts = [] scope=global*}
+  {*$styles = [] scope=global*}
+
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="/afr/bower/respond/respond.js"></script>
+  <![endif]-->
+    
+</head>
+
+<body id="page_{$page.name|lower}">
+
+{block name=body}{/block}
+
+{if ($onload)}
+<script>
+$(function() { 
+{$onload}
+});
+</script>
+{/if}
+
+{foreach from=$html->scripts item=script}
+  <script async src="{$script}"></script>
+{/foreach}
+
+{foreach from=$html->styles item=style}
+  <link rel="StyleSheet" href="{$style}" type="text/css" media="screen"/>
+{/foreach}
+{if (!$smarty.session.live)}
+sub:{$smarty.session.host.sub} online:{$smarty.session.online} legacy: online:{$smarty.session.legacy}
+{/if}
+</body>
+</html>

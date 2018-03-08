@@ -1,0 +1,130 @@
+<div id="overlay_content_simple" class="modal fade dialog-simple" tabindex="-1" data-replace="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+    
+      <form class="form-horizontal ajax-submit" id="calendar_simple_form" data-handler="calendar-update" data-success_handler="calendar_reload">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <b class="overlay-title">{$scope.title|default:"New Reservation"}</b>
+      </div>
+      
+      <div class="modal-body" class="container-fluid">
+    
+        <!-- 1st line -->
+        <div class="row input-daterange" id="simple_dialog_range" data-onchange="datepicker_set_duration">
+          <div class="col-sm-4">
+            <input type="text" value="" class="form-control checkin" name="checkin" placeholder="Checkin" id="simple_in">
+            <span class="input-icon"><i class="icon-calendar"></i></span>
+          </div>
+          <div class="col-sm-4">
+            <input type="text" value="" class="form-control checkout" name="checkout" placeholder="Checkout" id="simple_out">    
+            <span class="input-icon"><i class="icon-calendar"></i></span>
+          </div>
+          <div class="col-sm-4">
+            <span class="duration">? days</span>
+            <input type="hidden" name="num_days">            
+          </div>
+        </div>
+    
+        <!-- 2nd line -->
+        <div class="row margin-top">
+          <div class="col-xs-6">    
+            <div class="btn-group" role="group" id="avail_buttons">
+              <button type="button" class="btn btn-default btn-available">Available</button>
+              <button type="button" class="btn btn-default btn-not_available">Not available</button>
+              <input type="hidden" name="status" value="">
+            </div>
+          </div>
+          <div class="col-xs-6" id="avail_select">    
+            <i class="fa fa-arrow-left"></i> Select one
+          </div>
+          <input type="hidden" name="currency">
+          <div class="form-group-icon-left col-xs-6 collapse show-free">
+            <!--i class="fa fa-eur input-icon"></i-->
+    
+            <input name="rate_day" class="form-control" id="simple_rate" placeholder="rate/day or +/- %" type="text">
+            <a class="afr-tooltip" href="#"><i class="fa fa-info-circle"></i>
+              <span class="ztop custom info"><i class="fa fa-info-circle fa-4x msgicon text-info"></i>
+              If you enter just a number (e.g. 80), this will be the rate for this day.<br>
+              Alternatively, you can enter "+10%" or "-15%" for a higher or lower percentage rate than the standard daily rate.
+              </span>
+           </a>
+            
+          </div>
+        </div>
+        <div class="row margin-top collapse show-block show-free">
+          <div class="col-xs-12">    
+            <input name="last_name" class="form-control" id="title_field" placeholder="title" type="text">
+          </div>
+        </div>
+        <div class="row margin-top collapse show-block">
+          <div class="col-xs-12">    
+            <textarea name='notes' rows='2' cols='30' id='notes' class='form-control' placeholder="notes"></textarea>
+          </div>
+        </div>
+    
+        <div id="res_exceptions" class="row margin-top collapse show-free">
+          <div class="col-sm-6">    
+            <label>Minimum Stay (nights)</label>
+            <input name="min_stay" class="form-control" value="" type="number" min="0"/>
+            <div class="help-block with-errors">Please enter number of days</div>                              
+          </div>
+          <div class="col-sm-6">
+            <label>Changeover</label>
+            {$weekdays = $smarty.const.WEEKDAYS}        
+            {html_options name="changeover" class="form-control" options=$weekdays selected=0}
+            <div class="help-block with-errors">Guests can only checkin on this day. <b>Discouraged!</b>
+            </div>                              
+          </div>
+        </div>
+        
+        <input type="hidden" name='obj_type' id='obj_type'>
+        <input type="hidden" name='obj_id' id='obj_id'>
+        <input type="hidden" name='apt_id' id='apt_id'>
+        <input type="hidden" name='site_id' value="{$site.id}">
+        <input type="hidden" name='user_id' value="{$user.id}">
+        <input type="hidden" name='city_id' value="{$scope.cal_params.city_id}">
+        <input type="hidden" name='host_id' value="{$scope.cal_params.host_id}">
+        <input type="hidden" name='property_type' id='property_type'>
+        <input type="hidden" name="apartment_name" id="apartment_name" >
+        {*$scope.cal_params|dump*}
+        
+      </div><!-- modal body-->
+    
+      <div class="modal-footer left">
+        <input type="submit" class="btn btn-success show-free show-block collapse" value="Save">
+        <button type="button" data-dismiss="modal" class="btn btn-danger">Cancel</button>
+        {if (1 || $user.user_level >= $smarty.const.USER_LEVEL_STAFF)}
+        <button type="button" data-dismiss="modal" data-toggle="modal" href="#cal_dialog" id="new_res_button" class="btn btn-warning pull-right new-res show-none">New Reservation</button>
+        {/if}
+        <a class="btn btn-danger" href="#" id="delete_exception"
+          data-toggle="confirmation" data-on-confirm="delete_exception" data-obj_type="res_exception" data-handler="delete_exception"
+          rel="tooltip" data-placement="top" title="Really?"> <i class="fa fa-times"></i> Delete Rule
+        </a>
+        
+        <br>
+        
+        {if (1)}
+        <div class="row margin-top">
+          <div class="col-xs-12">    
+            <p>Use the below button to test price and availability for the selected dates and number of guests.</p>
+          </div>        
+          <div class="col-xs-6">    
+            {$ng = ["1" => "1 Guest", "2" => "2 Guests", "3" => "3 Guests", "4" => "4 Guests", "5" => "5 Guests", "6" => "6 Guests", "7" => "7 Guests", "8" => "8 Guests"]}
+            {html_options name="ng" class="form-control show-none" options=$ng selected=1}
+          </div>
+          <div class="col-xs-6">    
+            <button type="button" class="btn btn-warning pull-left test-pricing show-none">Test Pricing</button>
+          </div>
+        </div>
+        <div id="test_pricing" class="mt20"></div>  
+        {/if}
+        
+      </div>
+
+      </form>
+    </div>
+  </div>
+   
+</div>
+

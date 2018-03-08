@@ -1,0 +1,26 @@
+
+                          {$in = $booking.checkin}
+                          {$out = $booking.checkout}
+                          <h4 class="white center">
+                          {if ($obj_type != 'reservation')}
+                          <a href="{$smarty.const.PAGE_STATUS|link}{$booking.res_id}{if ($scope.pin_code)}?pin={$booking.booking_pin|myhash}{/if}">{$scope.type_name} {$booking.res_id}</a>
+                          {else}
+                          {$name} {$booking.res_id}
+                          {/if}                        
+                        </h4>
+                        <h6 class="white center">{$in|daterange:$out}</h6>
+
+                        <div class="user-profile-avatar text-center">
+                          <img src="{$rental.media|photo:small|default:'/traveler/img/800x600.png'}" alt="{$rental.name}" title="AMaze" />
+                          <h5><a href="{$booking.apt_id|property_link}" target="rental">{$rental.name}</a></h5>
+                          <p>{$booking.city_name}</p>
+                          <p>Host: <a href="{$smarty.const.PAGE_PROFILE|link}{$booking.host_id}">{$booking.host_id|username}</a></p>
+                          <ul class="list">
+                            {if ($booking.guest_id)}<li>Guest: <a href="{$smarty.const.PAGE_PROFILE|link}{$booking.guest_id}">{$booking.guest_id|username}</a></li>{/if}
+                            <li>Created {$booking.created|date}</li>
+                            <li>{$booking.status|get:"res_status":"name"} {$booking.created|date}</li>
+                            <li>{$booking.num_days} days, {$booking.num_guests} guests</li>
+                          </ul>
+                        </div>
+                        
+

@@ -1,0 +1,12 @@
+                                      <h4 class="booking-item-booking-title">
+                                        <a href="{$site_url}{$scope.rental.id|property_link}" target="_new" style="color:#FFF;font-weight:bold">
+                                        {$rental.name}
+                                        </a>
+                                      </h4>
+                                      <p>{$rental.short_description}</p>
+                                      
+                                      {if ($booking && $booking.status == $smarty.const.STATUS_RESERVED || $booking.status == $smarty.const.STATUS_COMPLETE)}                                           
+                                        <a href="http://maps.google.com/?q={$rental|address:',':0:0}" style="color:#FFF !important;" target="_new">
+                                          {$rental|address}
+                                        </a>
+                                      {/if}

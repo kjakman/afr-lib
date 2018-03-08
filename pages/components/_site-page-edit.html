@@ -1,0 +1,124 @@
+      {$page = $scope.obj}       
+      {$path = $page.path}
+      {$id = $page.page_id}
+      {$action = ($id) ? "Edit" : "New"}
+      
+      
+      {if ($id)}
+      <div class="row">
+        <div class="col-sm-12">
+          <a class="btn btn-warning cms-page-preview" href="#"><i class="fa fa-eye"></i>Preview</a>
+          <a class="btn btn-warning" href="{$path}" target="_page"><i class="fa fa-arrow-right"></i>Open Page</a>
+          <a class="btn btn-success" href="{$path}?__edit_mode=1" target="_page"><i class="fa fa-pencil-square"></i>Edit Content</a>
+          <a class="btn btn-danger cms-page-delete" href="#" id="delete-{$page.id}" 
+            data-toggle="confirmation" data-on-confirm="jst_delete" 
+            data-obj_type="site_page" data-id="{$page.id}" 
+            rel="tooltip" data-placement="top" title="remove">
+            <i class="fa fa-times"></i>Delete            
+          </a>
+          
+        </div>
+      </div>
+      <br>    
+      {/if}
+      <h2>{$action} Page</h2>
+      
+      <form class="ajax-submit" data-handler="save-page" data-reload_link="#btnReload">
+        <input type="text" hidden="1" name="id" value="{$page.page_id}">
+        <input type="text" hidden="1" name="page_id" value="{$page.page_id}">
+        <input type="text" hidden="1" name="content_id" value="{$page.content_id}">
+        <input type="text" hidden="1" name="obj_type" value="page_content">      
+        <input type="text" hidden="1" name="cms" value="1">
+
+                
+        <div class="row">
+          <div class="form-group col-sm-4">
+            <label for="media-name">Name *</label>
+            <input type="text" class="form-control" name="name" value="{$page.name}" maxlength="128">
+          </div>
+          <div class="form-group col-sm-4">
+            <label for="media-digital_price">Menu Title</label>
+            <a data-toggle="tooltip" title="If empty, name or screen title will be used."> <i class="fa fa-info-circle"></i></a>
+            <input type="text" class="form-control" name="menu_title" value="{$page.menu_title}" maxlength="128">
+          </div>
+          
+          <div class="form-group col-sm-4">
+            <label for="media-digital_price">Path *</label>
+            <a data-toggle="tooltip" title="The relative path. Must start with slash (/) and be unique for this site."> <i class="fa fa-info-circle"></i></a>
+            <input type="text" class="form-control" name="path" value="{$page.path}" maxlength="128">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="form-group col-sm-4">
+            <label for="page-active">Visible?</label>
+            {$yes_no = [0 => "No", 1 => "Yes"]}
+            {html_options name="active" class="form-control" options=$yes_no selected=$page.active}                                            
+          </div>
+          <div class="form-group col-sm-4">
+            <label for="page-show_menu">Show in menu?</label>
+            {$yes_no = [0 => "No", 1 => "Yes"]}
+            {html_options name="show_menu" class="form-control" options=$yes_no selected=$page.show_menu}                                            
+          </div>
+          <div class="form-group col-sm-4">
+            <label for="page-show_menu">User Level</label>
+            {$level = [0 => "Public", 1 => "Logged in (1)", 10 => "(10)", 20 => "(20)", 30 => "Staff (30)"]}
+            {html_options name="user_level" class="form-control" options=$level selected=$page.user_level}                                            
+          </div>
+        </div>
+        <br>
+        
+        {if ($scope.child_count)}
+        <p>This page has children and is therefore a folder, and cannot have content. If you want this page to be displayed as a regular page, first move or delete all child pages.</p>
+        {else}
+        <input type="hidden" name="site_id" value="{$site.id}">      
+        <input type="hidden" name="parent_id" value="{$page.parent_id}">      
+        
+        {if ($page.page_id)}
+        {*
+        <div class="row">
+          <div class="form-group col-sm-12">
+            <label for="media-original_technique">Screen Title</label>
+            <a data-toggle="tooltip" title="If empty, name will be used."> <i class="fa fa-info-circle"></i></a>
+            <input type="text" class="form-control" name="title" value="{$page.title}" maxlength="255">
+          </div>
+        </div>
+        <div class="row">
+          <div class="form-group col-sm-12">
+            <label for="comment">Page Content</label>
+            <a data-toggle="tooltip" title="Used for simple pages with just title + content. For complex pages with multiple content blocks, go to the page and edit each block."> <i class="fa fa-info-circle"></i></a>
+            <textarea class="summernote form-control special" data-full="true" data-height="1500" name="content">{$page.content}</textarea>
+          </div>
+        </div>
+        *}
+        <div class="row">
+          <div class="form-group col-sm-12">
+            <label for="media-original_technique">Page Title</label>
+            <a data-toggle="tooltip" title="The HTML &lt;title&gt; tag. Shown on browser tab. If blank, page title or name is used."> <i class="fa fa-info-circle"></i></a>
+            <input type="text" class="form-control" name="se_title" value="{$page.se_title}" maxlength="255">
+          </div>
+        </div>
+        <div class="row">
+          <div class="form-group col-sm-12">
+            <label for="media-original_technique">Meta Keywords</label>
+            <a data-toggle="tooltip" title="Meta Tag for search engines."> <i class="fa fa-info-circle"></i></a>
+            <input type="text" class="form-control" name="se_keywords" value="{$page.se_keywords}" maxlength="255">
+          </div>
+        </div>
+        <div class="row">
+          <div class="form-group col-sm-12">
+            <label for="comment">Meta Description</label>
+            <a data-toggle="tooltip" title="Meta Tag for search engines"> <i class="fa fa-info-circle"></i></a>
+            <textarea class="form-control special" data-height="500" name="se_description">{$page.se_description}</textarea>
+          </div>
+        </div>
+        {else}
+        <input type="text" name="local" value="1">
+        <input type="text" name="template" value="blank">
+        <a href="#" class="btn btn-danger jstCancel">Cancel</a>{/if}
+        {/if}
+        <input type="submit" class="btn btn-success" value="Save">
+            
+      </form>
+      <div class="gap gap-small"></div>
+      

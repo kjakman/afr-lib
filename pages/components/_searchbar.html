@@ -1,0 +1,28 @@
+  <form id="searchbar" class="ajax-submit" action="{$smarty.const.PAGE_RENTAL_SEARCH|link}" method="get" data-handler="property-searchbar">
+    <input type="hidden" id="t" name="t" value="{$scope.property_type}">
+    {if ($scope.autocomplete)}
+    <div class="col-sm-4 relative nogutter">
+      {$scope.autocomplete_input}
+    </div>
+    {/if}
+    <div class="col-sm-2 relative nogutter">
+      <input type="text" value="{$smarty.get.in_disp}" class="form-control datepicker" id="in_disp" name="in_disp" placeholder="Checkin" data-dependent_field="out">    
+      <input type="hidden" value="{$smarty.get.in}" id="in" name="in">    
+      <span class="input-icon"><i class="fa fa-calendar"></i></span>
+    </div>
+    <div class="col-sm-2 relative nogutter">
+      <input type="text" value="{$smarty.get.out_disp}" class="form-control datepicker datepicker-2" id="out_disp" name="out_disp" placeholder="Checkout">    
+      <input type="hidden" value="{$smarty.get.out}" id="out" name="out">    
+      <span class="input-icon"><i class="fa fa-calendar"></i></span>
+    </div>
+    <div class="col-sm-2 relative nogutter">
+      <select class="form-control" id="ng" name="ng">
+        {section name=ng start=1 loop=16 step=1}
+          <option value="{$smarty.section.ng.index}" {if ($smarty.get.ng == $smarty.section.ng.index)} selected="selected"{/if}>{$smarty.section.ng.index} {if ($smarty.section.ng.index==1)}Guest{else}Guests{/if}</option>
+        {/section}                                            
+      </select>
+    </div>
+    <div class="col-sm-1 relative nogutter">
+      <button type="submit" class="btn btn-success" id="submit-check"> Search </button>
+    </div>
+  </form>

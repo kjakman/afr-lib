@@ -1,0 +1,10 @@
+								<div id="comments">
+									<h3>{$scope.comments|@count} {if ($scope.comments|@count == 1)}{'comment'|translate}{else}{'comments'|translate}{/if}</h3>
+
+                  {foreach from=$scope.comments item=comment}
+  									<!-- comment item -->
+                    {{"include": "_article-comment-item.html"}}
+                  {/foreach}
+									
+									<hr />
+								</div><!-- /COMMENTS -->

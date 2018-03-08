@@ -1,0 +1,50 @@
+                      {$invoice = $scope.invoice}
+                      {$start = $invoice.start_date}
+                      {$end = $invoice.end_date}
+                      {if ($scope.auth_edit)}       
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">Receive Payment</div>
+                        <div class="panel-body">
+                            Fill in the below form and click 'Receive'<br>
+                          <span class="text text-warning">
+                             <i class="fa fa-exclamation-triangle"></i> IMPORTANT: By clicking 'Receive' you agree that this amount was received.
+                          </span>
+                          <br><br>
+                          <form id="receive-form" class="ajax-submit" data-handler="receive-payment" data-reset="1">
+                            <input name="inv_id" type="hidden" value="{$invoice.id}" />
+                            <input name="res_id" type="hidden" value="{$scope.reservation.res_id}" />
+                            <input name="user_id" type="hidden" value="{$user.id}" />
+                            <input name="site_id" type="hidden" value="{$site.id}" />
+                            <div class="row">
+                              
+                              <div class="col-sm-3">
+                                  <label>Type</label>
+                                  {html_options name=payment_type class="form-control" options=$scope.payment_types}                                            
+                              </div>
+                              <div class="col-sm-3">
+                                  <label>Currency</label>
+                                  {html_options name=currency class="form-control" options=$scope.currencies selected=$scope.invoice.currency}                                            
+                              </div>
+                              
+                              <div class="col-sm-3">
+                                <label>Amount</label>
+                                <input name="amount" class="form-control" value="" type="text" placeholder="{$scope.invoice.balance}"/>
+                              </div>
+                              <div class="col-sm-3">
+                                  <label>Status</label>
+                                  {html_options name=payment_status class="form-control" options=$scope.payment_statuses}                                            
+                              </div>
+                              
+                            </div>
+                            <br>
+                            <textarea name="description" class="form-control" placeholder="Optional message to payer. Will be shown on receipt."></textarea>
+                            <br>
+                            <input type="submit" class="btn btn-success" value="Receive"> 
+                          </form>
+                        </div>
+                      </div>  
+
+                      {else}
+                      <span class="afr_error alert alert-danger"><i class="fa fa-exclamation-triangle"></i> Not authorized</span>                      
+                      {/if}
+

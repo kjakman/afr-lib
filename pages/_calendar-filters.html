@@ -1,0 +1,23 @@
+            <form id="calendar-filter-form" class="ajax-submit form-horizontal" data-handler="search" data-success_handler="cal_search_handler">
+              {if ($root_user) }
+              Root
+              {html_options name=client_id options=$scope.cal_params.clients selected=$scope.cal_params.filters.client_id}              
+              {else}
+              Not root
+              <input name="client_id" type="hidden" value="{$site.client_id}" />
+              <input name="legal_entity_id" type="hidden" value="{$site.legal_entity_id}" />
+              {/if}
+              {$scope.cal_params.apts|@count} apts: 
+              {html_options name=id options=$scope.cal_params.apts selected=$scope.cal_params.filters.apt_id}              
+
+              {$scope.cal_params.hosts|@count} hosts: 
+              {html_options name=host_id options=$scope.cal_params.hosts selected=$scope.cal_params.filters.host_id}              
+              <input name="search" type="hidden" value="post" />
+              <input name="obj_type" type="hidden" value="property" />
+              <input name="active" type="hidden" value="1" />
+              <input name="fields" type="hidden" value="property.id" />
+              <!--input name="format" type="hidden" value="list" /-->
+              <input type="submit" class="btn btn-primary" value="Search">              
+              <input type="submit" class="btn btn-danger reset-form-submit" value="Reset">              
+            </form>
+

@@ -1,0 +1,45 @@
+          <table class="table bootstrap-table" 
+             data-toggle="table" 
+             data-url='{$scope.bookings_url}' 
+             data-cache="false" 
+             data-pagination="true"
+             data-striped="true"
+             data-side-pagination="server"             
+             data-page-list="[5, 10, 20, 50, 100, 200]"
+             
+             data-toolbar="#toolbar"
+             data-search="true"
+             data-show-refresh="true"
+             data-show-toggle="true"
+             data-show-columns="true"
+             data-show-export="true"
+             data-detail-view="false"
+             data-id-field="res_id"              
+             data-detail-formatter="detailFormatter"
+             data-show-pagination-switch="true"             
+             data-search="true">
+             
+            <thead>     
+              <tr>
+                <th data-field="res_id" data-sortable="true" data-formatter="bstBookingLinkFormatter">ID</th>
+                <th data-field="type" data-sortable="true">Type</th>
+                <th data-field="status" data-sortable="true">Status</th>
+                <th data-field="guest_id">Guest</th>
+                <th data-field="host_id">Host</th>
+                <th data-field="apartment_name" data-sortable="true">Rental</th>
+                <th data-field="city_name" data-sortable="true">Location</th>
+                <th data-field="created" data-sortable="true">Created</th>
+                <th data-field="dates" data-sortable="true">Dates</th>
+                <th data-field="grand_total" data-sortable="true" data-editable="true" data-editable-type="text">Total</th>
+                <th data-field="paid" data-sortable="true" data-editable="true" data-editable-type="text">Paid</th>
+              </tr>
+            </thead>
+          </table>
+
+<script>
+function bstBookingLinkFormatter(value, row) {
+  console.log("bstUsernameFormatter: row", row);
+  var email = value;
+  return '<a href="/booking/' + row.res_id + '/" target="booking">' + row.res_id + '</a>';      
+}
+</script>

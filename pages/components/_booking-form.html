@@ -1,0 +1,483 @@
+                      
+      {$debug = 0}
+      {if ($debug)}
+        {$type='text'}
+      {else}
+        {$type = 'hidden'}
+      {/if}           
+                        
+        {$booking = $scope.booking} {* only inline, on status page *}
+        
+        <input name="source_obj_id"  type="{$type}" value="" id="cd-source_obj_id"/>
+        <input name="obj_type"   type="{$type}" value="reservation" />
+        <input name="obj_id"     type="{$type}" value="{$booking.res_id}" id="cd-obj_id"/>
+        <input name="user_id"    type="{$type}" value="{$booking.user_id|default:$user.id}" readonly/>
+        <input name="num_months" type="{$type}" value="{$booking.num_months}" id="cd-num_months" class="form-control">
+        
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" role="tablist">
+          <li id="cd-tab1" role="presentation" class="cd-tab active"><a href="#cal_tab1" aria-controls="cal_tab1" role="tab" data-toggle="tab">Basic</a></li>
+          <li id="cd-tab2" role="presentation" class="cd-tab"><a href="#cal_tab2" aria-controls="cal_tab2" role="tab" data-toggle="tab">Rate</a></li>
+          <li id="cd-tab3" role="presentation" class="cd-tab"><a href="#cal_tab3" aria-controls="cal_tab3" role="tab" data-toggle="tab">Address</a></li>
+          <li id="cd-tab4" role="presentation" class="cd-tab"><a href="#cal_tab4" aria-controls="cal_tab4" role="tab" data-toggle="tab">Arrival</a></li>
+          <li id="cd-tab5" role="presentation" class="cd-tab"><a href="#cal_tab5" aria-controls="cal_tab5" role="tab" data-toggle="tab">Notes</a></li>
+        </ul>                                          
+        <br>                                                    
+        <div class="tab-content">
+  
+            <!-- tab1 - basic -->
+          <div role="tabpanel" class="tab-pane active" id="cal_tab1">
+            <div class="row"> <!-- 1st line -->
+          
+              {$res_statuses = 'res_status'|find_all:[]:['sort' => 'id']}
+              {$new_statuses = [$smarty.const.STATUS_PROPOSED, $smarty.const.STATUS_RESERVED, $smarty.const.STATUS_BLOCKED]}
+              <div class="col-xs-5">
+                <div class='form-group'>  
+                  <label class="top-label" for='status'>Status</label>
+                  <select class="form-control" id="cd-status" name="status" class="form-control auto-select" data-default="{$smarty.const.STATUS_PROPOSED}" data-value="{$booking.status|default:$smarty.const.STATUS_PROPOSED}">
+                    {foreach from=$res_statuses item=res_status}
+                      {$res_status = $res_status|obj2array}
+                      <option value="{$res_status.id}" {if ($res_status.id == $smarty.const.STATUS_PROPOSED)}selected{/if} {if (!$res_status.id|in_array:$new_statuses)}data-hide-new="1"{/if}>{$res_status.name}</option>
+                    {/foreach}                                            
+                  </select>
+                </div>
+              </div>              
+              <div class="col-xs-7">
+                <div class='form-group'>  
+                  <label class="top-label" for='apt_id'>Rental</label>
+                  {if ($scope.rentals|@count)}
+                  <select class="form-control cal-update-rate auto-select" id="cd-apt_id" name="apt_id" class="form-control" data-value="{$booking.apt_id}">
+                    <option value="0" data-name="?">{'select_rental'|translate:'c':0}...</option>
+                    {foreach from=$scope.rentals item=rental}
+                      <option value="{$rental.id}" data-name="{$rental.name|escape:'html'}">{$rental.name}</option>
+                    {/foreach}                                            
+                  </select>
+                  {elseif ($booking.apt_id)}
+                    {$apt_name = $booking.apt_id|get:"property":"name"}
+                    <input type="text" class="form-control" readonly value="{$apt_name}">                  
+                    <input type="hidden" class="form-control" name="apt_id" readonly value="{$booking.apt_id}">                  
+                  {else}
+                    {'Missing rental'|error}
+                  {/if}
+                </div>
+              </div>              
+            </div>              
+                    
+            <div class="row"> <!-- 2nd line -->
+              <div class="input-daterange" id="booking_dates">    
+                <div class="col-xs-5">
+                  <label class="top-label" for='cd-checkin'>Checkin</label>
+                  <div class="input-group">
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                    <input type="text" class="form-control default-cursor" id="cd-checkin" name="checkin" placeholder="Checkin" value="{$booking.checkin|date_format:$smarty.const.DATEPICKER_FORMAT_SMARTY}" data-date-format="dd-mm-yyyy">
+                  </div>
+                </div>
+                <div class="col-xs-5">
+                  <label class="top-label" for='cd-checkout'>Checkout</label>
+                  <div class="input-group">
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                    <input type="text" class="form-control default-cursor" id="cd-checkout" name="checkout" placeholder="Checkout" value="{$booking.checkout|date_format:$smarty.const.DATEPICKER_FORMAT_SMARTY}" data-date-format="dd-mm-yyyy">                     
+                  </div>
+                </div>
+                <div class="col-xs-2">
+                  <div class='form-group cd-hide-block'>  
+                    <span class="duration collapse">?</span>                    
+                    <input type="hidden" id="cd-num_days" name="num_days" value="{$booking.num_days}">
+                    <label class="top-label" for='cd-num_guests'>Guests</label>
+                    <select class="form-control cal-update-rate auto-select" id="cd-num_guests" name="num_guests" data-value="{$booking.num_guests}">
+                      <option value="1" selected="selected">1</option>
+                      {section name=ng start=2 loop=16 step=1}
+                        <option value="{$smarty.section.ng.index}">{$smarty.section.ng.index}</option>
+                      {/section}                                            
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            
+            <div class="row"> <!-- 3rd line -->
+              <div class="col-xs-5">
+                <div class='form-group'>
+                  <label class="top-label" for='first_name'>First</label>
+                  <input name='first_name' type='text' id='first_name' maxlength='50' class='form-control cal-update-title' placeholder="{'first_name'|translate:'c':0}" value="{$booking.first_name}">
+                </div>
+              </div>
+              
+              <div class="col-xs-5">
+                <div class='form-group'>
+                  <label class="top-label" for='last_name'>Last</label>
+                  <input name='last_name' type='text' id='last_name' maxlength='50' class='form-control cal-update-title' placeholder="{'last_name'|translate:'c':0}" value="{$booking.last_name}">
+                </div>
+              </div>
+              <div class="col-xs-2">
+                <div class='form-group'>  
+                  <label class="top-label" for='cd-salutation'>Mr/Ms</label>
+                  <select id='cd-salutation'  name='salutation' class="form-control cal-update-title auto-select" data-value="{$booking.salutation}">
+                    <option value='' selected='selected'></option>
+                    <option value='Mr.'>Mr.</option>
+                    <option value='Ms.'>Ms.</option>
+                    <option value='Mrs.'>Mrs.</option>
+                    <option value='Dr.'>Dr.</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="row cd-hide-block"> <!-- 4th line -->
+              <div class="col-xs-5">
+                <div class='form-group'>
+                  <label class="top-label" for='first_name'>Phone</label>
+                  <div>
+                    <input name='phone' type='tel' id='cd-phone' maxlength='20' class='form-control tel-input' placeholder="{'phone'|translate:'c':0}" value="{$booking.phone}">
+                  </div>
+                </div>
+              </div>
+              
+              <div class="col-xs-5">
+                <div class='form-group'>                
+                  <label class="top-label" for='email_address'>Email</label>
+                  <div class='input-group'>
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-envelope"></i></span>
+                    <input name='email_address' type='email' id='email_address' maxlength='128' class='form-control' placeholder="{'email'|translate:'c':0}" value="{$booking.email_address}">
+                  </div>
+                </div>
+              </div>
+    
+              <div class="col-xs-2">
+                <div class='form-group'>                
+                  <label class="top-label" for='send_email'>Send?</label>
+                  <div class='checkbox'>
+                    <label><input name='send_email' type="checkbox" id="cd-send_email" value="1" {if ($booking.send_email)}checked="checked"{/if} > <i class="fa fa-paper-plane"></i></label>                                                
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {* Corporate *}
+            
+            <div class="collapse cd-hide-block" id="cd-corporate"> <!-- corporate -->            
+              {if ($user.user_level >= $smarty.const.USER_LEVEL_STAFF)}
+              <div class="row"> <!-- 5th line -->            
+                <div class="col-xs-12">
+                  <a href="#cd-corporate-row" data-toggle="collapse">{'corporate'|translate:'c'} <i class="fa fa-caret-down"></i></a>          
+                </div>
+              </div>
+              
+              <div class="collapse" id="cd-corporate-row"> <!-- corporate -->                          
+                <div class="row mt10"> <!-- 6th line - site / legal entity -->                          
+                  {if ($scope.sites|@count > 1)}
+                  <div class="col-xs-5">
+                    <div class='form-group'>  
+                      <label class="show-label" for='status'>Site</label>
+                      <select class="form-control" id="cd-site_id" name="site_id" class="form-control auto-select" data-value="{$booking.site_id|default:$site.id}">
+                        {foreach from=$scope.sites item=s}
+                          <option value="{$s.id}">{$s.name}</option>
+                        {/foreach}                                            
+                      </select>
+                    </div>
+                  </div>  
+                  {/if}
+    
+                  {if ($scope.legal_entities|@count > 1)}
+                  <div class="col-xs-7">
+                    <div class='form-group'>  
+                      <label class="show-label" for='status'>Legal Entity</label>
+                      <select class="form-control" id="cd-legal_entity_id" name="legal_entity_id" class="form-control auto-select" data-value="{$booking.legal_entity_id|default:$site.legal_entity_id}">
+                        {foreach from=$scope.legal_entities item=l}
+                          <option value="{$l.id}">{$l.name}</option>
+                        {/foreach}                                            
+                      </select>
+                    </div>
+                  </div>              
+                  {/if}
+                </div> <!-- line 6 -->
+                
+                <div class="row"> <!-- 7th line - agent -->                          
+                  {if ($scope.agents|@count > 1)}
+                  <div class="col-xs-5">
+                    <div class='form-group'>  
+                      <label class="show-label" for='status'>Agent</label>
+                      <select class="form-control" id="cd-agent_id" name="agent_id" class="form-control auto-select autocomplete" data-value="{$booking.agent_id|default:0}">
+                        <option value="0">{'agent'|translate:'c'}...</option>
+                        {foreach from=$scope.agents item=s}
+                          <option value="{$s.id}">{$s.name}</option>
+                        {/foreach}                                            
+                      </select>
+                    </div>
+                  </div>  
+                  {/if}
+    
+                  {if ($scope.clients|@count > 1)}
+                  <div class="col-xs-7">
+                    <div class='form-group'>  
+                      <label class="show-label" for='status'>Client</label>
+                      <select class="form-control" id="cd-org_id" name="org_id" class="form-control auto-select autocomplete" data-value="{$booking.org_id|default:0}">
+                        <option value="0">{'org'|translate:'c'}...</option>
+                        {foreach from=$scope.clients item=s}
+                          <option value="{$s.id}">{$s.name}</option>
+                        {/foreach}                                            
+                      </select>
+                    </div>
+                  </div>  
+                  {/if}
+                </div> <!-- line 7 -->
+                <div class="row"> <!-- 8th line - title/company -->                          
+                  <div class="col-xs-5">
+                    <div class='form-group'>  
+                      <label class="show-label" for='title'>Title/Attn.</label>
+                      <input name='title' type='text' id='title' maxlength='64' class='form-control' placeholder="{'title'|translate:'c':0}" value="{$booking.title}">
+                    </div>
+                  </div>  
+                  <div class="col-xs-7">
+                    <div class='form-group'>  
+                      <label class="show-label" for='organization'>Company</label>
+                      <input name='organization' type='text' id='organization' maxlength='128' class='form-control' placeholder="{'company'|translate:'c':0}" value="{$booking.organization}">
+                    </div>
+                  </div>  
+                </div> <!-- line 8 -->                
+              </div>
+              {/if} {* if staff + corporate *}
+            </div>
+            
+          </div><!-- end tab1 ->>
+          
+          <!-- tab2 - rate -->
+          <div role="tabpanel" class="tab-pane" id="cal_tab2">
+            <div id="cd-invoice_locked_text" class="collapse">
+              {'this booking has locked invoices, so the rate cannot be changed'|translate:'c'|alert:'warning'}
+            </div>
+            
+            <div class="row">
+              <div class="col-xs-4">
+                <div class='form-group'>
+                  <label class="top-label" for='cd-rate_base'>Rate</label>
+                  <div class="input-group">
+                    <span class="input-group-addon"><span class="reservation-currency">{$booking.currency|currency}</span></i></span>
+                    <input name='rate_base' type='text' step="0.01" min="0.01" id='cd-rate_base' class='form-control cal-rate-field cal-amount-field' placeholder="" value="{$booking.rate_base}">                
+                  </div>
+                </div>
+              </div>                              
+              <div class="col-xs-4">
+                <div class='form-group'>
+                  <label class="top-label" for='cd-rate_type'>Per</label>
+                  <select name='rate_type' id='cd-rate_type' class="form-control cal-rate-field auto-select" data-value="{$booking.rate_type|default:'day'}">
+                    <option value='day'>{'day'|translate:'c'}</option>
+                    <option value='month'>{'month'|translate:'c'}</option>
+                    <option value='total'>{'total'|translate:'c'}</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="col-xs-2">
+                <div class='form-group'>
+                  <label class="top-label" for='cd-rate_locked'>Lock?</label>
+                  <div class="checkbox">
+                    <label><input name='rate_locked' type="checkbox" value='1' id='cd-rate_locked' {if ($booking.rate_locked)}checked{/if}> <i class="fa fa-lock"></i></label>
+                  </div>               
+                </div>
+              </div>
+            </div>
+
+            <div class="row">            
+              <div class="col-xs-4">
+                <div class='form-group'>
+                  <label class="" for='cd-discount'>Discount</label>                
+                  <input name='discount' type='text' id='cd-discount' class='form-control cal-rate-field cal-amount-field' placeholder="10 or 10%" value="{$booking.discount}">
+                </div>
+              </div>
+    
+              <div class="col-xs-4">
+                <div class='form-group'>
+                  <label class="" for='cd-commission'>Commission</label>
+                  <input name='commission' type='text' id='cd-commission' class='form-control' placeholder="10 or 10%" value="{$booking.commission}">
+                </div>
+              </div>
+    
+              <div class="col-xs-4">
+                <div class='form-group'>
+                  <label class="" for='cd-deposit_percentage'>Deposit</label>
+                  <div class="input-group">
+                    <input name='deposit_percentage' type='number' id='cd-deposit_percentage' step="1" min="0" max="100" class='form-control' placeholder="10" value="{$booking.first_name}" value="{$booking.deposit_percentage}">
+                    <span class="input-group-addon">%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {$city_tax_rate = $booking.city_tax_rate|default:$scope.city_tax_rate|default:'6%'} 
+
+            {$fees = []}
+            {if ($booking && $booking.fee_json)} {* only for inline - on status page *}
+              {$fees = $fee_json|@json_decode}              
+            {/if}
+            
+            {if ($debug)}currency: {/if}      <input name="currency"       type="{$type}"  value="{$booking.currency}"       id="cd-currency" />                {if ($debug)}<br>{/if} 
+            {if ($debug)}total: {/if}         <input name="total"          type="{$type}"  value="{$booking.total}"          id="cd-total" />                   {if ($debug)}<br>{/if} 
+            {if ($debug)}tax: {/if}           <input name="tax"            type="{$type}"  value="{$booking.tax}"            id="cd-tax" />                     {if ($debug)}<br>{/if} 
+            {if ($debug)}tax_of_which: {/if}  <input name="tax_of_which"   type="{$type}"  value="{$booking.tax_of_which}"   id="cd-tax_of_which" />            {if ($debug)}<br>{/if} 
+            {if ($debug)}fees: {/if}          <input name="fees"           type="{$type}"  value="{$booking.fees}"           id="cd-fees"/>                     {if ($debug)}<br>{/if} 
+            {if ($debug)}grand_total: {/if}   <input name="grand_total"    type="{$type}"  value="{$booking.grand_total}"    id="cd-grand_total"/>              {if ($debug)}<br>{/if} 
+            {if ($debug)}city_tax: {/if}      <input name="city_tax"       type="{$type}"  value="{$booking.city_tax}"       id="cd-city_tax"/>                 {if ($debug)}<br>{/if} 
+            {if ($debug)}city_tax_rate: {/if} <input name="city_tax_rate"  type="{$type}"  value="{$city_tax_rate}"          id="cd-city_tax_rate"/ >           {if ($debug)}<br>{/if} 
+            {if ($debug)}service_fee: {/if}   <input name="service_fee"    type="{$type}"  value="{$booking.service_fee}"    id="cd-service_fee"/>              {if ($debug)}<br>{/if} 
+            {if ($debug)}fee_json: {/if}      <input name="fee_json"       type="{$type}"  value='{$booking.fee_json}'       id="cd-fee_json"/>                 {if ($debug)}<br>{/if} 
+
+            {if ($debug)}
+            <div class="row">
+              <div class="col-sm-3 form-group">
+                <textarea rows='3' cols='60' id='cd-fee_json_debug' class='form-control'>{$booking.fee_json}</textarea>                
+              </div>
+            </div>
+            {/if}
+            
+                                   
+            <div class='row'>                           
+              <div class="col-sm-4" id="cd-monthly_billing_row">
+                <div class="checkbox">
+                  <label><input name='monthly_billing' type="checkbox" value='1' id='cd-monthly_billing' {if ($booking.bill_monthly || !$booking)}checked{/if}> {'bill monthly'|translate:'c':0}?</label>
+                </div>                
+              </div>
+              <div class="col-sm-4" id="cd-charge_city_tax_row">
+                <div class="checkbox">
+                  <label><input name='charge_city_tax' type="checkbox" value='1' id='cd-charge_city_tax' class="cal-update-total"> {$city_tax_rate} {'city tax'|translate:'c':0}?</label>
+                </div>                
+              </div>              
+              <div class="col-sm-4" id="cd-charge_tax_row">
+                <div class="checkbox">
+                  <label><input name='charge_tax' type="checkbox" value='1' id='cd-charge_tax' {if ($booking.charge_tax || !$booking)}checked{/if}> {'Charge VAT'|translate:'c':0}?</label>
+                </div>                
+              </div>
+              <div class="col-sm-4" id="cd-tax_included_row">
+                <div class="checkbox">
+                  <label><input name='tax_included' type="checkbox" value='1' id='cd-tax_included' {if ($booking.tax_included || !$booking)}checked{/if}> {'VAT included'|translate:'c':0}?</label>
+                </div>                
+              </div>
+            </div>
+
+            <a href="#cd-fee-inputs" data-toggle="collapse">{'fees'|translate:'c'} <span class="reservation-currency"></span><span class="reservation-fees"></span> <i class="fa fa-caret-down"></i></a>          
+            {{"include": "_booking-form-fees.html"}}
+            
+          </div>                                                                                    
+          
+          <!-- tab3 - address -->
+          <div role="tabpanel" class="tab-pane" id="cal_tab3">
+            <div class="row">
+              <div class="col-xs-6">
+                <div class='form-group'>
+                  <label class="top-label" for='address1'>Address</label>
+                  <input class='form-control' name='address1' type='text' id='address1' maxlength='50' placeholder="{'address'|translate:'c':0}" value="{$booking.address1}">
+                </div>
+              </div>
+              <div class="col-xs-6">
+                <div class='form-group'>
+                  <label class="top-label" for='address2'>Address...</label>
+                  <input class='form-control' name='address2' type='text' id='address2' maxlength='50' placeholder="{'address'|translate:'c':0}..." value="{$booking.address2}">
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-xs-6">
+                <div class='form-group'>
+                  <label class="top-label" for='city'>City</label>
+                  <input class='form-control' name='city' type='text' id='city' maxlength='50' placeholder="{'city'|translate:'c':0}" value="{$booking.city}">
+                </div>
+              </div>
+              <div class="col-xs-6">
+                <div class='form-group'>
+                  <label class="top-label" for='state'>State/Province</label>
+                  <input class='form-control' name='state' type='text' id='state' maxlength='50' placeholder="{'state/province'|translate:'c':0}" value="{$booking.state}">
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-xs-6">
+                <div class='form-group'>
+                  <label class="top-label" for='zip'>Postal Code</label>
+                  <input class='form-control' name='zip' type='text' id='zip' maxlength='50' placeholder="{'postal_code'|translate:'c':0}" value="{$booking.zip}">
+                </div>
+              </div>
+              <div class="col-xs-6">
+                <label class="top-label" for='country'>Country</label>
+                <select name="country" id="cd-country" class="form-control auto-select-off autocomplete-off" data-default="{$booking.country}" data-value="{$booking.country}">
+                  <option value="">{'country'|translate:'c'}...</option>
+                  {{"include": "_countries.html"}}
+                </select>
+              </div>
+            </div>
+          </div>        
+
+          <!-- tab4 - arrival -->
+          <div role="tabpanel" class="tab-pane" id="cal_tab4">
+
+            <div class="row">
+              <div class="col-xs-6">
+                <div class='form-group'>
+                  <label for="arrival_method">Arrive By</label>
+                  <select class="form-control" id="cd-salutation" name="arrival_method">
+                    <option value="">Select...</option>
+                    <option value="air" {if ($booking.arrival_method == 'air')}selected="selected"{/if}>Air</option>
+                    <option value="car" {if ($booking.arrival_method == 'car')}selected="selected"{/if}>Car</option>
+                    <option value="train" {if ($booking.arrival_method == 'train')}selected="selected"{/if}>Train</option>
+                    <option value="bus" {if ($booking.arrival_method == 'bus')}selected="selected"{/if}>Bus</option>
+                    <option value="boat" {if ($booking.arrival_method == 'boat')}selected="selected"{/if}>Boat</option>
+                    <option value="other" {if ($booking.arrival_method == 'other')}selected="selected"{/if}>Other</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-xs-6">
+                <div class='form-group'>
+                  <label for="arrival-arrival_from">City of Departure</label>  
+                  <input class="form-control" type="text" name="arrival_from" id="arrival-arrival_from" maxlength="32" value="{$booking.arrival_from}">
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-xs-6">
+                <div class='form-group'>
+                  <label for="arrival-arrival_number">Flight/Train #</label>
+                  <input class="form-control" type="text" name="arrival_number" id="arrival-arrival_number" maxlength="50" value="{$booking.arrival_number}">
+                </div>
+              </div>
+              <div class="col-xs-6">
+                <div class='form-group'>
+                  <label for="arrival-arrival_time">Arrival time at airport/station</label>
+                  <input class="form-control timepicker" data-step="15" data-time-format="H:i" name="arrival_time" type="text" id="arrival-arrival_time" autocomplete="off"  value="{$booking.arrival_time}">
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-xs-6">
+                <div class='form-group'>
+                  <label for="arrival-arrival_property">Expected arrival time at rental</label>
+                  <input class="form-control timepicker" data-step="15" data-time-format="H:i" name="arrival_property" type="text" id="arrival-arrival_property" autocomplete="off"  value="{$booking.arrival_property}">
+                </div>
+              </div>
+              <div class="col-xs-6">
+                <div class='form-group'>
+                  <label for="arrival-arrival_notes">Notes</label>
+                  <input class="form-control" type="text" name="arrival_notes" id="arrival-arrival_notes" maxlength="100" value="{$booking.arrival_notes}">
+                </div>
+              </div>
+            </div>
+                             
+          </div><!-- #tab4: Notes -->
+          
+          <!-- tab5 - notes -->
+          <div role="tabpanel" class="tab-pane" id="cal_tab5">
+            <label class="top-label" for='alert'>NB!</label>
+            <div class="input-group">
+              <span class="input-group-addon"><i class="glyphicon glyphicon-alert"></i></span>              
+              <input type="text" name='alert' id='alert' maxlength='255' class='form-control' placeholder="{'NB!'|translate:'u':0}" value="{$booking.alert}">
+            </div>           
+            <br>
+            <div class='form-group'>
+              <label class="top-label" for='notes'>Private notes <i class="fa fa-lock"></i></label>
+              <textarea rows='1' cols='57' name='notes' id='notes' class='form-control' placeholder="{'private_notes'|translate:'c':0}">{$booking.notes}</textarea>
+            </div>
+            <div class='form-group cd-hide-block'>
+              <label class="top-label" for='message'>Message to guest <i class="fa fa-comment"></i></label>
+              <textarea rows='1' cols='57' name='message' id='message' class='form-control' placeholder="{'personal_message_to_guest'|translate:'c':0}">{$booking.message}</textarea>
+            </div>
+          </div><!-- #tab5: Notes -->
+        </div><!-- .tab-content -->                  

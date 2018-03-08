@@ -1,0 +1,19 @@
+                                
+                          {$p = "`$smarty.const.PAGE_INVOICE|link``$scope.invoice.id`"}
+                          <ul class="list user-profile-nav">
+                            <li class="class-filter active"><a href="{$p}/overview{$pin}"    id="invoice-overview"><i class="fa fa-user"></i>Overview</a></li>
+                            <li class="class-filter">       <a href="{$p}/print{$pin}"       id="invoice_pdf_link"><i class="fa fa-file-pdf-o"></i>Print Invoice</a></li>                            
+                            {* <li class="class-filter">       <a href="{$p}/payment"     id="payment-overview"><i class="fa fa-credit-card"></i>Payment</a></li> *}
+                                                                                
+                            {if ($scope.auth_edit_invoice)}                                  
+                            <li class="class-filter">       <a href="{$p}/receive"     id="invoice-receive"><i class="fa fa-money"></i>Receive</a></li>
+                            <li class="class-filter">       <a href="{$p}/send"        id="invoice-send"><i class="fa fa-paper-plane"></i>Send</a></li>
+                            <li class="class-filter">       <a href="{$p}/share"       id="invoice-share"><i class="fa fa-link"></i>Share Link</a></li>
+                            <li class="class-filter">       <a href="{$p}/recalculate" id="invoice-recalculate"><i class="fa fa-calculator"></i>Recalculate Invoice</a></li>                            
+                              {if ($user.user_level >= $smarty.const.USER_LEVEL_STAFF &&  $site.property_site == $smarty.const.PROPERTY_SITE_CORPORATE && $scope.reeleezee_username)}
+                                <li class="class-filter">   <a href="{$p}/export"      id="invoice_export_link"><i class="fa fa-cloud-upload"></i>Export Invoice</a></li>
+                              {/if}
+                            {/if}
+
+                          </ul>
+                                                                                      

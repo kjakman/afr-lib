@@ -1,0 +1,49 @@
+
+              <form id="article-form" class="ajax-submit" data-handler="add-article">
+                <input name="obj_type" type="hidden" value="article" />
+                <input name="obj_id" type="hidden" value="{$article.id}" />
+                <input name="user_id" type="hidden" value="{$user.id}" />
+                <input name="site_id" type="hidden" value="{$site.id}" />
+                <input name="type" type="hidden" value="{$scope.type}" />
+                <input name="published" type="hidden" value="{$article.published|default:'0'}" />
+                <div class="form-group">
+                  <label>Title (*)</label>
+                  <input name="title" class="form-control" placeholder="Title of article" type="text" value="{$article.title}"/>
+                </div>                              
+
+                <div class="form-group">
+                  <label>Content</label>
+                  <textarea name="content" class="summernote form-control" data-full="0" placeholder="Write something...">{$article.content}</textarea>
+                </div>
+                
+                <div class="checkbox">
+                  <label><input name="user_level" value="1" class="i-check" type="checkbox"/>Registered users only?</label>
+                </div>
+
+                {if ($article.id)}
+                <div class="form-group">
+                  <label>Published?</label>
+                  {$yes_no = [0 => "No", 1 => "Yes"]}
+                  {html_options name="published" class="form-control" options=$yes_no selected=$article.published}
+                </div>
+                {/if}
+                
+                <div class="form-group">
+                
+                  <label>Date</label>
+                  <input name="post_date" class="form-control datepicker" placeholder="Date of article - leave blank for today" type="text" value="{$article.post_date|date_format:$smarty.const.DATEPICKER_FORMAT_SMARTY}"/>
+                </div>                              
+
+                <div class="form-group">
+                  <label>Media</label>
+                  {if ($article.id)}
+                  {"article"|uploader:$article.id:["field" => "media"]}
+                  {else}
+                  <p>You can add media after adding the {$scope.type|get:"article_type":"name"} article.</p>
+                  {/if}
+                </div>
+                                
+                <input class="btn btn-primary" type="submit" value="{'save'|translate:'c':0}" />
+                <a class="btn btn-danger" href="{$page.page_type|link}{$article.id}">{'cancel'|translate:'c':0}</a>
+                
+              </form>

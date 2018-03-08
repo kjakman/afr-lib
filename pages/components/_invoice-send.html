@@ -1,0 +1,32 @@
+
+                      {$invoice = $scope.invoice}
+                      {$booking = $scope.booking}
+                      {$start = $invoice.start_date}
+                      {$end = $invoice.end_date}
+                      
+                    {if ($scope.auth_level >= $smarty.const.USER_LEVEL_HOST)}      
+
+                      {if ($scope.mail_log|@count)}
+                        {$mail_log = $scope.mail_log}
+                        {{"include": "_mail-log.html"}}
+                      {/if}
+                      
+                     {if ($scope.mail && $scope.mail.template)}
+                          
+                        <div class="panel panel-primary">
+                          <div class="panel-heading">Preview</div>
+                          <div class="panel-body">
+                            <p>Click 'Send' to send the invoice to {$invoice.email_address} or fill in another address. </p>
+                            <p>For multiple recipients, use comma (,) to separate email addresses.</p>
+                          
+                            {$mail = $scope.mail}
+                            {{"include": "_mail-form.html"}}
+                            <hr>
+                            {{"include": "_mail-preview.html"}}
+                          </div>
+                        </div>
+                      {/if}
+                      
+                    {else}
+                    <span class="afr_error alert alert-danger"><i class="fa fa-exclamation-triangle"></i> Not authorized</span>                      
+                    {/if}

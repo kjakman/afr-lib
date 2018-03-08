@@ -1,0 +1,18 @@
+                          <form class="ajax-submit" data-handler="check-verification" data-reload_link="#user-verification-link">
+                            <input name="type" type="hidden" value="{$type}">
+                            <input name="site_id" type="hidden" value="{$site.id}">
+                            <input name="user_id" type="hidden" value="{$user.id}">
+                            <input name="profile_id" type="hidden" value="{$user.profile_id}">
+
+                            <div class="row">
+                                <div class="form-group col-sm-2 col-xs-4">
+                                    <input name="code" type="text" class="form-control">
+                                </div>
+                                <div class="col-sm-4 col-xs-8">
+                                  <input type="submit" value="Send" class="btn btn-success"> &nbsp;
+                                  <a href="#" class="btn btn-danger verify-cancel">Cancel</a>
+                                </div>
+                            </div>                            
+          
+                          </form>
+

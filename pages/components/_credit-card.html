@@ -1,0 +1,24 @@
+            <div class="col-md-4" id="card-{$card.id}" >
+              <div class="card-thumb">
+                <ul class="card-thumb-actions">
+                  <li>
+                    <a class="fa fa-pencil popup-text" href="#edit-card-dialog" rel="tooltip" data-placement="top" title="edit" data-effect="mfp-zoom-out"></a>
+                  </li>
+                  <li>
+                    {$selector = "#card-"|cat:$card.id}
+                    <a class="fa fa-times" href="#" id="delete-{$card.id}" 
+                      data-toggle="confirmation" data-on-confirm="delete_object" 
+                      data-obj_type="cc" data-id="{$card.id}" data-handler="delete_object_handler" 
+                      data-handler_data='{["target" => $selector]|@json_encode}' 
+                      rel="tooltip" data-placement="top" title="remove">
+                    </a>
+                  </li>
+                </ul>
+                <p class="card-thumb-number">{$card.number}</p>
+                <p class="{if ($card.expired)}text-danger{else}card-thumb-valid{/if}">valid thru <span>{$card.exp_month} / {$card.exp_year}</span>{if ($card.expired)} <span>(Expired)</span>{/if}
+                </p>
+                <img class="card-thumb-type" src="{$card.image}" alt="Image Alternative text" title="Image Title" /><small>cardholder name</small>
+                <h5 class="uc">{$card.cardholder}</h5>
+              </div>
+            </div>
+

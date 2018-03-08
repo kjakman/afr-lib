@@ -1,0 +1,9 @@
+                    <div class="event-location">
+                      {if ($event.location_lat && $event.location_long)}
+                      <a class="mapmodals" href="#mapmodals" data-toggle="modal" data-lat="{$event.location_lat}" data-lng="{$event.location_long}" data-title="{$event.name}" data-address="{$event.address_formatted}">{$event.address_formatted}</a>
+                      {else if ($event.address_formatted)}
+                        {$event.address_formatted}
+                      {else}
+                        {$event.start_address}
+                      {/if}
+										</div>

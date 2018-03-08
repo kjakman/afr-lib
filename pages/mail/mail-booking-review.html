@@ -1,0 +1,41 @@
+
+                                    {{"extend": "mail/mail-base-action-sub.html"}}
+                                    
+                                    {$booking  = $scope.booking}                                    
+                                    {$rental   = $scope.rental}
+                                    
+                                    {block name=action_link}
+                                        <a href="{$site_url}{$smarty.const.PAGE_REVIEW|link}?_pt=reservation&amp;_pid={$booking.res_id}{if ($scope.pin_code)}?pin={$booking.booking_pin|myhash}{/if}" 
+                                           class="btn btn-large btn-success" target="_new">
+                                          {'rate your stay'|translate:'c'}
+                                        </a>
+                                    {/block}
+                                    
+                                    {block name=sub_left}
+                                      {{"include": "mail/_booking-details.html"}}
+                                      {$profile_id = $scope.profile_id|default:$booking.host_id}
+                                      <br><hr><br>
+                                      {if ($profile_id)}
+                                        {{"include": "mail/_user-details.html"}}
+                                      {else}
+                                        {$booking.first_name} <br>
+                                        {* No profile ID
+                                        $scope|dump *} 
+                                      {/if}
+                                    {/block}
+                                    
+                                    {block name=sub_right_image}
+                                      <a href="{$site_url}{$rental.id|property_link}" target="_new">
+                                        <img src="{$rental.media|photo:'ig':['full' => 1]|add_http}" style="max-width: 264px">                                          
+                                      </a>
+                                    {/block}
+                                    
+                                    {block name=sub_right_text}                                        
+                                      {{"include": "mail/_rental-preview.html"}}
+                                    {/block}
+                                    
+                                    
+                                    {block name=footer}
+                                      {$scope|dump}
+                                    {/block}
+                                    

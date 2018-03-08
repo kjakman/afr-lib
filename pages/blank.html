@@ -1,0 +1,17 @@
+  {{"extend": "base/default.html"}}
+  {block name=content}
+  
+    <div class="container">
+      <h2 class="page-title">{{"name": "$title", "type":"text", "value": "The Title"}}</h2>
+    </div>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-12">
+          {{"name": "$content", "type":"html", "value":"<p>Lorem ipsum dolor sit amet, consectetur adipiscing metus elit. Lorem ipsum dolor sit amet, consectetur adipiscing metus elit.</p>"}}
+        </div>
+      </div>
+      <div class="gap"></div>
+    </div>
+
+{/block}

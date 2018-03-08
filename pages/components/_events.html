@@ -1,0 +1,12 @@
+
+  {if ($scope.id)}
+    {{"include": "_event-single.html"}}
+  {else}
+    {{"include": "_event-list.html"}}
+  {/if}
+  
+  {{"include": "_map-modal.html"}}									
+
+  {if ($scope.auth_add_event || $scope.auth_edit_event)}
+    {{"include": "_event-dialog.html"}}                                              
+  {/if}

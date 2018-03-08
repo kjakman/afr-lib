@@ -1,0 +1,18 @@
+
+      <div class='container'>
+        <!--div id='fullcalendar-loading'><h3>Loading...</h3></div-->
+        {* $scope.calendar_options|dump *}
+        {$data = ["site_id" => $site.id, "user_id" => $user.id]}
+        <div id='agenda_calendar' 
+             data-options='{$scope.calendar_options|@json_encode}'
+             data-url='{$scope.calendar_url}'
+             data-data = '{$data|@json_encode}' 
+             data-event='{$scope.calendar_event|@json_encode}'>
+        </div>
+        
+
+      </div>
+
+       {if ($scope.calendar_edit)}
+        {{"include": "_event-dialog.html"}}                                        
+       {/if}

@@ -1,0 +1,31 @@
+    {$grand_total = $res.grand_total}
+    {if ($scope.is_host)}
+    {$grand_total = $grand_total - $res.fee_service}
+    {/if}
+
+    <div class="panel-body panel-dark">
+      <div class="row">
+        <div class="col-md-8">
+          <div class="h4">
+            {$scope.rental.name}
+            <br>
+            <small>
+              {$date_range} ({$res.num_days} {"night"|plural:$res.num_days})
+              ·
+              {$res.num_guests} {"guest"|plural:$res.num_guests}
+            </small>
+          </div>
+        </div>
+        <div class="col-md-4">
+            <div class="h2 pull-right text-right">
+              <sup class="h4">
+                {$res.currency|currency}
+              </sup>{$grand_total}
+              <span class="h6">
+                <i data-behavior="tooltip" data-position="bottom" data-sticky="true" class="icon icon-question" aria-label="This is the total payout you could earn by booking this reservation (we've already deducted our service fees). It includes your cleaning fee, if you have added one. For more information about how payouts work, visit the <a href='/help/article/63' target='_blank'>Help Center</a>."></i>
+              </span>
+            </div>
+        </div>
+      </div>
+    </div>
+

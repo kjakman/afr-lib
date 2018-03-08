@@ -1,0 +1,70 @@
+    {$article = $scope.article}  
+    {$articles = $scope.articles}
+    {if ($articles)}
+      {$list = 1}
+    {elseif ($article)}
+      {$articles = [$article]}
+    {/if}
+  
+			<!-- CONTENT -->
+			<section>
+				<div class="container">
+          {if ($scope.add || $scope.edit)}
+          {elseif ($list)}
+            {if ($scope.auth_add_article)}<a href="{$page.page_type|link}?add" class="btn btn-success btn-sm"><i class="fa fa-plus-square"></i> {'add article'|translate:'c'}</a>{/if}
+          {else}
+            <a href="{$page.page_type|link}" class="btn btn-success btn-sm"><i class="fa fa-arrow-left"></i> {'back to list'|translate:'c'}</a>            
+          {/if}
+				
+					<div id="blog" class="row mt20">
+
+						<!-- BLOG ARTICLE LIST -->
+						<div class="col-md-9 col-sm-9">
+						
+            {if ($scope.add || $scope.edit)} {* add/edit *}
+              <!-- article form -->
+              {{"include":"_article-form.html"}}
+              <!-- /article form -->
+            {else}
+              {foreach from=$articles item=article}
+                {$comment_count = "comment"|count_objects:['article_id' => $article.id]}
+                <!-- article item -->
+                {{"include": "_article-item.html"}}
+                <!-- /article item -->
+              {/foreach}
+  
+              {if ($list)} {* list *}
+                {if ($scope.count && $scope.count > $scope.limit)} {* pagination *}
+                  {$last = min($scope.start + $scope.limit, $scope.count)}
+                  {$pagination_options = ["target" => "#subview-container", "success_handler" => "traveler_ready", "base_link" => "{$app.full_path}"]}
+                  {$pagination_options = []}
+                  {if (0)} {$scope.count} Articles found {if ($scope.bookings|@count < $scope.count)}(Showing {$scope.start + 1} - {$last}){/if} {/if}
+                  {$scope.count|pagination:$scope.start:$scope.limit:$pagination_options}
+                {/if} {* /pagination *}
+              {else}
+                {if ($scope.comment_count > 0)}
+                  {{"include": "_article-comments.html"}}
+                {/if}
+                {if ($user.id)}
+                  {{"include": "_article-comment-form.html"}}
+                {/if}
+              {/if} {* /list *}
+            {/if} {* /add/edit *}
+
+						</div>
+						<!-- /BLOG ARTICLE LIST -->
+
+						<!-- BLOG SIDEBAR -->
+						<div class="col-md-3 col-sm-3">
+						{{"include": "_article-sidebar.html"}}						
+						</div>
+						<!-- /BLOG SIDEBAR -->
+					</div>
+
+
+				</div>
+			</section>
+			<!-- /CONTENT -->
+
+    <div class="gap"></div>
+              

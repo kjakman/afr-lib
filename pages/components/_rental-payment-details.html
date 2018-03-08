@@ -1,0 +1,66 @@
+
+                  <div class="booking-item-payment">
+                    <header class="clearfix">
+                      <a class="booking-item-payment-img" href="{$rental.id|property_link}">
+                        <img src="{$rental.media|photo}" alt="Image Alternative text" title="hotel 1" />
+                      </a>
+                      <h5 class="booking-item-payment-title"><a href="{$rental.id|property_link}" target="_new">{$rental.name}</a></h5>
+                      <ul class="icon-group booking-item-rating-stars">
+                        <li><i class="fa fa-star"></i>
+                        </li>
+                        <li><i class="fa fa-star"></i>
+                        </li>
+                        <li><i class="fa fa-star"></i>
+                        </li>
+                        <li><i class="fa fa-star"></i>
+                        </li>
+                        <li><i class="fa fa-star"></i>
+                        </li>
+                      </ul>
+                    </header>
+                    <ul class="booking-item-payment-details">
+                      <li>
+                        <h5>{'booking for'|translate:'c'} {$booking.num_days} {if ($booking.num_days==1)}{'day'|translate}{else}{'days'|translate}{/if}</h5>
+                        <div class="booking-item-payment-date">
+                          <p class="booking-item-payment-date-day">{$booking.checkin|date_format:"%e %B"}</p>
+                          <p class="booking-item-payment-date-weekday">{$booking.checkin|date_format:"%A"}</p>
+                        </div><i class="fa fa-arrow-right booking-item-payment-date-separator"></i>
+                        <div class="booking-item-payment-date">
+                          <p class="booking-item-payment-date-day">{$booking.checkout|date_format:"%e %B"}</p>
+                          <p class="booking-item-payment-date-weekday">{$booking.checkout|date_format:"%A"}</p>
+                        </div>
+                      </li>
+                      <li>
+                        <h5>{'price'|translate:'c'} ({$booking.num_guests} {if ($booking.num_guests==1)}{'guest'|translate}{else}{'guests'|translate}{/if})</h5>
+                        <ul class="booking-item-payment-price">
+                          <li>
+                            <p class="booking-item-payment-price-title">{$booking.num_days} {if ($booking.num_days==1)}{'day'|translate}{else}{'days'|translate}{/if}</p>
+                            <p class="booking-item-payment-price-amount">{$booking.currency|currency} {$booking.rate_base|price}<small>/{$booking.rate_type}</small>
+                            </p>
+                          </li>
+                          {foreach from=$scope.feeArray key=fee_key item=fee_name}
+                          {if ($booking.$fee_key > 0)}
+                          <li>
+                            <p class="booking-item-payment-price-title">{$fee_name|translate:'c'}</p>
+                            <p class="booking-item-payment-price-amount">{$booking.currency|currency} {$booking.$fee_key}</p>
+                          </li>
+                          {/if}
+                          {/foreach}
+                          {if ($booking.city_tax > 0)}
+                          <li>
+                            <p class="booking-item-payment-price-title">{'taxes'|translate:'c'}</p>
+                            <p class="booking-item-payment-price-amount">{$booking.currency|currency} {$booking.city_tax}
+                            </p>
+                          </li>
+                          {/if}
+                        </ul>
+                      </li>
+                    </ul>
+                    
+                    <p class="booking-item-payment-total">{'total'|translate:'c'}: <span>{$booking.currency|currency} {$booking.grand_total}</span>
+                    {if ($booking.paid > 0)} 
+                    <p class="booking-item-payment-total">{'paid'|translate:'c'}: <span>{$booking.currency|currency} {$booking.paid}</span>
+                    {/if}
+                    </p>
+                  </div>
+

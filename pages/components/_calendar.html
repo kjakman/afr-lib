@@ -1,0 +1,61 @@
+{if (!$scope.host_ids)}
+  <h3>Calendar</h3>
+  <div class="gap gap-small"></div>
+  <div class="alert alert-danger" role="alert">
+    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+    You do not have or manage any properties yet. Click <a href="{$smarty.const.PAGE_ADD_PROPERTY|link}">here</a> to add one.
+  </div>
+
+{else}
+  
+  <div class='menu_container'>{{"include": "_calendar-menu.html"}}</div>
+
+  <div id='admincal_full' data-data='{$scope.data|json_encode}'>    
+    <div id="calendar" unselectable="on" style="-webkit-user-select: none;"  style="border: 1px solid red">
+      <!-- foreach i -->
+      <div id='admincal-0' class='admincal'>
+        <div id='calendar_grid-0' class='cal-container' >
+          <div class='cal-apt-select'>
+            <input class="cal-apt-select-box" id='cal_apt_select-0' type='checkbox'> <span class='cal-apt-select-text'></span>
+          </div>
+          <div class='cal-apts'></div>
+          <div class='cal-table cal-guide-font collapse calview stats' id="cal_table-0"></div>
+          <div class='cal-guide cal-guide-font collapse calview cal' id="cal_guide-0"></div>
+          <div class='cal-canvas' id='cal_canvas-0' data-index='0'>
+            <div id='cal_entries-0' class='cal-entries collapse calview cal'></div>
+            <div id='cal_stats-0'   class='cal-stats   collapse calview stats'></div>
+            <div id="cal_tip-0"class="cal-tip msg collapse click-close"></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class='cal-footers center'>
+        <ul class="month-links"></ul>
+        <div class="cal-links"></div>
+        <div class="cal-debug"></div>
+      </div>
+      
+      <!-- end foreach -->  
+    </div>
+  </div>
+  
+  {* $scope|dump *}
+  
+{/if} {* if($scope.cal_properties) *}
+
+
+{*$scope|dump*}  
+
+{* $scope.cal_params|dump *}
+
+{if (0 && $scope.cal_params.cal_show.search)}
+{{"include": "_calendar-search.html"}}  
+<ul class="inline inline-list">
+{foreach from=$scope.cal_search item=search}
+  <li><a href="{$search.link}" data-data='{$search.data|json_encode}' class="form-resubmit btn btn-default {$search.class}" 
+       data-target="#calendar_search_form"><i class="fa fa-times"></i> {$search.name}</a></li>
+{/foreach}
+</ul>
+{else}
+{/if}
+{* <div id='cal_list'>{$scope.cal_list}</div> *}

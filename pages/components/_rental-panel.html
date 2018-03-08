@@ -1,0 +1,11 @@
+                        <div class="col-xs-4 nopadding">
+                          <a href="{$smarty.const.PAGE_PROFILE|link}{$user.id}">
+                            <img src="{$rental.media|photo:'square'}" alt="{$rental.name}" />
+                          </a>
+                        </div>
+                        <div class="col-xs-8 pad">
+                        <h5>{$rental.name}</h5>
+                        {$rental.city_name}<br>
+                        Listed since {$rental.created|date_format:'%B %Y'}
+                        </div>
+

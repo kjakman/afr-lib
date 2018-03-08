@@ -1,0 +1,10 @@
+
+                  <div class="item loc_{$event.loc_class}" id="event-{$event.id}"><!-- item -->
+
+                    {{"include": "_event-item-title.html"}}                
+                    {{"include": "_event-item-times.html"}}									
+                    {{"include": "_event-item-location.html"}}
+                    <div class="mt20 event-notes">{$event.description|truncate_html:200}</div>
+                    
+									</div><!-- /item -->
+

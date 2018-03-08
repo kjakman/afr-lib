@@ -1,0 +1,20 @@
+  
+    <div class="container" id="login-register-container">
+      <div class="row" data-gutter="60">
+        <div class="col-md-4 toggled-div" id="login-container">
+          <h3>{'Login'|translate:"c"}</h3>
+          {{"include": "_user-login-form.html"}}
+          <a href="{$smarty.const.PAGE_REGISTER|link}{$query_string}" class="toggle-div" data-target="#register-container">New To {$site.name}?</a><br>
+          <a href="{$smarty.const.PAGE_PASSWORD|link}{$query_string}">{'Forgot Password'|translate:"t"}?</a>          
+        </div>
+        <div class="col-md-4 hidden toggled-div" id="register-container">
+          <h3>New To {$site.name}?</h3>
+          {{"include": "_user-register-form.html"}}          
+          <a href="{$smarty.const.PAGE_LOGIN|link}{$query_string}" class="toggle-div" data-target="#login-container">{'Already registered'|translate:"t"}?</a>
+        </div>
+      </div>
+      <div class='gap gap-small'></div>
+      {{"include": "_user-login-third-party.html"}}
+
+    </div>
+  

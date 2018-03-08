@@ -1,0 +1,21 @@
+  {{"extend": "base/default.html"}}
+  {block name=content}
+  
+			<!-- CONTENT -->
+			<section>
+				<div class="container">
+
+        <h4>{{"name": "page-title", "type":"text", "value": "Stuff"}} <a href="{$smarty.const.PAGE_EVENTS|link}"><i class="fa fa-list"></i> Evenementen</a></h4>
+        {{"name": "page-content", "type":"html", "value":"<p>Lorem ipsum dolor sit amet, consectetur adipiscing metus elit. Lorem ipsum dolor sit amet, consectetur adipiscing metus elit.</p>"}}
+
+        
+
+				</div>
+        <div class="event-calendar" id="event-calendar">
+          {{"include": "_event-calendar.html"}}
+        </div>
+				
+			</section>
+			<!-- /CONTENT -->
+
+  {/block}

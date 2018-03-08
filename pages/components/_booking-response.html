@@ -1,0 +1,491 @@
+{$booking = $scope.booking}
+{$in = $booking.checkin}
+{$out = $booking.checkout}
+{$date_range = $in|daterange:$out}
+
+<div class="panel-quote-flush panel">
+
+<div class="inquiry-form-fields ">
+    {{"include": "_booking-request-summary.html"}}
+
+    <div class="panel-body accordion">
+      <ul class="list-unstyled option-list">
+        <li class="option-list-item positive" data-tracking-section="accept">
+
+          <a href="#" class="option-link h3">
+            Allow the guest to book
+          </a>
+          <div id="option-list-item-1" class="option-list-content">          
+          <form accept-charset="UTF-8" class="ajax-submit message_form positive" data-handler="booking-response" data-reload_link="#booking-status-chat" method="post">
+            <div style="margin:0;padding:0;display:inline">
+              <input name="utf8" type="hidden" value="✓">
+              <input name="auth_token" type="hidden" value="{$auth_token}">
+            </div>
+            <input type="hidden" name="res_id" value="{$booking.res_id}">
+            <input type="hidden" name="site_id" value="{$site.id}">
+            <input type="hidden" name="user_id" value="{$user.id}">
+
+            <ul class="list-unstyled action-list">
+              {if ($booking.status == $smarty.const.STATUS_PENDING)}
+              <li class="action-list-item template_1 row-space-top-1" data-key="">
+                <hr>
+                <label class="action-label">
+                  <div class="row row-condensed">
+                    <div class="col-sm-1">
+                      <input type="radio" name="response" value="{$smarty.const.RESPONSE_AVAILABLE}">
+                    </div>
+                    <div class="col-sm-11">
+                      <strong>Accept the booking from {$booking|guest_name}.</strong>
+
+                        <a class="pull-right" data-toggle="tooltip" data-html="true" data-prevent-default="" href="#" title="When you pre-approve a guest's inquiry, you give them permission to automatically confirm a booking for specific dates. <br/><br/>The dates won't be blocked on your calendar, so you can pre-approve overlapping inquiries. <br/><br/>Keep in mind that guests have 24 hours to confirm a booking that has been pre-approved.">
+                          What's this?
+                        </a>
+                    </div>
+                  </div>
+                </label>
+
+                <div class="row row-condensed">
+                  <div class="col-sm-offset-1 col-sm-11">
+                    <div class="action-list-content hide">
+                      <p class="description">{$booking|guest_name} has already authorized a full payment. By accepting this booking, we will collect the payment for you and send it to you upon checkin. 
+                      By accepting the booking, you agree to the <a href="#">Terms of Service</a>, 
+                      <a href="#">Cancellation Policy</a> and <a href="#">Guest Refund Policy</a>.
+                    
+                      </p>
+                      <textarea name="message_{$smarty.const.RESPONSE_AVAILABLE}" placeholder="Include a welcome message for {$booking|guest_name}." class="margin-bottom form-control input-resize-vert" style="overflow: hidden; word-wrap: break-word; resize: none; height: 62px;"></textarea>
+                      <div class="pull-right">
+                        <input type="submit" class="btn btn-primary " value="Approve">
+                      </div>
+                      <div class="pull-left">
+                        
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+              
+              {else}
+              <!-- 1 -->
+              <li class="action-list-item template_1 row-space-top-1" data-key="">
+                <hr>
+                <label class="action-label">
+                  <div class="row row-condensed">
+                    <div class="col-sm-1">
+                      <input type="radio" name="response" value="{$smarty.const.RESPONSE_AVAILABLE}">
+                    </div>
+                    <div class="col-sm-11">
+                      <strong>Pre-approve {$booking|guest_name} to book</strong>
+                        <a class="pull-right" data-toggle="tooltip" data-html="true" data-prevent-default="" href="#" title="When you pre-approve a guest's inquiry, you give them permission to automatically confirm a booking for specific dates. <br/><br/>The dates won't be blocked on your calendar, so you can pre-approve overlapping inquiries. <br/><br/>Keep in mind that guests have 24 hours to confirm a booking that has been pre-approved.">
+                          What's this?
+                        </a>
+                    </div>
+                  </div>
+                </label>
+
+                <div class="row row-condensed">
+                  <div class="col-sm-offset-1 col-sm-11">
+                    <div class="action-list-content hide">
+                      <p class="description">{$booking|guest_name} will be able to book the reservation automatically for the next 24 hours, without additional confirmation.</p>
+                      <textarea name="message_{$smarty.const.RESPONSE_AVAILABLE}" placeholder="Include a message, encouraging {$booking|guest_name} to book." class="margin-bottom form-control input-resize-vert" style="overflow: hidden; word-wrap: break-word; resize: none; height: 62px;"></textarea>
+                      <div class="pull-right">
+                        <input type="submit" class="btn btn-primary " value="Pre-Approve">
+                      </div>
+                      <div class="pull-left">
+                        
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <!-- 2 -->
+              <li class="action-list-item template_2 row-space-top-1" data-key="">
+                <hr>
+                <label class="action-label">
+                  <div class="row row-condensed">
+                    <div class="col-sm-1">
+                      <input type="radio" name="response" value="{$smarty.const.RESPONSE_SPECIAL_OFFER}">
+                    </div>
+                    <div class="col-sm-11">
+                      <strong>Send {$booking|guest_name} a Special Offer</strong>
+                        <a class="pull-right" data-toggle="tooltip" data-html="true" data-prevent-default="" href="#" title="When you send a guest a Special Offer, you give them permission to automatically confirm a booking at a specific price of your choosing. <br/><br/>The dates in your Special Offer won't be blocked on your calendar, so you can send one that overlaps with other offers or pre-approvals. <br/><br/>Keep in mind that guests have 24 hours to accept a Special Offer.">
+                          What's this?
+                        </a>
+                    </div>
+                  </div>
+                </label>
+
+                <div class="row row-condensed">
+                  <div class="col-sm-offset-1 col-sm-11">
+                    <div class="action-list-content hide">
+                      <p class="description">{$booking|guest_name} will be able to automatically book a reservation at the price you set.</p>
+
+                    
+                      <fieldset class="available-special-offer">
+                        <!--label for="pricing_hosting_id">Listing</label>
+                        <div class="select select-block row-space-1">
+                          <select id="pricing_hosting_id" name="pricing[hosting_id]">
+                            <option value="69040" selected="selected">Canal Apartments Studio C</option>
+                            <option value="69042">Canal Apartments Studio D</option>
+                          </select>
+                        </div-->
+                    
+                        <div class="special-offer-date-fields">
+                          <div class="row">
+
+                            <!--div class="col-sm-4">
+                              <label for="pricing_start_date">Check in</label>
+                              <input class="checkin ui-datepicker-target" id="pricing_start_date" name="in" type="text" value="06/04/2015">
+                            </div>
+                            <div class="col-sm-4">
+                              <label for="pricing_end_date">Check out</label>
+                              <input class="checkout ui-datepicker-target" id="pricing_end_date" name="out" type="text" value="06/12/2015">
+                            </div-->
+                            
+                            <!--div class="col-sm-4">
+                              <label for="pricing_guests">Guests</label>
+                              <div class="select select-block">
+                                <select id="pricing_guests" name="pricing[guests]"><option value="1" selected="selected">1</option>
+                                  <option value="2">2</option>
+                                  <option value="3">3</option>
+                                  <option value="4">4</option>
+                                  <option value="5">5</option>
+                                  <option value="6">6</option>
+                                  <option value="7">7</option>
+                                  <option value="8">8</option>
+                                  <option value="9">9</option>
+                                  <option value="10">10</option>
+                                  <option value="11">11</option>
+                                  <option value="12">12</option>
+                                  <option value="13">13</option>
+                                  <option value="14">14</option>
+                                  <option value="15">15</option>
+                              </select>
+                              </div>
+                            </div-->
+                          </div>
+                        </div>
+                    
+                        <!--div class="alert alert-with-icon alert-info  row-space-top-2 hide" id="availability_warning">
+                          <i class="icon alert-icon icon-comment"></i>
+                             You have already marked some of the dates in this date range as unavailable. To include the dates in your Special Offer, first make them available.
+                        </div-->
+                    
+                            <div class="row row-condensed margin-bottom">
+                          <div class="col-sm-4">
+                            <label for="pricing_price">Price</label>
+                            <div class="input-addon pricing-field">
+                              <span class="input-prefix">{$booking.currency|currency}</span>
+                              <input class="input-stem" id="pricing_price" name="rate_total" type="text" value="{$booking.grand_total - $booking.fee_service}">
+                            </div>
+                          </div>
+
+                          <!--div class="col-sm-4">
+                            <label for="pricing_price_type">&nbsp;</label>
+                            <div class="select hide">
+                              <select disabled="" id="pricing_price_type" name="pricing[price_type]">
+                                <option value="total">Subtotal Price</option>
+                                <option value="per_unit">Per Month</option>
+                              </select>
+                            </div>
+                          </div-->
+                        </div>
+                    
+                        <div class="margin-bottom">
+                            This price should include any additional fees you want to charge.
+                        </div>
+                        <!--div id="price-breakdown" class="margin-bottom form-control"></div-->
+                      </fieldset>
+
+
+                      <textarea name="message_{$smarty.const.RESPONSE_SPECIAL_OFFER}" placeholder="Include a message, encouraging {$booking|guest_name} to book." class="margin-bottom form-control input-resize-vert" style="overflow: hidden; word-wrap: break-word; resize: none; height: 62px;"></textarea>
+
+                      <div class="pull-right">
+                        <input type="submit" class="btn btn-primary " value="Send Offer">
+                      </div>
+                      <div class="pull-left">
+                        
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+              {/if}
+            </ul>
+          </form>
+          </div>
+        </li>
+        <li class="option-list-item negative" data-tracking-section="decline">
+          <hr>
+          <a href="#" class="option-link h3" >
+            Tell the guest your listing is unavailable
+          </a>
+          <div id="option-list-item-2" class="option-list-content hide">          
+          <form accept-charset="UTF-8" 
+                class="ajax-submit message_form positive" data-handler="booking-response" data-reload_link="#booking-status-chat" method="post">
+            <div style="margin:0;padding:0;display:inline">
+              <input name="utf8" type="hidden" value="✓">
+              <input name="auth_token" type="hidden" value="{$auth_token}">
+            </div>
+            <input type="hidden" name="res_id" value="{$booking.res_id}">
+            <input type="hidden" name="site_id" value="{$site.id}">
+            <input type="hidden" name="user_id" value="{$user.id}">
+
+            <ul class="list-unstyled action-list">
+
+              <!-- NOT_AVAILABLE -->
+              <li class="action-list-item template_NOT_AVAILABLE row-space-top-1" data-key="dates_not_available">
+                <hr>
+                <label class="action-label">
+                  <div class="row row-condensed">
+                    <div class="col-sm-1">
+                      <input type="radio" name="response" value="{$smarty.const.RESPONSE_NOT_AVAILABLE}">
+                    </div>
+                    <div class="col-sm-11">
+                      <strong>The dates <strong>{$date_range}</strong> are not available. Block these dates on my calendar.</strong>
+
+                    </div>
+                  </div>
+                </label>
+
+                <div class="row row-condensed">
+                  <div class="col-sm-offset-1 col-sm-11">
+                    <div class="action-list-content hide">
+                      <p class="description">Your calendar will be marked as unavailable for <strong>{$date_range}</strong> and you won't receive further inquiries for these specific dates.</p>
+                      <textarea name="message_{$smarty.const.RESPONSE_NOT_AVAILABLE}" placeholder="Optional message to the guest." class="margin-bottom form-control input-resize-vert" 
+                                style="overflow: hidden; word-wrap: break-word; resize: none; height: 82px;"></textarea>
+
+                      <div class="pull-right">
+                        <input type="submit" class="btn btn-primary " value="Send">
+                      </div>
+                      <div class="pull-left">
+                        
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+              
+              <!-- 9 -->
+              <li class="action-list-item template_9 row-space-top-1" data-key="not_a_good_fit">
+                <hr>
+                <label class="action-label">
+                  <div class="row row-condensed">
+                    <div class="col-sm-1">
+                      <input type="radio" name="response" value="{$smarty.const.RESPONSE_NOT_GOOD_FIT}">
+                    </div>
+                    <div class="col-sm-11">
+                      <strong>My listing is not a good fit for the guest's needs (children, pets, etc.)</strong>
+
+                    </div>
+                  </div>
+                </label>
+
+                <div class="row row-condensed">
+                  <div class="col-sm-offset-1 col-sm-11">
+                    <div class="action-list-content hide">
+
+                      <textarea name="message_{$smarty.const.RESPONSE_NOT_GOOD_FIT}" placeholder="Optional message to the guest." class="margin-bottom form-control input-resize-vert" 
+                                style="overflow: hidden; word-wrap: break-word; resize: none; height: 82px;"></textarea>
+
+                      <div class="pull-right">
+                        <input type="submit" class="btn btn-primary " value="Send">
+                      </div>
+                      <div class="pull-left">
+                        
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <!-- 9 -->
+              <li class="action-list-item template_9 row-space-top-1" data-key="not_comfortable">
+                <hr>
+                <label class="action-label">
+                  <div class="row row-condensed">
+                    <div class="col-sm-1">
+                      <input type="radio" name="response" value="{$smarty.const.RESPONSE_NOT_COMFORTABLE}">
+                    </div>
+                    <div class="col-sm-11">
+                      <strong>I did not feel comfortable or safe with guest</strong>
+
+                    </div>
+                  </div>
+                </label>
+
+                <div class="row row-condensed">
+                  <div class="col-sm-offset-1 col-sm-11">
+                    <div class="action-list-content hide">
+                      <textarea name="message_{$smarty.const.RESPONSE_NOT_COMFORTABLE}" placeholder="Optional message to the guest." class="margin-bottom form-control input-resize-vert" 
+                                style="overflow: hidden; word-wrap: break-word; resize: none; height: 82px;"></textarea>
+
+                      <div class="pull-right">
+                        <input type="submit" class="btn btn-primary " value="Send">
+                      </div>
+                      <div class="pull-left">
+                        
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <!-- 9 -->
+              <li class="action-list-item template_9 row-space-top-1" data-key="not_enough_info">
+                <hr>
+                <label class="action-label">
+                  <div class="row row-condensed">
+                    <div class="col-sm-1">
+                      <input type="radio" name="response" value="{$smarty.const.RESPONSE_NOT_ENOUGH_INFO}">
+                    </div>
+                    <div class="col-sm-11">
+                      <strong>Guest did not provide enough information about themselves</strong>
+
+                    </div>
+                  </div>
+                </label>
+
+                <div class="row row-condensed">
+                  <div class="col-sm-offset-1 col-sm-11">
+                    <div class="action-list-content hide">
+                      <textarea name="message_{$smarty.const.RESPONSE_NOT_ENOUGH_INFO}" placeholder="Optional message to the guest." class="margin-bottom form-control input-resize-vert" 
+                                style="overflow: hidden; word-wrap: break-word; resize: none; height: 82px;"></textarea>
+                      <div class="pull-right">
+                        <input type="submit" class="btn btn-primary " value="Send">
+                      </div>
+                      <div class="pull-left">
+                        
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+              
+
+              <!-- 9 -->
+              <li class="action-list-item template_9 row-space-top-1" data-key="waiting_for_better_reservation">
+                <hr>
+                <label class="action-label">
+                  <div class="row row-condensed">
+                    <div class="col-sm-1">
+                      <input type="radio" name="response" value="{$smarty.const.RESPONSE_NOT_ATTRACTIVE}">
+                    </div>
+                    <div class="col-sm-11">
+                      <strong>I'm waiting for a more attractive reservation</strong>
+
+                    </div>
+                  </div>
+                </label>
+
+                <div class="row row-condensed">
+                  <div class="col-sm-offset-1 col-sm-11">
+                    <div class="action-list-content hide">
+                      <textarea name="message_{$smarty.const.RESPONSE_NOT_ATTRACTIVE}" placeholder="Optional message to the guest." class="margin-bottom form-control input-resize-vert
+                              " style="overflow: hidden; word-wrap: break-word; resize: none; height: 82px;"></textarea>
+
+                      <div class="pull-right">
+                        <input type="submit" class="btn btn-primary " value="Send">
+                      </div>
+                      <div class="pull-left">
+                        
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <!-- 9 -->
+              <li class="action-list-item template_9 row-space-top-1" data-key="other">
+                <hr>
+                <label class="action-label">
+                  <div class="row row-condensed">
+                    <div class="col-sm-1">
+                      <input type="radio" name="response" value="{$smarty.const.RESPONSE_NOT_OTHER}">
+                    </div>
+                    <div class="col-sm-11">
+                      <strong>Other</strong>
+
+                    </div>
+                  </div>
+                </label>
+
+                <div class="row row-condensed">
+                  <div class="col-sm-offset-1 col-sm-11">
+                    <div class="action-list-content hide">
+                      <textarea name="message_{$smarty.const.RESPONSE_NOT_OTHER}" placeholder="Optional message to the guest." class="margin-bottom form-control input-resize-vert" 
+                                style="overflow: hidden; word-wrap: break-word; resize: none; height: 82px;"></textarea>
+                      <div class="pull-right">
+                        <input type="submit" class="btn btn-primary " value="Send">
+                      </div>
+                      <div class="pull-left">
+                        
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </form>
+          </div>
+        </li>
+        <li class="option-list-item neutral" data-tracking-section="discussion">
+          <hr>
+          <a href="#" class="option-link h3">
+            Write back to learn more before you decide
+          </a>
+          <div id="option-list-item-3" class="option-list-content hide">          
+          <form accept-charset="UTF-8" 
+                class="ajax-submit message_form positive" data-handler="booking-response" data-reload_link="#booking-status-chat" method="post">
+            <div style="margin:0;padding:0;display:inline">
+              <input name="utf8" type="hidden" value="✓">
+              <input name="auth_token" type="hidden" value="{$auth_token}">
+            </div>
+            <input type="hidden" name="site_id" value="{$site.id}">
+            <input type="hidden" name="user_id" value="{$user.id}">
+            <input type="hidden" name="res_id" value="{$booking.res_id}">
+
+            <ul class="list-unstyled action-list">
+              <!-- 7 -->
+              <li class="action-list-item template_7 row-space-top-1" data-key="">
+                <hr>
+                <label class="action-label">
+                  <div class="row row-condensed">
+                    <div class="col-sm-1">
+                      <input type="radio" name="response" value="{$smarty.const.RESPONSE_MORE_INFO}">
+                    </div>
+                    <div class="col-sm-11">
+                      <strong>I need to answer a question from this guest, or ask them for more information.</strong>
+
+                    </div>
+                  </div>
+                </label>
+
+                <div class="row row-condensed">
+                  <div class="col-sm-offset-1 col-sm-11">
+                    <div class="action-list-content hide">
+
+                      <textarea name="message_{$smarty.const.RESPONSE_MORE_INFO}" placeholder="Only the guest will see your message." class="margin-bottom form-control input-resize-vert
+                              required" style="overflow: hidden; word-wrap: break-word; resize: none; height: 62px;"></textarea>
+
+                      <div class="pull-right">
+                        <input type="submit" class="btn btn-primary " value="Send">
+                      </div>
+                      <div class="pull-left">
+                        
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </form>
+        </div>        
+      </li>
+    </ul>
+  </div>
+</div>
+
+          <!--div class="non-response-at panel-body text-center">
+            <strong>
+              Respond within <span class="countdown hasCountdown"><span class="countdown_row countdown_amount">23:57:56</span></span> to maintain your response rate.
+            </strong>
+          </div-->
+      </div>
+      

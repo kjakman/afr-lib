@@ -1,0 +1,64 @@
+
+              {$name = $review.reviewer_name|default:"Anonymous"}
+              {$profile_page = $smarty.const.PAGE_PROFILE|link}
+              {$profile_link = ($review.guest_id) ? $profile_page : ""}
+              <div class="row text-center-sm">
+                <div class="col-md-2 col-sm-12">
+                  <div class="avatar-wrapper">
+                    {if ($review.guest_id)}
+                      {$name = $review.guest_id|displayname}
+                    <a href="{$profile_page}{$review.guest_id}" class="text-muted">
+                      {$photo = $review.guest_id|userphoto}
+                    {elseif ($review.media)}
+                      {$photo = $review.media|photo}
+                    {else}
+                      {$photo = ''} 
+                    {/if}
+                      {if ($photo)}
+                      <div class="user-avatar round mb10">
+                        <img alt="{$name}" class="lazy" src="{$photo}" title="" width="68" style="display: inline;">
+                      </div>
+                      {/if}
+                      <div class="profile-name">
+                      {$name}
+                      {if ($review.reviewer_country)}
+                        {$review.reviewer_country|flag}&nbsp;
+                      {/if}
+                      {if ($review.reviewer_city)}
+                        {$review.reviewer_city}
+                      {/if}
+                      
+                      </div>
+                    {if ($review.guest_id)}
+                    </a>
+                    {/if}
+                  </div>
+                  <div class="text-muted date visible-sm">{$review.created|date}</div>
+                </div>
+                <div class="col-md-10 col-sm-12">
+                  <div class="mt10">
+                    <div class="comment-container expandable expandable-trigger-more row-space-2 expanded">
+                      <div class="expandable-content">
+                        <p>
+                        {$review.review_comment}
+                        </p>
+                        <div class="expandable-indicator"></div>
+                      </div>
+                      <a class="expandable-trigger-more text-muted" href="#">
+                        <strong>+ More</strong>
+                      </a>
+                    </div>
+                    <div class="text-muted date hide-sm pull-left">
+                      {$review.created|date} {$review.score|stars} ({($review.score)|round:"1"})
+                    </div>
+                    <div class="listing-name text-center-sm">
+                      {if ($review.parent_type == 'shortstay' && $review.parent_id)}
+                      <i class="fa fa-home margin-left"></i>
+                      <a href="{$review.parent_id|property_link}">{$review.parent_id|get:"property":"name"}</a>
+                      {/if}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              

@@ -1,0 +1,43 @@
+
+                                    {{"extend": "mail/mail-base.html"}}
+                                    {$message = $scope.message|default:$scope.object}
+                                    {block name=main_text}
+                                      <h1>{'dear'|translate:'c'} {$scope.receiver_name|default:$site.name}</h1>
+                                      <p>{'you have received a message from the contact form'|translate:'c'}:</p>
+                                      
+                                      {if ($message)}         
+                                      
+                                      <table cellspacing="0" cellpadding="3" border="0">
+                                        <tbody>
+                                          <tr>                
+                                            <th align="right" width="350">{'sent'|translate:'c'}</th>
+                                            <td align="left" width="350">{$message.created|date_format:'%d-%m-%Y %H:%M'}</td>
+                                          </tr>
+                                          <tr>                
+                                            <th align="right" width="350">{'subject'|translate:'c'}</th>
+                                            <td align="left" width="350">{$message.subject}</td>
+                                          </tr>
+                                          <tr>                
+                                            <th align="right" width="350">{'name'|translate:'c'}</th>
+                                            <td align="left" width="350">{$message.name}</td>
+                                          </tr>
+                                          <tr>                
+                                            <th align="right" width="350">{'email'|translate:'c'}</th>
+                                            <td align="left" width="350">{$message.sender|escape:'html'}</td>
+                                          </tr>
+                                          {if ($message.phone)}
+                                          <tr>                
+                                            <th align="right" width="350">{'phone'|translate:'c'}</th>
+                                            <td align="left" width="350">{$message.phone}</td>
+                                          </tr>
+                                          {/if}
+                                        </tbody>
+                                      </table>
+                                      
+                                      <h3>{'message'|translate:'c'}</h3>
+                                      <p>{$message.message|default:$scope.personal_message}</p> 
+
+                                      {else}
+                                        {"Message not found"|error:'0'}
+                                      {/if}
+                                    {/block}

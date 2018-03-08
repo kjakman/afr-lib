@@ -1,0 +1,23 @@
+
+
+
+                <div id="location_url" class="collapse">{$smarty.const.PAGE_LOCATION|link}</div>
+                <div id="shortstay_url" class="collapse">{$smarty.const.PAGE_SHORTSTAY|link}</div>
+                <div id="geo_url" class="collapse">{$smarty.const.PAGE_GEO_LOCATION|link}</div>
+                <div id="location_slug" class="collapse-off"></div>
+                
+                <div class="form-group form-group-filled {if ($top)}inline-block{/if}">
+                  <input name="loc" type="text" placeholder="Where are you going?" 
+                         class="jq-autocomplete form-control ui-autocomplete-input location-name" autocomplete="off" 
+                         value="{$get.loc|urldecode}"
+                    data-target="location_id" 
+                    data-options='{literal}{"select_handler":"google_pac_select","response_handler":"google_pac_response","item_renderer":"google_pac_renderer"}{/literal}'
+                    data-search_options='{$scope.autocomplete_search_options|@json_encode}'>
+                </div>
+                {if ($top)}
+                <button type="submit" class="jq-autocomplete-submit btn btn-success">
+                  <i class="fa fa-search"></i>
+                </button>
+                {else}
+                <span class="input-icon"><i class="glyphicon glyphicon-map-marker"></i></span>
+                {/if}

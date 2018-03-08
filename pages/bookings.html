@@ -1,0 +1,12 @@
+  {{"extend": "base/admin.html"}}
+  {block name=content}
+        <div class="container">
+          <div class="row">
+            <div class="col-md-9" id="user-profile-container">
+              <h4>Bookings</h4>
+
+                {{"include": "_bookings-table.html"}}
+            </div>
+          </div>
+        </div>
+  {/block}

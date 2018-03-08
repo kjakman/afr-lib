@@ -1,0 +1,67 @@
+  {{"extend": "base/default.html"}}
+  {block name=content}
+  
+  
+    {$review = $scope.review}
+    {if ($scope.reviewed_obj_type == 'reservation')}      
+      {$booking = $scope.reviewed_object}
+      {$rental = $scope.parent_object}
+      {$user_id = $booking.guest_id}
+    {else}
+      {$user_id = $user.id}    
+    {/if}
+    <!-- CONTENT -->
+    
+
+    {if ($review)}
+      {if ($review.user_id == $user.id)}
+      <div class="container mb50 mt50">
+        <div class="row">
+          <div class="col-md-8 col-md-offset-2">
+            <h1>{'thank you'|translate:'c'}!</h1>
+            <h2>{'your feedback is important to us'|translate:'c'}.</h2>
+            <p></p>
+            <a class="btn btn-success btn-ghost btn-lg mt5" href="/"><i class="fa fa-long-arrow-left"></i>Back to Homepage</a>
+          </div>
+        </div>
+      </div>
+      {elseif ($review.host_id == $user.id)}
+      Host view
+      {elseif ($review.active && $review.published == $user.id)}
+      Public: show
+      {else}
+      Nothing to see here
+      {/if}
+      
+    {else}
+
+      <div class="gap"></div>
+			<section>
+				<div class="container">
+					<div class="row">
+						<div class="col-md-8">
+						  {if ($user.user_level >= $smarty.const.USER_LEVEL_STAFF && $review.user_id != $user.id)}
+						  {'Dear Staff: Please do not fill in this form! Let the guest do that. This is only so that you can see it.'|alert:'warning'}
+						  {/if}
+						
+              {{"include": "_review-form.html"}}
+            </div>
+
+						{if ($booking)}
+						<!-- SIDEBAR -->
+						<div class="col-md-4">              
+              {$obj_type = $scope.parent_type}
+              {{"include": "_rental-payment-details.html"}}          
+						</div>
+						<!-- /SIDEBAR -->
+						{/if}
+
+					</div>
+				</div>
+			</section>
+			<!-- /CONTENT -->
+    {/if}
+      <div class="gap"></div>
+  {/block}
+              
+              

@@ -1,0 +1,113 @@
+{if ($scope.rentals)}
+  {$rentals = $scope.rentals}
+
+  {$last = min($scope.start + $scope.limit, $scope.total_count)}
+  {$pagination_options = ["target" => "#subview-container", "success_handler" => "traveler_ready", "base_link" => "{$app.full_path}"]}
+  {if ($scope.filters)}
+  {* $scope.filters|dump *}
+  <ul class="inline inline-list">
+  {foreach from=$scope.filters item=filter}
+    <li><a href="{$filter.link}" data-data='{$filter.data|json_encode}' class="form-resubmit btn btn-default {$filter.class}" 
+         data-target="#rental_search_form"><i class="fa fa-times"></i> {$filter.name}</a></li>
+  {/foreach}
+  </ul>
+  <div class="gap gap-small"></div>
+  {/if}
+  {$scope.total_count}
+  {if ($scope.total_count >= $smarty.const.RENTAL_SEARCH_LIMIT)}+{/if} {'rentals found'|translate} 
+  {if ($scope.rentals|@count < $scope.total_count)}(Showing {$scope.start + 1} - {$last}){/if}
+  {if ($scope.in && $scope.out)}
+  <br>{'available'|translate:'c'} {$scope.in|daterange:$scope.out}
+  ({$scope.ng} {if ($scope.ng==1)}{'guest'|translate}{else}{'guests'|translate}{/if}, 
+  {$scope.nd} {if ($scope.nd==1)}{'day'|translate}{else}{'days'|translate}{/if})
+  {/if}
+  
+  {$scope.total_count|pagination:$scope.start:$scope.limit:$pagination_options}
+
+  <div id="rental_list" data-count="{$scope.total_count}" data-id_list="{$scope.id_list}" 
+       data-property_type="{$site.property_type}" class="row margin-top">
+  {foreach from=$scope.rentals item=rental}
+  {{"include": "_rental-list-item.html"}}
+  {/foreach} 
+  </div>
+  {$scope.total_count|pagination:$scope.start:$scope.limit:$pagination_options}
+{else}
+  {$rentals = []}
+  <h3>We're sorry...</h3>
+  <p class="bold">We could not find any properties that matched your search</p>
+  <ul class="inline-list">
+  {foreach from=$scope.tips item=tip}
+    <li><a href="{$tip.link}" data-data='{$tip.data|json_encode}' class="mt10 btn btn-success {$tip.class|default:'form-resubmit'}" 
+         data-target = "#rental_search_form">{$tip.name}</a></li>
+  {/foreach}
+  </ul>
+{/if}
+
+{* From rental-search.html *}
+
+  {if (0 && $scope.rentals)}
+  <script>
+  //$(document).ready(function() {
+  var rentals = {$scope.rentals|@json_encode};
+  if(gmap_classic) {
+    console.log("classic map...");
+    //gmap_loadmarkers('search_result_map', rentals, false)
+  } else {
+    console.log("Loading markers for:", rentals);
+    gmap3_loadmarkers('search_result_map', rentals, false)
+    var id = "search_result_map";
+    var bounds_str = '{$scope.bounds}';              
+    console.log("\n\nInline Bounds=", bounds_str);
+    var loc_types = $('#loc_types').length ? $('#loc_types').html() : '';
+    console.log("inline: loc types=" + loc_types + " len=" + $('#loc_types').length + " bounds_str=" + bounds_str);
+    if(loc_types && bounds_str) gmap3_get_locations(id, loc_types, bounds_str);  
+  }
+  //});
+  </script>
+  {/if}
+          
+          
+{$scope.debug}
+{$ng = ($scope.ng) ? $scope.ng : 1}
+<script>
+  var ng = '{$ng}';
+  var map_id = "search_result_map";
+  var rentals = {$scope.rentals|@json_encode};
+  
+  {literal}           
+  $(document).ready(function() {
+    //alert("ready - count =" + rentals.length);
+    
+    var $listings = $(".listing");
+    var cin = $("#in").val();
+    var cout = $("#out").val();
+    if(cin && cout) { 
+      $.each($listings, function(i, item) {
+        var $item = $(this);
+        var $price = $item.find("span.price-amount");        
+        var org_price = $price.html();
+        
+        var type = $item.data('type');
+        var id   = $item.data('id');
+        var fid  = $item.data('fid');
+        var cid  = cin + cout + id;
+
+        var mid  = type + '_' + id; /** google map marker array key */
+        
+        if(result = g_rates[cid]) {
+          rental_rate_update(cin, cout, $item, result, org_price);
+          //onsole.log("rate already set for " + cid);
+        } else {
+          //console.log("setting rate for v2 " + cid);
+          $price.html("<i class='fa fa-spinner fa-spin'></i>");              
+          var ajax_url = '/home/app_data.php?oper=rental-availability&t=' + type + '&apt_id=' + id + '&in=' + cin + '&out=' + cout + '&ng=' + ng;
+          $.getJSON(ajax_url, [], function(json) {
+            rental_rate_update(cin, cout, $item, json, org_price);
+            g_rates[cid] = json;
+          });
+        }
+      });
+    }
+  });
+{/literal}
+</script>

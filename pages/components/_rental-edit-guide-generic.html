@@ -1,0 +1,43 @@
+                      <div class="panel-group" id="accordionGroup" role="tablist" aria-multiselectable="true">
+                      {$i = 1}
+                      {$count = $scope.description_types_generic|@count}
+                      
+                      {foreach from=$scope.description_types_generic item=desc_type}
+                        {$descObj = $scope.guides_generic[$desc_type.id]}
+                        {$desc = $descObj.description}
+                        {$desc_id = $descObj.id}
+                        <div class="panel panel-default">
+                          <div class="panel-heading" role="tab" id="heading-{$i}">
+                            <a role="button" id="link-{$i}" data-toggle="collapse" data-parent="#accordionGroup" href="#collapse-{$i}" aria-expanded="true" aria-controls="collapse-{$i}">
+                              <label>{$desc_type.name} {if ($desc_type.private)}<span class="text-small"><i class="fa fa-lock"></i> Private (only guests who have booked see this){/if}</span></label>
+                            </a>
+                            <a href="#" data-toggle="tooltip" data-html="true" data-placement="bottom" title="Example: {$desc_type.example}">
+                               <i class="fa fa-question-circle"></i>
+                            </a>                                                        
+                          </div>
+                          
+                          <div id="collapse-{$i}" data-index="{$i}" class="panel-collapse collapse {$in}" role="tabpanel" aria-labelledby="heading-{$i}">
+                            <div class="panel-body">
+                              <div class="form-group">
+                                <form id="guide-edit-{$desc_type.id}-form" class="ajax-submit autosave-off" data-autosave-handler="none" data-handler="save" data-success_handler="close_open_next">
+                                  <input name="host_id" type="hidden" value="{$scope.host_id}" />
+                                  <input name="user_id" type="hidden" value="{$user.id}" />
+                                  <input name="site_id" type="hidden" value="{$site.id}" />
+                                  <input name="property_id" type="hidden" value="0" />
+                                  <input name="property_type" type="hidden" value="{$scope.property_type}" />
+                                  <input name="obj_type" type="hidden" value="property_description" />
+                                  <input name="type" type="hidden" value="{$desc_type.id}" />
+                                  <input name="id" type="hidden" value="{$desc_id}" />
+                                  <input name="language" type="hidden" value="{$app.language}" />
+                                  <textarea name="description" class="summernote-off form-control" data-toolbar="[]" placeholder="{$desc_type.description}" >{$desc}</textarea>
+                                  <br>
+                                  <input type="submit" class="btn btn-primary" value="Next">
+                                </form>                                  
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        {$in = ''}                      
+                        {$i = $i + 1}
+                      {/foreach}
+                      </div>

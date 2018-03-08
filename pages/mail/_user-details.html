@@ -1,0 +1,34 @@
+                {$profile_id = $scope.profile_id}
+                {if ($profile_id)}
+                  {$thisuser = $profile_id|get_user:1}
+                  {* $thisuser|dump *}
+                  {$pic = $thisuser.id|userphoto:'square':['full' => 1]}
+                <table cellspacing="3" cellpadding="0" border="0">
+                  <tbody>
+                    <tr>                
+                      <td width="140">
+                        <a href="{$site_url}{$smarty.const.PAGE_PROFILE|link}{$thisuser.id}" target="new">
+                          <img src="{$pic|add_http}" style="width:136px" alt="{$thisuser.display_name}" />
+                        </a>                      
+                      </td>
+                      <td width="200">
+                      {$thisuser.display_name}<br>
+                      {if ($thisuser.country)}
+                        <img src="{$site_url}/traveler/img/flags/16/{$thisuser.country|lower}.png" alt="{$thisuser.country}">
+                      {/if} 
+                      {if ($thisuser.city)} {$thisuser.city}<br>{/if}
+                      
+
+                      {*
+                      {if ($thisuser.created)}
+                      {'member since'|translate:'c'} {$thisuser.created|date_format:'%B %Y'}
+                      {else}
+                      {'unregistered user'|translate:'c'}
+                      {/if}
+                      *}
+                      
+                      </td>
+                    </tr>                    
+                  </tbody>
+                </table>
+                {/if}

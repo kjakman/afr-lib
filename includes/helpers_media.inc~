@@ -1,0 +1,969 @@
+<?
+
+/*  
+
+  Media db
+  
+ name - not in use 
+ filename - basefile of org. file (on disk in org folder for file upload - not needed if url is set)
+ src      - basefile of big file in image folder
+ url      - location of original if online
+
+  */ 
+
+
+// takes a hex color (3 or 6 chars). Returns value from 0 (black) to 1 (white) for brightness of color
+function get_brightness($hexcolor) {
+  // HEX > RGB
+  if(!$hexcolor) return 1;
+  list($R, $G, $B) = color_rgb($hexcolor);
+  $brightness = ($R+$G+$B) / 765;
+  //echo("brightness of $hexcolor = $brightness<br> $R + $G + $B = ".($R+$G+$B));
+  return($brightness);
+}
+
+// returns decimal RGB values from hex color (FFF or FFFFFF)
+function color_rgb($hexcolor) {
+    if(strlen($hexcolor) == 3) {
+    $R = hexdec(substr($hexcolor, 0,1)) ^ 2;
+    $G = hexdec(substr($hexcolor, 1,1)) ^ 2;
+    $B = hexdec(substr($hexcolor, 2,1)) ^ 2;
+  } elseif(strlen($hexcolor) == 6) {
+    $R = hexdec(substr($hexcolor, 0,2));
+    $G = hexdec(substr($hexcolor, 2,2));
+    $B = hexdec(substr($hexcolor, 4,2));
+  }
+  return array($R,$G,$B);
+}
+
+
+function is_color($str) {
+  $str = ltrim($str, '#');
+  $regex = '^[a-fA-F0-9]+$';
+  return ((strlen($str)==6 || strlen($str)==3) && eregi($regex, $str)) ? true : false;
+
+}
+
+// takes and image (relative path), replaces all colors with $color (preserving transparency)
+// returns new image
+function image_color_replace($image, $color, $default='', $full=false) {
+  $url = $full ? add_host($image) : $image;
+  if($color && $default && $color==$default) return $url;
+  $save_to = $_SERVER['DOCUMENT_ROOT'].$image;
+  return ColorReplace($url, $color, $save_to);
+}
+
+
+
+// returns full system file path for media 
+// including filename of image if $size is set (org, big, small, thumb)
+function get_media_file($media, $size='') {
+  return $_SESSION['media_dir'].get_media_tail($media, $size);
+}
+
+// returns relative web path for media
+// including filename of image if $size is set (org, big, small, thumb)
+function get_media_src($media, $size='') {
+  $src = $_SESSION['media_path'].get_media_tail($media, $size);
+  return $src;
+  
+  //if($size) {
+  //  $mediaObj = any2obj('media', $media);
+  //  $src .=  '?'.$mediaObj->id;
+  //}
+  //return $src;
+}
+
+
+// including filename of image if $size is set (org, big, small, thumb)
+// if size is not specified, returns base directory
+function get_media_tail($media, $size='') {
+  $mediaObj = any2obj('media', $media);
+  if(!$mediaObj->property_type || !$mediaObj->parent_id) return ''; // this is no a property media 
+  $type_dir = image_type_dir($mediaObj->property_type);
+  $pid  = $mediaObj->parent_id ? $mediaObj->parent_id : 0;
+  $sid = $mediaObj->source_id ? $mediaObj->source_id : 0;
+  $cid = $mediaObj->city_id ? $mediaObj->city_id : 0;  
+  $aid = $mediaObj->estate_agent_id;
+  $oid = $mediaObj->owner_id;
+  if(!$aid && !$oid) $aoid=0; else $aoid = $aid ? $aid : $oid; 
+  $middle = "$sid/$cid/$aoid/$pid/"; // use estate_agent_id
+
+  $dir = $type_dir.$middle;
+
+  if($size) {
+    $size_dir = image_size_dir($size);
+    $dir.=$size_dir;  
+    $src = $size == 'org' ? $mediaObj->filename : $mediaObj->src;
+    if($src) $dir.=$src;  
+  }
+
+  return $dir;
+}
+
+// return html_image for first picture for a property
+function get_first_pic($apt_or_id, $size='small', $show_coming_soon=true, $class='thumb_pic') {
+  $apt = any2obj('property', $apt_or_id);
+  $id  = $apt->id;
+  if(!$size) $size = 'small';
+  if($image = find_object('media', array('parent_id' => $id, 'active' => 1))) {
+    //echo("first pic for $apt->name ($id) = ");dump($image);
+    //dump($image);die();
+    $image_file = get_media_file($image, $size);
+    $image_src  = get_media_src($image, $size);
+    $image_id = "title_photo_".$id;
+    //$image_id = "title_photo";
+    //echo("$image_src<br>");
+    return html_image($image_src, $apt->name, 'id="'.$image_id.'"', $class, 0, $_SESSION['media_small_size']);
+  } else {
+    return ($show_coming_soon ? html_div(phrase('no_photo_available', CAPITALIZE), 'no_photo') : "");
+  }
+}
+
+function image_size_dir($size) {
+  switch($size) {
+    case 'big':
+      return '';
+    case 'small':
+      return 'small/';
+    case 'thumb':
+      return 'thumbs/';
+    case 'org':
+      return 'org/';
+    default:
+      return '';
+  }
+}
+
+function image_type_dir($type) {
+  switch($type) {
+    case "hotel":
+      return "hotels/";
+    case "boat":
+      return "boats/";
+    case "office":
+      return "offices/";
+    case "shortstay_office":
+      return "shortstay-offices/";
+    case "shortstay":
+      return "serviced-apartments/";
+    case "longstay":
+      return "rental-apartments/";
+    case "realestate":
+      return "real-estate/";
+    case "property":
+      return "properties/";
+    default:
+      die("image_type_dir: missing or incorrect type '$type'");
+    break;
+  }
+}
+
+
+// returns file system directory for images of given property or room
+// takes apt od and does DB lookup to find city, source, agent, owner etc
+function get_image_dir($id, $type, $room_id=0) {
+  global $db;
+  if(!$type) die("get_image_dir: missing type");
+  $subdir = image_type_dir($type);
+  if(!$subdir) die("get_image_dir: no subdir");
+  $apt = $db->getRow("SELECT id, city_id, source_id, estate_agent_id, owner_id FROM property WHERE id=$id");
+  $tail = get_image_path_tail($apt, $room_id);
+  return $_SESSION['media_dir']."$subdir/$tail";
+}
+
+// returns file system directory for images of given property or room
+// takes apt object and array or media to find city, source, agent, owner etc
+function build_image_dir($id, $type, $media, $room_id=0) {
+  global $db;
+  if(!$type) die("get_image_dir: missing type");
+  $subdir = image_type_dir($type);
+  if(!$subdir) die("get_image_dir: no subdir");
+  $apt = $media;
+  $apt['id'] = $id;
+  $tail = get_image_path_tail($apt, $room_id);
+  return $_SESSION['media_dir']."$subdir/$tail";
+}
+
+// returns web URL for images of given property or room
+function get_image_path($id, $type, $room_id=0) {
+  global $db;
+  if(!$id) return ''; //die("get_image_path: missing id");
+  if(!$type) return ''; // die("get_image_path: missing type");
+  $subdir = image_type_dir($type);
+  if(!$subdir) die("get_image_path: no subdir");
+  $table = 'property';
+  $qs = "SELECT id, city_id, source_id, estate_agent_id, owner_id FROM $table WHERE id=$id";
+  $apt = $db->getRow($qs);
+  //print_debug("get_image_path query:<br>$qs;<br>");
+  $tail = get_image_path_tail($apt, $room_id);
+  //if(!$tail) die("get_image_path: no tail");
+  return str_replace('//', '/', $_SESSION['media_path']."$subdir/$tail");
+}
+
+// returns 'the last bit' of the image path for properties
+function get_image_path_tail($apt, $room_id=0) {
+  if(is_array($apt)) $apt = array2obj($apt);
+  $sid = $apt->source_id;
+  $cid = $apt->city_id;
+  $aid = $apt->estate_agent_id;
+  $oid = $apt->owner_id;
+  $id = $apt->id;
+  if($aid) {
+    $tail = "$sid/$cid/$aid/$id/";
+  } elseif($oid) {
+    $tail = "$sid/$cid/$oid/$id/";
+  } else {
+    //echo("get_image_path: neither estate_agent_id or owner_id defined<br>");
+    $tail = "";
+  }
+  if($room_id) $tail .= "$room_id/";
+  return $tail;
+}
+
+// downloads all photo from $url_array
+// adds to table media
+// resizes and builds gallery
+// apt is assoc. array
+function add_property_photos($type, $apt, $imageArray, $room_id=0) {
+  foreach($imageArray as $media) add_object('media', $media);
+}
+
+
+// same as built-in getimagesize(), but removes query string first
+function imagesize($src) {
+  $stripped_src = ($pos = strpos($src, '?')) ? substr($src, 0, $pos) : $src;
+  return getimagesize($stripped_src);
+}
+
+
+// todo: test non-square resize
+// function resize_image($src, $dst, $geometry, $options) {
+// $geometry can be number (long side) or array(widht, heigth) or array(widht, heigth, x, y) where x,y are crop coordinates 
+// resizes image - sets longest side to (long side). If crop is true, creates square image with both sides = $long side (or w/h)
+// todo: Test Upscaling
+
+// bool Imagick::thumbnailImage ( int $columns , int $rows [, bool $bestfit = false [, bool $fill = false ]] )
+// bool Imagick::resizeImage ( int $columns , int $rows , int $filter , float $blur [, bool $bestfit = false ] )
+
+function resize_image($file, $dst, $size, $options='') {
+  if(!$size) return copy($file, $dst); // just copy it
+  if(is_array($size)) {
+    if(count($size) == 2) list($w, $h) = $size;
+    else if(count($size) == 4) list($w, $h, $x, $y) = $size;
+  } else {
+    $w = $h = $size;
+  }
+  
+  $bestfit  = isset($options['bestfit']) ? $options['bestfit'] : true;
+  $crop     = $options['crop'];
+  $blur     = isset($options['blur']) ? $options['blur'] : 1;
+  $strip    = isset($options['strip']) ? $options['strip'] : 1;
+  $quality  = $options['quality'] ?: 60;
+  $filter   = $options['filter'] ?: Imagick::FILTER_LANCZOS;
+
+  $image = new Imagick($file);
+  if(!$image) return false;
+  if($crop) { // resizes image and returns the cropped selection (aspect ratio is maintained)
+    $long_side = max($w, $h); 
+    $ih = $image->getImageHeight();
+    $iw = $image->getImageWidth();
+    $result = $ih <= $iw ? $image->resizeImage(0, $long_side, $filter, $blur) : $image->resizeImage($long_side, 0, $filter, $blur); // Resize image algorithm based on shortest side (bestfit off)
+    $rih = $image->getImageHeight(); // result height
+    $riw = $image->getImageWidth();  // result width
+
+    if(!isset($x)) $x = $riw > $w ? ($riw - $w) /2 : 0; // default crop to center of image
+    if(!isset($y)) $y = $rih > $h ? ($rih - $h) /2 : 0; // default crop to center of image
+    if($result) $result = $image->cropImage($w, $h, $x, $y);
+
+    // resize so that the shortest side of the result is the longest side of the input
+    //if($ih <= $iw) {  // landscape
+    //} else {  // portrait
+    //  $result = $image->resizeImage($long_side, 0, $filter, $blur, $bestfit); // Resize image algorithm based on width
+    //}
+    
+  } else { // if bestfit is set (default), aspect ratio is maintained, the long side will be set to $w or $h 
+    $result = $image->resizeImage($w, $h, $filter, $blur, $bestfit); // Resize image based on width and height    
+  }
+  
+  if($result) {
+    $image->setImageCompression(Imagick::COMPRESSION_JPEG); // Set to use jpeg compression
+    $image->setImageCompressionQuality($quality); // Set compression level (1 lowest quality, 100 highest quality)
+    if($strip) $image->stripImage(); // Strip out unneeded meta data
+    $result = $image->writeImage($dst); // Writes resultant image to output directory  
+  }
+  $image->destroy(); // Destroys Imagick object, freeing allocated resources in the process
+  return $result;
+}
+
+
+  // if ($crop) {
+  //   $image->cropThumbnailImage($w, $h);
+  // } else {
+  //   $image->thumbnailImage($w, $h, TRUE);
+  // }
+  // $result = $image->writeImage($dst);
+  // $image->destroy(); // free up memory
+  // return $result;  
+
+// old code below
+/*
+  
+  
+// runs resize_image on media object
+// creates directories as needed
+function resize_media($media, $size, $overwrite=false) {
+  $mediaObj = any2obj('media', $media);
+  $size_dim = $_SESSION['media_'.$size.'_size'];
+  $square = $size == 'big' ? false : true; // make small + thumbs square
+  $org_src = get_media_file($mediaObj, 'org');
+  $debug = false;  
+  if($debug) echo("resizing $org_src to $size<br>");
+
+  if(!file_exists($org_src)) {
+    $errors[] = "resize_media; original '$org_src' not found";
+    if($debug) echo("couldn't find $org_src <br>");
+  } else {
+    $src = $mediaObj->src;
+    if(!$src) die("resize_media: missing src");
+    $imagedir = get_media_file($mediaObj); 
+    $sizedir = $imagedir.image_size_dir($size);
+    if($debug) echo("Resize: Found $org_src src=$src imagedir=$imagedir sizedir=$sizedir<br>");
+
+    if(!is_dir($sizedir)) {
+      if($debug) echo("Resize: Making $sizedir<br>");
+      if(!mkdir_recursive($sizedir)) $errors[] = "resize_media: couldn't make $sizedir";
+    }
+
+    $size_src = $sizedir.$src;
+    if($debug) echo("Resize: Found $sizedir, writing to $size_src<br>");
+
+    if($overwrite || !file_exists($size_src)) {
+      if(!resize_image($org_src, $size_src, $size_dim, $square)) {
+        $errors[] = "Resize to $size failed '$org_src' => '$size_src'"; 
+        if($debug) echo("Resize to $size_src FAILED<br>");
+      } else {
+        if($debug) echo("Resized to $size_src<br>");
+      }
+    } else {
+      if($debug) echo("resize: $org_src already there - overwrite off<br>");
+    }
+  }
+  if($debug && count($errors)) echo("resize_errors:".implode("<br>", $errors));
+  return $errors;
+}
+
+
+        // $cmd = $size ? "convert $org_src -resize ".$size."x".$size." $dest" : "cp $org_src $dest";
+
+        
+  $useCopyResized = false; // some server disable theimagecopyresampled function - if so set $useCopyResized to true
+
+  if(!$src) die("resize_image: Missing filePath");
+  // Get the image dimensions.
+  list($width, $height, $image_type) = imagesize($src);
+  $gdVersionNumber = getGDversion();
+
+  if($square) { // resize to square image
+    // Calculate offset of square portion of image
+    // offsets will both be zero if original image is square
+    $smallerSide = min($width, $height);
+    $deltaX = ($width - $smallerSide)/2;
+    $deltaY = ($height - $smallerSide)/2;
+    $src_w = $src_h = $smallerSide;
+    $dst_w = $dst_h = $long_side;
+  } else { // keep shape and aspect ratio - set new long side to $long_side
+    $deltaX = $deltaY = 0;
+    $src_w = $width;
+    $src_h = $height;
+    $longer_side = max($width, $height);
+    $ratio = $long_side / $longer_side;    
+    $dst_w = $ratio * $src_w;
+    $dst_h = $ratio * $src_h;
+    //echo("not square: org = $src_w x $src_h ratio= $ratio dst=$dst_w x $dst_h<br>longer side = $longer_side<br>");
+  }    
+   
+  switch ($image_type)
+  {
+    case 1: $imageSrc = imagecreatefromgif($src); break;
+    case 2: $imageSrc = imagecreatefromjpeg($src);  break;
+    case 3: $imageSrc = imagecreatefrompng($src); break;
+    default:  trigger_error("resize_image: Unsupported filetype! path='$src' type='$image_type'", E_USER_WARNING);  break;
+  }
+  if(!$imageSrc) echo("imagecreatefromXXX failed:  filePath='$src'  src='$imageSrc'<br>");
+
+  // Create an empty smallnail image.
+  if ($gdVersionNumber < 2 || $useCopyResized) {
+    $imageDest = @imagecreate($dst_w, $dst_h);
+    $success = @imagecopyresized($imageDest, $imageSrc, 0, 0, $deltaX, $deltaY, $dst_w, $dst_h, $src_w, $src_h);
+  } else {
+    $imageDest = @imagecreatetruecolor($dst_w, $dst_h);
+    $success = @imagecopyresampled($imageDest, $imageSrc, 0, 0, $deltaX, $deltaY, $dst_w, $dst_h, $src_w, $src_h);
+    // bool imagecopyresampled ( resource $dst_image , resource $src_image , int $dst_x , int $dst_y , int $src_x , int $src_y , int $dst_w , int $dst_h , int $src_w , int $src_h )
+  }
+  if (!$success) {
+    //echo("imagecopyresampled failed: <br> Params: smallSize=$long_side, imageDest=$imageDest<br> src=$imageSrc, dx=$deltaX  dy=$deltaY smallerSide=$smallerSide<br>");
+    //die();
+    return false;
+  } else {
+    // save the smallnail image into a file.
+		$success = @imagejpeg($imageDest, $dst, $quality);
+    //echo("<hr>imagecopyresampled succeeded: imagejpg result = '$success' imageDest='$imageDest' dst='$dst' square=$square<br>
+    //      long_side=$long_side<br>ratio=$ratio<br>dst_w=$dst_w<br>dst_h=$dst_h<br>src_w=$src_w<br>src_h=$src_h<br>dx=$deltaX<br>dy=$deltaY<br>quality=$quality<br>version=$gdVersionNumber");    
+		// Delete both image resources.
+		@imagedestroy($imageSrc);
+		@imagedestroy($imageDest);
+  	return $success;
+	}
+}
+*/
+
+function getGDversion() {
+  $gd_version_number = $_SESSION['gd_version_number'];
+  if ($gd_version_number === null) { // look up once per session
+    ob_start();
+    phpinfo(8);
+    $module_info = ob_get_contents();
+    ob_end_clean();
+    if (preg_match("/\bgd\s+version\b[^\d\n\r]+?([\d\.]+)/i", $module_info,$matches)) {
+      $gd_version_number = $matches[1];
+    } else {
+      $gd_version_number = 0;
+    }
+    //echo("Looked up GD version number = $gd_version_number<br>");
+    $_SESSION['gd_version_number'] = $gd_version_number;
+  }
+  return $gd_version_number;
+} 
+
+function generate_corners($color, $image_dir_output='') {
+  if(!$color) return "FFFFFF"; // default fg color is white
+  $color = fix_color($color);
+  $image_dir_input = $_SERVER['DOCUMENT_ROOT']."/images/corners/";
+  if(!$image_dir_output) $image_dir_output = $image_dir_input;
+  if(file_exists($image_dir_output.$color."_BL.png")) return $color; // nothing to do 
+  ColorReplace($image_dir_input."FFFFFF_BL.png", $color, $image_dir_output.$color."_BL.png");
+  ColorReplace($image_dir_input."FFFFFF_BR.png", $color, $image_dir_output.$color."_BR.png");    
+  ColorReplace($image_dir_input."FFFFFF_TL.png", $color, $image_dir_output.$color."_TL.png");    
+  ColorReplace($image_dir_input."FFFFFF_TR.png", $color, $image_dir_output.$color."_TR.png");
+  return $color;
+}
+
+function generate_borders($color, $image_dir_output='') {
+  if(!$color) return ""; // default border is black
+  $color = fix_color($color);
+  $image_dir_input = $_SERVER['DOCUMENT_ROOT']."/images/corners/";
+  if(!$image_dir_output) $image_dir_output = $image_dir_input;
+  if(file_exists($image_dir_output.$color."_BLB.gif")) return $color; // nothing to do
+  ColorReplace($image_dir_input."000000_BLB.gif", $color, $image_dir_output.$color."_BLB.gif");    
+  ColorReplace($image_dir_input."000000_BRB.gif", $color, $image_dir_output.$color."_BRB.gif");    
+  ColorReplace($image_dir_input."000000_TLB.gif", $color, $image_dir_output.$color."_TLB.gif");    
+  ColorReplace($image_dir_input."000000_TRB.gif", $color, $image_dir_output.$color."_TRB.gif"); 
+  return $color;
+}
+
+function ColorReplace($url, $color, $save_to='')
+{
+    if($save_to && file_exists($save_to)) return $url; // already exists
+    # The new color and its channels
+    $i=$color; 
+    $color = pad_color($color); // convert FFF to FFFFFF
+    
+    //die("color=$color, was $i<br>");
+    $r = 0+("0x".substr( $color, 0, 2));
+    $g = 0+("0x".substr( $color, 2, 2));
+    $b = 0+("0x".substr( $color, 4, 2));
+    # I read the kind of file from the extension
+    $tmp = pathinfo($url);
+    $extension =$tmp['extension'];
+    if( $extension == 'png' ) $oldIm = @imagecreatefrompng( $url );
+    elseif( $extension == 'gif' ) $oldIm = @imagecreatefromgif( $url );
+   
+    # I replace EACH color in the palette with the new one
+    for( $i=0; $i < imagecolorstotal( $oldIm ); $i++ )
+        imagecolorset( $oldIm, $i, $r,$g,$b );
+
+    if($save_to) { # Save the result
+      if( $extension == 'gif' ) $result = @imagegif($oldIm, $save_to);
+      elseif( $extension == 'png' ) $result = @imagepng($oldIm, $save_to);
+      //echo("ColorReplace; converted $url of type=$extension to color='$color'. Saving to '$save_to' <br>");
+      return $result;
+    } else {
+      # Output the file in png format : each color is now NEW COLOR
+      # but transparency is preserved !!
+      header("Content-type: image/png");
+      imagepng($oldIm);
+      imagedestroy($oldIm);
+    }
+}
+// takes 3 or 6  - almost same as fix_color in helpers.inc
+function pad_color($color) {
+  //if(!is_color($color)) return $color;
+  if(strlen($color) == 6) return $color;
+  $R = substr($color, 0,1);
+  $G = substr($color, 1,1);
+  $B = substr($color, 2,1);
+  return "$R$R$G$G$B$B";
+}
+
+function get_gallery_media($apt) {
+  $searchArray['active'] = 1;
+  $searchArray['parent_id'] = $apt->id;
+  $searchArray['property_type'] = $apt->type;
+  $searchArray['descriptiontype_id'] = DESC_TYPE_ALBUM; // photo album;
+  return find_objects('media', $searchArray, 'rank');
+}
+
+function build_gallery($type, $id) {
+  //include_once("classes/gallery.class.inc");
+  if(!is_property_type($type)) return; 
+  
+  $apt = get_object($type, $id);
+  $output = "Building gallery for $apt->name<br>";
+  
+  // Options used by flash player
+  $options['maxImageWidth'] = $_SESSION['media_big_size'];
+  $options['maxImageHeight'] = $_SESSION['media_big_size'];
+  $options['textColor'] = "0xffffff";
+  $options['frameColor'] = "0xffffff";
+  $options['frameWidth'] = "4";
+  $options['stagePadding'] = "20";
+  $options['thumbnailColumns'] = "4";
+  $options['thumbnailRows'] = "1";
+  $options['navPosition'] = "bottom";
+  $options['title'] = "";
+  $options['enableRightClickOpen'] = "false";
+  $options['backgroundImagePath'] = "";
+  $options['showDownloadLinks'] = false;
+
+  $searchArray['parent_id'] = $id;
+  $searchArray['property_type'] = $type;
+  $searchArray['descriptiontype_id'] = DESC_TYPE_ALBUM; // photo album;
+  $searchArray['active'] = 1;
+  if($images = find_objects('media', $searchArray, 'rank')) {
+    $first = $images[0];
+    $imagedir = get_media_file($first);
+    $imagepath  = get_media_src($first);
+    $count = count($images);    
+    $options['imagePath'] = $imagepath;
+    $options['thumbPath'] = $imagepath.image_size_dir('thumb');
+    $output .= "$count images found for $apt->name, writing to $imagedir<br>";
+  
+    $files = array();
+    foreach($images as $image) {
+      $file['name'] = $image->src;
+      $file['caption'] = $image->comment;
+      $files[]= $file;
+    }    
+    $output .= write_gallery_xml($imagedir, $files, $options);
+
+  } else {
+    $output .= "No images found for $apt->name, deleting gallery<br>";
+    unlink($imagedir.'gallery.xml'); // delete if there
+  }
+  return $output; 
+}
+
+// class GalleryXml creates gallery.xml file
+function write_gallery_xml($path, $files, $options) {
+  $xml = '<?xml version="1.0" encoding="UTF-8"'." ?>\n";
+  $xml .= getXmlOptions($options)."\n";
+  foreach ($files as  $file)
+  {
+    $xml .= "<image>\n";
+    $xml .= "\t<filename>".$file['name']."</filename>\n";
+    if ($file['caption']) $xml .= "\t<caption><![CDATA[".$file['caption']."]]></caption>\n";
+    if ($options['showDownloadLinks']) $xml .= "\t".'<caption><![CDATA[<a href="'.$options['imagePath'].'/'.$fileName.'" target="_blank"><u>Open image in new window</u></a>]]></caption>'."\n";
+  	$xml .= "</image>\n";
+  }
+  $xml .= "</simpleviewerGallery>\n";
+
+  $file = $path."/gallery.xml";
+  $output .= form_text('foo', $xml);
+  if (file_exists($file)) @chmod($file, 0777);
+  if($b = write_file($file, $xml)) {
+    $output .= "Wrote $b bytes to $file<br>";
+  } else {
+    $output .= "Couldn't write to $file<br>";
+  }
+  @fclose($file_handle);
+  @chmod($file, 0777);
+  return $output;
+}
+  
+  //if (!$file_handle = @fopen($file,"w")) {
+  //  $output .= '<p class="error">Cannot open XML document: '.$file.'. Change permissions to 0777 for $file and parent directory.</p>';
+  //} elseif (!@fwrite($file_handle, $xml)) {
+  //  $output .= '<p class="error">Cannot write to XML document: '.$file.'. Change permissions to 0777 for file and parent directory.<p>';
+  //} else {
+  //  $output .= '<p>Successfully created XML document: <em>'.$file.'</em></p>';
+  //}
+
+// helper function for write_gallery_xml
+function getXmlOptions($options)
+{
+  $xmlOptions = '<simpleviewerGallery';
+  foreach ($options as $optName => $optValue) $xmlOptions .= ' '.$optName.' = "'.$optValue.'"';
+  $xmlOptions .= '>';
+  return $xmlOptions;
+}
+
+function  media_directory($siteObj, $mediaObj, $options=NULL) {
+  $imagepath = trim($options['path']) ?: $mediaObj->path; // path - must be set 
+  if($imagepath) return ''; // array(false, array('resize_media: No path found.'));
+  $site_dir = site_directory($siteObj);
+  return clean_path($site_dir.$imagepath);
+}
+
+// resizes a media object according to specified (gallery) options
+function resize_media($siteObj, $mediaObj, $options=NULL) {    
+  global $log_dir;
+  $filename	=	"resize_log.txt";
+  $log = "$log_dir/$filename";
+
+  $errors = array();
+  $messages = array();
+  $resizeAr = (array) $options['resize']; // array where key->value is directory->size
+  if(!$resizeAr) return array(false, array("resize_media: no resize array"), $messages);
+
+  $update = isset($options['update']) ? $options['update'] : true;
+  $imagedir  = trim($options['directory']) ?: media_directory($siteObj, $mediaObj, $options); // file system full path - must be set 
+  if(!$imagedir) return array(false, array('resize_media: No dir found.'));
+  
+  $src = trim($mediaObj->src);
+  if(!$src) return array(false, array('resize_media: No src for media.'));
+  
+  // move orginal to org folder if needed
+  
+  /*
+  $wrong_org = $imagedir.$mediaObj->filename;   
+  if(is_file($wrong_org)) { // org file is in wrong directory, move it to org
+    //echo("Found $wrong_org<br>");
+    $org_dir = $imagedir.'org/';
+    if(!is_dir($org_dir)) {
+      if(!mkdir_recursive($org_dir)) return array(false, array("Couldn't make directory $org_dir"));
+      $messages[] = "<span class='red'>Couldn't find $org_dir, created it</span>";
+    }
+    rename($imagedir.$mediaObj->filename, $org_dir.$mediaObj->filename);
+    $messages[] = "<span class='red'>Moved original $mediaObj->filename to $org_dir</span>";
+  } else {
+    //echo("Did not find $wrong_org<br>");
+  }
+ */
+ 
+  // find original, otherwise use full or big
+  $keys = array('org', 'full', 'big');
+  write_file($log, "Starting resize\n", "a");
+  foreach($keys as $org_key) {
+    list($size, $dir, $resize_options) = $resizeAr[$org_key];
+    $org_src = $imagedir."$dir/".($org_key == 'org' ? $mediaObj->filename : $src);
+    //echo("looking for $org_src in $imagedir + $dir (key=$org_key)<br>");
+    //write_file($log, "looking for $org_src in $imagedir + $dir (key=$org_key)\n", "a");
+    if(is_file($org_src)) break; //found it
+    $org_src = NULL;
+  }
+  if(!$org_src) return array(false, array("resize_media: No original found for $src ($mediaObj->id), nor full or big."));
+  // echo("found original for $mediaObj->id: key = $org_key src=$org_src<br>");  
+  //echo("update=$update").dump($resizeAr);die();
+  $img_type = mime_type($org_src);
+  $img_info_array = getimagesize($org_src); // size of original
+  $w = $img_info_array[0];
+  $h = $img_info_array[1];
+  $max = max($h, $w);
+  
+  //if($id = $mediaObj->id) { // this is temp to fix h/w
+  //  //db_query("UPDATE media SET height='$h', width='$w', type='$img_type' WHERE id=$id");
+  //}
+         
+  //dump($options);die();
+  // warn if original is too low res?
+  if($options['preview']) {
+    $preview_src = $mediaObj->path.($dir ? $dir.'/' : '').$mediaObj->filename;
+    $messages[] = "original preview rank: $mediaObj->rank active: $mediaObj->active ($preview_src):".html_image($preview_src, $mediaObj->filename, '', '', 0, 100);
+  }
+
+  foreach($resizeAr as $key => $dirAr) {
+    list($size, $dir, $resize_options) = $dirAr;
+    $dest_dir = $imagedir.($dir ? $dir.'/' : '');
+    $dest_src = $dest_dir.$src;
+    if(!is_dir($dest_dir)) {
+      if(!mkdir_recursive($dest_dir)) return array(false, array("Couldn't make directory $dest_dir"));
+      $messages[] = "<span class='red'>Couldn't find $dest_dir, created it</span>";
+    }
+
+    if($options['preview']) {
+      $preview_src = $mediaObj->path.($dir ? $dir.'/' : '').$src;
+      $messages[] = "$key preview rank: $mediaObj->rank active: $mediaObj->active ($preview_src):".html_image($preview_src, $src, '', '', 0, 100);
+    }
+    
+    if($key == 'org' || $key == $org_key) continue;  // don't resize the original
+
+    if(is_file($dest_src)) {   
+      $img_info_array = getimagesize($dest_src); // size of this imagee
+      $iw = $img_info_array[0];
+      $ih = $img_info_array[1];
+      $imax = max($ih, $iw);
+
+      if($key == 'full' && $max < $size) {
+        if($update && $delete) {
+          unlink($dest_src);
+          $messages[] = "deleted full image of $dest_src ($w x $h) => $size";
+        } else {
+          $messages[] = "<span class='red'>warning: full image of $dest_src ($w x $h) is less than $size</span>";
+        }
+      }
+      if($options['overwrite'][$key] && $imax != $size) {
+        $messages[] = "$key: $dest_src ($iw x $ih) already exists, overwriting with (long=$size)";
+      } else {
+        if($options['verbose']) $messages[] = "$key: $dest_src ($iw x $ih) already exists, skipping";
+        else if($imax != $size) $messages[] = "$key: $dest_src ($iw x $ih) already exists (wrong size: $imax < $size), skipping";
+        continue; //found it
+      }
+    }
+    if($key == 'full' && $max < $size) $messages[] = "skipping full resize of $org_src ($w x $h) => $size: $dest_src";
+    if($update && !resize_image($org_src, $dest_src, $size, (array) $resize_options)) return array(false, array("Couldn't resize image $src to size $size in $dir"));
+  }
+  return array(true, $errors, $messages);
+}
+
+
+// helpers to fix / clean / update media table and filesystem
+// March 2012
+// resizes missing images according to resize settings 
+function resize_property_images($siteObj, $aptObj, $options=NULL) {
+  $pid = $aptObj->id;
+  $apt_name = $aptObj->name;
+  $gallery_options = property_gallery_options($aptObj);
+  //dump($gallery_options);die();
+  $output = array();  
+  $search = $options['search'] ?: $gallery_options['search'];
+  $options['path']      = $options['path'] ?: $gallery_options['path'];
+  $options['directory'] = $options['directory'] ?: $gallery_options['directory'];
+  $options['resize']    = $options['resize'] ?: $gallery_options['resize'];
+  //dump($options);die();
+  if($mediaObjs = find_objects('media', $search, 'rank')) {    
+    $mcount = count($mediaObjs);
+    $output[]= "<h2>$apt_name ($pid) has $mcount pictures</h2>";
+    foreach($mediaObjs as $mediaObj) {
+      list($result, $errors, $messages) = resize_media($siteObj, $mediaObj, $options);
+      if(count($messages)) $output = array_merge($output, $messages);      
+      if(!$result && count($errors)) $output = array_merge($output, $errors);      
+      //if(!$result || $errors) $output .= html_span(implode(html_break(), $errors).html_break(), 'red');
+    }
+  } else {
+    $output[]= "<b>$apt_name ($pid) has no pictures</b>";
+  }
+  return $output;
+}
+
+// function property_media_name($siteObj, $aptObj, $mediaObj)
+
+function property_media_name($aptObj, $filename, $rank) {
+  if(!$aptObj->shortname || !$filename) return '';
+  if($rank < 0) $rank = "inactive".$rank;
+  list($first, $suffix) = split_filename($filename);
+  return implode('-', array($aptObj->shortname, $rank)).".".strtolower($suffix);
+}
+
+
+// renames a media object according to new naming convention
+function rename_media($siteObj, $aptObj, $mediaObj, $rank, $options=NULL) {    
+  $resizeAr = (array) $options['resize']; // array where key->value is directory->size
+  if(!$resizeAr) return;
+  $update = isset($options['update']) ? $options['update'] : true;
+  
+  $imagedir  = trim($options['directory']) ?: media_directory($siteObj, $mediaObj, $options); // file system full path - must be set 
+  if(!$imagedir) return array(false, array('rename_media: No dir found.'));
+
+  $src = trim($mediaObj->src);
+  if(!$src) return array(false, array('rename_media: No src for media.'));
+
+  // list($first, $suffix) = split_filename($src);
+
+  foreach($resizeAr as $key => $dirAr) {
+    if($key == 'org') continue; // don't rename the original
+    list($size, $dir, $resize_options) = $dirAr;
+    $dest_dir = $imagedir.($dir ? $dir.'/' : '');
+    
+    $new_filename = property_media_name($aptObj, $src, $rank); 
+
+    $from = $dest_dir.$src;
+    $to   = $dest_dir.$new_filename;      
+    if(!is_file($from)) {
+      $messages[] = "<span class='red'>rename_media: couldn't find source file $from, skipping</span>";
+      continue;
+      //return array(false, array("rename_media: couldn't find source file $from")); 
+    }
+    if($from == $to) {
+      $messages[] = "$aptObj->shortname: $from already has the correct name";
+    } else {
+      if($update) {
+        $result = rename($from, $to);
+        if(!$result) return array(false, array("rename_media: Rename $from => $to failed."));
+      }
+      $messages[] = "Moved $from => $to";
+    }
+  }
+    
+  return array($new_filename, $errors, $messages);
+}
+
+// organizes all property images by rank, renames to new convention (type_city_aptname)
+function rename_property_images($siteObj, $aptObj, $options=NULL) {
+  $pid = $aptObj->id;
+  $apt_name = $aptObj->name;
+  $update = isset($options['update']) ? $options['update'] : true;
+  $gallery_options = property_gallery_options($aptObj);
+  
+  $search = $options['search'] ?: $gallery_options['search'];
+  if(!isset($search['active'])) $search['active'] = 1; // force active media unless set
+  $options['path']      = $options['path'] ?: $gallery_options['path'];
+  $options['directory'] = $options['directory'] ?: $gallery_options['directory'];
+  $options['resize']    = $options['resize'] ?: $gallery_options['resize'];
+  
+  if($mediaObjs = find_objects('media', $search, 'rank')) {    
+    $mcount = count($mediaObjs);
+    $output .= "<b>$apt_name ($pid) has $mcount pictures</b><br>";
+    $i = 1;
+    foreach($mediaObjs as $mediaObj) {
+      $id = $mediaObj->id;
+      $rank = $mediaObj->active ? $i : $i * -1; // negative rank for in active images
+      list($new_filename, $errors, $messages) = rename_media($siteObj, $aptObj, $mediaObj, $rank, $options);
+      if($messages) $output .= implode(html_break(), $messages).html_break();      
+      if(!$new_filename || $errors) $output .= html_span(implode(html_break(), $errors).html_break(), 'red');
+      //echo("new_name for $aptObj->name $mediaObj->src = $new_filename");die();
+      if($update) db_query("UPDATE media SET src='$new_filename', rank=$rank WHERE id=$id");
+      //else $output .= "$apt_name $rank = $new_filename<br>";
+      $i++;
+    }
+  } else {
+    $output .= "<span class='red bold'>$apt_name ($pid) has no pictures</span><br>";
+  }
+  
+  if($options['search']['active']) {
+    // also process the inactive images
+    $options['search'] = $search;
+    $options['search']['active'] = 0;      
+    $output .= rename_property_images($siteObj, $aptObj, $options);
+  }
+  return $output;
+
+}
+
+// March 2012
+// renames images for given properties to new system in database, and moves files correspondingly
+function old_rename_property_images($aptObjs, $update=false, $limit=0) {
+  
+  $count = count($aptObjs);
+  //dump($aptObjs);die();
+  $row = array();
+  $row[] = 'id';
+  $row[] = 'type';
+  $row[] = 'parent_type';
+  $row[] = 'parent_id';
+  $row[] = 'apt';
+  $row[] = 'active';
+  $row[] = 'exists?';
+  $row[] = 'rank';
+  $row[] = 'new type';
+  $row[] = 'old name';
+  $row[] = 'new name';
+  $row[] = 'new filename';
+  $row[] = 'path';
+  $row[] = 'db path';
+  $rows[] = $row;
+  
+  foreach($aptObjs as $apt) {
+    if($limit && $ic >= $limit) {
+      $output .= "i=$ic, limit=$limit, exiting<br>";
+      //dump($rows);
+      break;
+    }
+    $pid = $apt->id;
+    $apt_name = $apt->name;
+    if($boat_type = $apt->boat_type) {
+      $type_name = get_object('boat_type', $boat_type, 'name');
+    } else {
+      $type_name = $pt;
+    }
+    $type_name_str = get_dictionary_entry($type_name, $lang, LOWERCASE) ?: $type_name;
+  
+    if($mediaObjs = find_objects('media', array('parent_id' => $pid), 'rank')) {
+      $pcount++;
+    } else {
+      $output .= "<b>$apt_name has no pictures</b><br>";
+      continue;
+    }
+    
+    $lang = 'nl';
+    $rank = 1;
+    foreach($mediaObjs as $mediaObj) {
+      $id=$mediaObj->id;
+      $new_filename = implode('-', array($apt->shortname, $rank));
+      $new_name = implode('-', array($type_name_str,$city_name,$apt->shortname, $rank));
+      $img_type = mime_type($mediaObj->src);     
+      $src = $mediaObj->src;
+      $path = get_media_tail($mediaObj);
+      $full_file = $base.$path.$src;
+      $exists = is_file($full_file);
+      if($src == $new_filename) {
+        $output .= "$apt->name is already processed<br>";
+        continue;
+      }
+  
+      if(!$exists) {
+        $output .= "<b>$full_file for $apt->name doesn't exist</b><br>";
+        continue;
+      }
+  
+      $row = array();
+      $row[] = $mediaObj->id;
+      $row[] = $mediaObj->type;
+      $row[] = $mediaObj->parent_type;
+      $row[] = $mediaObj->parent_id;
+      $row[] = $apt->shortname;
+      $row[] = $mediaObj->active;
+      $row[] = $exists;
+      $row[] = $mediaObj->rank;
+      $row[] = $img_type;
+      $row[] = $src;
+      $row[] = $new_name;
+      $row[] = $new_filename;
+      $row[] = $path;
+      $row[] = $mediaObj->path;
+      
+      list($first, $suffix) = split_filename($mediaObj->src);
+      $rows[] = $row;
+      //if(++$i > 100) break; 
+      if($update) {
+        // move
+        $dirs = array('', 'small/', 'full/', 'thumbs/');
+        foreach($dirs as $dir) {
+          $full_path = $base.$path.$dir;
+          if(!is_dir($full_path) && !mkdir_recursive($full_path)) {
+            $output .= "Couldn't make path $full_path<br>";
+            continue;
+          }
+  
+          $from = $full_path.$src;
+          $to   = $full_path.$new_filename;      
+          $result = rename($from, $to);
+          $output .= $result ? "Moved $from -> $to<br>" : "<b>Failed to move $from -> $to</b><br>";
+        }
+        
+        db_query("UPDATE media SET src='$new_filename', rank=$rank, type='$img_type' WHERE id=$id");
+      }
+      
+      $rank++;
+    }
+    db_query("UPDATE property SET processed=1 WHERE id=$pid");
+    $ic++;
+  }
+  $output = "<h2>Found $count $ptype - $pcount has photos</h2>". $output;
+  $output .= html_table($rows);
+  return $output;
+}
+
+
+
+?>

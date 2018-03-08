@@ -1,0 +1,145 @@
+     <div class="container">
+        {$type = $scope.reservation.type}
+        {$book_now = ($type == $smarty.const.RES_TYPE_DIRECT) ? 1 : 0}
+        
+        {if ($book_now)}
+        {$action = "pay"}
+        {$paypal = 0}
+        {$bitcoin = 0}
+        {$title = "Payment"}
+        {$button = "Book Now"}
+        {else}
+        {$paypal = 0}
+        {$bitcoin = 0}
+        {$action = "authorize"}
+        {$title = "Payment Authorization"}
+        {$button = "Request to Book"}
+        {/if}
+        <h2>{$title}</h2>
+         <!--nav data-target="#rental-payment-container" 
+           data-controller="rental_payment" 
+           data-data='{$reservation.data|@json_encode}'
+           data-success_handler="traveler_ready">
+            <a href="{$smarty.const.PAGE_payment|link}{$scope.invoice.id}?view=_payment-success.html" id="payment-success" class="smtlink" data-tpl="rental-payment-success.html?r=43913-3099">
+              <i class="fa fa-check"></i>Confirmation
+            </a>
+           
+          </nav-->
+           
+        {if ($scope.error)}
+        <div class="alert alert-danger" role="alert">
+          <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+          <span class="sr-only">Error:</span>
+          {$scope.error}
+        </div>    
+        {else}
+        <div id="rental-payment-container" data-controller="rental_payment">
+          <form id="payment-form" class="ajax-submit cc-form" data-validator="cc_validator" data-handler="rental-payment" data-reload=1>
+            <div class="container">
+              <div class="row">
+                <div class="col-md-8">
+                  <div class="row">
+                  <input type="hidden" name="type" value="{$scope.reservation.type}" />
+                  <input type="hidden" name="inv_id" value="{$scope.reservation.inv_id}" />
+                  <input type="text" name="existing_cc_id" value="" />
+                  <input type="text" name="cc_id" value="" />
+                  <input type="hidden" name="payment_type" value="{$smarty.const.PAYMENT_TYPE_CREDIT_CARD}" />
+                  <input type="hidden" name="parent_type" value="reservation" />
+                  <input type="hidden" name="payment_action" value="{if ($book_now)}Sale{else}Authorization{/if}" />
+                  <input type="hidden" name="parent_id" value="{$scope.reservation.res_id}" />
+                  <input type="hidden" name="currency" value="{$scope.reservation.currency}" />
+                  <input type="hidden" name="amount" value="{$scope.reservation.grand_total}" />
+                    
+                {if ($paypal || $bitcoin || $scope.cards)}
+                  <div class="col-md-6">
+                  {if ($paypal)}
+                    <img class="pp-img" src="/traveler/img/paypal.png" alt="Image Alternative text" title="Image Title" />
+                    <p>Important: You will be redirected to PayPal's website to securely complete your payment.</p>
+                    <a class="btn btn-primary"><i class="fa fa-paypal"></i> Pay with Paypal</a>	
+                    <div class="gap gap-small"></div>
+                  {/if}
+                  {if ($bitcoin)}
+                    <img class="pp-img" src="/traveler/img/bitcoin.png" alt="Image Alternative text" title="Image Title" />
+                    <p>Important: You will be redirected to BitPay's website to securely complete your payment.</p>
+                    <a class="btn btn-primary"><i class="fa fa-bitcoin"></i> Pay with Bitcoin</a>	
+                    <div class="gap gap-small"></div>
+                  {/if}
+                  
+                  {if ($scope.cards)}
+                    <h4>{$action|capitalize} with existing card</h4>
+                    <ul class="card-select">
+                      {foreach from=$scope.cards item=card}
+                      <li data-id="{$card.id}">
+                        <img class="card-select-img" src="{$card.image}" alt="Image Alternative text" title="Image Title" />
+                        <div class="card-select-data">
+                          <p class="{if ($card.expired)}text-danger {/if}card-select-number">{$card.number}</p>
+                          {if ($card.expired)}
+                          <span>(Expired)</span>                
+                          {else}
+                          <input name="cvc-{$card.id}" class="form-control card-select-cvc" type="text" placeholder="CVC" />
+                          {/if}
+                        </div>
+                      </li>
+                      {/foreach}
+                    </ul>
+                  {/if}
+                  </div>
+                {/if}
+                  <div class="col-md-6">
+                    <h4>{$action|capitalize} with new card</h4>
+                      {$dummy = $smarty.session.test_payments }
+                      {{"include": "_credit-card-form.html"}}    
+                    
+                    <h4>Billing address</h4>
+                      {$address = $user} 
+                      {{"include": "_address-form.html"}}
+                      <div class="checkbox checkbox-small">
+                        <label>
+                          <input name="remember" class="i-check" type="checkbox" checked/>Add to My Cards</label>
+                      </div>
+                    </div>
+                  </div><!-- row -->
+                  <div class="gap"></div>
+                  <div class="row">
+                    <div class="col-md-2 user-avatar-big">
+                      <a href="{$smarty.const.PAGE_PROFILE|link}{$scope.reservation.host_id}">
+                        <img class="origin round" src="{$scope.reservation.host_id|userphoto:'thumb'}" 
+                             title="{$scope.reservation.host_id|username}">
+                      </a>                      
+                    </div>
+                    <div class="col-md-10">                    
+                      <h4>Introduce yourself to {$scope.reservation.host_id|username}</h4>
+                      <textarea class="form-control" name="extra_info" placeholder="Your personal message to the host here..."></textarea>                 
+                    </div>
+                  </div><!-- row -->
+                  
+                  <div class="gap gap-small"></div>
+                  <ul class="list">
+                    {if ($action == 'authorize')}
+                    <li>You will only be charged if the host accepts your request. They’ll have 24 hours to reply.</li>
+                    <li>If the host declines or does not respond, no charge is made.</li>
+                    {/if}
+                    <li>By clicking on "{$button}", you agree to pay the total amount shown in the summary on the right, 
+                    which includes <a href="#">Occupancy Taxes and Service Fees</a>, and to follow the <a href="#">Terms of Service</a>, 
+                    <a href="#">House Rules</a>, <a href="#">Cancellation Policy</a> and <a href="#">Guest Refund Policy</a>.</li>
+                  </ul>
+                  <div class="gap gap-small"></div>
+                  <input class="btn btn-success" type="submit" value=" {$button} " />
+                  <div class="gap gap-small"></div>
+                  <p>If you would are not ready to "{$button}" but have a question for the host, use 
+                  <a href="{$smarty.const.PAGE_REQUEST|link}{$query_string}"> this link. </a></p> 
+                  
+    
+                </div><!-- outer col-md-8 -->
+        
+                <div class="col-md-4">
+                  {{"include": "_rental-payment-details.html"}}
+                </div>
+              </div>
+              <div class="gap"></div>
+            </div>
+          </form>
+        </div>
+        {/if}
+    </div>
+

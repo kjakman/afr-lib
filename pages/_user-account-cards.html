@@ -1,0 +1,36 @@
+                    <div class="mfp-with-anim mfp-hide mfp-dialog" id="edit-card-dialog">
+                        <h3 class="mb0">Edit Card</h3>
+                        <form id="cc-edit-form" class="cc-form ajax-submit" data-validator="cc_validator" data-handler="edit-user-cc">
+                            <input name="remember" type="hidden" value="1" />                       
+                            {include file="_credit-card-form.html"}
+                            <div class="checkbox">
+                                <label><input name="default_card" value="1" class="i-check" type="checkbox" checked/>Set as primary</label>
+                            </div>
+                            <input class="btn btn-primary" type="submit" value="Add Card" />
+
+                        </form>
+               
+                    </div>
+                    <div class="mfp-with-anim mfp-hide mfp-dialog" id="new-card-dialog">
+                        <h3>New Card</h3>
+                        <form id="cc-add-form" class="cc-form ajax-submit" data-validator="cc_validator" data-handler="add-user-cc"  data-reload_link="#user-credit-card-link">
+                        
+                            <input name="remember" type="hidden" value="1" />
+                            {{"include": "_credit-card-form.html"}}
+                            <div class="checkbox">
+                                <label><input name="default_card" value="1" class="i-check" type="checkbox" checked/>Set as primary</label>
+                            </div>
+                            <input class="btn btn-primary" type="submit" value="Add Card" />
+                            
+                        </form>
+                    </div>
+                    <div class="row row-wrap">
+                      {foreach from=$scope.cards item=card}
+                        {{"include": "_credit-card.html"}}
+                      {/foreach}
+
+                        <div class="col-md-4"><a class="card-thumb popup-text" href="#new-card-dialog" data-effect="mfp-zoom-out"><i class="fa fa-plus card-thumb-new"></i><p >add new card</p></a>
+                        </div>
+                    </div>
+                </div>
+

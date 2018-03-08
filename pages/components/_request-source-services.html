@@ -1,0 +1,22 @@
+                  <h4>{'additional services'|translate:'t'}</h4>
+                  {* $scope.source_services|dump *}
+                  {$rows = []}
+                  {$rows[] = ["Description", "Amount", "Info", "Mandatory?", "Included?"]}
+                  {foreach from=$scope.source_services item=service}
+                    {$amount = ''}
+                    {if ($service.Amount > 0)}
+                      {$amount = "`$service.Currency` `$service.Amount`"}
+                    {/if}
+                    
+                    {$description = $service.Description}
+                    {$text = $service.Text}
+
+                    {if ($text)}
+                      {$description = "`$description` `$text|tooltip`"}
+                    {/if}
+                    
+                    {$row = [$description, $amount, $service.PaymentInfo, $service.IsMandatory|checkmark, $service.IsIncluded|checkmark]}
+                    {$rows[] = $row}
+                  {/foreach}                
+                  {$rows|table:["class" => "table table-bordered table-striped table-booking-history"]}
+                  <div class="gap"></div>

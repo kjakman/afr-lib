@@ -1,0 +1,83 @@
+          {$campaign = $scope.campaign}
+          <form id="mail_campaign_form" class="ajax-submit" method="post" data-handler="campaign-add" data-toggle="validator" >
+            <input type="hidden" name="obj_type"value="mail_campaign" />
+            <input type="hidden" name="obj_id"  value="{$campaign.id}" />
+            <input type="hidden" name="user_id" value="{$user.id}" />
+            <input type="hidden" name="site_id" value="{$site.id}" />
+            <input type="hidden" name="receiver_roles" value="{$campaign.receiver_roles}" />
+            <input type="hidden" name="receiver_count" value="{$campaign.receiver_count}" />
+            <input type="hidden" name="active_since" value="{$campaign.active_since}" />
+
+            <div class="form-group">
+              <label for="name">Campaign Name</label>
+              <input type="text" name="name" class="form-control" value="{$campaign.name|urldecode}" required/>
+            </div>
+            
+           <div class="form-group">
+             <label for="name">Template</label>
+             <input type="text" name="template" class="form-control" value="{$campaign.template|default:'mail/mail-generic'}" required readonly />
+             <div class="help-block with-errors">Support for other templates coming soon...</div> 
+           </div>
+           
+           {if ($languages|@count > 1)}
+           <div class="form-group">
+             <label for="language">Language</label>
+             <select name="language" class="form-control">
+               <option value="">Default</option>
+               {foreach from=$languages item=lang}
+                <option value="{$lang}">{$lang|get:'language':'name'}</option>
+               {/foreach}
+             </select>
+             <div class="help-block with-errors">The default language is {$language|get:'language':'name'}. If the user has set his preferred language for emails, this will be used.</div> 
+             
+           </div>
+           {/if}
+
+           <div class="form-group">
+             <label for="name">Mail Subject</label>
+             <input type="text" name="subject" class="form-control" value="{$campaign.subject}" required/>
+           </div>
+
+           <div class="form-group">
+             <label for="name">Mail Sender</label>
+             <input type="text" name="sender" class="form-control" value="{$campaign.sender}" required/>
+           </div>
+
+           <div class="form-group">
+             <label for="name">Send Preview To</label>
+             <input type="text" name="recipient" class="form-control" value="{$campaign.recipient|default:$campaign.replyto}" required/>
+             <div class="help-block with-errors">The campaign email will be sent to this address for approval before the mail is sent to the users.</div> 
+           </div>
+           
+           <div class="form-group">
+             <label for="name">Mail Reply-to</label>
+             <input type="text" name="replyto" class="form-control" value="{$campaign.replyto}" />
+             <div class="help-block with-errors">Use your own email if you want to receive replies from the users. If you leave it blank, the reply-to address will be "do-not-reply@{$site.domain}"</div> 
+           </div>
+
+            <div class="form-group">
+              <label for="receiver_roles">Mail Recipients</label>
+              {if (1 || $campaign.id)} {* todo: hide if not auth *}
+              <textarea rows="4" cols="80" class="form-control" name="recipients">{$campaign.recipients|@json_decode|array2list:",\n"}</textarea>
+              {else}
+              <input type="text" name="receivers_str" class="form-control" 
+                     value="{$scope.receiver_count} users with roles {$scope.receiver_roles_str} {if ($campaign.active_since)}active since {$campaign.active_since}{/if}" required readonly />
+              {/if}
+           </div>
+           
+           <div class="form-group">
+             <label for="name">Message Title</label>
+             <input type="text" name="title" class="form-control" value="{$campaign.title}" maxlength="255"/>
+             <div class="help-block with-errors">The title of the message. If you leave this blank, the message title will be "{'dear'|translate:'c'} [FULL NAME]".</div> 
+           </div>
+
+           <div class="form-group">
+             <label for="name">Message Text</label>
+             <textarea class='form-control summernote' rows='10' cols='60' data-full="1" placeholder='' name='main_message' id='main_message' required>{$campaign.main_message}</textarea>
+             <div class="help-block with-errors">The main message text. This cannot be blank.</div> 
+           </div>
+           
+           
+           <a href="{$thisurl|remove_query_var:'submit'}" class="btn btn-danger">Back</a>
+           <input type="submit" name="submit" class="btn btn-success" value="Preview">
+         </form>

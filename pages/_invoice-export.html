@@ -1,0 +1,26 @@
+                      {$invoice = $scope.invoice}
+                      {$start = $invoice.start_date}
+                      {$end = $invoice.end_date}
+
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">
+                          Export Invoice {$invoice.invoice_id|default:$invoice.id}: {$start|daterange:$end}
+                           <a href="#" 
+                              class="btn btn-success btn-sm ajax-link" 
+                              data-target="#export-result"
+                              data-handler = "export-invoice"
+                              data-data='{["inv_id" => $invoice.id, "user_id" => $user.id]|@json_encode}'
+                              data-reload_link="#invoice-overview"
+                              data-load_text="Exporting..."
+                           >Export</a>
+                        </div>
+                        <div class="panel-body" id="export-result">
+                          {if ($invoice.export_timestamp) }
+                          Invoice was exported on {$invoice.export_timestamp}
+                          {else}
+                          Invoice was not exported yet
+                          {/if}
+                          
+                        </div>
+                      </div>  
+                      

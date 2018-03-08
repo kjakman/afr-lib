@@ -1,0 +1,36 @@
+
+                                    {{"extend": "mail/mail-base-sub.html"}}
+
+                                    {$thisuser = $scope.user}                                    
+                                    
+                                    {if ($thisuser)}
+                                                                          
+                                      {block name=action_link}
+                                          <a href="{$site_url}{$smarty.const.PAGE_EDIT_PROFILE|link}{$thisuser.id}" 
+                                             class="btn btn-large btn-success" target="_new">
+                                            {'manage profile online'|translate:'c'}
+                                          </a>
+                                      {/block}
+                                      
+                                      {block name=sub_left}
+                                        {{"include": "mail/_account-details.html"}}
+                                      {/block}
+                                      
+                                      {block name=sub_right_image}
+                                        <a href="{$site_url}{$smarty.const.PAGE_PROFILE|link}{$thisuser.id}" target="_new">
+                                          <img src="{$thisuser.photo|photo:'ig':['full' => 1]|add_http}" style="max-width: 264px">                                          
+                                        </a>
+                                      {/block}
+                                      
+                                      {block name=sub_right_text}                                        
+                                        {{"include": "mail/_user-preview.html"}}
+                                      {/block}
+                                      
+                                      
+                                      {block name=footer}
+                                      {/block}
+                                    {else}
+                                      {block name=main_text}
+                                      {"User not found"|error:'0'}                                      
+                                      {/block}
+                                    {/if} {* if booking *}

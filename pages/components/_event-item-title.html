@@ -1,0 +1,21 @@
+                
+                  <h4>
+                    {if ($scope.id)}
+                      {$event.title}
+                    {else}
+                    <a href="{$smarty.const.PAGE_EVENTS|link}{$event.id}">{$event.title}</a>
+                    {/if}
+                    
+										{if ($event.auth_edit_event || $scope.auth_edit_event)}			
+                    <a role="button" href="#event-form-modal" data-backdrop="static" data-toggle="modal" data-form="#event-form" data-data='{$event|@json_encode}'
+                       class="fa fa-pencil btn btn-sm btn-success event-form-open"></a>
+                       
+                    <a role="button" class="fa fa-times btn btn-sm btn-danger "
+                        id="delete-{$card.id}" 
+                        data-toggle="confirmation" data-on-confirm="delete_object" 
+                        data-obj_type="event" data-id="{$event.id}" data-handler="delete_object_handler" data-handler_data=' { "target": "#event-{$event.id}" } ' 
+                        rel="tooltip" data-placement="top" title="remove">
+                    </a>                      
+                    {/if}										
+										</h4>
+                

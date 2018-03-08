@@ -1,0 +1,53 @@
+  {{"extend": "base/default.html"}}
+  {block name=content}
+  
+{function menu level=0}
+  <ul class="level{$level}">
+  {foreach $data as $entry}
+    {$title = $entry.menu_title|default:$entry.name}
+    {$link = $entry@key}
+    
+    {$children = $entry.children}
+    {if is_array($children) && $children|@count}
+      <li>{$title}
+      {if ($entry.collapse)}
+        <button class="btn btn-primary btn-xs" type="button" data-toggle="collapse" data-target="#collapse-{$link|slugify}" aria-expanded="false" aria-controls="collapse-{$link|slugify}">
+          <i class="fa fa-caret-down"></i>
+        </button>
+        <div class="collapse" id="collapse-{$link|slugify}">
+          <div class="well">
+          {menu data=$children level=$level+1}
+          </div>
+        </div>
+        
+      {else}      
+        {menu data=$children level=$level+1}
+      {/if}
+      </li>
+    {else}
+      <li><a href="{$link}">{$title}</a></li>
+    {/if}
+  {/foreach}
+  </ul>
+{/function}
+
+    <div class="container">
+      <h3 class="page-title">Sitemap</h3>
+    </div>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-xs-12">
+          
+          {$tree = $scope.sitemap}
+          
+          {* run the array through the function *}
+          {menu data=$tree}
+        
+        </div>
+      </div>
+    </div>
+    
+    <br><br>
+  {/block}
+

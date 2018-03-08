@@ -1,0 +1,44 @@
+                            <div class="payscreen">   
+                              {$mollie = ($scope.mollie_key) ? 1 : 0}                      
+                              {$methods = $scope.mollie_methods}
+                              {$invoice = $scope.invoice}
+                              {$balance = $invoice.due_now|default:$invoice.balance}
+                              {if ($balance <= 0)}
+                              <p>Nothing to pay</p>
+                              {elseif (!$mollie)}
+                              <p>No mollie key</p>
+                              {elseif (!$methods)}
+                              <p>No mollie methods</p>
+                              {else}
+                                <form id="payment-form" class="ajax-submit payment-submit payment-form" data-handler="mollie-pay" method="post">
+                                  <input type="hidden" name="inv_id" value="{$invoice.id}" />
+                                  <input type="hidden" name="user_id" value="{$user.id}" />
+                                  <input type="hidden" name="site_id" value="{$invoice.site_id}" />
+                                  <input type="hidden" name="parent_type" value="{$invoice.parent_type}" />
+                                  <input type="hidden" name="parent_id" value="{$invoice.parent_id}" />
+                                  <input type="hidden" name="currency" value="{$invoice.currency}" />
+                                  <input type="hidden" name="description" value="{$invoice.concerning}">
+                                  <input type="hidden" name="url" value="{$this_url}">
+                                  <input type="hidden" name="amount" value="{$balance}">
+                                  <input type="hidden" name="payment_method" id="payment_method">
+
+                                  <ul>
+                                    
+                                    {foreach from=$methods item=method}
+                                      {$max = $method.amount.maximum}
+                                      {$min = $method.amount.minimum}
+                                      {$class = ($balance > $max || $balance < $min) ? "hidden" : ""}
+                                    <li class="{$class}">
+                                      <button type="submit" data-gateway="mollie" class="form-control btn btn-success methods-option {$method.id}" 
+                                              data-min="{$min}" data-max="{$max}"
+                                              tabindex="1" name="method" value="{$method.id}">
+                                        <span>{$method.description}</span>
+                                      </button>
+                                    </li>
+                                    {/foreach}                                    
+
+                                  </ul>
+                                                                      
+                                </form>
+                              {/if}
+                            </div>

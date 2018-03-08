@@ -1,0 +1,44 @@
+                            <h3>Recalculate Invoices for Booking {$scope.res_id}</h3>
+                            
+                            <h4>Before</h4>
+                            {$days = 0}
+                            {$total = 0}
+                            {$paid = 0}
+                            {$balance = 0}
+                            {$rows = []}
+                            {$rows[] = ["#", "ID", "Start", "End", "Days", "Total", "Paid", "Balance", "Locked?", "Concerning"]}
+                            {foreach from=$scope.before item=invoice}
+                              {$num_days = $invoice.start_date|period_diff:$invoice.end_date:"d"}
+                              {$days = $days + $num_days}
+                              {$total = $total + $invoice.total}
+                              {$paid = $paid + $invoice.paid}
+                              {$balance = $balance + $invoice.balance}
+                              {$row = [$invoice.sequence, $invoice.id, $invoice.start_date|date, $invoice.end_date|date, $num_days, $invoice.total, $invoice.paid, $invoice.balance, $invoice.locked, $invoice.concerning]}
+                              {$rows[] = $row}
+                            {/foreach}
+                            {$last = ['', '', '', '', $days, $total, $paid, $balance, '', '']}
+                            {$rows[] = $last}
+                            
+                            {$rows|table:["class" => "table table-bordered table-striped table-booking-history"]}                            
+
+                            <h4>After</h4>
+                            {$days = 0}
+                            {$total = 0}
+                            {$paid = 0}
+                            {$balance = 0}
+                            {$rows = []}
+                            {$rows[] = ["#", "ID", "Start", "End", "Days", "Total", "Paid", "Balance", "Locked?", "Concerning"]}
+                            {foreach from=$scope.after item=invoice}
+                              {$num_days = $invoice.start_date|period_diff:$invoice.end_date:"d"}
+                              {$days = $days + $num_days}
+                              {$total = $total + $invoice.total}
+                              {$paid = $paid + $invoice.paid}
+                              {$balance = $balance + $invoice.balance}
+                              {$row = [$invoice.sequence, $invoice.id, $invoice.start_date|date, $invoice.end_date|date, $num_days, $invoice.total, $invoice.paid, $invoice.balance, $invoice.locked, $invoice.concerning]}
+                              {$rows[] = $row}
+                            {/foreach}
+                            {$last = ['', '', '', '', $days, $total, $paid, $balance, '', '']}
+                            {$rows[] = $last}
+                            
+                            {$rows|table:["class" => "table table-bordered table-striped table-booking-history"]}                            
+

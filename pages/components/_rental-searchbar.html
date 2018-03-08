@@ -1,0 +1,43 @@
+    <!--input type="hidden" placeholder="site" name="site_id" value="{$site.id}">
+    <input type="hidden" placeholder="type" name="t" value="{$scope.property_type|default:'shortstay'}">
+    <input type="text" placeholder="slug" name="slug" id="slug" class='location-slug' value='{$smarty.get.slug|default:$scope.slug}'>
+    <input type="hidden" placeholder="city_id" name="city_id" value="{$smarty.session.city_id}"-->
+    
+    <div id="loc_types" class="collapse">{$global.location_types|default:'landmark,airport'}</div>
+    <input type="hidden" placeholder="bounds" name="bounds" id="bounds" class='location-bounds' size="40" data-target="location_id" data-target_display="loc"  value='{$smarty.get.bounds|default:$scope.bounds}'>
+    <input type="hidden" name="__sl" id="__sl" value="{$lang}">
+    <input type="hidden" placeholder="start" name="start" value="">
+    {if ($autocomplete)}
+    {$date_size = 2}
+    <div class="col-md-4 relative nogutter mt10">
+      {{"include": "_rental-search-location.html"}}
+    </div>
+    {else}
+    {$date_size = 3}
+      <!--input type="hidden" value="{$smarty.get.bounds}"        name="location_bounds"-->    
+    <input type="hidden" value="{$smarty.get.loc}" name="loc" class='location-name'>    
+    {/if}
+    <div class="input-daterange" data-date-start-date="+0d" data-date-end-date="+2y" id="searchbar_dates">    
+      <div class="col-md-{$date_size} col-sm-6 relative nogutter mt10">
+        <input type="text" value="{$smarty.get.in}" class="form-control default-cursor" id="in" name="in" placeholder="Checkin" readonly style="padding-left: 0 !important">
+        <span class="input-icon click-parent-datepicker" style="width:16px !important"><i class="fa fa-calendar"></i></span>
+      </div>
+      <div class="col-md-{$date_size} col-sm-6 relative nogutter mt10">
+        <input type="text" value="{$smarty.get.out}" class="form-control default-cursor" id="out" name="out" placeholder="Checkout" readonly style="padding-left: 0 !important">    
+        <span class="input-icon click-parent-datepicker" style="width:16px !important"><i class="fa fa-calendar"></i></span>
+      </div>
+    </div>
+    <div class="col-md-2 col-sm-6  relative nogutter icon-select icon-select-user mt10">
+      <select class="form-control" id="ng" name="ng">
+        <option value="0" {if ($smarty.get.ng <= 1)} selected="selected"{/if}>1 {'guest'|translate:'c'}</option>
+        {section name=ng start=2 loop=16 step=1}
+          <option{if ($smarty.get.ng == $smarty.section.ng.index)} selected="selected"{/if} value="{$smarty.section.ng.index}">{$smarty.section.ng.index} {if ($smarty.section.ng.index != 1)}{'guests'|translate:'c'}{else}{'guest'|translate:'c'}{/if} </option>
+        {/section}                                            
+        <option {if ($smarty.get.ng > 15)} selected="selected"{/if} value="16">16+ {'guests'|translate:'c'}</option>
+      </select>
+      <!--span class="input-icon click-parent-select"><i class="fa fa-user"></i></span-->
+    </div>
+    <div class="col-md-2 col-sm-6 col-xs-12 relative nogutter mt10">
+      <button type="submit" class="btn btn-success close-collapse" id="submit-check" data-target="#search-more"> {'search'|translate:'c'} </button>
+    </div>
+

@@ -1,0 +1,11 @@
+										<div class="event-times">
+										  {$in = $event.start_time}
+										  {$out = $event.end_time}
+										  {if ($event.all_day)}
+										  {$in = $in|strip_time}
+										  {$out = $out|add_day:"-1"|strip_time}
+										  <b>{$in|daterange:$out}</b>
+										  {else}
+										  <b>{$in|daterange:$out:["hourly" => 1, "show_date" => 1]}</b>
+										  {/if}
+                    </div>

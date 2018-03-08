@@ -1,0 +1,65 @@
+  {{"extend": "base/admin.html"}}
+  {block name=content}
+
+{$vars = $scope.vars}
+{$url = $vars.url}
+{$tpl = $vars.template}
+{$ctrl = $vars.controller}
+{$data = $vars.data}
+
+<div class="container mt20 mb20">
+  
+  {$staff = ($user.user_level >= $smarty.const.USER_LEVEL_STAFF) ? 1 : 0}
+    
+  {if ($staff)}
+    <h2>Mail Campaign</h2>
+
+    {if ($scope.step == 2)}
+    <h3>Step 2: Campaign Details</h3>
+    <p>Now fill in the campaign details.</p>
+
+    {{"include": "_mail-campaign-form.html"}}
+    
+    {elseif ($scope.step == 3)}
+    
+    {$campaign = $scope.campaign}
+    <h3>Step 3: Preview and send</h3>
+    <p>Please check your mail and review the mail sent to <b>{$campaign.recipient|escape}</b> on {$campaign.created} with the subject <b>"{$campaign.subject}"</b></p>
+    <p>To edit the message and resend the mail to yourself, use the back button.</p>
+    <p>When satisfied, select the time to send the mails and click "Send". If you set a future time and you change your mind, you can come back to this page and unset the send date.</p>
+    <p>{'Warning: If you do not set a "Time to Send", the mails will be sent to all selected users as soon as you click "Send". This cannot be undone!'|alert:"danger"}</p>
+
+     <form id="mail_campaign_form" class="ajax-submit" method="post" data-handler="campaign-send" data-toggle="validator" >
+       <input type="hidden" name="campaign_id" value="{$campaign.id}">
+       <div class="form-group">
+          <label>{'time to send'|translate:'c'} (*)</label>
+          {$tts = $campaign.time_to_send}
+          {if (!$tts || $tts < $now)} 
+            {$tts = $now|date_format:"%d-%m-%Y %H:%M%Z"}
+          {/if}
+          <input name="time_to_send" id="time_to_send" class="input-append date form-control datetimepicker" data-date="{$today}" data-start-date="{$today}" data-date-format="dd-mm-yyyy hh:iiZ"  value="{$tts}"/>
+       </div>
+     
+       <a href="{$smarty.const.PAGE_MAIL_CAMPAIGN|link}{$campaign.id}" class="btn btn-danger">Back</a>
+       <input type="submit" name="submit" class="btn btn-success" value="Send ({$campaign.receiver_count} recipients)">
+     </form>
+     
+    <div class="gap gap-small"></div>
+    
+    {{"include": "_mail-campaign-preview.html"}}
+    
+    {else} {* step 1 *}
+    <h3>Step 1: Select Recipients</h3>
+
+    <p>First select the recipients of your campaign</p>
+
+    {{"include": "_mail-campaign-receiver-form.html"}}
+    
+    {/if} {* end if step = 2 *}
+    
+  {else}
+    <h2>Nothing to see here...</h2>
+  {/if}
+  
+</div>
+  {/block}

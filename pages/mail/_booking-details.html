@@ -1,0 +1,43 @@
+                  
+                <table cellspacing="0" cellpadding="2" border="0">
+                  <tbody>
+                    <tr>
+                      <th colspan="2">
+                        {$booking.num_guests} {if ($booking.num_guests==1)}{'guest'|translate}{else}{'guests'|translate}{/if},
+                        {$booking.num_days} {if ($booking.num_days==1)}{'day'|translate}{else}{'days'|translate}{/if}
+                      </th>
+                    </tr>
+                    <tr>                
+                      <td width="100">{'checkin'|translate:'c'}</td><td width="240">{$booking.checkin|date_format:"%A %e %B"}</td>
+                    </tr>
+                    <tr>
+                      <td width="100">{'checkout'|translate:'c'}</td><td width="240">{$booking.checkout|date_format:"%A %e %B"}</td>                
+                    </tr>
+                    <tr>
+                      <td width="100">{'rate'|translate:'c'}</td><td width="240">{$booking.currency|currency} {$booking.rate_base|price}<small>/{$booking.rate_type}</small></td>                
+                    </tr>
+                    {foreach from=$scope.feeArray key=fee_key item=fee_name}
+                    {if ($booking.$fee_key > 0)}
+                    <tr>
+                      <td width="100">{$fee_name|translate:'c'}</td><td width="240">{$booking.currency|currency} {$booking.$fee_key}</td>                
+                    </tr>
+                    {/if}
+                    {/foreach}
+                    {if ($booking.city_tax > 0)}
+                    <tr>
+                      <td width="100">{'taxes'|translate:'c'}</td><td width="240">{$booking.currency|currency} {$booking.city_tax}</td>                
+                    </tr>
+                    {/if}
+                    
+                    <tr>
+                      <td width="100">{'total'|translate:'c'}</td><td width="240">{$booking.currency|currency} {$booking.grand_total}</td>                
+                    </tr>
+                    {if ($booking.paid > 0)} 
+                    <tr>
+                      <td width="100">{'paid'|translate:'c'}</td><td width="240">{$booking.currency|currency} {$booking.paid}</td>                
+                    </tr>
+                    {/if}
+                    
+                  </tbody>
+                </table>
+                  

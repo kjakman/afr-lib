@@ -1,0 +1,32 @@
+{$booking = $scope.reservation}
+{$status = $booking.status}
+{$in = $booking.checkin}
+{$out = $booking.checkout}
+{$date_range = $in|daterange:$out}
+{* $smarty.const.PAGE_PAYMENT|link$scope.inv_id *}
+{$link = 'foo'}
+{$text_off = 'some helpful text'}
+{$button = ''}
+{$text = "Booking"}
+{if ($status == $smarty.const.STATUS_REQUEST)}
+  {$text = "Request"}
+{elseif ($status == $smarty.const.STATUS_PROPOSED)}
+  {$text = "Offer"}
+{/if}
+
+              <div class="panel-quote-flush panel">
+                <div class="alert alert-with-icon alert-info alert-block row-space-4">
+                  <div class="h3 no-margin nopad">
+                     <i class="fa fa-clock-o fa-4x middle"></i> {$text} expires in <span class="countdown countdown-inline" data-countdown="{$booking.expires} UTC"></span>
+                     
+                     {if (!$status_page && $status == $smarty.const.STATUS_REQUEST && $user.id == $booking.host_id)}
+                       <a href="{$smarty.const.PAGE_STATUS|link}{$booking.res_id}" class="btn btn-primary">Respond Now</a>
+                     {elseif ($status == $smarty.const.STATUS_PROPOSED && $user.id == $booking.guest_id)}
+                       <a href="{$smarty.const.PAGE_PAYMENT|link}{$scope.inv_id}" class="btn btn-primary">Book It</a>
+                     {/if}
+                     
+                     {if ($button)}<span class='pull-right'>{$button}</span>{/if}
+                  </div>
+                </div>
+              </div>
+

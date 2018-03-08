@@ -1,0 +1,39 @@
+  {{"extend": "base/subview.html"}}
+
+  {block name=subview_top}
+     {$invoice = $scope.invoice}
+     {$obj = $invoice}
+     {$booking = $scope.booking}
+     {$rental = $scope.rental}
+     {$start = $booking.start_date}
+     {$end = $booking.end_date}
+     {$in = $booking.checkin}
+     {$out = $booking.checkout}
+  {/block}
+  
+  {block name=subview_title}
+    {'payment'|translate:'c'} <span class="small"><a href="{$smarty.const.PAGE_INVOICE|link}{$invoice.id}{if ($scope.pin_code)}?pin={$invoice.booking_pin|myhash}{/if}">{'invoice'|translate:'c'} {$invoice.invoice_id|default:$invoice.id}</a></span>
+  {/block}
+  
+  {block name=subview_aside}
+    {if ($booking)}
+    {$obj_type = $scope.obj_type}            
+    {{"include": "_booking-sidebar.html"}}           
+    {/if}
+  {/block}
+  
+  {block name=subview_nav}
+    {{"include": "_payment-nav.html"}}
+  {/block}
+  
+  {block name=subview_container}
+    {{ "subviews":["payment","print"],"prefix": "_payment-"}}
+  {/block}
+  
+  {block name=subview_bottom}
+    {if ($scope.auth_edit_invoice)}
+      {{"include": "_invoice-edit-dialog.html"}}
+      {{"include": "_refund-dialog.html"}}
+      {{"include": "_verify-dialog.html"}}
+    {/if}
+  {/block}

@@ -1,0 +1,20 @@
+									<div class="{if ($comment.comment_id)}comment{else}media{/if}">
+
+										<!-- user-avatar -->
+										<span class="user-avatar">
+											<img class="pull-left media-object" src="{$comment.user_id|userphoto|default:'/epona/assets/images/avatar.png'}" width="64" height="64" alt="">
+										</span>
+
+										<div class="media-body">
+										  {if (0 && !$comment.comment_id)} <!-- cannot reply to reply -->
+											<a href="#commentForm" class="scrollTo replyBtn">reply</a>
+											{/if}
+											<h4 class="media-heading bold">{if ($comment.user_id)}{$comment.user_id|username}{else}{$comment.first_name}{/if}</h4>
+											<small class="block">{$comment.created|date}</small>
+											{$comment.content} 
+
+											<!-- comment reply -->
+											
+										</div>
+									</div>
+

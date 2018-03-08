@@ -1,0 +1,26 @@
+  {{"extend": "base/default.html"}}
+  {block name=content}
+  
+    
+    <div class="container hidden-xs">
+      {* Hack: This hidden nav is only used for reloading listings when changed *}
+      <nav data-target="#rental-edit-container" data-controller="rental_edit" 
+         data-data='{$scope.data|@json_encode}' data-success_handler="traveler_ready" class="visuallyhidden">
+        <a href="#" class="smtlink" data-tpl="_rental-edit-list.html" id="rental-listing"></a>
+      </nav>
+      {* End Hack *}
+      <br>
+      <a class="btn btn-large btn-success" href="{$smarty.const.PAGE_ADD_PROPERTY|link}"><i class="fa fa-plus"></i> Add Rental</a>      
+      <a class="btn btn-large btn-primary" href="/rentals/"><i class="fa fa-table"></i> Table View</a>
+    </div>
+    
+    <div class="gap gap-small"></div>
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-8 col-md-9" id="rental-edit-container">
+          {{"include": "_rental-edit-list.html"}}
+        </div>
+      </div>
+    </div>
+    <div class="gap"></div>
+  {/block}

@@ -1,0 +1,60 @@
+              <div class="entry">              
+                <div class="row booking-fee-row">
+                  <div class="col-sm-2">
+                    <div class="form-group">
+                      <label class="sr-only" for='fee_type[]'>Type</label>
+                      <select name='fee_type[]' class="form-control fee-type fee-field auto-select" data-value="{$fee.type}">
+                        <option value='' selected='selected'></option>
+                        <option value='150'>Cleaning</option>
+                        <option value='183'>Parking</option>
+                        <option value='110'>Service</option>
+                        <option value='170'>Transport</option>
+                        <option value='180'>Other</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-sm-2">
+                    <div class="form-group">
+                      <label class="sr-only" for='fee_tax[]'>Tax</label>
+                      <select name='fee_tax[]' class="form-control fee-tax fee-field tax-rate-field auto-select" data-value="{$fee.tax}">
+                        <option value='L' selected='selected'>Low</option>
+                        <option value='H'>High</option>
+                        <option value='N'>None</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-sm-3">
+                    <div class="form-group">
+                      <label class="sr-only" for='fee_amount[]'>Amount</label>
+                      <div class="input-group">                      
+                        <span class="input-group-addon"><span class="reservation-currency">{$booking.currency|currency}</span></i></span>
+                        <input type="text" class="form-control fee-amount fee-field cal-amount-field" name="fee_amount[]" placeholder="0.00" value="{$fee.amount}">                     
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="col-sm-1">
+                    <div class="form-group">
+                      <label class="sr-only" for='fee_amount[]'>Quantity</label>
+                      <input type="text" class="form-control fee-quantity fee-field" name="fee_quantity[]" placeholder="1" value="{$fee.quantity|default:1}">                  
+                    </div>
+                  </div>
+                  
+
+                  <div class="col-sm-3">
+                    <div class="form-group">
+                      <label class="sr-only" for='fee_name[]'>Description</label>
+                      <input type="text" class="form-control fee-description fee-field" name="fee_name[]" placeholder="Description" value="{$fee.description}">
+                    </div>
+                  </div>
+                  <div class="col-sm-1">
+                    <div class="form-group">
+                      <span class="input-group-btn">
+                        <button class="fee-button btn {if ($fee)}btn-danger btn-remove-fee{else}btn-success btn-add-fee{/if}" type="button">
+                          <span class="glyphicon {if ($fee)}glyphicon-minus{else}glyphicon-plus{/if}"></span>
+                        </button>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>

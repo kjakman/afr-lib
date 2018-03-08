@@ -1,0 +1,50 @@
+            <div class="panel panel-primary">
+              <div class="panel-heading">
+                {'rate'|translate:'c'}
+              </div>
+              <div class="panel-body">
+                <table class="rate-table bold"> 
+                  <tbody>
+                    {if ($booking.discount)}
+                    <tr>
+                     <th>{'rate'|translate:'c'}:</th>
+                     <td><strike>{$booking.currency|currency}{$booking.rate_base|price}</strike> {$booking.currency|currency}{$booking.rate_base|apply_discount:$booking.discount|price}/{$booking.rate_type}</td>
+                    </tr>
+                    {else}
+                    <tr>
+                     <th>{'rate'|translate:'c'}:</th>
+                     <td>{$booking.currency|currency}{$booking.rate_base|price}/{$booking.rate_type}</td>
+                    </tr>
+                    {/if}
+                    {if ($booking.city_tax > 0)}
+                    <tr>
+                     <th>{'city tax'|translate:'c'}:</th>
+                     <td>{$booking.currency|currency}{$booking.city_tax|price}</td>
+                    </tr>
+                    {/if}
+                    {if ($booking.fees > 0)}
+                    <tr>
+                     <th>{'fees'|translate:'c'}:</th>
+                     <td>{$booking.currency|currency}{$booking.fees|price}</td>
+                    </tr>
+                    {/if}
+                    {if ($booking.tax > 0)}
+                    <tr>
+                     <th>{'vat'|translate:'u'}:</th>
+                     <td>{$booking.currency|currency}{$booking.tax|price}</td>
+                    </tr>
+                    {/if}
+                    {if ($booking.fee_service > 0)}
+                    <tr>
+                     <th>{'service fee'|translate:'c'}:</th>
+                     <td>{$booking.currency|currency}{$booking.fee_service|price}</td>
+                    </tr>
+                    {/if}
+                    <tr>
+                     <th>{'total'|translate:'c'}:</th>
+                     <td>{$booking.currency|currency}{$booking.grand_total|price}</td>
+                    </tr>
+                   </tbody>
+                  </table>      
+                </div>
+              </div>

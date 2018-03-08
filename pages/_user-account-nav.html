@@ -1,0 +1,16 @@
+                        <ul class="list user-profile-nav">
+                          {if ($scope.auth_edit)}
+                          <li class="class-filter active"><a href="{$smarty.const.PAGE_ACCOUNT|link}?view=_user-account-notifications.html" class="smtlink click-parent" data-tpl="_user-account-notifications.html" id="account_notifications_link"><i class="fa fa-bell"></i>Notifications</a></li>
+                          <!--li class="class-filter"><a href="{$smarty.const.PAGE_EDIT_PROFILE|link}?view=_user-account-cards.html" class="smtlink click-parent" data-tpl="_user-account-cards.html"><i class="fa fa-credit-card" id="user-credit-card-link"></i>Payment Preferences</a></li-->
+                            {if ($user.user_level >= $smarty.const.USER_LEVEL_OWNER)}
+                            <li class="class-filter"><a href="{$smarty.const.PAGE_ACCOUNT|link}?view=_user-account-payout.html" class="smtlink click-parent" data-tpl="_user-account-payout.html" id="account_payout_link"><i class="fa fa-bank"></i>Payout Preferences</a></li>
+                            <!--li><a href="{$smarty.const.PAGE_ACCOUNT|link}?view=_user-account-transactions.html" class="smtlink click-parent" data-tpl="_user-account-transactions.html" id="account_transactions_link"><i class="fa fa-bank"></i>Transactions Hisotry</a></li-->
+                            <!--li><a href="{$smarty.const.PAGE_ACCOUNT|link}?view=_user-account-privacy.html" class="smtlink click-parent" data-tpl="_user-account-privacy.html" id="account_privacy_link"><i class="fa fa-key"></i>Privacy</a></li>
+                            -->
+                            {/if}
+                          <li class="class-filter"><a href="{$smarty.const.PAGE_ACCOUNT|link}?view=_user-account-password.html" class="smtlink click-parent" data-tpl="_user-account-password.html" id="account_password_link"><i class="fa fa-key"></i>Password</a></li>
+                          <li class="class-filter"><a href="{$smarty.const.PAGE_ACCOUNT|link}?view=_user-account-linking.html" class="smtlink click-parent" data-tpl="_user-account-linking.html" id="account_linking"><i class="fa fa-chain"></i>Link Account</a></li>
+                          <li class="class-filter"><a href="{$smarty.const.PAGE_ACCOUNT|link}?view=_user-account-security.html" class="smtlink click-parent" data-tpl="_user-account-security.html" id="account_security_link"><i class="fa fa-lock"></i>Security</a></li>                          
+                          {/if}
+                        </ul>
+

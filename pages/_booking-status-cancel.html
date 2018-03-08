@@ -1,0 +1,61 @@
+     {$reservation = $scope.reservation}
+     {$status = $scope.reservation.status}
+     {$name = "Booking"}
+     {if ($status == $smarty.const.STATUS_DRAFT)}
+       {$name = "Inquiry"}
+     {elseif ($status == $smarty.const.STATUS_REQUEST)}
+       {$name = "Request"}
+     {/if}
+
+     {if (!$scope.is_guest && !$scope.is_host  && !$scope.is_admin)}
+       <p>Error: Only guests, hosts, and administrators can cancel a booking</p>
+     {else}
+
+       {if ($status < 0)}
+       
+                <div class="panel-quote-flush panel">
+                  <div class="alert alert-with-icon alert-success alert-block row-space-4">
+                    <div class="h3 no-margin nopad">
+                       <i class="fa fa-check-circle fa-4x middle"></i> This booking has been cancelled
+                    </div>
+                  </div>
+                </div>
+       
+       {else}
+                <h3>Cancel {$name}</h3>
+                <div class="panel-quote-flush panel">
+                  <div class="alert alert-with-icon alert-danger alert-block row-space-4">
+                    <div class="h3 no-margin nopad">
+                       <i class="fa fa-exclamation-triangle fa-4x middle"></i> Are you sure you want to cancel this {$name} ?
+                    </div>
+                  </div>
+                </div>
+       
+       {$confirmed = $status == $smarty.const.STATUS_RESERVED || $status == $smarty.const.STATUS_COMPLETE}                
+       {if ($reservation.type != $smarty.const.RES_TYPE_ADMIN && $confirmed)}
+         <h3>This is a confirmed reservation, cancelling will have consequences!</h3>
+         {if ($scope.is_host)}
+         <p><b>Cancelling will inconvenience the guest and make you and us look bad.  </b></p>
+         {elseif ($scope.is_guest)}
+         <p><b>Refund is subject to the host cancellation policy.</b></p>
+         {/if}
+       {/if} {* Reserved / Complete *}        
+       
+       <form name="booking-cancel" class="ajax-submit" data-handler="booking-cancel" data-reload_link="#booking-status-cancel">
+          <input type="hidden" name="res_id" value="{$reservation.res_id}">
+          <input type="hidden" name="user_id" value="{$user.id}">
+          <br>
+          <div class="row">
+            <div class="form-group col-sm-12">
+              <label for="cancel_reason">Reason for canceling</label>
+              <textarea class="form-control" data-height="500" name="cancel_reason" placeholder="Please provide a brief explanation why you would like to cancel..."></textarea>
+            </div>
+          </div>
+          <br>
+          <button name="cancel" type="submit" class="btn btn-danger" value="1">Cancel {$name}</button>
+       </form>
+                
+       {/if} {* Status < 0 *}     
+     {/if}   {* is_guest/is_host *}        
+     
+     

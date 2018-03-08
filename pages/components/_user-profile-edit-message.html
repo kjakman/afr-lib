@@ -1,0 +1,11 @@
+
+                                  
+                                  {if ($scope.id == $user.id)}
+                                  You cannot send a message to yourself
+                                  {else}
+                                  <div class="panel panel-default">
+                                    <div class="panel-body">
+                                    {{"include": "_inbox-form.html"}}
+                                    </div>
+                                  </div>
+                                  {/if}

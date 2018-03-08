@@ -1,0 +1,18 @@
+    {{"extend": "html/index.html"}}
+
+    {block name=body}
+
+    {$html = $page.html} 
+    {$elements = $html->elements}
+    
+      <div class="global-wrap">
+        <header id="main-header">       
+        <!--$top-->{$elements.top}<!--/$top-->
+        <!--$nav-->{$elements.nav}<!--/$nav-->
+        </header>
+        <!--$content-->{$elements.content}<!--/$content-->
+        
+        <!--$bottom-->{$elements.bottom}<!--/$bottom-->
+        <!--$footer-->{$elements.footer}<!--/$footer-->
+      </div>
+    {/block}

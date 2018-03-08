@@ -1,0 +1,68 @@
+                      <h2>{'rental guide'|translate:'t'}</h2>
+                      <p>{'detailed information about your rental, the location and what guests can expect from you.'|translate:'c'}</p>
+                      {$here = 'here'|translate:'l'}
+                      {$link = "<a href='`$smarty.const.PAGE_EDIT_PROPERTY|link`'>`$here`</a>"}
+                      <p>{'if you have multiple rentals with the same House Rules, Checkin instructions, or Interaction with guests, you can fill in a generic version %s.'|transplace:'c':$link}</p>         
+                      <p>{'if you also use the space below, then the text below will be added to the generic version'|translate:'c'}</p>
+                      
+                      {$in = 'in'}
+                      <div class="panel-group" id="accordionGroup" role="tablist" aria-multiselectable="true">
+                      {$i = 1}
+                      {$count = $scope.description_types|@count}
+                      
+                      {foreach from=$scope.description_types item=desc_type}
+                        {$descObj = $scope.guides[$desc_type.id]}
+                        {$desc = $descObj.description}
+                        {$desc_id = $descObj.id}
+                        <div class="panel panel-default">
+                          <div class="panel-heading" role="tab" id="heading-{$i}">
+                            <a role="button" id="link-{$i}" data-toggle="collapse" data-parent="#accordionGroup" href="#collapse-{$i}" aria-expanded="true" aria-controls="collapse-{$i}">
+                              <label>{$desc_type.name} {if ($desc_type.private)}<span class="text-small"><i class="fa fa-lock"></i> Private (only guests who have booked see this){/if}</span></label>
+                            </a>
+                            <a href="#" data-toggle="tooltip" data-html="true" data-placement="bottom" title="Example: {$desc_type.example}">
+                               <i class="fa fa-question-circle"></i>
+                            </a>                                                        
+                          </div>
+                          
+                          <div id="collapse-{$i}" data-index="{$i}" class="panel-collapse collapse {$in}" role="tabpanel" aria-labelledby="heading-{$i}">
+                            <div class="panel-body">
+                              <div class="form-group">
+                                <form id="guide-edit-{$desc_type.id}-form" class="ajax-submit autosave-off" data-autosave-handler="none" data-handler="save" data-success_handler="close_open_next">
+                                  <input name="host_id" type="hidden" value="{$scope.rental.host_id}" />
+                                  <input name="user_id" type="hidden" value="{$user.id}" />
+                                  <input name="site_id" type="hidden" value="{$site.id}" />
+                                  <input name="property_id" type="hidden" value="{$scope.rental.id}" />
+                                  <input name="property_type" type="hidden" value="{$scope.rental.type}" />
+                                  <input name="obj_type" type="hidden" value="property_description" />
+                                  <input name="type" type="hidden" value="{$desc_type.id}" />
+                                  <input name="id" type="hidden" value="{$desc_id}" />
+                                  <input name="language" type="hidden" value="{$app.language}" />
+                                  <textarea name="description" class="summernote-off form-control" data-toolbar="[]" placeholder="{$desc_type.description}" >{$desc}</textarea>
+                                  <br>
+                                  <input type="submit" class="btn btn-primary" value="Next">
+                                </form>                                  
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        {$in = ''}                      
+                        {$i = $i + 1}
+                      {/foreach}
+                      </div>
+                      <a href="#" class="btn btn-primary linkref" data-target="#rental-calendar-link">Click here for next step <i class="fa fa-arrow-right"></i></a>                      
+                      
+
+<script>
+  function close_open_next() {
+    var $parent = $("#accordionGroup");    
+    var $open = $parent.find("div.panel-collapse.in");
+    var count = {$count};
+    if($open.length) {
+      var index = $open.data('index');
+      var next = index && index < count ? index + 1 : 0;
+      console.log("count=" + count + " index=" + index + " next=" + next);      
+      if(next) $("#link-" + next).trigger('click');
+    }
+    
+  }
+</script>  

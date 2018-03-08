@@ -1,0 +1,45 @@
+
+{{"extend": "rental-request-base.html"}}
+  {$title = "contact host"|translate:'c'}
+  {block name='operation'}rental-inquiry{/block}
+  {$button_text = 'foo'}
+  {block name=title}
+    {$title = "inquire about %s"|transplace:'c':$rental.name}                
+    <h2>{$title}</h2>
+  {/block}
+
+  {block name=top_text}
+    <h4>{{"name": "text-ask", "type":"text", "value":"Ask a question to"}} {$booking.host_id|username}</h4>
+  {/block}    
+  {block name=main_text}{/block}
+  {block name=button_text}
+    <i class="fa fa-paper-plane"></i> {'send message'|translate:'c':0}
+  {/block}
+  
+  {block name=bottom_text}
+  
+                <ul class="list">
+                
+                  <li>{{"name": "text-line-1", "type":"text", "value":"Sending an inquiry does not let you book the apartment."}}</li>
+                  {if ($book_now)}
+                  {$link = $smarty.const.PAGE_BOOK|link}
+                  <li>{{"name": "text-line-2", "type":"text", "value":"To book now, click the button below."}}</li> 
+                  {else}
+                  {$link = $smarty.const.PAGE_REQUEST|link}
+                  {$button = ""}
+                  <li>{{"name": "text-line-3", "type":"text", "value":"To request to book the rental, click the button below."}}</li> 
+                  {/if}
+                  <li>
+                    <div class="gap gap-small"></div>
+                    <a href="{$link}{$scope.rental.id}?{$qstr}" type="button" class="btn btn-primary append-query" data-field="#extra_info">
+                    {if ($book_now)}
+                    <i class='fa fa-bolt'></i> {'instant book'|translate:'c':0}
+                    {else}
+                    <i class="fa fa-check"></i> {'request to book'|translate:'c':0}
+                    {/if}
+                    </a>
+                  </li>
+                </ul>
+  
+  {/block}
+

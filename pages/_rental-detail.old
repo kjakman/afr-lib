@@ -1,0 +1,87 @@
+
+{*
+
+                        
+            {if (0 && $scope.description)}
+            <h3>Terms:</h3>
+            <ul class="booking-item-features booking-item-features-expand-inline  mb30 clearfix">
+              <li><b>Cancellation:</b> {$scope.rental.cancellation_policy}</li>
+              <li><b>Change over:</b> {$scope.rental.changeover}</li>
+              <li><b>Checkin:</b> {$scope.rental.checkin_from} {$scope.rental.checkin_until}</li>
+              <li><b>Checkout:</b> {$scope.rental.checkout_from} - {$scope.rental.checkout_until}</li>
+            </ul>
+            {/if}
+            
+              
+            <div class="row">
+              <div class="col-md-3">
+                <h4>The Space</h4>
+              </div>
+              <div class="col-md-9">
+                <div class="row" id="rental-space">
+                  <div class="col-sm-6">
+                    <ul>
+                      <li><span class="detail-tag">Accommodates:</span> <span class="detail-value">{$rental.max_guests}</span></li>
+                      <li><span class="detail-tag">Bedrooms:</span> <span class="detail-value">{$rental.num_bedrooms}</span></li>
+                      <li><span class="detail-tag">Bathrooms:</span> <span class="detail-value">{$rental.num_bathrooms}</span></li>
+                      <li><span class="detail-tag">Beds:</span> <span class="detail-value">{$rental.num_beds}</span></li>
+                    <ul>
+                  </div>
+                  <div class="col-sm-6">
+                    <span class="detail-tag">Check-in:</span> <span class="detail-value">{$rental.checkin_from}</span><br>
+                    <span class="detail-tag">Check-out:</span> <span class="detail-value">{$rental.checkout_to}</span><br>
+                    <span class="detail-tag">Property Type:</span> <span class="detail-value">{$rental.hosting_property_type}</span><br>
+                    <span class="detail-tag">Room Type:</span> <span class="detail-value">{$rental.hosting_room_type}</span><br>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {if ($scope.facs|@count)}
+            <h3>Amenities</h3>
+            <div class="expandable expanded expandable-trigger-more" id="rental-amenities">
+              <div class="expandable-content expandable-content-long" style="transition: none; -webkit-transition: none;">
+                <!-- expandable content here -->
+                <ul class="booking-item-features booking-item-features-expand-inline  mb30 clearfix">
+                {foreach from=$scope.facs item=fac}
+                  <li class="col-xs-6 col-sm-4 col-md-6 col-lg-4"><i class="{$fac.icon}" id="fac_{$fac.id}"></i><span class="booking-item-feature-title">{$fac.name}</span></li>
+                {/foreach}
+                </ul>
+                <div class="expandable-indicator"></div>
+              </div>
+              <a class="expandable-trigger-more" href="#"><strong>+ More</strong></a>
+            </div>
+            <div class="gap gap-small"></div>
+            {/if}
+
+            <div class="expandable expanded expandable-trigger-more" id="ex-test">
+              <div class="expandable-content expandable-content-long" style="transition: none; -webkit-transition: none;">
+                {* expandable content here *}
+                <div class="expandable-indicator"></div>
+              </div>
+              <a class="expandable-trigger-more" href="#"><strong>+ More</strong></a>
+            </div>
+
+            <div class="row">
+              <div class="col-md-3">
+                <h4>Not in use</h4>
+              </div>
+              <div class="col-md-9">
+                <div class="expandable expanded expandable-trigger-more" id="rental-amenities">
+                  <div class="expandable-content expandable-content-long" style="transition: none; -webkit-transition: none;">
+                    <!-- expandable content here -->
+                    <ul class="mb30 clearfix">
+                    {foreach from=$scope.facs item=fac}
+                      <li class="col-xs-6 col-sm-4 col-md-6 col-lg-4">
+                        <i class="{$fac.icon}" id="fac_{$fac.id}"></i><span class="booking-item-feature-title">{$fac.name}</span>
+                      </li>
+                    {/foreach}
+                    </ul>
+                    <div class="expandable-indicator"></div>
+                  </div>
+                  <a class="expandable-trigger-more" href="#"><strong>+ More</strong></a>
+                </div>
+                <div class="gap gap-small"></div>              
+              </div>
+            </div>
+*}

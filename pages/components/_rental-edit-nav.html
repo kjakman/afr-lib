@@ -1,0 +1,22 @@
+                        <ul class="list user-profile-nav">
+                          {if ($scope.id)}
+                            {$p = "`$smarty.const.PAGE_EDIT_PROPERTY|link``$scope.id`"}
+                            <li class="class-filter active"><a href="{$p}/location"><i class="fa fa-map-marker"></i>Location</a></li>
+                            <li class="class-filter">       <a href="{$p}/description" id="rental-description"><i class="fa fa-file-text"></i>Description</a></li>
+                            <li class="class-filter">       <a href="{$p}/terms"       id="rental-terms"><i class="fa fa-key"></i>Terms</a></li>
+                            <li class="class-filter">       <a href="{$p}/pricing"     id="rental-pricing"><i class="fa fa-credit-card"></i>Pricing</a></li>
+                            <li class="class-filter">       <a href="{$p}/amenities"   id="rental-amenities"><i class="fa fa-check"></i>Amenities</a></li>
+                            <li class="class-filter">       <a href="{$p}/photos"      id="rental-photos"><i class="fa fa-camera"></i>Photos</a></li>
+                            <li class="class-filter">       <a href="{$p}/guide"       id="rental-guide"><i class="fa fa-info-circle"></i>Rental Guide</a></li>
+                            <li class="class-filter">       <a href="{$p}/calendar"    id="rental-calendar-link"><i class="fa fa-calendar"></i>Calendar</a></li>
+                            <li class="class-filter">       <a href="{$p}/reviews"     id="rental-reviews-link"><i class="fa fa-thumbs-up"></i>Reviews</a></li>
+                            {if ($rental.source_id >0)}
+                            <li class="class-filter"><a href="{$p}/locked"             id="rental-locked-link"><i class="fa fa-lock"></i>Locked Fields</a></li>
+                            {else}
+                            <li class="class-filter"><a href="{$p}/import"             id="rental-import-link"><i class="fa fa-cloud-download"></i>Import</a></li>
+                            {/if} 
+                          {/if}
+                            <li class="class-filter"><a href="{$p}/list"               id="rental-listing"><i class="fa fa-list-ul"></i>My Listings</a></li>
+                            {if ($scope.id)}                            
+                            {/if}
+                        </ul>

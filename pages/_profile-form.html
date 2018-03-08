@@ -1,0 +1,78 @@
+      <input type="hidden" class="form-control" name="id" id="user_profile-id" value="{$scope.id}" placeholder="first name" title="enter your first name if any.">
+      {if ($scope.profile_form.head)}{$scope.profile_form.head}{/if}
+
+      <div class="form-group">
+        <div class="col-xs-6">
+          <label for="first_name"><h4>First name</h4></label>
+          <input type="text" class="form-control" name="first_name" id="user_profile-first_name"  value="{$scope.first_name}" placeholder="first name" title="enter your first name if any.">
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-xs-6">
+        <label for="last_name"><h4>Last name</h4></label>
+          <input type="text" class="form-control" name="last_name" id="user_profile-last_name"  value="{$scope.last_name}" placeholder="last name" title="enter your last name if any.">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="col-xs-6">
+          <label for="display_name"><h4>Display name</h4></label>
+          <input type="text" class="form-control" name="display_name" id="user_profile-display_name"  value="{$scope.display_name}" placeholder="first name" title="enter your first name if any.">
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-xs-6">
+        <label for="gender"><h4>Gender</h4></label>
+        <select name="gender" id="user_profile-gender" class="form-control" placeholder="boy or girl?">
+            <option value=""></option>
+            <option value="1" {if ($scope.gender == 1)}SELECTED{/if}>Male</option>
+            <option value="2" {if ($scope.gender == 2)}SELECTED{/if}>Female</option>
+        </select>
+
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="col-xs-6">
+          <label for="phone"><h4>Phone</h4></label>
+          <input type="text" class="form-control" name="phone" id="user_profile-phone"  value="{$scope.phone}" placeholder="enter phone" title="enter your phone number if any.">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="col-xs-6">
+         <label for="mobile"><h4>Mobile</h4></label>
+          <input type="text" class="form-control" name="mobile" id="user_profile-mobile"  value="{$scope.mobile}" placeholder="enter mobile number" title="enter your mobile number if any.">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="col-xs-6">
+          <label for="email_address"><h4>Public Email</h4></label>
+          <input type="email" class="form-control" name="email_address" id="user_profile-email_address" value="{$scope.email_address}" placeholder="you@email.com" title="enter your email.">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="col-xs-6">
+          <label for="city"><h4>City</h4></label>
+          <input type="text" class="form-control" id="user_profile-city" value="{$scope.city}" placeholder="Where you live" title="enter a location">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="col-xs-6">
+          <label for="description"><h4>About Me</h4></label>
+          <textarea class="jqckeditor form-control" data-toolbar="basic" name="description" id="user_profile-description" placeholder="Write a little about yourself..." title="enter your password.">{$scope.description}</textarea>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="col-xs-6">
+          <label for="photo"><h4>Photo</h4></label>
+          {$scope.uploader}
+        </div>
+      </div>
+      
+      {if ($scope.profile_form.tail)}{$scope.profile_form.tail}{/if}
+

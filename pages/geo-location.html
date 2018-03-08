@@ -1,0 +1,41 @@
+          <div class="container container-full">
+            <div class="row">
+              <div class="col-sm-5 hidden-xs" id="property_left">
+                <div class="overview-map-cont">
+                <!-- included _rental-map.html -->
+                {* $scope|dump *}
+                <div id='search_result_map' class='overview-map' data-options={$global.map_options|@json_encode}></div>
+                </div>              
+              </div>
+              <div class="col-sm-7 col-xs-12" id="property_right" style="padding-top: 80px">
+                <div class="hidden-md hidden-lg" style="height:100px;width:100%"></div><!--spacer-->
+                                                                                    
+                <form id="rental_search_form" class="ajax-submit searchbar" action="{$smarty.const.PAGE_SHORTSTAY|link}" method="get" data-handler="property-search" data-success_handler="property_search_handler">
+
+                <div class="clearfix" style="margin-left: -15px;margin-bottom:15px;">
+                  <!--h5 class="booking-filters-title inline">Dates</h5--> 
+                  {{"include": "_rental-searchbar.html"}}
+                  <div class="col-md-2 relative nogutter">
+                    <a class="btn btn-default" data-toggle="collapse" data-parent="#accordion" href="#search-more">
+                      More options <i class="fa fa-chevron-right"></i>
+                    </a>
+                  </div>
+                </div>
+                
+                <div id="search-more" class="collapse out">
+                  <div class="panel-body">
+                  {{"include": "_rental-advanced-search.html"}}
+                  </div>
+                </div>
+
+                
+                </form>
+                <div id="property-list">
+                <!-- included _rental-list.html -->
+                </div>
+              </div>
+            </div>
+          </div>
+{*$onload = 'gmap3();' scope=global*}
+
+        

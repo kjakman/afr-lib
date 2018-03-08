@@ -1,0 +1,20 @@
+                      {$booking = $scope.booking}
+                      {$start = $booking.start_date}
+                      {$end = $booking.end_date}
+                      {if ($scope.auth_level >= $smarty.const.USER_LEVEL_GUEST)}
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">Preview</div>
+                        <div class="panel-body">
+                          <p>Fill in the below form to generate a preview and optionally send it by email. </p>
+                          <p>For multiple recipients, use comma (,) to separate email addresses.</p>
+                        
+                          {$mail = $scope.mail}
+                          {{"include": "_mail-form.html"}}
+                          <hr>
+                          {{"include": "_mail-preview.html"}}
+                        </div>
+                      </div>                      
+                      
+                      {else}
+                      <span class="afr_error alert alert-danger"><i class="fa fa-exclamation-triangle"></i> Not authorized</span>                      
+                      {/if}

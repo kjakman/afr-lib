@@ -1,0 +1,16 @@
+
+
+                          {$debug_loc = 0}
+                          <div class="geo-details">
+                            <input type="{if ($debug_loc)}text{else}hidden{/if}" name="location_lat"      value="{$event.location_lat}"      data-geo="lat"/>
+                            <input type="{if ($debug_loc)}text{else}hidden{/if}" name="location_long"     value="{$event.location_long}"     data-geo="lng"/>
+                            <input type="{if ($debug_loc)}text{else}hidden{/if}" name="location_bounds"   value="{$event.location_bounds}"   data-geo="bounds" class="location-bounds"/>
+                            <input type="{if ($debug_loc)}text{else}hidden{/if}" name="location_center"   value="{$event.location_center}"   data-geo="center" class="location-center"/>
+                            <input type="{if ($debug_loc)}text{else}hidden{/if}" name="address_street"    value="{$event.address_street}"    data-geo="route"/>
+                            <input type="{if ($debug_loc)}text{else}hidden{/if}" name="address_number"    value="{$event.address_number}"    data-geo="street_number"/>
+                            <input type="{if ($debug_loc)}text{else}hidden{/if}" name="address_city"      value="{$event.address_city}"      data-geo="locality"/>
+                            <input type="{if ($debug_loc)}text{else}hidden{/if}" name="address_postcode"  value="{$event.address_postcode}"  data-geo="postal_code"/>
+                            <input type="{if ($debug_loc)}text{else}hidden{/if}" name="address_state"     value="{$event.address_state}"     data-geo="administrative_area_level_1"/>
+                            <input type="{if ($debug_loc)}text{else}hidden{/if}" name="address_country"   value="{$event.address_country}"   data-geo="country_short"/>
+                            <input type="{if ($debug_loc)}text{else}hidden{/if}" name="address_formatted" value="{$event.address_formatted}" data-geo="formatted_address"/>
+                          </div>                                                     

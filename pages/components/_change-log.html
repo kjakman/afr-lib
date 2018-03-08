@@ -1,0 +1,16 @@
+                      {$rows = []}
+                      {$rows[] = ["Date", "User", "Action"]}
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">
+                          Change Log
+                        </div>
+                        <div class="panel-body">
+                          {foreach from=$scope.change_log item=log}
+                            {$action = $log.action|truncate:50}
+                            {$link_options = ["class" => "view-object", "data-obj_type" => "changelog", "data-obj_id" => $log.id]}
+                            {$row = [$log.timestamp|datetime, $log.user_id|fullname|truncate:30, '#'|anchor:$action:$link_options]}
+                            {$rows[] = $row}
+                          {/foreach}
+                          {$rows|table:["class" => "table table-bordered table-striped table-booking-history"]}
+                        </div>
+                      </div>  

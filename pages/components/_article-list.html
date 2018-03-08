@@ -1,0 +1,34 @@
+			<!-- CONTENT -->
+			<section>
+				<div class="container">
+
+					<div id="blog" class="row">
+
+						<!-- BLOG ARTICLE LIST -->
+						<div class="col-md-9 col-sm-9">
+						
+						<!-- ARTICLE FORM -->
+            {if ($scope.auth_add_article)}
+            <button href="#article-form-modal" data-form="#article-form" data-backdrop="static" data-toggle="modal" type="button" class="btn btn-success reset-form">{'add article'|translate:'t'}</button>
+            {/if}
+
+            {foreach from=$scope.articles item=article}
+							<!-- article - image -->
+							{{"include": "_article-item.html"}}
+							<!-- /article - image -->
+					  {/foreach}
+
+						{{"include": "_article-pagination.html"}}
+					  
+
+						</div>
+						<!-- /BLOG ARTICLE LIST -->
+
+						{{"include": "_article-sidebar.html"}}
+					</div>
+
+
+				</div>
+			</section>
+			<!-- /CONTENT -->
+

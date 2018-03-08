@@ -1,0 +1,29 @@
+          <form class="ajax-submit signup-form" method="get" data-handler="user-register">
+            <div class="form-group form-group-icon-left"><i class="fa fa-user input-icon"></i>
+              <label>First Name</label>
+              <input name="first_name" class="form-control" placeholder="e.g. John" type="text" />
+            </div>
+            <div class="form-group form-group-icon-left"><i class="fa fa-user input-icon"></i>
+              <label>Last Name</label>
+              <input name="last_name" class="form-control" placeholder="e.g. Doe" type="text" />
+            </div>
+            <div class="form-group form-group-icon-left"><i class="fa fa-envelope input-icon"></i>
+              <label>Email</label>
+              <input name="username" class="form-control" placeholder="e.g. johndoe@gmail.com" type="text" />
+            </div>
+            <div class="form-group form-group-icon-left"><i class="fa fa-lock input-icon"></i>
+              <label>Password</label>
+              <input name="password1" class="form-control" type="password" placeholder="my secret password" />
+            </div>
+            <div class="form-group form-group-icon-left"><i class="fa fa-lock input-icon"></i>
+              <label>Repeat Password</label>
+              <input name="password2" class="form-control" type="password" placeholder="my secret password" />
+            </div>
+            <input class="btn btn-primary" type="submit" value="Sign up for {$site.name}" />
+            <div class='gap gap-small'></div>                      
+            <input name="redirect" type="hidden" value="{$get.ref}" />
+            <input name="user_terms" type="hidden" value="1" />By signing up, I agree to the <a class='fancybox-noscroll fancybox.ajax' href='/home/app_data.php?oper=load-page-content&amp;site_id={$site.id}&amp;page_type=1005'>Terms &amp; Conditions</a>
+            <div class='gap gap-small'></div>                      
+            <input name="site_id" type="hidden" value="{$site.id}" />
+          </form>
+

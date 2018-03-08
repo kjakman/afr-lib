@@ -1,0 +1,297 @@
+
+                    {$invoice = $scope.invoice}
+                    {$start = $invoice.start_date}
+                    {$end = $invoice.end_date}
+                      
+                  <div class="payscreen">   
+
+                    {if ($invoice.balance > $smarty.const.INV_TOLERANCE)}
+                      {$mollie = ($scope.mollie_key) ? 1 : 0}                      
+                      {$methods = $scope.mollie_methods}
+                      {if (!$methods.paypal)}
+                      {/if}
+                      {$paypal = ($scope.paypal_key) ? 1 : 0}
+                      {$bitcoin = ($scope.bitpay_key) ? 1 : 0}                      
+                      {$payment_possible = $paypal || $bitcoin || $mollie}
+                      {$balance = $scope.invoice.due_now|default:$scope.invoice.balance}
+                      
+                      {$item_name = $invoice.concerning}
+                      {$inv_id = $invoice.id}
+                      
+                      {if $invoice.parent_type == 'reservation'}
+                        {$res_id = $invoice.parent_id}
+                        {$booking = $res_id|get:'reservation'}
+                      {/if}
+                      
+                      {$currency = $invoice.currency}
+                      {$cur = $currency|currency}
+                      {$amount = $invoice.balance}
+                      {$user_id = $user.id}
+                      {$url = $this_path}
+                      {$due_now = $booking.deposit}
+                      {$pay = 1}
+                      {$verify = 0}
+                      {$txn_id = $scope.txn_id}
+                      {if ($txn_id && $scope.tx_st == "Completed")}
+                        {$verify = 1}
+                        
+                      <div class="messages">
+                        <div class="alert alert-success timer-container" role="alert">
+                          <i class="fa fa-spinner fa-spin fa-2x"></i> &nbsp; 
+                          Paying: {$scope.tx_currency|currency}{$scope.tx_amount}. 
+                          Please wait while we verify your payment... <span class="timer"></span>
+                        </div>
+                      </div>
+                      {else if ($invoice.paid > 0)}
+                      
+                      <div class="alert alert-success" role="alert">
+                        <i class="fa fa-check fa-2x"></i> Paid: {$invoice.currency|currency}{$invoice.paid}. Balance: {$invoice.currency|currency}{$invoice.balance}
+                      </div>
+                      {/if}
+                      
+                        {if (!$verify)}
+                        
+                        <div class="panel panel-primary">
+                          <div class="panel-heading">Pay Now</div>
+                          <div class="panel-body">
+                            <div class="panel-group" id="accordion">
+                                
+                                <h4>Booking {$res_id}: {$item_name}</h4>
+                                    
+                                {* Mollie Key: {$scope.mollie_key} *}
+                                
+                                {if ($payment_possible)}
+                                
+                                {if (0 && $paypal)}
+                                  <p><b>Important:</b> You will be redirected to PayPal's website to securely complete your payment.</p>
+                                  <p><b>You do not need a PayPal account.</b> Select "Don't have a PayPal account", then "Pay with a debit or credit card".</p>
+                                  <div class="gap gap-small"></div>
+                                  {{"include": "_rental-payment-paypal.html"}}
+                                  <div class="gap gap-small"></div>
+                                                    
+                                {/if}  {* end if paypal *}                            
+                                
+                                {if (0 && $paypal)}
+                                  {{"include": "_payment-button-paypal.html"}}
+                                {/if}
+
+                                
+                                {if ($mollie || $paypal)}
+
+                                <form id="payment-form" class="payment-submit payment-form" data-handler="mollie-pay" data-reload_link="#payment-overview" method="post" target="_top">
+                                  <input type="hidden" name="inv_id" value="{$inv_id}" />
+                                  <input type="hidden" name="user_id" value="{$user.id}" />
+                                  <input type="hidden" name="res_id" value="{$res_id}" />
+                                  <input type="hidden" name="site_id" value="{$site.id}" />
+                                  <input type="hidden" name="parent_type" value="{$scope.invoice.parent_type}" />
+                                  <input type="hidden" name="parent_id" value="{$scope.invoice.parent_id}" />
+                                  <input type="hidden" name="currency" value="{$scope.invoice.currency}" />
+                                  <input type="hidden" name="description" value="{$scope.invoice.concerning}">
+                                  <input type="hidden" name="url" value="{$full_path}?return=mollie">
+                                    
+                                  {if ($paypal)}
+                                  <!-- used for PayPal only -->
+                                  <input type="hidden" name="cmd" value="_xclick">
+                                  <input type="hidden" name="business" value="paypal@kjakman.com">
+                                  <input type="hidden" name="lc" value="US">
+                                  <input type="hidden" name="item_name" value="{$item_name}">
+                                  <input type="hidden" name="item_number" value="{$inv_id}">
+                                  <input type="hidden" name="currency_code" value="{$currency}">
+                                  <input type="hidden" name="button_subtype" value="services">
+                                  <input type="hidden" name="no_note" value="1">
+                                  <input type="hidden" name="no_shipping" value="1">
+                                  <input type="hidden" name="rm" value="1">
+                                  <input type="hidden" name="return" value="https://{$smarty.server.HTTP_HOST}{$url}{$query_string}">
+                                  <input type="hidden" name="cancel_return" value="https://{$smarty.server.HTTP_HOST}{$url}{$query_string}&amp;cancel=1">
+                                  <input type="hidden" name="bn" value="PP-BuyNowBF:paypal.png:NonHosted">
+                                  <input type="hidden" name="custom" value="res_id={$res_id},inv_id={$inv_id},user_id={$user.id},site_id={$site.id}">
+                                  <!-- end used for PayPal only -->
+                                  {/if} {* end if paypal *}
+                                  
+                                  <div class="form-group form-group-icon-left">
+                                      <i class="fa fa-{$scope.invoice.currency|lower} input-icon"></i>
+                                      <label>Amount to pay</label>
+                                      <input name="amount" class="form-control" placeholder="Amount" type="text" value="{$balance}">
+                                  </div>
+                                  
+                                  <input type="hidden" name="payment_method" id="payment_method">
+
+                                  <ul>
+                                    {if ($paypal)}
+                                    <li>
+                                      <button type="submit" data-gateway="paypal" class="form-control btn btn-success methods-option paypal paypal_or_cc relative" tabindex="0" name="method" value="paypal">
+                                        <span class="cc-logo"></span>
+                                        <span>PayPal or Credit Card</span>
+                                      </button>
+                                    </li>
+                                    {/if}
+                                    {* $methods|dump *}
+                                    {foreach from=$methods item=method}
+                                      {$max = $method.amount.maximum}
+                                      {$min = $method.amount.minimum}
+                                      {$class = ($balance > $max || $balance < $min) ? "hidden" : ""}
+                                      {if (!$paypal || $method.id != 'paypal')} 
+                                    <li class="{$class}">
+                                      <button type="submit" data-gateway="mollie" class="form-control btn btn-success methods-option {$method.id}" 
+                                              data-min="{$min}" data-max="{$max}"
+                                              tabindex="1" name="method" value="{$method.id}">
+                                        <span>{$method.description}</span>
+                                      </button>
+                                    </li>
+                                      {/if} {* end if paypal *}
+                                    {/foreach}                                    
+
+                                  </ul>
+                                                                      
+                                </form>
+
+
+                                {/if} {* end if mollie or paypal *}
+
+                                
+                                {else} {* payment not possible *}
+                                <div class="alert alert-danger" role="alert">
+                                  No payment methods have been activated for this site. 
+                                </div>
+                                
+                                {/if} {* end if payment_possible *}
+                                
+                            </div>
+                          </div>
+                        </div>                        
+                        {/if} {* end if !verify *}
+                      
+                      {else} {* no balance *}
+                      <div class="alert alert-success" role="alert">
+                        <i class="fa fa-check fa-2x"></i> This invoice is paid in full.
+                      </div>
+                      {$paid = 1}
+                      {/if} {* end if balance > 0 *}
+
+                   
+                      {{"include": "_invoice-details.html"}}
+                      
+                      {$payments = $invoice.payments}    
+                      {if ($invoice.paid > 0 || $invoice.pending > 0 || $invoice.authorized > 0)}
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">
+                          Payments
+                          <span class="label label-success">Paid: {$invoice.currency|currency}{$invoice.paid}</span>
+                          {if ($invoice.pending > 0)}
+                          <span class="label label-warning">Pending: {$invoice.currency|currency}{$invoice.pending}</span>
+                          {/if}
+                          {if ($invoice.authorized > 0)}
+                          <span class="label label-warning">Authorized: {$invoice.currency|currency}{$invoice.authorized}</span>
+                          {/if}
+                        </div>
+                        <div class="panel-body">
+                          {$payments|table:['class' => 'accounting_table']}
+                          {* $invoice|invoice_payments:$scope.auth_level *}
+                        </div>
+                      </div>
+                      {/if} {* end if paid > 0 *}
+                      
+                      {$just_paid = 0}
+                      {if $paid && $booking.status >= $smarty.const.STATUS_RESERVED && $invoice.type == $smarty.const.INV_TYPE_BOOKING && $invoice.head_invoice == 1 && $invoice.parent_type == 'reservation'}
+                        {$just_paid = 1}
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">
+                          Booking Confirmation
+                          &nbsp;
+                          <a href="{$smarty.const.PAGE_STATUS|link}{$invoice.parent_id}" class="btn btn-success btn-sm">View Booking</a>
+                        </div>
+                        <div class="panel-body">
+                          <div id="section-to-print">
+                            {$scope.preview}
+                          </div>
+                        </div>
+                      </div>  
+                      {/if} {* end if $paid *}
+                      
+                      
+                    </div>
+                    
+                      {if ($just_paid && $site.google_tag_id)}                      
+                      <script>
+                        $(function() {
+                          var data = {$booking|@json_encode};
+                          console.log("Just paid - send ecommerce + tag_id=" + '{$site.google_tag_id}');
+                          console.log("Data:", data);
+                          ga_push_booking(data, 'payment-received');
+                        });
+                      </script>                      
+                      {/if}
+                    
+                      <script>
+                      $("BUTTON.methods-option").click(function() {
+                        var $button = $(this);
+                        var method = $button.val();
+                        var gateway = $button.data('gateway');
+                        var $form = $("#payment-form"); 
+                        console.log("PM=" + method);
+                        $("#payment_method").val(method);
+                        if(gateway == 'paypal') {
+                          $form.attr('action', 'https://www.paypal.com/cgi-bin/webscr');
+                          return true;
+                        } else {
+                          $form.attr('action', '');
+                          return ajax_handler($form);  
+                        }
+                      });
+                      </script>
+                      {if ($verify)}
+                      <script>
+                        var timer = 30;
+                        var myCount = timer;
+                        var site_id = "{$site.id}";
+                        var txn_id = "{$txn_id}";
+                        var inv_id = "{$inv_id}";
+                        var $messages = $(".messages");
+                        {literal}
+                        var myVar = setInterval(function(){ myTimer() }, 1000);
+                        function myTimer() {
+                          $timer = $(".timer-container .timer");
+                          if(myCount <= 0) {
+                            console.log("Stop timer");
+                            stopTimer("We still could not verify the transaction, please check back in a few minutes...");
+                          } else {
+                            var ajax_url = "/home/app_data.php?oper=check-transaction&site_id=" + site_id + "&inv_id=" + inv_id + "&txn_id=" + txn_id;
+                            console.log("count= " + myCount + " calling " + ajax_url);
+                            
+                            $.getJSON(ajax_url, function(result) {
+                              if(result.success) {
+                                if(result.data) {
+                                  var data = result.data;
+                                  var reload_link = $("#payment-payment");
+                                  $timer.html("OK").show();
+                                  stopTimer();
+                                  console.log("data=", data);
+                                  var message = "OK: Payment confirmed. Received "  + data.mc_currency + " " + data.mc_gross ;
+                                  $messages.append(bootstrap_success_message(message)).parent().show(); // append
+                                  $(".timer-container").hide();
+                                  $(reload_link).click(); // link which will trigger soft reload                                 
+                                } else {                                
+                                  myCount--;
+                                  console.log("result=", result);
+                                  $timer.html(myCount).show();
+                                }
+                              } else {
+                                stopTimer(result.error || "Unkwown error");
+                              }
+                            });
+                          }
+                        }
+                        
+                        function stopTimer(error) {
+                          clearInterval(myVar);
+                          $timer.html(timer).hide();
+                          if(error) {
+                            $messages.append(bootstrap_error_message(error)).parent().show(); // append
+                            $(".timer-container").hide();
+                          }                                                    
+                        }       
+                                                
+                      </script>
+                      {/literal}
+                      {/if} {* end if verify *}
+                      

@@ -1,0 +1,22 @@
+          <!-- START BLOG POST -->
+          <header class="post-header">
+            {if ($article.media)}
+              {$mediaAr = $article.media|any2array}
+            <div class="fotorama" data-allowfullscreen="true">
+              {foreach from=$mediaAr item=media}
+                <img src="{$media|photo}" alt="" title="" />
+              {/foreach}
+            </div>
+            {/if}
+          </header>
+          <article class="post">
+            {if (!$article.published)}
+              {'This article has not yet been published'|alert:'warning'}
+            <div>
+              <a href="{$this_url|add_query_var:'publish':1}" class="btn btn-success">Publish now</a>
+            </div>
+            <div class="gap gap-small"></div>
+            {/if}
+            {{"include":"_article-item.html"}}
+            
+          </article>

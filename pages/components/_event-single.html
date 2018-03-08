@@ -1,0 +1,45 @@
+			<!-- CONTENT -->
+			<section>
+			  {$event = $scope.event}
+				<div class="container">
+					<div class="row">
+						<div class="col-md-12">
+						  {if ($scope.auth_edit_event && $scope.id && $smarty.get.edit) } {* edit inline - not dialog *}						    
+						    <h3>Edit {$event.title}</h3>
+                {{"include": "_event-form.html"}}
+                
+                <script>
+                  $(function() {
+                    periodpicker_init($("#periodpicker"), '{$event.all_day}');
+                  });
+                </script>
+						  {else}
+							  <a href="{$smarty.const.PAGE_EVENTS|link}" role="button" class="btn btn-primary"><i class="fa fa-arrow-left"></i>{'back'|translate:'c'}</a>
+
+							<div class="item" id="event-{$event.id}"><!-- item -->
+
+                {{"include": "_event-item-title.html"}}                
+                {{"include": "_event-item-times.html"}}									
+                {{"include": "_event-item-location.html"}}									
+                
+                <div class="event-description">
+                  {$event.description}
+                </div>
+                
+                {if ($scope.media_list)}
+                  {foreach from=$scope.media_list item=media}
+                  ID: {$media}<br>
+                  {$media|media}
+                  {/foreach}
+                {/if}
+                
+                {if ($scope.auth_edit_event)}<div class="margin-top20 margin-bottom20">{$scope.uploader}</div>{/if}
+                
+              </div><!-- /item -->
+						  {/if}
+            </div><!-- /col -->
+					</div><!-- /row -->
+				</div><!-- /container -->
+			</section>
+			<!-- /CONTENT -->
+

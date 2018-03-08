@@ -1,0 +1,48 @@
+
+                                    {{"extend": "mail/mail-base-row-action-sub.html"}}
+
+                                      {block name=action_link}
+                                        {if ($scope.invoice)}
+                                          <a href="{$site_url}{$smarty.const.PAGE_INVOICE|link}{$invoice.id}{if (!$invoice.guest_id)}?pin={$invoice.booking_pin|myhash}{/if}" 
+                                             class="btn btn-large btn-success" target="_new">
+                                            {'view invoice online'|translate:'c'}
+                                          </a>
+                                        {/if}
+                                      {/block}
+                                      
+                                      {block name=sub_text}
+                                        {if ($scope.invoice)}
+                                          {$invoice = $scope.invoice}                                        
+                                          {{"include": "_invoice-table.html"}}
+                                        {else}
+                                          {'invoice not found'|translate:'c'}
+                                        {/if}
+                                      {/block}
+                                      
+                                      {block name=sub_left}
+                                        {if ($booking)}
+                                        {{"include": "mail/_booking-details.html"}}
+                                        {/if}
+                                        
+                                        {if ($scope.profile_id)}
+                                        <br><hr><br>
+                                        {{"include": "mail/_user-details.html"}}
+                                        {else}
+                                        {$invoice.first_name} <br>
+                                        {*
+                                        {$invoice.address_city}
+                                        {if ($invoice.address_country)}{$invoice.address_country}<br>{/if}
+                                        *}
+                                        
+                                        {/if}
+                                      {/block}
+                                      
+                                      {block name=sub_right_image}
+                                        <a href="{$site_url}{$scope.rental.id|property_link}" target="_new">
+                                          <img src="{$scope.rental.media|photo:'ig':['full' => 1]|add_http}" style="max-width: 264px">                                          
+                                        </a>
+                                      {/block}
+                                      {block name=sub_right_text}  
+                                        {{"include": "mail/_rental-preview.html"}}
+                                      {/block}
+                                      

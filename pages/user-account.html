@@ -1,0 +1,37 @@
+  {{"extend": "base/subview.html"}}
+  
+  {block name=subview_top}
+  {/block}
+  
+  {block name=subview_title}
+    {'user profile'|translate:'c'}
+  {/block}
+  
+  {block name=subview_left_top}
+ {/block}
+
+  {block name=subview_aside}
+    <div class="user-profile-avatar text-center">
+        <img src="{$scope.profile.user_id|userphoto}" alt="{$scope.profile.user_id|username}" title="AMaze" />
+        <h5>{$scope.profile.user_id|username}</h5>
+        <p>Member Since {$scope.profile.created|date}</p>
+        <div>
+          <a href="{$smarty.const.PAGE_EDIT_PROFILE|link}{$scope.profile.user_id}/" class="btn btn-success"><i class="fa fa-user"></i> Edit Profile</a>
+        </div>
+        
+    </div>
+  {/block}
+
+  {block name=subview_left_bottom}
+  {/block}
+  
+  {block name=subview_nav}
+    {{"include": "_user-account-nav.html"}}
+  {/block}
+  
+  {block name=subview_container}
+    {{ "subviews":["notifications","security","privacy","password","linking","payout","transactions"],"prefix": "_user-account-" }}
+  {/block}
+  
+  {block name=subview_bottom}
+  {/block}

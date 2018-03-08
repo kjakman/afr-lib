@@ -1,0 +1,600 @@
+/*
+function calendar($messages, $cal_params_override=NULL, $options=NULL) {
+  $cal_params->messages = $messages ?: array();
+  if($message = $_GET['message']) {
+    $messages[] = $message; // inbound message in URL
+  } else {
+    $messages = count($cal_params->messages) ? print_messages($cal_params->messages, false) : '';
+  }
+  
+  $cal_params = $_SESSION['cal_defaults'];
+  //return dump($cal_params_override, true);
+  //return dump($cal_params, true);
+  if(count($cal_params_override)) foreach($cal_params_override as $k=>$v) $cal_params->$k = $v;
+
+  $cal_params = get_cal_params($cal_params);
+  $cal_params = calendar_init($cal_params);
+
+  //$apt_ids = $cal_params->apt_list ? explode(',', $cal_params->apt_list) : array();
+  //if(!count($apt_ids)) {
+  //  //dump($cal_params);
+  //  $filters_str = dump($cal_params->filters, true);
+  //  $reset_link = html_link("?reset", phrase('reset', CAPITALIZE));
+  //  return("<b>No apartments found $reset_link</b><br /><br />".$filters_str);
+  //}
+
+  if(0) {
+    // if avail search, check if dates are in view, if not reset
+    // todo: make function and handle day view
+    $filters = $cal_params->filters;
+    //dump($filters);
+    $in = $filters['in'];                                    
+    $out = $filters['out'];
+    if($in && $out && $out > $in) {
+      $start_date = $cal_params->start_date['date'];
+      $end_date = $cal_params->end_date['date'];
+      $target_day   = $cal_params->target_day;
+      if($in < $start_date || $out > $end_date) { // adjust dates to show availability search.
+        list($d, $m, $y) = sql2date($in);
+        if($cal_params->follow && $m == $_SESSION['today_month'] && $d < $_SESSION['today_day'] - 7) $cal_params->follow = 0;
+        // echo("d=$d today=
+        $period =  $target_day ? ceil(period_diff($in, $out, 'day')) + 1: ceil(period_diff($in, $out, 'month')) + 1; // round up to number of whole months
+        $cal_params->period = $cal_params->standalone ? 1 : $period;
+        //$cal_params->target_day   = $target_day;
+        // $cal_params->target_week  = $target_week;
+        $cal_params->target_month = $m;                                                                
+        $cal_params->target_year  = $y;
+        $cal_params = calendar_init($cal_params);          
+        // echo("search = $in -> $out, cal=$start_date -> $end_date - reinitalizing. Target is now $m / $y + $period months");
+      }
+    }	   
+  }
+  //if($toggle = $_SESSION['cal_params']->toggle) $cal_params->toggle_data = json_decode($toggle); // set in calfilters.php (remembers toggle switch settings)
+
+  //$time_start = microtime(true);
+  //$_SESSION['timer']['print_calendar'] = timer_end($time_start);
+  $output .= html_script_inline("g_cal_params = ".json_encode($cal_params).";\n");
+  $output .= html_style_inline(print_status_css($cal_params));
+
+  $calendar = print_full_calendar($cal_params, $options);
+             
+  //$output .= $cal_menu;
+  $output .= html_div($calendar, '', array('id' => 'admincal_full')); 
+  $output .= html_div($messages, 'click_hide messages'.(strlen($messages) ? '' : ' hidden'), array('id' => 'cal_messages')); // messages
+  $output .= html_div('', 'hidden', array('id' => 'dialog')); // dialog
+  $output .= html_div('', 'hidden', array('id' => 'cal_menu')); // popup menu
+  
+  $output .=  cal_modal($cal_params, 'reservation', 0);
+  return $output;
+}
+                                  
+// prints the calendar: title (filters) + menu + grid (target=admincal_full)
+function print_full_calendar($cal_params, $options=NULL) {
+  $city_id = $cal_params->city_id;
+  $owner_id = $cal_params->owner_id;
+  $city_name = $cal_params->city_name;
+  $type_name = ucfirst($cal_params->property_type);
+  $owner_name = $cal_params->owner_name;
+  
+  // $cal_title = phrase(($cal_params->obj_name ? $cal_params->obj_name.'s' : 'calendar'), CAPITALIZE).": ";
+  $cal_title = $cal_params->title;
+  
+  if($cal_params->show_filters) {
+    $filter_title = implode(" / ", array_filter(array($city_name, $type_name, $owner_name))); //"$city_name / $type_name ".$city_name.($owner_name ? " / $owner_name" : "");
+    $filter_link = html_link('#', $filter_title, array('class' => 'show_filters'));
+    $cal_title .= html_div($filter_link, 'inline', array('id' => 'cal_filters'));
+  }
+  $_SESSION['cal_params'] = $cal_params; // store for global access (in CSS, JS, Ajax)
+
+  $messages = is_array($messages) ? print_messages($messages) : $messages;
+
+  $cal_menu = $cal_params->show_menu ? calendar_gmenu($cal_params) : "";
+
+  $calendar = print_calendar($cal_params, array("show_filters" => false, "show_menu" => false));
+
+  //$cal_title = "sf=".$cal_params->show_filters.html_break();
+  //$cal_title .= "ha=".$cal_params->hide_apts.html_break();
+  //$cal_title .= "sm=".$cal_params->simple_menu.html_break();
+  
+  $output = $cal_title.$cal_menu.$calendar;
+  
+  
+  return $output;
+}
+
+// choose city/owner etc
+function calendar_filters($cal_params) {
+  $city_id = $cal_params->city_id;
+  $owner_id = $cal_params->owner_id;
+  $city_name = $cal_params->city_name;
+  $type_name = ucfirst($cal_params->property_type);
+  $owner_name = $cal_params->owner_name;
+  $filter_title = implode(" / ", array_filter(array($city_name, $type_name, $owner_name))); //"$city_name / $type_name ".$city_name.($owner_name ? " / $owner_name" : "");
+  $filter_link = html_link('#', $filter_title, array('class' => 'show_filters'));
+  $output = html_div($filter_link, 'inline', array('id' => 'cal_filters'));
+  return $output;
+}
+
+*/
+// shows either date pickers (month or week view) or time pickers (day view)
+function dialog_period($cal_params, $obj=NULL) {
+  $day_view = is_object($obj) ? $obj->num_hours > 0 : $cal_params->target_day > 0; // show date or time ?
+  $start_field = $cal_params->start_field;
+  $end_field = $cal_params->end_field;
+
+  if($day_view) {
+    //$output .= phrase('from', CAPITALIZE).': '.timepicker('checkin', array('dependent_field' => 'checkout_disp', 'onChange' => 'update_overlay_period'), $obj->$start_field);
+    $output .= phrase('from', CAPITALIZE).': '.timepicker('checkin', array('onChange' => 'update_overlay_period'), $obj->$start_field);
+    $output .= phrase('to', CAPITALIZE).': '.timepicker('checkout', array('onChange' => 'update_overlay_period'), $obj->$end_field);
+    $period = $obj ? $obj->num_hours : 0;
+    $unit = $period == 1 ? phrase('hour') : phrase('hours');
+    $period_str = "$period $unit";
+  } else {
+    $calparams['onClose'] = 'update_overlay_period';
+
+    // $calparams['onChange'] = 'update_overlay_period';
+    //$calparams['dependent_field'] = 'checkout';
+    //$calparams['dependent_field_add_days'] = 1;
+    $output = phrase('from', CAPITALIZE).': '.datepicker('checkin', $calparams, $obj->$start_field);
+    //unset($calparams['dependent_field']);
+    $output .= phrase('to', CAPITALIZE).': '.datepicker('checkout', $calparams, $obj->$end_field);
+    $period = $obj ? $obj->num_days : 0;
+    $unit = $period == 1 ? phrase('day') : phrase('days');
+    $period_str = "$period $unit";
+    if($obj->rate_type == 'month' && $obj->num_months) $period_str .= html_break().' ( = '.formatFloat($obj->num_months).' '.($obj->num_months==1 ? phrase('month') : phrase('months'). ')');
+  }
+
+  $output .= html_span($period_str, 'bold', "id='overlay_period'");
+  return $output;
+}
+
+
+// bootstrap modal version of dialog
+function cal_modal($cal_params, $obj_type, $id, $options = array()) {
+
+  $obj = get_object($obj_type, $id);
+  
+  $modal_content .= res_dialog($cal_params, $obj, $id, $apt_id); 
+
+return "  
+<!-- Button trigger modal -->
+<button type=\"button\" class=\"btn btn-primary btn-lg\" data-toggle=\"modal\" data-target=\"#calModal\">
+  Launch demo modal
+</button>
+
+<!-- Modal -->
+<div class=\"modal fade\" id=\"calModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"myModalLabel\" aria-hidden=\"true\">
+  <div class=\"modal-dialog\">
+    <div class=\"modal-content\">
+      <div class=\"modal-header\">
+        <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button>
+        <h4 class=\"modal-title\" id=\"myModalLabel\">Modal title</h4>
+      </div>
+      <div class=\"modal-body\">
+      $modal_content
+      </div>
+      <div class=\"modal-footer\">
+        <button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\">Close</button>
+        <button type=\"button\" class=\"btn btn-primary\">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+";
+}
+
+// creates dialog for new/edit res/inv/event, loaded into div with AJAX
+function cal_dialog($cal_params, $obj_type, $obj=NULL, $id=0, $apt_id=0) {
+  $u_level = $cal_params->user_level; 
+  $dialog_id  = 'dialog';
+  $form_name   = 'overlay_form';
+  $divname    = 'overlay_content';
+
+  $key = get_object_key($obj_type);  
+  $hidden_fields = array($key => $id, 'city_id' => $obj->city_id, 'obj_type' => $obj_type, 'property_type'  => $obj->property_type, 'hourly' => $obj->hourly, 'created' => ($id ? $obj->created : now()), 'num_days' => $obj->num_days, 'num_hours' => $obj->num_hours, 'apartment_name' => $obj->apartment_name, 'apt_list' => $apt_id);
+  $form_content = array2form($hidden_fields);
+
+  //$debug = dump($hidden_fields, true);
+  //$debug = dump($obj, true);
+  
+  // get type specific dialog content (reservation, event...)
+  //dump($obj);
+  $rules = array(
+    'last_name' => array('required' => 'true'),
+    'email_address' => array('required' => 'false', 'email' => true),
+  );
+
+  if(!$obj_type) die("cal_dialog: missing object type");
+  switch($obj_type) {
+    case 'reservation': 
+      $form_content .= res_dialog($cal_params, $obj, $id, $apt_id); 
+      break;
+    case 'res_exception': 
+      foreach(array('start', 'end', 'owner_id','property_type', 'city_id', 'apt_id') as $key) $eObj->$key = $obj->$key;
+      $exceptionObj = $id ? get_object('res_exception', $id) : $eObj;
+      
+      $aptObj = get_object($cal_params->property_type, $apt_id);
+      $data = array('apt_id' => $apt_id, 'owner_id' => $cal_params->owner_id ?: $aptObj->owner_id, 'aptObj' => $aptObj, 'city_id' => $cal_params->city_id);
+      $form_content .= reservation_exception_form($cal_params->property_type, $data, $exceptionObj, array('fields_only' => true)); 
+      //$form_content .= dump($obj, true);
+      break;
+    default: 
+      $form_content .= event_dialog($cal_params, $obj, $id, $apt_id, $obj_type); break;
+      break;
+    //default: die("cal_dialog: missing object type");
+  }
+
+  $action = '/home/ajax/calfilter.php?ac=add-calendar-entry';
+
+  $errors = html_error_box('', array('id' => $form_name."_errors"));
+  $messages = html_message_box('', array('id' => $form_name."_messages"));
+  $buttons[]= html_social_button("#", phrase('save', CAPITALIZE), array('class' => 'green_back save submit_parent')); 
+  $buttons[]= html_social_button("#", phrase('cancel', CAPITALIZE), array('class' => 'red_back cancel_parent'));
+  if($id && $obj_type != 'res_exception') $buttons[]= html_link(action_link($obj_type, $id, array('user_level' => $u_level)), html_image('/images/icons/web_page_small.png', phrase('status', CAPITALIZE))." ".phrase('status', CAPITALIZE).' ('.phrase('opens_in_new_window').')', array('target' => '_status'));
+  $form_content .= html_div(implode(' ', $buttons), 'buttons');
+
+  $form = $errors.$messages.html_form($form_content, $form_name, get_page_link(PAGE_CALENDAR), 'post', 'cal-form');
+
+  $handlerData['base_url'] = get_page_link(PAGE_EDIT_PROPERTY);
+  $handler_options['validate'] = $rules;
+  $handler_options['handler'] = 'add_reservation_handler'; 
+  //$handler_options['handler_data'] = $handlerData; 
+  $form .= html_form_handler($form_name, $action, $handler_options);
+
+  $title = "Dialog";
+  $title = html_h2($title, 'overlay-title'); 
+  $dialog_div = html_div($title.$form, 'overlay', "id='$divname'");
+
+
+  return $debug.$dialog_div;   
+  //return dialog('', $dialog_div, array('autoOpen' => 'false', 'modal' => 'true', 'width' => 350, 'height' => 600, 'closeOnEscape' => 'false', 'close' => 'function() {auto_redraw = true;$("#new_entry").hide();$("#checkin_disp").datepicker("hide");$("#checkout_disp").datepicker("hide");}'), $dialog_id);
+}
+
+function event_dialog($cal_params, $obj=NULL, $id=0, $apt_list='', $obj_type='event') {
+  global $eventTypeArray;
+  global $eventTypes;
+  global $eventStatusArray;
+  global $u;
+
+  if(!$id && $obj_type != 'event') $obj->type = $eventTypes[$obj_type];
+
+  $repeatArray = array('' => phrase('none'), '1 DAY' => phrase('every_day'), '1 WEEK' => phrase('every_week'), '2 WEEK' => phrase('every_2_weeks'), '1 MONTH' => phrase('every_month'), '1 YEAR' => phrase('every_year'));
+  if(!$cal_params->target_day) unset($repeatArray['1 DAY']); // don't show repeat daily in month view
+  $remindArray = array('' => phrase('none'), '-5 MINUTE' => '5 '.phrase('minutes').' '.phrase('before'), '-15 MINUTE' => '15 '.phrase('minutes').' '.phrase('before'), '-30 MINUTE' => '30 '.phrase('minutes').' '.phrase('before'), '-1 HOUR' => '1 '.phrase('hour').' '.phrase('before'), '-2 HOUR' =>'2 '.phrase('hours').' '.phrase('before'), '-1 DAY' => '1 '.phrase('day').' '.phrase('before'), '-2 DAY' => '2 '.phrase('days').' '.phrase('before'));
+
+  $fieldset_evt = array('Type'   => select_from_array('type', $eventTypeArray, $obj->type),
+                        'Status' => select_from_array('status', $eventStatusArray, $obj->status),
+                        'Res. ID'   => form_input('res_id', 'text', $obj->res_id, array('size' => 8)));
+
+  $fieldset_guest = array('Customer'   => form_input('customer_name', 'text', $obj->customer_name, array('size' => 40)),
+                          '# Guests'   => select_from_array('customer_count', num_array(1, 10, 1), $obj->customer_count));
+
+  $fieldset_notes = array('Name'   => form_input('name', 'text', $obj->name, array('size' => 40, 'max' => 100)),
+                          'NB!'   => form_text('alert', $obj->alert, array('rows' => 1, 'cols' => 57, 'resizable' => false)),
+                          'Notes'    => form_text('notes', $obj->notes, array('rows' => 2, 'cols' => 57, 'resizable' => false)));
+
+  // $calparams['defaultDate'] = "'3-4-10'";
+  // $calparams['defaultDate'] = "'10-11-12'"; // can't get this to work...
+  $fieldset_repeat = array('Repeat' => select_from_array('repeat_interval', $repeatArray, $obj->repeat),
+                           'Repeat Until' => datepicker('repeat_until', $calparams, $obj->repeat_until));
+
+  $fieldset_remind = array('Reminder phone' => form_input('reminder_phone', 'text', $obj->reminder_phone ? $obj->reminder_phone : $u['phone'], array('size' => 15, 'max' => 20)),
+                             'Reminder email' => form_input('reminder_email', 'text', $obj->reminder_email ? $obj->reminder_email : $u['email'], array('size' => 30, 'max' => 50)),
+                             'Reminder 1' => select_from_array('reminder_period1', $remindArray, $obj->reminder_period1),
+                             'Reminder 2' => select_from_array('reminder_period2', $remindArray, $obj->reminder_period2));
+
+  $guest   = html_fieldset($fieldset_guest,  'fieldset_top', array('translate' => true));
+  $event   = html_fieldset($fieldset_evt,    'fieldset_top', array('translate' => true));
+  $notes   = html_fieldset($fieldset_notes,  'fieldset_top', array('translate' => true));
+  $repeat  = html_fieldset($fieldset_repeat, 'fieldset_top', array('translate' => true));
+  $remind  = html_fieldset($fieldset_remind, 'fieldset_top', array('translate' => true));
+
+
+  // dates
+  $dates = html_break().html_div(dialog_period($cal_params, $obj), '', "id='dialog_period'").html_break(2);
+  $hidden_fields = array();
+  return array2form($hidden_fields).implode("\n", array($event, $dates, $guest, $notes, $repeat, $remind));
+}
+
+// The custom javascript pop-up modal dialogs used for new/change reservation in the calendar
+function res_dialog($cal_params, $obj=NULL, $id=0, $apt_list='') {
+  global $salutationArray;
+  global $langArray;
+  global $u_sites;
+  global $u_ownerid;
+  $city_id = $cal_params->city_id;
+  $city_tt_rate = get_object('city', $city_id, 'city_tax');
+  
+  $u_level = $cal_params->user_level; 
+  $apt_id = $obj->apt_id;
+  $ptype = $cal_params->property_type ?: $obj->property_type;
+  $apt_list = $cal_params->apt_list;
+  
+  if($apt_id && $ptype) {
+    $apt = get_object($ptype, $obj->apt_id);
+  } 
+  
+  if($id) $head_invoice_locked = find_object('invoice', array('res_id' => $id, 'head_invoice' => 1, 'locked' => 1), 'invoice.id'); // the first invoice is paid in full, lock down rates and fees  
+  if($head_invoice_locked) $lock_rate = true;  
+
+  $rate_lock_check      = $obj ? ($lock_rate || $obj->rate_locked ? true : false) : false;             
+  $discount_lock_check  = $obj ? ($lock_rate || $obj->discount_locked ? true : false) : false;
+  $fee_lock_check       = $obj ? ($lock_rate || $obj->fee_locked ? true : false) : true;
+  $monthly_lock_check   = $obj ? ($obj->monthly_billing ? true : false) : true;
+  $tt_lock_check        = $obj ? ($obj->charge_city_tax ? true : false) : $apt->charge_city_tax;
+  $invoice_check        = true;
+  
+  //$debug = "rate_locked=$rate_lock_check lock_rate=$lock_rate id=$head_invoice_locked".dump($obj, true);
+  //$debug = "Obj:".dump($obj, true)."Apt:".dump($apt, true);
+  // status, name, num_guests, email, company
+  //$num_guest_array = num_array(1, $apt ? $apt->max_guests : 8);
+
+  $max_guests = db_getOne("SELECT max(max_guests) FROM property WHERE id IN ($apt_list)");
+  $num_guest_array = num_array(1, $max_guests * 2);
+
+  // res statuses
+  $resStatusObjects = $_SESSION['resStatusObjects'] = get_objects('res_status', '', array('sort' => 'id'));
+  foreach($resStatusObjects as $pStatusObj) $resStatusArray[$pStatusObj->id] = $pStatusObj->name;
+
+  $stAr = array(STATUS_UNCONFIRMED => 'Unconfirmed', STATUS_PROPOSED => 'Proposed', STATUS_RESERVED => 'Reserved', STATUS_BLOCKED => 'Blocked');
+  $stAr2 = array(STATUS_DRAFT => 'Draft', STATUS_UNCONFIRMED => 'Unconfirmed', STATUS_PROPOSED => 'Proposed', STATUS_RESERVED => 'Reserved', STATUS_BLOCKED => 'Blocked', STATUS_COMPLETE => 'Complete');
+  $statusArray = $id ? $resStatusArray : $stAr;
+  if($id && $obj->status > 0 && $obj->checkin < today()) {
+    $statusArray = $stAr2; // don't allow cancel past reservations  
+  }
+
+  //if($obj->status) $statusArray [STATUS_CANCELLED] = 'Cancelled';
+
+
+  $fieldset_name = array('salutation' => select_from_array('salutation', $salutationArray, $obj->salutation),
+                         'first'      => form_input('first_name', 'text', $obj->first_name, array('size' => 10, 'max' => 50)),
+                         'last'       => form_input('last_name', 'text', $obj->last_name, array('size' => 16, 'max' => 50)),
+                         'guests'     => select_from_array('num_guests', $num_guest_array, $id ? $obj->num_guests : 1,  array('onchange' => "update_overlay_rate()")));
+
+  $fieldset_email = array('email'      => form_input('email_address', 'text', $obj->email_address, array('size' => 20, 'max' => 50)).
+                                         form_checkbox('send_email', $obj->send_email ? true : false).phrase('send_mail', CAPITALIZE).'?'.
+                                         '',
+                          'phone'      => form_input('cell_phone', 'text', $obj->cell_phone, array('size' => 20, 'max' => 50)),
+                          'status'     => select_from_array('status', $statusArray, isset($obj->status)? $obj->status : STATUS_UNCONFIRMED),
+//                          'language'   => $id ? $langArray[$obj->language]: select_from_array('language', $langArray, isset($obj->language)? $obj->language: 'en'));
+                          'language'   => select_from_array('language', $langArray, pick_first($obj->language, $_SESSION['language'], 'en')));
+
+
+  // AFR is default site ; todo: depends on who is logged in
+  
+  // search
+  $site_filters['live'] = 1;  
+  $site_filters['active'] = 1;  
+  // $site_filters['property_type'] = $cal_params->property_type;
+  // dump($site_filters);
+  if($u_sites) $site_filters['site.id'] = explode(',', $u_sites);
+
+  // filters
+  // $site_filters[] = "live = 1";  
+  // if($u_sites) $site_filters[] = "id IN ($u_sites)";
+
+  $default_site_id = $obj->property_type == 'shortstay' ? 10 : 248; // hack - boats
+  $site_name = $id && $obj->site_id ? get_object('site', $obj->site_id, 'name') : '';
+
+  //if($u_level >= USER_LEVEL_STAFF) $fieldset_email['site'] = get_select_box_off('site_id', 'site', $obj->site_id ? $obj->site_id : $default_site_id, $disabled, $site_filters, 'name').html_break();
+  if($u_level >= USER_LEVEL_STAFF) $fieldset_email['site'] = object_select('site_id', 'site', array('value' => $obj->site_id ? $obj->site_id : $default_site_id, 'filters' => $site_filters, 'sort' => 'name'));
+
+  $agent_name = $obj->agent_id ? get_object('agent', $obj->agent_id, 'agent_name') : '';
+  if(!$obj->apt_id) { // owner chooser for parking lot (unknown apartment)
+    if($owner_id = $cal_params->owner_id && is_numeric($cal_params->owner_id) ? $cal_params->owner_id : $u_owner_id) { // We know the owner
+      $owner_filters['owner.id'] = $owner_id;
+      //$owner_filters = "owner.id=$owner_id";
+      $obj->owner_id = $owner_id;
+    } else {  // pick the owner
+      // $owner_filters = "types like '%$obj->property_type%' AND cities like '%$city_id%'";
+    }
+    if($_SESSION['client_id']) $owner_filters['client_id'] = $_SESSION['client_id'];
+    // $fieldset_email['owner'] = get_select_box_off('owner_id', 'owner', $obj->owner_id, $onchange, $owner_filters, '').html_break();
+    $fieldset_email['owner'] = object_select('owner_id', 'owner', array('value' => $obj->owner_id, 'filters' => $owner_filters)).html_break();
+  }
+
+  if($u_level >= USER_LEVEL_STAFF) {  //&& ($agent_name || !$id)) {
+    if($ptype) {              
+      $ptype_id = find_object('property_type', array('name' => $ptype), 'id');      
+      // $ptype_id = 104;
+      $agent_filters['types'] = array(DB_CONTAINS_OPERATOR, $ptype_id);
+      //dump($agent_filters);
+    }
+    if($_SESSION['client_id']) $agent_filters['client_id'] = $_SESSION['client_id'];
+    //$fieldset_email['agent'] = get_select_box_off('agent_id', 'agent', $obj->agent_id, $disabled, $agent_filters, 'agent_name').html_break();
+    $fieldset_email['agent'] = object_select('agent_id', 'agent', array('value' => $obj->agent_id, 'filters' => $agent_filters, 'sort' => 'agent_name')).html_break();
+
+  }
+
+  $org_name = $obj->org_id ? get_object('org', $obj->org_id, 'org_name') : '';
+
+  if($_SESSION['client_id']) $org_filters['client_id'] = $_SESSION['client_id'];
+  $org_filters['active'] = 1;
+  
+  if($u_level >= USER_LEVEL_STAFF) {
+    
+    $org_fields = array('org_name', 'invoice', 'comment', 'address.salutation', 'address.first_name', 'address.last_name', 'address.address1', 'address.address2', 'address.city', 'address.state', 'address.zip', 'address.country', 'address.work_phone', 'address.cell_phone', 'address.email_address');
+    $add_contact_button = add_object_inline('org', $org_fields, array('context' => 'recordset', 'reload' => 0, 'handler' => 'new_org_handler', 'parent_id' => 'org_id')); 
+    
+    // org chooser
+    //$fieldset_email['company'] = get_select_box_off('org_id', 'org', $obj->org_id, $disabled, $org_filters, $fld_sort).$add_contact_button;    
+    $fieldset_email['company'] = object_select('org_id', 'org', array('value' => $obj->org_id, 'filters' => $org_filters, 'sort' => 'org_name')).$add_contact_button;    
+    
+
+    if($org_id = $obj->org_id) {
+      $contact_filters['org_id'] = $org_id; 
+      $contact_class = '';
+    } else {
+      $contact_filters['org_id'] = -1; // hack: show none
+      $contact_class = 'hidden';
+    }
+
+    $contact_checkbox = form_checkbox('invoice_contact', $obj->invoice_contact ? true : false).phrase('invoice_contact', CAPITALIZE);
+    if($id) { // existing reservation, just show contact (no edit)
+      if($contact_id = $obj->contact_id) {
+        $contactObj = get_object('contact', $contact_id);
+        $contact_chooser = get_name_string($contactObj);
+      }
+    } else { // new reservation
+      //$contact_chooser = get_select_box_off('contact_id', 'contact', $obj->contact_id, $disabled, $contact_filters, $fld_sort, $contact_js, 0, true);
+      $contact_chooser = object_select('contact_id', 'contact', array('value' => $obj->contact_id, 'filters' => $contact_filters, 'noajax' => true));
+    }
+
+    $fieldset_email['contact'] = array("$contact_chooser $contact_checkbox", $contact_class, 'id="org_contact"');
+  }
+  
+  $fieldset_note = array('NB!'      => form_text('alert', $obj->alert, array('rows' => 1, 'cols' => 57, 'max' => 255, 'resizable' => false)),
+                          'staff notes'  => form_text('notes', $obj->notes, array('rows' => 1, 'cols' => 57, 'resizable' => false)),
+                          'message to guest' => form_text('message', $obj->message, array('rows' => 1, 'cols' => 57, 'resizable' => false)));
+
+  if($obj->property_type == 'shortstay') {
+    // arrival
+    $obj->admincal = true; // hack to allow airport pickup for any apt when admin-booking
+    $fieldset_arri = arrival_fields($obj);
+  } else if($obj->property_type == 'boat') {
+    $obj->city_id = $cal_params->city_id;
+    $locs = boarding_locs($obj);
+    // $maps = print_r($obj, true);
+    $fieldset_boar = boarding_fields($obj, $locs, false);
+  }
+
+  // address
+  $fieldset_addr = address_fields($obj, array('hide_phone' => 1));
+
+  // fees
+  $fieldset_fees = fee_fields($obj, $lock_rate);
+  
+  // rate
+  if($day_view = is_object($obj) ? $obj->num_hours > 0 : $cal_params->target_day > 0) { // show date or time ?
+    $rate_type_array['hour'] = phrase('hour', CAPITALIZE);
+  } else { // multi-day view
+    $rate_type_array['day'] = phrase('day', CAPITALIZE);
+    //$rate_type_array['month'] = array(phrase('month', CAPITALIZE), "disabled='disabled'");
+    $rate_type_array['month'] = phrase('month', CAPITALIZE);
+    //if($obj->rate_type == 'month' || $obj->num_days >= 30) $rate_type_array['month'] = phrase('month', CAPITALIZE);
+  }
+  $rate_type_array['total'] = phrase('total', CAPITALIZE);
+  if($ptype == 'boat') {
+    $rate_type_array['person'] = phrase('person', CAPITALIZE);
+    $rate_type_array['pp_hour'] = phrase('person_per_hour', CAPITALIZE);
+    //$rate_type_array['package'] = phrase('package', CAPITALIZE);
+  }
+  
+  if($lock_rate) {
+    $lock_text = " (".phrase('locked', CAPITALIZE).")"; //: Invoice $head_invoice_locked paid in full<br>");
+    $lock_js = "readonly='readonly'";
+    $lock_cb = " onclick='return false' onkeydown='return false'";
+  } else {
+    //$lock_cb = 
+  }
+  
+  $rate_type_chooser = $lock_rate ? phrase($obj->rate_type).form_input('rate_type', 'hidden', $obj->rate_type) : select_from_array('rate_type', $rate_type_array, $obj->rate_type, array("onchange" => "update_overlay_rate_type()"));
+  $fieldset_rate = array('rate'     => form_input('rate_base', 'text', $obj->rate_base, array('size' => 10, 'js' => "$lock_js onchange='custom_rate();update_overlay_total()' autocomplete='off'")).html_b('/').
+                                       $rate_type_chooser.
+                                       html_span('Locked?'.form_checkbox('rate_locked', $rate_lock_check, array('js' => $lock_cb)), 'abs_right'),
+                                       'discount' => form_input('discount', 'text', $obj->discount, array('size' => 10, 'js' => $lock_js ?: " onchange='lock_discount();update_overlay_total()' autocomplete='off'")).
+                                       html_span('Locked?'.form_checkbox('discount_locked', $discount_lock_check, array('js' => $lock_cb)), 'abs_right'),
+                         'commission' => form_input('commission', 'text', $obj->commission, array('size' => 10, 'js' => "autocomplete='off'")).
+                                       html_span('Bill monthly?'.form_checkbox('monthly_billing', $monthly_lock_check), 'abs_right')
+                        );
+  $deposit_percentage = $id ? $obj->deposit_percentage : $apt->deposit;
+  $fieldset_rate['deposit %'] = form_input('deposit_percentage', 'text', $deposit_percentage, array('size' => 10, 'js' => "autocomplete='off'")).
+    html_span(form_input('city_tax_rate', 'text', $obj->city_tax_rate ?: $city_tt_rate, array('size' => 4, 'js' => " onchange='update_overlay_total()' autocomplete='off'")).
+    ' City tax?'.form_checkbox('charge_city_tax', $tt_lock_check, array('js' => ($lock_cb ?: "onchange='update_overlay_total()'"))), 'abs_right');
+                                
+  if($ptype == 'boat') { 
+    $fieldset_rate[phrase('package', CAPITALIZE)] = package_chooser($ptype, $apt_id, array('value' => $obj->package_id, 'onchange' => 'update_package_rate();'));  
+    $fieldset_rate[phrase('catering', CAPITALIZE)] = catering_chooser($ptype, $apt_id, array('value' => $obj->catering_id));  
+    //$fieldset_rate['package'] = object_select('package_id', 'product', array('value' => $obj->package_id, 'onchange' => 'update_package_rate();', 'filters' => array('category_id' => PRODUCT_CATEGORY_PACKAGE))); 
+
+  }
+
+  $cur = html_span($obj->currency, 'reservation-currency');
+  $rate_str = html_span(($obj->rate_base ? formatFloat($obj->rate_base,2) : '0.00'), 'currency_total reservation-rate');
+  $type_str = html_span(($obj->rate_type ?: '??'), 'currency_total reservation-rate_type');
+  $discount_str = html_span($obj->discount, 'reservation-discount');
+
+  $total_str = html_span(($obj->grand_total ? formatFloat($obj->grand_total,2) : '0.00'), 'currency_total reservation-total');
+  $fees_str = html_span(($obj->fees ? formatFloat($obj->fees,2) : '0.00'), 'currency_total reservation-fees');
+  $tax_str  = html_span(($obj->city_tax ? formatFloat($obj->city_tax,2) : '0.00'), 'currency_total reservation-tax');
+
+  $fieldset_rate['city_tax'] = $tax_str." ".$cur;
+  $fieldset_rate['fees']  = $fees_str." ".$cur;
+  $fieldset_rate['total'] = $total_str." ".$cur;
+  $fieldset_rate[' '] = form_input('grand_total_new_res', 'hidden');
+
+  // dates in a div (dialog_period) that can be dynamically rewritten with ajax in case we need hours in month view or vice versa
+  $dates = html_break().html_div(dialog_period($cal_params, $obj), '', "id='dialog_period'").html_break(2);
+      
+  $rate_link = html_link('#cal_dialog_tab_Rate', phrase('rate', CAPITALIZE).": $rate_str / $type_str", array('class' => 'goto-tab', 'data-index' => 1));
+  $fees_link = html_link('#cal_dialog_tab_Fees', " + ".phrase('fees', CAPITALIZE).": $fees_str", array('class' => 'fee_link goto-tab'.($obj->fees > 0 ? "" : " hidden"), 'data-index' => 2));
+  $tax_link  = html_link('#cal_dialog_tab_Tax',  " + ".phrase('tax', CAPITALIZE).": $tax_str" , array('class' => 'tax_link goto-tab'.($obj->city_tax > 0 ? "" : " hidden"), 'data-index' => 1));
+  $discount_link  = html_link('#cal_dialog_tab_Rate',  " - ".phrase('discount', CAPITALIZE).": $discount_str" , array('class' => 'discount_link goto-tab'.(parseInt($obj->discount) > 0 ? "" : " hidden"), 'data-index' => 1));
+  //$discount_link .= "** dis=$obj->discount **";                                
+  $rates = html_div("$rate_link $discount_link $tax_link $fees_link = $total_str $cur", 'dialog-total');
+
+  $rate_class = $obj->rate_class ?: RATE_CLASS_STANDARD;
+  $rate_class_name = get_object('rate_class', $rate_class, 'name');
+  $rate_class_str = ucfirst($rate_class_name)." ".phrase('rate', CAPITALIZE);
+  if($pbid = $obj->price_breakdown_id) {
+    $name = get_object('price_breakdown', $pbid, 'reason');
+    $link = "/home/app_data.php?oper=price-breakdown&id=$pbid";
+    $rate_class_str .= ": ".html_fancybox_link($link, $name); 
+  }
+  $rates .= html_span($rate_class_str, '', array('id' => 'special_rate')).html_span($obj->rate_locked ? '('.phrase('locked').')' : '', 'margin_left', array('id' => 'special_rate_lock'));
+
+  // begin output
+
+  // first tab with hidden fields  
+  $num_months = $obj->num_months ?: period_diff($obj->checkin, $obj->checkout, 'm'); 
+  $hidden_fields = array('rate_class' => $rate_class, 'rate_package' => 0, 'num_packages' => $obj->num_packages, 'package_unit' => $obj->package_unit, 'num_months' => $num_months, 'rate_day' => $apt->rate_day, 'rate_hour' => $apt->rate_hour, 'rate_extraperson' => $apt->rate_extraperson, 'currency' => $obj->currency, 'address_id' => $obj->address_id, 'fees' => $obj->fees, 'city_tax' => $obj->city_tax);
+  if(!$obj->apt_id) $hidden_fields['city_id'] = $cal_params->city_id;
+  if(!$id) $hidden_fields['type'] = RES_TYPE_ADMIN;  
+  if(!$apt_id || $id) {
+    $apts = explode(',', $apt_list);    
+    foreach($apts as $pid) $aptArray[$pid] = get_object('property', $pid, 'name');
+    $fieldset_apt = array(property_type_name($ptype) => select_from_array('apt_id', $aptArray, $apt_id, array('onchange' => 'update_overlay_rate();')));
+    $apt_ch  = html_fieldset($fieldset_apt, 'fieldset_left', array('translate' => true));
+  } else {
+    $hidden_fields['apt_id'] = $apt_id;
+    //$first_tab = "Apt id=$apt_id";
+  }
+  
+  $name  = html_fieldset($fieldset_name, 'fieldset_top', array('translate' => true));
+  $email = html_fieldset($fieldset_email, 'fieldset_left', array('translate' => true));
+  //$notes = html_fieldset($fieldset_notes, 'fieldset_top', array('translate' => true));
+                                                       
+  //dump($hidden_fields);
+  $first_tab .= array2form($hidden_fields, array('hidden' => true));
+  $first_tab .= implode("\n", array($apt_ch, $name, $email, $dates, $rates));
+  
+  // accordion
+  $tabs[phrase('basic', CAPITALIZE)] = $first_tab;
+  $tabs[phrase('rate', CAPITALIZE).$lock_text]    = html_fieldset($fieldset_rate, 'fieldset_left_wide rate_fieldset', array('translate' => true));
+  $tabs[phrase('fees', CAPITALIZE).$lock_text]    = html_fieldset($fieldset_fees, 'fieldset_left_wide'); // already translated
+  $tabs[phrase('address', CAPITALIZE)] = html_fieldset($fieldset_addr, 'fieldset_top');
+  $tabs[phrase('notes', CAPITALIZE)]   = html_fieldset($fieldset_note, 'fieldset_top', array('translate' => true));
+  if($fieldset_arri) $tabs[phrase('arrival', CAPITALIZE)] = html_fieldset($fieldset_arri, 'fieldset_top');
+  if($fieldset_boar) $tabs[phrase('boarding', CAPITALIZE)] = html_fieldset($fieldset_boar, 'fieldset_top');
+
+  //$accordion = accordion($tabs, array('init' => 'false', 'id' => 'cal_dialog', 'active' => '4', 'autoHeight' => 'false', 'collapsible' => 'true', 'heightStyle' => 'content')).html_break();
+  $accordion = tabs($tabs, array('id' => 'cal_dialog', 'init' => false)); //, array('active' => '0', 'autoHeight' => 'false', 'collapsible' => 'true', 'heightStyle' => 'content')).html_break();
+
+  $form = html_form($accordion, "cal_dialog_form");
+  
+  $output = $debug.$form.$maps;
+  
+  return $output;
+  //$select_url = "/admin/app_data.php?obj_type=$obj_type&format=select";
+  //if($filters) $select_url .= "&select_filters=".urlencode(search2sql($filters));
+  //if($sort) $select_url .= "&select_sort=".urlencode($sort);
+
+}
+
+/*
+$('#add_staff').click(function() {
+    alert('ell');
+});
+
+*/
+

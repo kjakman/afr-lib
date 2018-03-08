@@ -1,0 +1,43 @@
+                    
+                  {if (!$scope.auth_edit)}
+                    {"Not authorized"|alert:"error"}
+                  {else} {* Public Profile *}
+                    <h2>{$scope.profile.display_name}</h2>
+                    <a href="{$smarty.const.PAGE_PROFILE|link}{$scope.profile.user_id}/">View Public Profile</a>
+                    <br><br>
+                    <h4>About me</h4>
+                    <form id="user_overview_form" class="ajax-submit" data-handler="save" data-toggle="validator">
+                      <input type="hidden" name="obj_type"value="user_profile" />
+                      <input type="hidden" name="id"  value="{$scope.profile.profile_id}" />
+                      <input type="hidden" name="user_id" value="{$scope.profile.user_id}" />
+                      <input type="hidden" name="site_id" value="{$site.id}" />
+                      <textarea name="description" class="summernote form-control" placeholder="Please describe yourself and your interests.">{$scope.profile.description}</textarea>
+                      <div class="gap gap-small"></div>
+
+                      {if ($site.golf_site)}
+                      <div class="form-group form-group-icon-left">
+                        <i class="fa fa-search input-icon"></i>                      
+                        <label>What is your home course?</label>
+                        {"golf_home_course"|object_select:"golf_club":["class" => "form-control", "value" => $scope.profile.golf_home_course]}
+                      </div>
+                      <div class="form-group">
+                        <label>What is your handicap?</label>
+                        <input name="golf_handicap" class="form-control" value="{$scope.profile.golf_handicap}" type="number" />
+                      </div>
+                      <div class="form-group form-group-icon-left">
+                        <i class="fa fa-search input-icon"></i>                      
+                        <label>What is your favorite course?</label>
+                        {"golf_favorite_course"|object_select:"golf_club":["class" => "form-control", "value" => $scope.profile.golf_favorite_course]}
+                      </div>
+                      {/if}
+                      
+                      <input type="submit" class="btn btn-primary" value="Save Changes">
+                      <div class="gap gap-small"></div>
+                      
+                    </form>
+                    <h4>Photo</h4>
+                    {$scope.uploader}
+                  {/if}
+                                        
+                    <!--div id="map-canvas" style="width:100%; height:400px;"></div-->
+

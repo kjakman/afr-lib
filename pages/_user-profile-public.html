@@ -1,0 +1,159 @@
+{$review_count = $scope.host_reviews|@count + $scope.guest_reviews|@count}
+<div class="container">
+  <div class="row">
+    <div class="col-lg-3 col-md-4 hide-sm">
+      <div id="user" class="mb20">
+        <div>
+          <div class="mb10" id="user-media-container">
+            <div id="slideshow" class="slideshow">
+              <div class="slideshow-preload"></div>
+              <ul class="slideshow-images list">
+                <li class="media-photo media-photo-block active">
+                  <img class="img-responsive" src="{$scope.profile.profile_picture}" alt="" width="" height="">
+                </li>                
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {if ($scope.auth_edit)}
+      <div class="mb20">
+        <a href="{$smarty.const.PAGE_EDIT_PROFILE|link}{$scope.profile.user_id}/" class="btn btn-success"><i class="fa fa-pencil-square"></i> Edit</a>
+      </div>
+      {/if}
+      
+      {if ($user.id == $smarty.const.SYSTEM_USER_ID && $scope.profile.user_id != $smarty.const.SYSTEM_USER_ID)}
+      <div class="mb20">
+        <form class="ajax-submit" data-handler="backdoor-login">
+          <input type="hidden" name="user_id" value="{$scope.profile.user_id}">
+          <button type="submit" class="btn btn-success">Log is as {$scope.profile.user_id|username}</button>
+        </form>
+      </div>
+      {/if}
+      
+      {{"include": "_user-verifications.html"}}
+
+      <div class="panel panel-default mb20">
+        <div class="panel-header">
+          About Me
+        </div>
+        <div class="panel-body">
+          <dl>
+            <dt>Languages</dt>
+            <dd>{$scope.profile.languages}</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="listings mb10 mt20">
+        <h2 class="mb20">
+          Listings
+          <small>({$scope.host_listings_count})</small>
+        </h2>
+
+        <ul class="hostings-list list">
+          {foreach from=$scope.host_listings item=rental}
+          <li class="mb10">
+            {{"include": "_rental-list-item-small.html"}}
+          </li>
+          {/foreach}
+        </ul>
+      </div>
+    </div>
+
+    <div class="col-lg-9 col-md-8 col-sm-12">
+      <div class="row mb20">
+        <!--div class="col-sm-4 show-sm">
+          <div class="media-photo media-photo-block round">
+            <img alt="{$scope.profile.display_name}" class="img-responsive" height="225" src="{$scope.profile.profile_picture}" title="{$scope.profile.display_name}" width="225">
+          </div>
+        </div-->
+        <div class="col-sm-8 col-md-12 col-lg-12">
+          <h1>
+            Hello, I’m {$scope.profile.user_id|username}!
+          </h1>
+          <div class="h5 mt10">
+            <a href="#" class="link-reset">{$scope.profile.country|flag} {$scope.profile.city}, {$scope.profile.country|get:"countries":"name"}</a>
+          ·
+            <span class="text-normal">
+              Member since {$scope.profile.created|date}
+            </span>
+          </div>
+        </div>
+        <div class="mt10">
+          {$scope.profile.description}
+        </div>
+
+        <div class="mb40 mt40 row row-condensed">
+          <div class="col-md-3 col-sm-4">
+            <a class="link-reset" rel="nofollow" href="#reviews">
+              <div class="text-center text-wrap">
+                <div class="badge-pill h3">
+                  <span class="badge-pill-count">{$review_count}</span>
+                </div>
+                <div class="mt10">Reviews</div>
+              </div>
+            </a>
+          </div>
+          {if ($scope.profile.passport_verified || $scope.profile.passport)}
+          <div class="col-md-3 col-sm-4">
+            <a class="link-reset" rel="nofollow">
+              <div class="text-center text-wrap" id="verified-id-icon">
+                <br>          
+                <span class="text-success"><i class="fa fa-2x fa-check"></i></span>
+                <div class="mt10">{if ($scope.profile.passport_verified)}Verified ID{else}Uploaded ID<br>(not yet verified){/if}</div>
+              </div>
+            </a>
+          </div>
+          {/if}
+        </div>
+
+
+      <div class="social_connections_and_reviews">
+
+        <div class="reviews mb20" id="reviews">
+          <h2>
+            Reviews
+            <small>({$review_count})</small>
+          </h2>
+          {if ($review_count)}
+          <div>          
+            {if ($scope.guest_reviews|@count)}
+            <div class="reviews_section as_host">
+              <h4 class="mb20">
+                Reviews From Guests
+              </h4>
+              <div class="reviews">
+                {foreach from=$scope.guest_reviews item=review}
+                  {{"include": "_rental-review-item.html"}}                  
+                {/foreach}
+              </div>
+            </div>
+            {/if}
+
+            {if ($scope.host_reviews|@count)}            
+            <div class="reviews_section as_guest mt10">
+              <h4 class="mb20">
+                Reviews From Hosts
+              </h4>
+              <div class="reviews">
+                {foreach from=$scope.host_reviews item=review}
+                  {{"include": "_rental-review-item.html"}}                  
+                {/foreach}
+              </div>
+            </div>
+            {/if}
+
+          </div>
+          {else}
+          No reviews yet.
+          {/if}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+

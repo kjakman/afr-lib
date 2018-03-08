@@ -1,0 +1,36 @@
+                        <div class="box bg-gray">
+                            <h3>Write a Review</h3>
+                            <form>
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="form-group">
+                                            <label>Review Title</label>
+                                            <input class="form-control" type="text" />
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Review Text</label>
+                                            <textarea class="form-control" rows="6"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <ul class="list booking-item-raiting-summary-list stats-list-select">
+                                        {foreach from=$scope.feedback key=k item=name}
+                                            <li>
+                                                <div class="booking-item-raiting-list-title">{$name}</div>
+                                                <input name={$k} type="number" readonly class="rating"
+                                                   min="1" max="10" step=""
+                                                   value="{$golf.rating}" 
+                                                   data-size="xs" data-show-clear="false"
+                                                   data-symbol="★ "
+                                                   data-glyphicon="false"
+                                                   data-show-caption="true">
+                                                    
+                                            </li>
+                                        {/foreach}
+                                        </ul>
+                                        <input class="btn btn-primary" type="submit" value="Leave a Review" />
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+

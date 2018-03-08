@@ -1,0 +1,24 @@
+                    {if ($languages|@count > 1)}
+                      {$lang_name = $language|get:"language":"name"|translate:"ne"}
+                    <li class="top-user-area-lang nav-drop site-language-menu">
+                      <a href="#">
+                        <img src="/traveler/img/flags/32/{$language}.png" alt="{$lang_name}"  title="{$lang_name}" />{$lang_name|upper|truncate:3:""}<i class="fa fa-angle-down"></i><i class="fa fa-angle-up"></i>
+                      </a>
+                      <ul class="list nav-drop-menu">
+                        {foreach from=$languages item=lng}
+                          {if ($lng != $language)}
+                            {$lang_name = $lng|get:"language":"name"|translate:"ne"}
+                            {$p = $page|get_page:$lng}
+                            {$lang_uri = $p.path}
+                            
+                            
+                          <li>
+                            <a title="{$lang_name}" href="{$lang_uri}{$path_var}{$query_string}">
+                              <img src="/traveler/img/flags/32/{$lng}.png" alt="{$lang_name}"  title="{$lang_name}" /><span class="right">{$lang_name|upper|truncate:3:""}</span>
+                            </a>
+                          </li>
+                          {/if}
+                        {/foreach}
+                      </ul>
+                    </li>
+                    {/if}

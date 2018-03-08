@@ -1,0 +1,31 @@
+
+{{"extend": "rental-request-base.html"}}
+  {$title = "contact host"|translate:'c'}
+  {block name='operation'}rental-request{/block}
+
+  
+  {block name=title}
+    {$title = "request to book %s"|transplace:'c':$rental.name}                
+    <h2>{$title}</h2>
+  {/block}
+  {block name=top_text}
+    <h4>{{"name": "text-introduce", "type":"text", "value":"Please introduce yourself to"}} {$booking.host_id|username}</h4>
+  {/block}
+  {block name=main_text}{/block}
+  {block name=button_text}
+    <i class="fa fa-check"></i> {'request to book'|translate:'c':0}
+  {/block}
+  
+  {block name=bottom_text}
+                <ul class="list">
+                   <li>{{"name": "text-line-1", "type":"text", "value":"If you send the request to book your host has 24 hours to accept or decline your booking. If the host accepts your booking you will receive a booking confirmation by mail. In this mail you will find a payment link."}}</li>
+                   {if (!$res_id)}
+                   <li>{{"name": "text-line-2", "type":"text", "value":"Note: If you have a question for the host before you want to request to book, "}} 
+                   <a href="{$smarty.const.PAGE_INQUIRY|link}{$scope.rental.id}?{$qstr}" class="append-query" data-field="#extra_info"> {'click here'|translate}</a>.</li>
+                   {/if} 
+                   {*                
+                    <!--li>The host should get back to you within 24 hours. If your request is approved, you will receive a mail with a link you can use to pay the amount due.</li>
+                    <li>If you have a question for the host before you request their rental, please use <a href="{$smarty.const.PAGE_INQUIRY|link}{$scope.rental.id}?{$qstr}"> this link. </a> </li-->
+                    *}
+                </ul>
+  {/block}

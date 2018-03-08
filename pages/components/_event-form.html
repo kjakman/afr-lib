@@ -1,0 +1,43 @@
+
+                    <form id="event-form" class="ajax-submit" data-handler="event-save" data-success_handler="event_handler">                                          
+
+                      {$debug = 0}     
+                      {$debug_loc = 0}     
+                      {$all_day = ($event) ? $event.all_day : 1}
+                      <input name="obj_type" type="hidden" value="event" />
+                      <input name="obj_id"  type="{if ($debug)}text{else}hidden{/if}" value="{$event.id}" id="event_id"/>
+                      <input name="user_id" type="{if ($debug)}text{else}hidden{/if}" value="{$user.id}" readonly/>
+                      <input name="site_id" type="{if ($debug)}text{else}hidden{/if}" value="{$site.id}" readonly/>
+                      
+                      <div class="form-group">
+                        <span id="periodpicker" data-event="1">
+                          <input id="start_time" name="start_time" type="text" value="{$event.start_time}" />
+                          <input id="end_time"   name="end_time"   type="text" value="{$event.end_time}" />
+                        </span>
+                        <span class="checkbox-off">
+                          <label><input name="all_day" id="all_day" value="1" class="i-check toggle-all-day-off" type="checkbox" {if ($event.all_day)}checked{/if} data-target=".date"/> {'all day'|translate:'c'}?</label>
+                        </span> 
+                      </div>
+
+                      <div class="form-group">
+                          <label>{'title'|translate:'c'} (*)</label>
+                          <input name="title" class="form-control" placeholder="Name of the event" type="text" value="{$event.title}" required/>
+                      </div>
+                      <div class="form-group">
+                          <label>{'location'|translate:'c'}</label>
+                          <input name="start_address" id="start_address" class="form-control geocomplete" placeholder="123 Main street, New York" type="text"  value="{$event.start_address}"/>
+                          {{"include": "_geocomplete-fields.html"}}                          
+                          
+                      </div>
+                      <textarea name="description" id="event_notes" class="form-control summernote" data-full="0" placeholder="Write something about the event">{$event.description}</textarea>
+                      {if ($scope.user_levels)}
+                      <select name="user_level" class="form-control" id="event_user_level">
+                        <option value="0" {if (!$event.user_level)}SELECTED{/if}>Public</option>
+                      {foreach from=$scope.user_levels key=user_level item=user_level_name}
+                        <option value="{$user_level}" {if ($event.user_level == $user_level)}SELECTED{/if}>{$user_level_name|capitalize}</option>
+                      {/foreach}
+                      </select>
+                      {/if}
+                      <input class="btn btn-primary" type="submit" value="{'save'|translate:'c':0}" />
+                      <input class="btn btn-danger" value="{'cancel'|translate:'c':0}" data-dismiss="modal"/>
+                    </form>

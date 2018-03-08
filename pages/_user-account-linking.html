@@ -1,0 +1,169 @@
+
+
+
+      {if ($scope.link_requests)}
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">Pending authorization requests</h3>
+        </div>
+        <div class="panel-body">
+          <p class="text-danger"><i class="fa fa-exclamation-triangle"></i> Action required: The following link request(s) have not yet approved.
+          {$rows = []}
+          {$rows[] = ["Beneficiary User", "Verifed", "Permissions", "Actions"]}
+          {foreach from=$scope.link_requests item=link_request}
+
+            {{"include": "_user-account-linking-form.html"}}
+            
+          {/foreach}
+        </div>
+      </div>      
+      {/if}
+      
+
+
+
+    <form id="account_linking_form" class="ajax-submit" data-handler="account-linking-request" method="post" data-reload_link="#account_linking">
+      <input name="user_id" type="hidden" value="{$scope.user_id}" />
+      
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">Request Linked Access to another user account</h3>
+        </div>
+        <div class="panel-body">
+          <p>If the other user approves your request, they can grant you permission to perform certain actions relating to their account. 
+             They can also upgrade your account if they have the sufficient permissions.</p>
+          <div class="form-group">
+            <label for="user">Email address or user ID:</label>
+            <input name="target_user" type="text" id="user" class="form-control" value="" placeholder=""/>        
+          </div>
+          <div class="form-group">
+            <label for="message">Optional message:</label>
+            <textarea name="message" id="message" class="form-control"></textarea>        
+          </div>
+        </div>
+        <div class="panel-footer">
+          <input class="btn btn-primary" id="user_submit" name="commit" type="submit" value="Send Request" />
+        </div>
+      </div>
+    </form> 
+      
+      {if ($scope.linked_users)}
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">Linked Access granted to you</h3>
+        </div>
+        <div class="panel-body">
+          <p>The following users have given you permission to manage their account (<i class="fa fa-check text-success"></i>) 
+             or you have requested permission to manage their account, but it is not yet approved.(<i class="fa fa-times text-danger"></i>).</p>
+          {$rows = []}
+          {$rows[] = ["Host User", "Verifed", "Permissions", "Actions"]}
+          {foreach from=$scope.linked_users item=link_request}
+            {$id = $link_request.id}
+            {$uid = $link_request.host_user_id}
+            {$name = $uid|username|truncate:30|default:$uid}
+            {$link = "<a href='/profile/`$uid`'>`$name`</a>"}
+            {$actions = ''}
+            {if (!$link_request.verified)}
+              {$actions = "
+                     <a class='btn btn-danger btn-sm' href='#' id='delete-link_request-`$id`' 
+                       data-toggle='confirmation' data-on-confirm='delete_object' 
+                       data-obj_type='user_map' data-id='`$id`' data-reload_link='#account_linking' 
+                       rel='tooltip' data-placement='top' title='Really?'> <i class='fa fa-times'></i> Delete Request
+                     </a>
+              "}
+            {/if}
+            {$perms = $link_request.permissions|permissions}
+            {$row = [$link, $link_request.verified|checkmark, $perms, $actions]}
+            {$rows[] = $row}
+          {/foreach}
+          {$rows|table:["class" => "table table-bordered table-striped table-booking-history"]}
+        </div>
+        <div class="panel-footer">
+        </div>
+      </div>      
+      {/if}
+
+      
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">Grant Linked Access to another user account</h3>
+        </div>
+        <div class="panel-body">        
+          <p>The other user will immediately be able to perform the actions for which you have granted permission.</p>
+          {$link_request = 0}
+          {{"include": "_user-account-linking-form.html"}}
+        </div>
+      </div>
+  
+      {if ($scope.auth_users)}
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">Authorized users</h3>
+        </div>
+        <div class="panel-body">
+          <p>The following have been granted permission to manage your account. (<i class="fa fa-check text-success"></i>)</p>
+          {$rows = []}
+          {$rows[] = ["Beneficiary User", "Verifed", "Permissions", "Actions"]}
+          {foreach from=$scope.auth_users item=link_request}
+            {$id = $link_request.id}
+            {$uid = $link_request.user_id}
+            {$name = $uid|username|truncate:30|default:$uid}
+
+            {$actions = "
+                   <button class='btn btn-success btn-sm' data-toggle='modal' data-target='#editLinking-`$id`'><i class='fa fa-pencil-square'></i> Edit</button>            
+                   <a class='btn btn-danger btn-sm edit-permissions' href='#' id='delete-link_auth-`$id`' 
+                     data-toggle='confirmation' data-on-confirm='delete_object' 
+                     data-obj_type='user_map' data-id='`$id`' data-reload_link='#account_linking' 
+                     rel='tooltip' data-placement='top' title='Really?'> <i class='fa fa-times'></i> Delete
+                   </a>"}
+            {$link = "<a href='/profile/`$uid`'>`$name`</a>"}
+            {$perms_view = $link_request.permissions|permissions}
+            {$row = [$link, $link_request.verified|checkmark, $perms_view, $actions]}
+            {$rows[] = $row}
+          {/foreach}
+          {$rows|table:["class" => "table table-bordered table-striped table-booking-history"]}
+        </div>
+        <div class="panel-footer">
+        </div>
+      </div>      
+      {/if}
+
+
+                    
+      {foreach from=$scope.auth_users item=link_request}            
+        {$id = $link_request.id}
+        {$uid = $link_request.user_id}
+        {$name = $uid|username|truncate:30|default:$uid}
+        {$perms = $link_request.permissions|json_decode:"true"}
+        <!-- Modal -->
+          <div class="modal fade" id="editLinking-{$id}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <form id="linking_edit_form-{$id}" class="ajax-submit" data-handler="account-linking-request" method="post" data-reload_link="#account_linking">        
+              <input name="obj_id" type="hidden" value="{$link_request.id}" />
+              <input name="host_user_id" type="hidden" value="{$link_request.host_user_id}" />
+              <input name="target_user" type="hidden" value="{$uid}" />
+              <input name="verified" type="hidden" value="1" />
+          
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Edit Permissions for {$name}</h4>
+              </div>
+              <div class="modal-body">
+                <div class="row">            
+                {foreach from=$config.link_permissions key=k item=p}
+                  {foreach from=$p key=k1 item=p1}
+                  <div class="col-xs-12">
+                    <div class="form-group">
+                      <input name="{$k}-{$k1}" type="checkbox" value="1" {if ($perms[$k] == $k1)}checked{/if}> &nbsp; <label>{$k1|capitalize} {$k}: </label> {$p1}
+                    </div>
+                  </div>
+                  {/foreach}
+                {/foreach}
+                </div>          
+              </div>
+              <div class="modal-footer">
+                <input type="submit" onclick="javascript:$('#linking_edit_form-{$id}').submit();console.log('submitted');" class="btn btn-primary" value="Save changes">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+              </div>
+            </form>
+          </div>
+      {/foreach}

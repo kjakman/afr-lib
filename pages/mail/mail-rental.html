@@ -1,0 +1,37 @@
+
+                                    {{"extend": "mail/mail-base-action-sub.html"}}
+                                                                        
+                                      {block name=action_link}
+                                        {if ($booking)}
+                                          <a href="{$site_url}{$smarty.const.PAGE_STATUS|link}{$booking.res_id}{if ($scope.pin_code)}?pin={$booking.booking_pin|myhash}{/if}" 
+                                             class="btn btn-large btn-success" target="_new">
+                                            {'manage booking online'|translate:'c'}
+                                          </a>
+                                        {/if}
+                                      {/block}
+                                      
+                                      {block name=sub_left}
+                                        <h3>{'host'|translate:'c'}</h3>
+                                        {$scope.profile_id = $rental.host_id}
+                                        {{"include": "mail/_user-details.html"}}
+                                        <br><hr><br>
+                                        {{"include": "mail/_rental-details.html"}}
+                                      {/block}
+                                      
+                                      {block name=sub_right_image}
+                                        <a href="{$site_url}{$scope.rental.id|property_link}" target="_new">
+                                          <img src="{$scope.rental.media|photo:'ig':['full' => 1]|add_http}" style="max-width: 264px">                                          
+                                        </a>
+                                      {/block}
+                                      {block name=sub_right_text}                                        
+                                        <h4 class="booking-item-payment-title">
+                                          <a href="{$site_url}{$scope.rental.id|property_link}" target="_new" style="color:#FFF;font-weight:bold">
+                                          {$scope.rental.name}
+                                          </a>
+                                        </h4>
+                                        <p>{$scope.rental.short_description}</p>
+                                        
+                                        {if ($booking.status == $smarty.const.STATUS_RESERVED || $booking.status == $smarty.const.STATUS_COMPLETE)}
+                                          <i class="fa fa-map-marker"> <a href="http://maps.google.com/?q={$rental|address:',':0:0}" target="_new">{$rental|address}</a>
+                                        {/if}
+                                     {/block}

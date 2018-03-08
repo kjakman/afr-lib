@@ -1,0 +1,12 @@
+                    {$payments = $invoice.payments}    
+                    {if ($payments|@count > 0)}
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">
+                          Payments
+                          <span class="label label-success">Paid: {$invoice.currency|currency}{$invoice.paid}</span>
+                        </div>
+                        <div class="panel-body">
+                          {$payments|table:['class' => 'accounting_table']}
+                        </div>
+                      </div>
+                    {/if}

@@ -1,0 +1,113 @@
+      {$verification_count = 0} 
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          Verifications
+        </div>
+        <div class="panel-body">
+          <dl>
+            <ul class="list">
+              {if ($scope.profile.email_verified)}
+              {$verification_count = $verification_count + 1}
+              <li class="row row-condensed">
+                <div class="media">
+                  <i class="icon icon-ok icon-lima h3 pull-left"></i>
+                  <div class="media-body">
+                    <div>
+                      Email Address
+                    </div>
+                    <div class="text-muted">
+                      Verified
+                    </div>
+                  </div>
+                </div>
+              </li>
+              {/if}              
+              {if ($scope.profile.phone_verified)}
+              {$verification_count = $verification_count + 1}
+              <li class="row row-condensed">
+                <div class="media">
+                  <i class="icon icon-ok icon-lima h3 pull-left"></i>
+                  <div class="media-body">
+                    <div>
+                      Phone Number
+                    </div>
+                    <div class="text-muted">
+                              ▒▒▒▒▒▒▒▒▒
+                              {$scope.profile.phone_verified|substr:-2}
+                    </div>
+                  </div>
+                </div>
+              </li>
+              {/if}
+              {if ($review_count)}
+              {$verification_count = $verification_count + 1}
+              <li class="row row-condensed">
+                <div class="media">
+                  <i class="icon icon-ok icon-lima h3 pull-left"></i>
+                  <div class="media-body">
+                    <div>
+                      Reviewed
+                    </div>
+                    <div class="text-muted">
+                      {$review_count} Reviews
+                    </div>
+                  </div>
+                </div>
+              </li>
+              {/if}
+              {if ($scope.profile.passport_verified)}
+              {$verification_count = $verification_count + 1}
+              <li class="row row-condensed">
+                <div class="media">
+                  <i class="icon icon-ok icon-lima h3 pull-left"></i>
+                  <div class="media-body">
+                    <div>
+                      Offline ID
+                    </div>
+                    <div class="text-muted">
+                      Passport
+                    </div>
+                  </div>
+                </div>
+              </li>
+              {/if}
+
+            {$providers = $scope.provider_keys}
+            {foreach $providers item=provider_id}
+              {$provider_name = $provider_id|get:"provider":"name"}
+              {$provider_key = $provider_name|lower}
+              {$social_key = ($provider_key == 'google') ? "google-plus" : $provider_key}
+
+              {if ($scope.provider_profiles.$provider_id)}
+              {$provider_profile = $scope.provider_profiles.$provider_id}
+              {$verification_count = $verification_count + 1}
+              <li class="row row-condensed">
+                <div class="media">
+                  <i class="icon icon-ok icon-lima h3 pull-left"></i>
+                  <div class="media-body">
+                    <div>
+                      {$provider_name}
+                    </div>
+                    <div class="text-muted">
+                      {if ($provider_profile.friend_count)}
+                        {$provider_profile.friend_count} Friends
+                      {else}
+                      Connected
+                      {/if}
+                    </div>
+                  </div>
+                </div>
+              </li>
+              {/if}
+                
+            {/foreach}
+                            
+              {if (!$verification_count)}
+              <li>
+                <span class="text-danger"><i class="fa fa-exclamation-triangle"></i> No verifications yet</a>
+              </li>
+              {/if}
+            </ul>
+          </dl>
+        </div>
+      </div><!-- panel -->

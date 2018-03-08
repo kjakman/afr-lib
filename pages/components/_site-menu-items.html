@@ -1,0 +1,24 @@
+
+          {* $tree|dump *}
+          {$user_level = $user.user_level|default:0}
+          {foreach from=$tree key=path item=page}
+            {$children = $page.children}
+            {$child_count = $children|@count} 
+            {$path = ($child_count) ? "#" : $page.path} 
+            {if ($page.show_menu && $page.user_level <= $user_level)}              
+              <li><a href="{$path}">{$page.name}</a>
+              {if ($children|@count)}
+                <ul>
+                  {* We want to recurse here (for infinite levels}, but have unresolved scope issues *}
+                  {foreach from=$children key=path item=child}
+                    {if ($child.show_menu && $child.user_level <= $user_level)}              
+                      <li><a href="{$child.path}">{$child.name}</a>
+                    {/if}
+                  {/foreach}
+                </ul>
+              {/if}
+              </li>
+            {/if}
+          {/foreach}
+            
+

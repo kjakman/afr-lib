@@ -1,0 +1,85 @@
+                            <form id="rental_feedback_form" class="ajax-submit" data-handler="save">
+                              <input type="hidden" name="obj_type" value="feedback">
+                              <input type="hidden" name="apt_id" value="{$scope.rental.id}">
+                              <input type="hidden" name="property_type" value="{$scope.rental.type}">
+                              <input type="hidden" name="parent_type" value="reservation">
+                              <input type="hidden" name="parent_id" value="{$scope.res_id}">
+                              <input type="hidden" name="guest_id" value="{$user.id}">
+                              <input type="hidden" name="host_id" value="{$scope.rental.host_id}">
+                              <input type="hidden" name="can_publish" value="1">
+                              <input type="hidden" name="published" value="1">
+                              <input type="hidden" name="first_name" value="{$user.first_name}">
+                              <input type="hidden" name="last_name" value="{$user.last_name}">
+                              <input type="hidden" name="state" value="{$user.state}">
+                              <input type="hidden" name="city" value="{$user.city}">
+                              <input type="hidden" name="country" value="{$user.country}">
+                              <input type="hidden" name="email_address" value="{$user.email_address}">
+                                <div class="row">
+                                    <div class="col-md-7">
+                                        <div class="form-group">
+                                            <label>Public Review Title</label>
+                                            <input name="feedback_title" class="form-control" type="text" />
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Public Review Text</label>
+                                            <textarea name="feedback_comments" class="form-control" rows="6"></textarea>
+                                        </div>
+                                        <!--div class="form-group">
+                                            <label>What could be better?</label>
+                                            <textarea name="feedback_neg" class="form-control" rows="6"></textarea>
+                                        </div-->
+                                        <div class="form-group">
+                                            <label>Private feedback to owner</label>
+                                            <textarea name="feedback_private" class="form-control" rows="6"></textarea>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label>Purpose</label>
+                                            {html_options name=purpose class="form-control" options=$scope.purpose}                                            
+                                        </div>
+                                            
+                                        
+                                        <div class="form-group">
+                                            <label>Profile</label>
+                                            {html_options name=profile class="form-control" options=$scope.profile}                                            
+                                        </div>
+
+                                        <div class="form-group">
+                                            Would you recommend it to others?
+                                        
+                                           <div class="btn-group radio-group" data-toggle="buttons">              
+                                               <label class="btn danger">
+                                                   <input type="radio" name='feedback_recommend' value="0">
+                                                   <i class="fa fa-thumbs-down fa-2x"></i> No
+                                               </label>
+                                               <label class="btn success">
+                                                  <input type="radio" name='feedback_recommend' value="1">
+                                                  <i class="fa fa-thumbs-up fa-2x"></i> Yes
+                                               </label>
+                                           </div>                                               
+                                        </div>     
+                                      
+                                    </div>         
+                                    <div class="col-md-5">
+                                        <ul class="list booking-item-raiting-summary-list stats-list-select">
+                                        {foreach from=$global.rating_keys key=k item=name}
+                                            <li>
+                                                <h4>{$name}</h4>
+                                                <input name="{$k}" type="number" class="rating"
+                                                   min="1" max="10" step="1"
+                                                   data-min="0" data-max="10" data-step="2"
+                                                   value="{$golf.rating}" 
+                                                   data-size="md" data-show-clear="false"
+                                                   data-star-captions='{$global.rating_captions|@json_encode}',
+                                                   data-star-caption-classes='{$global.rating_classes|@json_encode}',
+                                                   data-show-caption="true">
+                                                    
+                                            </li>
+                                        {/foreach}
+
+                                        </ul>
+                                        <input class="btn btn-primary" type="submit" value="Leave a Review" />
+                                    </div>
+                                </div>
+                            </form>
+

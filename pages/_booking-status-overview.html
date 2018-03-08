@@ -1,0 +1,264 @@
+
+                      {$booking = $scope.reservation}
+                      
+                      {if ($booking.expires)}
+                      {$status_page = 1}
+                      {{"include":"_booking-expiration.html"}}
+                      {/if}
+                      
+                      {if ($scope.auth_edit && $user.user_level >= $smarty.const.USER_LEVEL_OWNER && $scope.mismatch)}
+                      Mismatch
+                      {$scope.mismatch|dump}
+                      {/if}
+
+                      {if ($scope.auth_level == $smarty.const.USER_LEVEL_GUEST && $booking.status==$smarty.const.STATUS_PROPOSED)}
+
+                        {if ($booking.message)}
+                          <div class="row margin-top">
+                            <div class="col-md-1 table-cell user-avatar">
+                              <a href="{$smarty.const.PAGE_EDIT_PROFILE|link}{$scope.host.id}">                                      
+                                <img class="origin round" src="{$scope.host|userphoto}" title="{$scope.host.display_name}">
+                              </a>                              
+                            </div>              
+                            <div class="col-md-11 table-cell">
+                              <p class="speech speech-left">{$booking.message}</p>
+                            </div>
+                          </div>                          
+                          
+                          <div class="gap gap-small"></div>
+                        {/if}
+                        {{"include":"_booking-request-accepted.html"}}
+
+                      
+                      {elseif ($scope.auth_level == $smarty.const.USER_LEVEL_GUEST && $booking.status==$smarty.const.STATUS_INQUIRY)}
+
+                        {$book_now = ($booking.type == $smarty.const.RES_TYPE_DIRECT || $scope.rental.book_direct == 1) ? 1 : 0}
+                        
+                        <div class="gap gap-small"></div>
+                        <div class="panel-quote-flush panel">
+                          <div class="alert alert-with-icon alert-info alert-block row-space-4">
+                            <div class="h3 no-margin nopad">
+                              <i class="fa  fa-exclamation-triangle fa-2x middle"></i> Sending an inquiry does not let you book the apartment. 
+                               
+                              {if ($book_now)}
+                              {$button = "Book Now"}
+                              {$link = $smarty.const.PAGE_BOOK|link}
+                              {$text = "To book now, click the button below."}
+                              {else}
+                              {$link = $smarty.const.PAGE_REQUEST|link}
+                              {$button = "Request to book"}
+                              {$text = "To request to book the rental, click the button below."}
+                              {/if}
+                              
+                              <div class="gap gap-small"></div>
+                             {if ($text)}<div class="small">{$text}</div> {/if}
+                             {if ($button)}
+                                <div class="gap gap-small"></div>
+                                <a href="{$link}{$booking.res_id}" type="button" class="btn btn-success">
+                                {$button}
+                                </a>
+                                <div class="gap gap-small"></div>                             
+                             {/if}
+                               
+                            </div>
+                          </div>
+                        </div>
+                      {elseif ($scope.auth_level >= $smarty.const.USER_LEVEL_OWNER && ($booking.status==$smarty.const.STATUS_UNCONFIRMED || $booking.status==$smarty.const.STATUS_PENDING))}
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">Respond to request</div>
+                        <div class="panel-body">
+                          {if ($booking.extra_info)}
+                          <div class="row margin-top">
+                            <div class="col-md-1 table-cell user-avatar">
+                              <a href="{$smarty.const.PAGE_EDIT_PROFILE|link}{$scope.guest.id}">                                      
+                                <img class="origin round" src="{$scope.guest|userphoto}" title="{$scope.guest.display_name}">
+                              </a>                              
+                            </div>              
+                            <div class="col-md-11 table-cell">
+                              <p class="speech speech-left">{$booking.extra_info}</p>
+                            </div>
+                          </div>                          
+                          
+                          <div class="gap gap-small"></div>
+                          {/if}
+                          {{"include":"_booking-response.html"}}
+                          
+                        </div>
+                      </div>
+                      
+                      {elseif ($booking.extra_info)}
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">Guest Notes</div>
+                        <div class="panel-body">
+                          {$booking.extra_info|markup}
+                        </div>
+                      </div>  
+                      {/if}
+
+                      {if ($booking.author_id)}
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">Booked By</div>
+                        <div class="panel-body">
+                          {$booking.author_id|fullname}
+                        </div>
+                      </div>  
+                      {/if}
+
+                      {if ($booking.author_id)}
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">Guest Details</div>
+                        <div class="panel-body">
+                          {if $booking.guest_id}
+                            {$booking.guest_id|user_display_name}<br>
+                          {else}
+                            {$booking|fullname}<br>
+                            {/if}
+                          {$booking|address:", "}<br>
+                          {$email = $booking.email_address}
+                          {if ($email && $scope.show_contact)}
+                            Email: <a href='mailto:{$email}'>{$email}</a> 
+                            {if (!$scope.is_guest)}
+                            (Please use link below to message guest)<br>
+                            <br>
+                            <a href="#" class="btn btn-success btn-sm linkref" data-target="#booking-status-chat"><i class="fa fa-mail"></i> Message Guest</a>
+                            {/if}
+
+                          {/if}
+                        </div>
+                      </div>  
+                      {/if}
+                      
+                      {if ($scope.auth_level >= $smarty.const.USER_LEVEL_OWNER)}
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">Host Notes (private)</div>
+                        <div class="panel-body">
+                          {$booking.staff_notes|markup}
+                        </div>
+                      </div>  
+                      {/if}
+
+                      {if ($scope.is_guest || $scope.auth_level == $smarty.const.USER_LEVEL_GUEST || $scope.auth_level >= $smarty.const.USER_LEVEL_STAFF)}
+                      {{"include": "_booking-address-dialog.html"}}
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">Guest Details
+                        {$data = ["res_id" => $booking.res_id, "salutation" => $booking.salutation, "first_name" => $booking.first_name,"last_name" => $booking.last_name,
+                                  "organization" => $booking.organization, "address1" => $booking.address1, "address2" => $booking.address2, "city" => $booking.city,
+                                  "state" => $booking.state, "zip" => $booking.zip,"country" => $booking.country, "cell_phone" => $booking.cell_phone, "email_address" => $booking.email_address]}
+                        &nbsp;
+                        <a href="#" class="btn btn-success btn-sm fill-form" 
+                           data-toggle="modal"
+                           data-data='{$data|@json_encode}'
+                           data-form='#booking_address_form'
+                           data-target="#booking_address_dialog"                            
+                           >Edit</a>
+                        
+                        </div>
+                        <div class="panel-body">
+                          {$show_contact = $scope.show_contact}
+                          {$booking|address_details:$show_contact|print_array}
+                        </div>
+                      </div>  
+                      {/if}
+
+                    {if ($scope.reservation.status == $smarty.const.STATUS_PROPOSED || $scope.reservation.status == $smarty.const.STATUS_RESERVED || $scope.reservation.status == $smarty.const.STATUS_COMPLETE)} {* Proposed,  Reserved or complete *}
+                      
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">Arrival
+                        {if ($scope.auth_edit || $scope.pin_code)}
+                        {{"include": "_booking-arrival-dialog.html"}}
+                        {$data = ["res_id" => $booking.res_id, "arrival_method" => $booking.arrival_method,"arrival_from" => $booking.arrival_from, "arrival_number" => $booking.arrival_number,
+                                  "arrival_time" => $booking.arrival_time,"arrival_property" => $booking.arrival_property,"arrival_notes" => $booking.arrival_notes]}
+                        &nbsp;
+                        <a href="#" class="btn btn-success btn-sm fill-form" 
+                           data-toggle="modal"
+                           data-data='{$data|@json_encode}'
+                           data-form='#booking_arrival_form'
+                           data-target="#booking_arrival_dialog"                            
+                           >Edit</a>
+                        {/if}
+                        </div>
+                        <div class="panel-body">
+                          {$booking|arrival_details|print_array}
+                        </div>
+                      </div>  
+                      
+                      {if ($booking.legal_entity_id && $site.property_site == $smarty.const.PROPERTY_SITE_CORPORATE)}
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">Billed By</div>
+                        <div class="panel-body">
+                          {$booking.legal_entity_id|get:"legal_entity":"name"}
+                        </div>
+                      </div>  
+                      {/if}
+
+                      {if ($scope.invoices|@count)}
+                      {foreach from=$scope.invoices item=invoice}
+                      {$start = $invoice.start_date}
+                      {$end = $invoice.end_date}
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">
+                          Invoice {$invoice.invoice_id|default:$invoice.id}: {$start|daterange:$end}
+                          &nbsp;
+                            <a href="{$smarty.const.PAGE_INVOICE|link}{$invoice.id}{if ($scope.pin_code)}?pin={$invoice.booking_pin|myhash}{/if}" class="btn btn-success btn-sm">View</a>
+                            &nbsp;
+                            <a href="{$invoice|public_link:"invoice"}&amp;view=_invoice-print.html" target="invoice" class="btn btn-primary btn-sm"><i class="fa fa-file-pdf-o"> View PDF</i></a>
+
+                          </div>
+                        <div class="panel-body">
+                          {$invoice|invoice}
+                        </div>
+                      </div>  
+                      {/foreach}
+                      {/if}
+
+                      {if ($booking.paid > 0)}
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">
+                          Payments
+                          <span class="label label-success">Paid: {$booking.currency|currency}{$booking.paid}</span>
+                        </div>
+                        <div class="panel-body">
+                          {$booking|booking_payments:$scope.auth_edit}
+                        </div>
+                      </div>
+                      {/if}
+                    {/if} {* Proposed/Reserved/Complete *}
+                      
+                      {if ($scope.mail_log|@count)}
+                      {$rows = []}
+                      {$rows[] = ["Sent", "From", "To", "Subject"]}
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">
+                          Mail Log
+                        </div>
+                        <div class="panel-body">
+                          {foreach from=$scope.mail_log item=log}
+                            {$subject = $log.subject|truncate:50}
+                            {$link_options = ["class" => "view-object", "data-obj_type" => "mail_queue", "data-obj_id" => $log.id, "data-fields" => ["sent_time", "sender", "recipient", "body"]]}
+                            {$row = [$log.sent_time|date, $log.sender|truncate:30, $log.recipient|truncate:30, '#'|anchor:$subject:$link_options]}
+                            {$rows[] = $row}
+                          {/foreach}
+                          {$rows|table:["class" => "table table-bordered table-striped table-booking-history"]}
+                        </div>
+                      </div>  
+                      {/if}
+
+                      {if ($scope.change_log|@count)}
+                      {$rows = []}
+                      {$rows[] = ["Date", "User", "Action"]}
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">
+                          Change Log
+                        </div>
+                        <div class="panel-body">
+                          {foreach from=$scope.change_log item=log}
+                            {$action = $log.action|truncate:50}
+                            {$link_options = ["class" => "view-object", "data-obj_type" => "changelog", "data-obj_id" => $log.id]}
+                            {$row = [$log.timestamp|datetime, $log.user_id|fullname|truncate:30, '#'|anchor:$action:$link_options]}
+                            {$rows[] = $row}
+                          {/foreach}
+                          {$rows|table:["class" => "table table-bordered table-striped table-booking-history"]}
+                        </div>
+                      </div>  
+                      {/if}
+                      

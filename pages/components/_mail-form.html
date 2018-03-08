@@ -1,0 +1,102 @@
+
+    {$mail = $scope.mail}
+    {$sender = $mail.sender|default:$mail.from}
+    {$recipient = $mail.recipient|default:$mail.to}
+    {if (!$mail || !$mail.template)}
+      {'missing mail template'|error}
+    {else}
+    <form method='post' id="mail_form" class="mail-form ajax-submit" data-handler="mail-preview-send">
+      <input name='user_id'    type='hidden' value="{$user.id}">
+      <input name='site_id'    type='hidden' value="{$site.id}">
+      <input name="action"     type="hidden" value="{$mail.action}" />
+      <input name='mail_scope' type='hidden' value='{if ($mail.scope)}{$mail.scope|@json_encode}{/if}'>
+
+
+      <table cellpadding='0' cellspacing="4" style='font-family:Courier, monospace'>
+        <tbody>
+          <input name='sender' type='hidden' value="{$sender|escape:'html'}">
+          <input name='sender_id' id='sender_id' type='hidden' value="{$user.id}">
+          <input name='receiver_id' id='receiver_id' type='hidden' value="{$mail.receiver_id}">
+                    
+          <input name="obj_id"     id="mail_obj_id"     type="hidden" value="{$mail.obj_id}" />
+          <input name="obj_type"   id="mail_obj_type"   type="hidden" value="{$mail.obj_type}" />
+          <input name="obj_name"   id="mail_obj_name"   type="hidden" value="{$mail.obj_name|default:$scope.obj_type}" />
+          <input name='template'   id="mail_template" type="hidden" value="{$mail.template}">
+          <input name='controller' id="mail_controller" type="hidden" value="{$mail.controller}">
+          
+          <tr><td><b>From:</b></td><td>{$sender|escape}</td></tr>
+          <tr>
+            <td><b>To:</b> 
+              {if ($scope.show_address_book)}
+              <button type="button" data-toggle="modal" data-target="#addressBookModal" class="btn btn-primary btn-sm" title="{'address book'|translate:'c':0}"><i class="fa fa-address-book"></i></button>
+              {/if}
+            </td>
+            <td><input name='recipient' id="receiver_email" type='text' value="{$recipient|escape:'html'}" class="form-control auto-preview"></td>
+          </tr>
+          
+          <tr><td><b>Subject:</b></td><td><input name='subject' type='text' value="{$mail.subject|escape:'html'}" class="form-control" placeholder="Please enter a subject..."></td></tr>
+          
+          {if (!$recipient)}<tr><td><b>Name:</b></td><td><input name='receiver_name' id='receiver_name' type='text' value="{$mail.receiver_name|escape:'html'}" class="form-control auto-preview"></td></tr>{/if}
+
+          {if ($user.user_level >= $smarty.const.USER_LEVEL_STAFF)}
+          <tr>
+            <td><b>Main<br>Message:</b></td><td>
+              <textarea class='form-control auto-preview' rows='2' cols='60' placeholder='Optional main message text' name='main_message' id='main_message'>{$mail.main_message}</textarea>
+            </td>
+          </tr>
+          {/if}
+          
+          <tr>
+            <td><b>Personal<br>Message:</b></td><td>
+              <textarea class='form-control auto-preview' rows='2' cols='60' placeholder='Optional personal message...' name='personal_message' id='personal_message'>{$mail.personal_message}</textarea>
+            </td>
+          </tr>
+          {* tpl: {$template} ul:{$user.user_level} staff:  {$smarty.const.USER_LEVEL_STAFF}<br> *}
+          {if ($user.user_level >= $smarty.const.USER_LEVEL_STAFF && !$scope.obj_type)}
+          <tr><td><b>Object:</b></td><td>
+            <select name='template' id='mail_template' class="form-control auto-preview">
+              <option value="mail/mail-generic" data-obj_type=""           data-obj_name=""           data-controller="">None</option>
+              <option value="mail/mail-rental"  data-obj_type="property"   data-obj_name="rental"     data-controller="rental">Rental</option>
+              <option value="mail/mail-booking" data-obj_type="reservation"data-obj_name="booking"    data-controller="booking">Booking</option>
+              <option value="mail/mail-invoice" data-obj_type="invoice"    data-obj_name="invoice"    data-controller="invoice">Invoice</option>
+              <option value="mail/mail-payment" data-obj_type="payment"    data-obj_name="payment"    data-controller="payment">Payment</option>
+              <option value="mail/mail-chat"    data-obj_type="chat"       data-obj_name="chat"       data-controller="chat">Chat</option>
+              <option value="mail/mail-message" data-obj_type="message"    data-obj_name="message"    data-controller="">Message</option>
+              <option value="mail/mail-account" data-obj_type="user"       data-obj_name="user"       data-controller="">Account</option>
+              <option value="mail/mail-artwork" data-obj_type="media_collection_map"  data-obj_name="artwork"    data-controller="gallery_artworks">Artwork</option>
+              <option value="mail/mail-collection" data-obj_type="collection"    data-obj_name="collection"    data-controller="gallery_collections">Collection</option>
+            </select>
+            </td>                                  
+            </tr>      
+          <tr>      
+          <tr><td><b>ID:</b></td><td><input name='obj_id' id='obj_id' type='text' value="{$mail.obj_id}" class="form-control auto-preview"></td></tr>
+          {/if}
+          
+          {if ($mail.attachment)}
+            {$file = $mail.attachment}
+            File:{$file}<br>
+            Name:{$name}<br>
+            {$icon = $file|file_icon}
+            {$name = $file|file_name}
+            {$size = $file|file_size|bytes2human}
+            {$path = $file|file_path}
+            {$loc = $file|file_loc}
+            <tr><td></b><i class="fa fa-paperclip"></i></b></td><td><a href="{$loc}" download>{$icon} {$name}</a> ({$size})</td></tr>
+            <input name="attachment" type="hidden" value="{$mail.attachment}" />
+          {/if}                    
+
+          <tr><td>&nbsp;</td><td><br><input type="submit" id="mail_send" class="btn btn-success set-target-value" value="Send Now" ></td></tr>
+          
+        </tbody>
+      </table>
+      
+    </form>        
+
+    <script>
+      $(function() {
+        console.log("ready - calling preview");
+        mail_preview('mail_form');
+      });
+      
+    </script>
+    {/if}

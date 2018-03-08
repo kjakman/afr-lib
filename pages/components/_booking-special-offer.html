@@ -1,0 +1,76 @@
+                    
+                      <fieldset class="available-special-offer">
+                        <label for="pricing_hosting_id">Listing</label>
+                        <div class="select select-block row-space-1">
+                          <select id="pricing_hosting_id" name="pricing[hosting_id]">
+                            <option value="69040" selected="selected">Canal Apartments Studio C</option>
+                            <option value="69042">Canal Apartments Studio D</option>
+                          </select>
+                        </div>
+                    
+                        <div class="special-offer-date-fields">
+                          <div class="row row-condensed row-space-1">
+                            <div class="col-4">
+                              <label for="pricing_start_date">Check in</label>
+                              <input class="checkin ui-datepicker-target" id="pricing_start_date" name="pricing[start_date]" type="text" value="06/04/2015">
+                            </div>
+                            <div class="col-4">
+                              <label for="pricing_end_date">Check out</label>
+                              <input class="checkout ui-datepicker-target" id="pricing_end_date" name="pricing[end_date]" type="text" value="06/12/2015">
+                            </div>
+                            <div class="col-4">
+                              <label for="pricing_guests">Guests</label>
+                              <div class="select select-block">
+                                <select id="pricing_guests" name="pricing[guests]"><option value="1" selected="selected">1</option>
+                                  <option value="2">2</option>
+                                  <option value="3">3</option>
+                                  <option value="4">4</option>
+                                  <option value="5">5</option>
+                                  <option value="6">6</option>
+                                  <option value="7">7</option>
+                                  <option value="8">8</option>
+                                  <option value="9">9</option>
+                                  <option value="10">10</option>
+                                  <option value="11">11</option>
+                                  <option value="12">12</option>
+                                  <option value="13">13</option>
+                                  <option value="14">14</option>
+                                  <option value="15">15</option>
+                              </select>
+                              </div>
+                              <input id="pricing_unit" name="pricing[unit]" type="hidden" value="nightly">
+                            </div>
+                          </div>
+                        </div>
+                    
+                        <div class="alert alert-with-icon alert-info  row-space-top-2 hide" id="availability_warning">
+                          <i class="icon alert-icon icon-comment"></i>
+                             You have already marked some of the dates in this date range as unavailable. To include the dates in your Special Offer, first make them available.
+                        </div>
+                    
+                        <div class="row row-condensed margin-bottom">
+                          <div class="col-4">
+                            <label for="pricing_price">Price</label>
+                            <div class="input-addon pricing-field">
+                              <span class="input-prefix">€</span>
+                              <input class="input-stem" id="pricing_price" name="pricing[price]" type="text" value="1006">
+                            </div>
+                          </div>
+                          <div class="col-4">
+                            <label for="pricing_price_type">&nbsp;</label>
+                            <div class="select hide">
+                              <select disabled="" id="pricing_price_type" name="pricing[price_type]">
+                                <option value="total">Subtotal Price</option>
+                                <option value="per_unit">Per Month</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                    
+                        <div class="margin-bottom form-control">
+                            This price should include any additional fees you want to charge.
+                        </div>
+                    
+                        <div id="price-breakdown" class="margin-bottom form-control"></div>
+                      </fieldset>
+

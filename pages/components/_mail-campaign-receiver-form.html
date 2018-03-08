@@ -1,0 +1,28 @@
+          {$campaign = $scope.campaign}
+          <form id="mail_campaign_form" class="ajax-submit-off" method="get" data-handler="save" data-toggle="validator" data-reload_link="#user-verification-link" >
+            
+            <div class="form-group checkbox_group" data-flags="0">
+              <label for="receiver_roles">Receiver Roles</label>
+              <input name="receiver_roles" id="cbr_flags" type="hidden" class="cb_target form-control" value="{$campaign.receiver_roles|default:$smarty.get.receiver_roles}" />
+              <ul class="list">
+              {foreach from=$scope.roles item=$role}
+                <li class="checkbox">
+                  <label><input type="checkbox" {if ($role.id|in_array:$scope.selected_roles)}checked{/if} value="{$role.id}">{$role.name} ({$role.count})</label>
+                </li>
+              {/foreach}
+              </ul>
+           </div>
+
+            <div class="form-group">
+              <label for="active_since">Active Since</label>
+              <input name='active_since' class='date_input datepicker' value="{$campaign.active_since|default:$smarty.get.active_since}" 
+                     data-date-start-view=2 data-date-format="dd-mm-yyyy" data-date-end-date="-0d" type='text' id='active_since'>
+              
+            </div>
+           
+            <input type="submit" class="btn btn-primary" value="Check users">
+            {if ($scope.receiver_count > 0)}
+            <input type="submit" name="submit" class="btn btn-success" value="Next step">
+            {/if}
+            <a href="{$smarty.const.PAGE_MAIL_CAMPAIGN|link}" class="btn btn-danger">Cancel</a>
+          </form>

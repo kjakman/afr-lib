@@ -1,0 +1,71 @@
+            <h4>Payout Preferences</h4>
+            <p>Note: For security reasons, these values cannot be changed once set. 
+               If you need to change your payout preferences, please <a href="{$smarty.const.PAGE_CONTACT|link}">contact us.</a></p>
+            <form class="ajax-submit payout-form" method="post" data-handler="save-payout" data-toggle="validator" data-reload_link="#account_payout_link">
+              <input type="hidden" name="user_id" value="{$scope.user.id}"/>
+              {$edit = false}
+              {if ($scope.user.paypal_id)}
+                <b>PayPal ID:</b> {$scope.user.paypal_id}<br>
+              {else}
+                {$edit = true}
+              <div class="form-group">
+                <label>PayPal ID</label>
+                <input name="paypal_id" class="form-control" type="email" value="{$scope.user.paypal_id}"
+                  data-match-error="Whoops, not a valid email address" />
+                <div class="help-block with-errors"></div>
+              </div>
+              {/if}
+              
+              {if ($scope.user.bank_name)}
+              <b>Bank:</b> {$scope.user.bank_name}: {$scope.user.account_name} <b>IBAN:</b> {$scope.user.account_iban|truncate:10}...{$scope.user.account_iban|substr:-4}<br>
+              {else}
+              {$edit = true}
+              
+              <div class="form-group">
+                <label>Bank Name</label>
+                <input name="bank_name" class="form-control" type="text" value="{$scope.user.bank_name}" placeholder="RABO Bank" />
+                <div class="help-block">The name of your bank</div>
+              </div>
+
+              <div class="form-group">
+                <label>Account Name</label>
+                <input name="account_name" class="form-control" type="text" value="{$scope.user.account_name}" placeholder="{$scope.user.first_name} {$scope.user.last_name}"/>
+                <div class="help-block">The name of the account holder</div>
+              </div>
+
+              <div class="form-group">
+                <label>Account Number (IBAN)</label>
+                <input name="account_iban" class="form-control" type="iban" value="{$scope.user.account_iban}" placeholder="NL39RABO0300065264"
+                  data-iban-error="Whoops, not a valid IBAN number" data-iban="foo" />
+                <div class="help-block with-errors">The IBAN number of the account (only European banks supported at this point)</div>
+              </div>
+              <div class="form-group">
+                <label>Account Country</label>
+                <select name="account_country" id="country" data-value="{$scope.user.account_country}" class="form-control auto-select" autofocus="autofocus" autocorrect="off" autocomplete="off">
+                  <option value=""></option>
+                  {{"include": "_countries.html"}}
+                </select>
+                <div class="help-block">The country in which your bank is located.</div>
+              </div>
+              {/if}
+              <hr />
+             {if ($edit)} 
+
+              <div class="form-group">
+                <label>Chamber of Commerce ID</label>
+                <input name="commerce_id" class="form-control" type="text" value="{$scope.user.commerce_id}" />
+                <div class="help-block">Needed to verify that you are a legal business, a requirement for the optional early payout option.</div>
+              </div>
+             
+              <div class="form-group">
+                <label>National Tax Identification Number</label>
+                <input name="tax_id" class="form-control" type="text" value="{$scope.user.tax_id}" />
+                <div class="help-block">Needed to verify that you are a legal business, a requirement for the optional early payout option.</div>
+              </div>
+
+             <input class="btn btn-primary" type="submit" value="Save" />
+             
+             {/if}
+            </form>              
+
+           

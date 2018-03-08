@@ -1,0 +1,32 @@
+
+
+
+                <div id="location_url" class="collapse">{$smarty.const.PAGE_LOCATION|link}</div>
+                <div id="shortstay_url" class="collapse">{$smarty.const.PAGE_RENTAL_SEARCH|link}</div>
+                <div id="geo_url" class="collapse">{$smarty.const.PAGE_GEO_LOCATION|link}</div>
+                <div id="location_slug" class="collapse-off"></div>
+                
+                <div class="form-group form-group-filled {if ($top)}inline-block{/if}">
+                  {$text = 'Where are you going?'|translate}
+                  <input name="loc" id="loc" type="text" placeholder="{$global.loc_search_text|default:$text}" 
+                         class="jq-autocomplete form-control ui-autocomplete-input location-name" autocomplete="off" 
+                         value="{$get.loc|urldecode}"
+                    data-target="location_id" 
+                    data-options='{literal}{"select_handler":"google_pac_select","response_handler":"google_pac_response","item_renderer":"google_pac_renderer"}{/literal}'
+                    data-search_options-old='{$scope.autocomplete_search_options|@json_encode}'
+                    data-search_options='{literal}{"obj_type":"location","value_field":"alt_names","search":{"parent_type":["golf_club","airport"],"active":1},"fields":["parent_type as obj_type","address_formatted","address_country","location_lat","location_long","location_bounds"],"google_autocomplete":1,"icon_class":"fontello icon-golf"}{/literal}'>
+                    
+                </div>
+                {if ($top)}
+                <button type="submit" class="jq-autocomplete-submit btn btn-success">
+                  <i class="fa fa-search"></i>
+                </button>
+                {else}
+                <span class="input-icon" onclick="$('#loc').focus();"><i class="glyphicon glyphicon-map-marker"></i></span>
+                {/if}
+
+<script>
+$(document).ready(function() {
+   setTimeout(function () { $('#loc').focus(); }, 20);
+});
+</script>

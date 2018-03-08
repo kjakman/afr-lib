@@ -1,0 +1,35 @@
+  {{"extend": "base/default.html"}}
+  {block name=content}
+  
+
+                  <div class="container">
+                    {if ($user.id)}
+                    <h2>Welcome {$user.display_name}</h2>
+                    
+                    {if ($user.user_level >= $smarty.const.USER_LEVEL_OWNER)}
+                      {if ($smarty.get.l == 1)}
+                        <h3>Register Managed Account</h3>
+                        <p>This is an account linked to yours that you manage.</p> 
+                        {{"include": "_user-register-managed-account-form.html"}}          
+                      {else}
+                        <a href="?l=1" class="btn btn-success">Register Linked Account</a>
+                      {/if}
+                      
+                    
+                    {/if}
+                    
+                    {else}
+                      <h3>Register</h3>
+                      {if ($scope.provider_keys)}
+                        {$providers = $scope.provider_keys}
+                        {{"include": "_user-login-third-party.html"}}
+                        <div class='gap gap-small'></div>                      
+                      {/if}
+                      
+                      {{"include": "_user-register-form.html"}}          
+                      <a href="{$smarty.const.PAGE_LOGIN|link}{$query_string}">Already registered?</a>                      <div class='gap gap-small'></div>                      
+                      <div class='gap gap-small'></div>                      
+                    {/if}
+                  </div>
+  {/block}
+

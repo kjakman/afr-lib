@@ -1,0 +1,15 @@
+    
+                            {$invoice = $scope.invoice}
+                            <h3>Recalculate Invoice</h3>
+                            <p>This function does not look at the underlying booking details, but simply recalculates 
+                            the total for each lineitem and the invoice total, paid, and balance.</p>
+                            {if ($invoice.parent_type == 'reservation')}
+                            <p>If you want to recalcuate the invoice using details from the booking (rate, rate type, length of stay, etc), please use 
+                            <a href="{$smarty.const.PAGE_STATUS|link}{$invoice.parent_id}/recalculate">this link</a>.
+                            {/if}
+                            <h4>Before</h4>
+                            {$scope.invoice_before|table:['class' => 'accounting_table']}
+                            <div class="gap gap-small"></div>
+                            <h4>After</h4>
+                            {$scope.invoice_after|table:['class' => 'accounting_table']}
+

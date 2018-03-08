@@ -1,0 +1,19 @@
+{$res = $scope.reservation}
+{$in = $res.checkin}
+{$out = $res.checkout}
+{$date_range = $in|daterange:$out}
+
+              <div class="panel-quote-flush panel">
+                <div class="alert alert-with-icon alert-info alert-block row-space-4">
+                 {{"include": "_booking-request-summary.html"}}
+                  <div class="h3">
+                     Ready to book?
+                  </div>
+                  <p>
+                     {$res.host_id|username} pre-approved your stay at {$res.apartment_name}. Book now to confirm your reservation for {$date_range}.
+                  </p>
+                  <div class='gap gap-small'></div>
+                  <a href="{$smarty.const.PAGE_PAYMENT|link}{$scope.inv_id}{if ($scope.pin_code)}?pin={$scope.invoice.booking_pin|myhash}{/if}" class="btn btn-primary">Book It</a>
+                </div>
+              </div>
+

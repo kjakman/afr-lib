@@ -1,0 +1,21 @@
+
+  
+                      {$booking = $scope.reservation}
+                      {if ($booking.upload)}
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">Uploaded Images or Documents</div>
+                        <div class="panel-body">
+                          {$booking.upload|media_list}
+                        </div>
+                      </div>  
+                      {/if}
+                      
+                      {*if ($scope.is_guest || $scope.auth_level >= $smarty.const.USER_LEVEL_STAFF)*}
+                      {if ($scope.auth_level >= $smarty.const.USER_LEVEL_OWNER)}
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">Upload Images or Documents</div>
+                        <div class="panel-body">
+                          {$scope.uploader}                          
+                        </div>
+                      </div>  
+                      {/if}

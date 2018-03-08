@@ -1,0 +1,76 @@
+              <form id="send-form" class="ajax-submit {$class}" data-handler="{$handler}" data-reset="0" method="POST">
+                <input name="obj_type" type="hidden" value="{$scope.mail_obj_type|default:'message'}" />
+                <input name="obj_id" type="hidden" value="{$scope.mail_obj_id|default:'0'}" />
+                <input name="user_id" type="hidden" value="{$user.id}" />
+                <input name="site_id" type="hidden" value="{$site.id}" />
+                <input name="remote_ip" type="hidden" value="{$client_ip}" />
+                <input name="action" type="hidden" value="contact_form" />
+                <input name="template" type="hidden" value="{$scope.mail_template|default:'mail/mail-message'}" />
+                <input name="controller" type="hidden" value="{$scope.mail_controller|default:'contact'}" />                
+                <input name="replyto_sender" type="hidden" value="{$scope.replyto_sender|default:0}" />
+                <!-- input name="send" type="text" value="0" id="send_mail" / -->
+
+                <input name="main_message" type="hidden" value="{$scope.main_message}" />
+                
+                <input name="recipient" class="form-control" value="{$scope.receiver_email|default:$site.email_address}" type="hidden" />
+                <input name="receiver_name" class="form-control" value="{$scope.receiver_name|default:$site.name}" type="hidden" />
+                {$debug = 0}
+                
+                
+								<div class="row mt10">
+									<div class="form-group">
+										<div class="col-sm-4 col-xs-6">
+											<label>{'name'|translate:'c'} *</label>
+											<input required class="form-control auto-preview" name="sender_name" id="contact_name" type="text" value="{$scope.sender_name|default:$user.display_name}" data-msg-required="{'please enter your name'|translate:'c'}." maxlength="100">
+										</div>
+										<div class="col-sm-4 col-xs-6">
+											<label>{'email'|translate:'c'} *</label>
+											<input required class="form-control auto-preview" name="sender" id="contact_email" type="email" value="{$scope.sender_email|default:$user.email_address}" data-msg-required="{'please enter your email address'|translate:'c'}." data-msg-email="{'please enter a valid email address'|translate:'c'}." maxlength="100">
+										</div>
+										{if (!$scope.hide_phone)}
+										<div class="col-sm-4 col-xs-12">
+											<label>{'phone number'|translate:'c'}</label>
+											<input  type="tel" value="{$scope.sender_phone|default:$user.phone}"  maxlength="16" class="form-control" name="phone" id="phone">
+										</div>
+										{/if}
+									</div>
+								</div>
+								
+                {if ($scope.hide_subject)}                  
+                <input name="subject" id="contact_subject" type="hidden" value="{$scope.subject|default:'you have a message from the contact form'|translate:'c'}">
+                {else}
+								<div class="row mt10">
+									<div class="form-group">
+										<div class="col-sm-12">
+											<label>{'subject'|translate:'c'} *</label>
+											<input required class="form-control auto-preview" name="subject" id="contact_subject" type="text" value="{$scope.subject}" data-msg-required="{'please enter the subject'|translate:'c'}." maxlength="100">
+										</div>
+									</div>
+								</div>
+                {/if}
+								
+								<div class="row mt10">
+									<div class="form-group">
+										<div class="col-sm-12">
+											<label>{'message'|translate:'c'} *</label>
+											<textarea required maxlength="5000" data-msg-required="{'please enter your message'|translate:'c'}." rows="3" class="form-control" name="personal_message" id="contact_comment"></textarea>
+										</div>
+									</div>
+								</div>
+
+								<br />
+								<div class="row">
+									<div class="col-sm-12">
+									  <div class="g-recaptcha" data-sitekey="6LfJXyEUAAAAAPmhcjU0ZsYDbWu6JzaUspXKURmC"></div>								
+									</div>
+								</div>
+								<br />
+
+								<div class="row">
+									<div class="col-sm-12">
+										<input class="hidden" type="text" name="captcha" id="captcha" value="" /><!-- keep it hidden -->
+										<input type="submit" value="{'send message'|translate:'c':0}" class="btn btn-primary btn-lg set-target" data-target="#send_mail" data-value="1"  />
+									</div>
+								</div>
+
+              </form>

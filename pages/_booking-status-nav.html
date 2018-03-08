@@ -1,0 +1,39 @@
+                          
+                          <ul class="list user-profile-nav">
+                            <li class="class-filter active"><a id="booking-status-overview" href="{$smarty.const.PAGE_STATUS|link}{$scope.id}?view=_booking-status-overview.html" class="smtlink click-parent" data-tpl="_booking-status-overview.html"><i class="fa fa-user"></i>Overview</a></li>
+                            <!-- li><a href="{$smarty.const.PAGE_STATUS|link}{$scope.id}?view=_payment-overview.html" class="smtlink click-parent" data-tpl="_payment-overview.html"><i class="fa fa-credit-card"></i>Payment</a></li-->
+
+                            {if (0 && $status == $smarty.const.STATUS_PROPOSED)} {* Proposed,  Reserved or complete *}
+                            <li class="class-filter"><a href="{$smarty.const.PAGE_STATUS|link}{$scope.id}?view=_booking-status-send-proposal.html" class="smtlink click-parent" data-tpl="_booking-status-send-proposal.html"><i class="fa fa-paper-plane"></i>Send Proposal</a></li>                              
+                            {/if}
+                            {if ($status == $smarty.const.STATUS_PROPOSED || $status == $smarty.const.STATUS_RESERVED || $status == $smarty.const.STATUS_COMPLETE)} {* Proposed,  Reserved or complete *}
+                              {if ($status == $smarty.const.STATUS_PROPOSED)}
+                                {$what = "Proposal"}
+                              {else}
+                                {$what = "Confirmation"}
+                              {/if}
+                            
+                            <li class="class-filter"><a href="{$smarty.const.PAGE_STATUS|link}{$scope.id}?view=_booking-status-send.html" class="smtlink click-parent" data-tpl="_booking-status-send.html"><i class="fa fa-paper-plane"></i>View {$what}</a></li>                              
+                            <!--li class="class-filter"><a href="{$smarty.const.PAGE_STATUS|link}{$scope.id}?view=_booking-status-itinerary.html" class="smtlink click-parent" data-tpl="_booking-status-itinerary.html"><i class="fa fa-file-pdf-o"></i>Print Confirmation</a></li-->
+                            
+                              {if ($scope.reservation.checkout < $today)}
+                            <li class="class-filter"><a href="{$smarty.const.PAGE_STATUS|link}{$scope.id}?view=_booking-status-feedback.html" class="smtlink click-parent" data-tpl="_booking-status-feedback.html"><i class="fa fa-star"></i>Feedback</a></li>
+                              {/if}
+                            {/if}
+                            {if (1 || $scope.reservation.guest_id || $scope.reservation.email_address)}
+                            <li class="class-filter"><a id="booking-status-chat" href="{$smarty.const.PAGE_STATUS|link}{$scope.id}?view=_booking-status-chat.html" class="smtlink click-parent" data-tpl="_booking-status-chat.html"><i class="fa fa-weixin"></i>Message History</a></li>
+                            {/if}
+                            {if ($user.user_level >= $smarty.const.USER_LEVEL_STAFF && $site.property_site == $smarty.const.PROPERTY_SITE_CORPORATE)}
+                            <li class="class-filter"><a id="booking-status-share" href="{$smarty.const.PAGE_STATUS|link}{$scope.id}?view=_booking-status-share.html" class="smtlink click-parent" data-tpl="_booking-status-share.html"><i class="fa fa-link"></i>Share Link</a></li>                            
+                            <li class="class-filter"><a id="booking-status-recalculate" href="{$smarty.const.PAGE_STATUS|link}{$scope.id}?view=_booking-status-recalculate.html" class="smtlink click-parent" data-tpl="_booking-status-recalculate.html"><i class="fa fa-calculator"></i>Recalculate</a></li>                            
+                            <li class="class-filter"><a id="booking-status-upload" href="{$smarty.const.PAGE_STATUS|link}{$scope.id}?view=_booking-status-upload.html" class="smtlink click-parent" data-tpl="_booking-status-upload.html"><i class="fa fa-upload"></i>Upload Documents</a></li>                            
+                            {/if}
+                                                        
+                            {if ($scope.can_cancel)}
+                            <li class="class-filter"><a id="booking-status-edit" href="{$smarty.const.PAGE_STATUS|link}{$scope.id}?view=_booking-status-edit.html" class="smtlink click-parent" data-tpl="_booking-status-edit.html"><i class="fa fa-pencil-square-o"></i>Alter {$type_name}</a></li>                            
+                            {/if}                            
+                            {if ($scope.can_cancel)}
+                            <li class="class-filter"><a id="booking-status-cancel" href="{$smarty.const.PAGE_STATUS|link}{$scope.id}?view=_booking-status-cancel.html" class="smtlink click-parent" data-tpl="_booking-status-cancel.html"><i class="fa fa-times-circle-o"></i>Cancel {$type_name}</a></li>
+                            {/if}                            
+                        </ul>
+                                                                                      

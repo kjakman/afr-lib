@@ -1,0 +1,87 @@
+  {{"extend": "base/default.html"}}
+  {block name=content}
+  
+
+
+  <div class="container">
+  <br />
+  <br />
+  <div class="alert alert-warning alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+    {{"name": "faq-heading", "type":"html", "value":"If you cannot find an answer to your question, make sure to"}} <a href="{$smarty.const.PAGE_CONTACT|link}">
+      {{"name": "faq-contact", "type":"text", "value":"contact us"}}.
+    </a> 
+  </div>
+
+  <br />
+
+  {*
+  <div class="panel-group" id="accordion">
+    <div class="faqHeader">General questions</div>
+  </div>
+  *}
+  {$articles = $scope.articles}
+  {$len = $articles|@count}
+  {*$articles|dump*}
+  {if ($scope.auth_edit_article)}
+     {$location.description|editable:"object_description":$location.description_id:"description"}
+  {/if}
+  
+  {* Found {$len} FAQs *}
+  {$i = 1}
+  {foreach from=$articles item=article}
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a class="accordion-toggle collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapse{$i}"> 
+          {$article.title|editable:$article.obj_type:$article.obj_id:'title'}          
+        </a>
+      </h4>
+    </div>
+    <div id="collapse{$i}" class="panel-collapse collapse">
+      <div class="panel-body">      
+        {* $article.content 
+        t:{$article.obj_type}<br>
+        id:{$article.obj_id}<br>
+        f:{$article.content_field}<br> *} 
+        {$article.content|editable:$article.obj_type:$article.obj_id:$article.content_field}  
+      </div>
+    </div>
+  </div>
+    {$i = $i + 1}  
+  {/foreach}
+   
+</div>
+
+<style>
+  .faqHeader {
+    font-size: 27px;
+    margin: 20px;
+  }
+
+  .panel-heading [data-toggle="collapse"]:after {
+    _font-family: 'Glyphicons Halflings';
+    _content: "e072"; /* "play" icon */
+    float: right;
+    color: #F58723;
+    font-size: 18px;
+    line-height: 22px;
+    /* rotate "play" icon from > (right arrow) to down arrow */
+    -webkit-transform: rotate(-90deg);
+    -moz-transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg);
+    -o-transform: rotate(-90deg);
+    transform: rotate(-90deg);
+  }
+
+  .panel-heading [data-toggle="collapse"].collapsed:after {
+    /* rotate "play" icon from > (right arrow) to ^ (up arrow) */
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    -ms-transform: rotate(90deg);
+    -o-transform: rotate(90deg);
+    transform: rotate(90deg);
+    color: #454444;
+  }
+</style>
+{/block}

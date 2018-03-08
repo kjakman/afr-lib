@@ -1,0 +1,25 @@
+                <div class="booking-item booking-item-small">
+                  <div class="row">
+                    <div class="col-xs-4">
+                      <img src="{$golf.images|photo:small|default:'/img/golf2.jpg'}" alt="{$golf.name}" title="{$golf.name}" />
+                    </div>
+                    <div class="col-xs-5">
+                      <h5 class="booking-item-title">{$golf.name}</h5>
+                      {if ($golf.review_score)}
+                        {$golf.review_score|stars:["max_rating" =>  10]} ({($golf.review_score/2)|round:"1"})
+                      {/if}
+                      {if ($golf.byg_url)}
+                        <button class="btn btn-success btn-sm mt10">{'book now'|translate:'c'}</button>                        
+                      {/if}                      
+                    </div>
+                    <div class="col-xs-3">
+                    {if ($golf.byg_rate_from > 0)}
+                      {'from'|translate} <span class="booking-item-price">{$golf.byg_currency|currency}{$golf.byg_rate_from}</span>
+                    {else}
+                      <span class="booking-item-price">{$golf.currency|currency}{$golf.fee_weekday|round}</span>
+                    {/if}
+                    <br>{$golf.distance|string_format:"%.1f"}km
+                    </div>
+                  </div>
+                </div>
+

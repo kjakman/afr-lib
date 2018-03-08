@@ -1,0 +1,54 @@
+
+
+              {$src = "https://www.paypalobjects.com/en_US/i/btn/btn_paynowCC_LG.gif"}
+
+          <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+            <div class="row">
+              {if ($due_now > 0)}
+              <div class="col-md-4">
+                <div class="form-group ">
+                  <label>Amount to pay</label>
+                  <input type="hidden" name="on0" value="Amount">
+                  <select name="os0" class="form-control">
+                    <option value="Pay Deposit">Pay Deposit {$cur}{$due_now} EUR</option>
+                    <option value="Pay Full Amount">Pay Full Amount {$cur}{$amount} EUR</option>
+                  </select>
+                  <input type="hidden" name="option_select0" value="Pay Deposit">
+                  <input type="hidden" name="option_amount0" value="{$due_now}">
+                  <input type="hidden" name="option_select1" value="Pay Full Amount">
+                  <input type="hidden" name="option_amount1" value="{$amount}">
+                  <input type="hidden" name="option_index" value="0">                  
+                </div>
+              </div>
+              {else}
+                <input type="hidden" name="amount" value="{$amount}">
+              {/if}
+            
+              <div class="col-md-4">
+                <div class="form-group mt30">
+                  <input type="image" src="{$src}" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+                  <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+                </div>
+              </div>
+                
+              <input type="hidden" name="cmd" value="_xclick">
+              <input type="hidden" name="business" value="SZW7NQHZ25F7Y">
+              <input type="hidden" name="lc" value="US">
+              <input type="hidden" name="item_name" value="{$item_name}">
+              <input type="hidden" name="item_number" value="{$inv_id}">
+              <input type="hidden" name="currency_code" value="{$currency}">
+              <input type="hidden" name="button_subtype" value="services">
+              <input type="hidden" name="no_note" value="1">
+              <input type="hidden" name="no_shipping" value="1">
+              <input type="hidden" name="rm" value="1">
+              <input type="hidden" name="return" value="https://{$smarty.server.HTTP_HOST}{$url}{$query_string}">
+              <input type="hidden" name="cancel_return" value="https://{$smarty.server.HTTP_HOST}{$url}{$query_string}&amp;cancel=1">
+              <input type="hidden" name="bn" value="PP-BuyNowBF:paypal.png:NonHosted">
+              <input type="hidden" name="inv_id" value="{$inv_id}">
+              <input type="hidden" name="res_id" value="{$res_id}">
+              <input type="hidden" name="user_id" value="{$user.id}">
+              <input type="hidden" name="custom" value="res_id={$res_id},inv_id={$inv_id},user_id={$user.id},site_id={$site.id}">
+            </div>
+
+          </form>
+

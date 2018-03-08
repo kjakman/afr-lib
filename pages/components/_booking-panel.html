@@ -1,0 +1,36 @@
+                        
+                        {$rental_name = $booking.apartment_name}
+                        {$status = $booking.status|get:"res_status":"name"}
+                        {$label = $booking.status|get:"res_status":"label"}
+                        {$in = $booking.checkin}
+                        {$out = $booking.checkout}
+                        <div class="col-xs-4 nopadding">
+                          <a href="{$booking.apt_id|property_link}">
+                            <img src="{$rental.media|photo:square|default:'/traveler/img/800x600.png'}" alt="{$booking.apartment_name}" />
+                          </a>
+                        </div>
+                        <div class="col-xs-8 pad">
+                        <h5><a href="{$smarty.const.PAGE_STATUS|link}{$booking.res_id}" >Booking {$booking.res_id}</a></h5>
+                        <h6><a href="{$booking.apt_id|property_link}" >{$booking.apartment_name}</a></h6>
+                          <p>{$booking.city_name}</p>
+                          <p>Host: <a href="{$smarty.const.PAGE_PROFILE|link}{$booking.host_id}">{$booking.host_id|username}</a></p>
+                          <ul class="list">
+                            <!--li>Created {$booking.created|date}</li-->
+                            <li>{$booking.status|get:"res_status":"name"} {$booking.created|date}</li>
+                            <li>{$in|daterange:$out}</li>
+                            <li>{$booking.num_days} days, {$booking.num_guests} guests</li>
+                            <li>{$booking.currency|currency}{$booking.grand_total - $booking.fee_service}
+                              {if ($booking.host_id != $user.id && $booking.fee_service > 0)}
+                              + {$booking.currency|currency}{$booking.fee_service} Service Fee
+                              {else}
+                              Total
+                              {/if}
+                            </li>
+                          </ul>
+                          
+                          {if ($booking.expires)}
+                          Expires in
+                          <span class="countdown" data-countdown="{$booking.expires} UTC"></span>
+                          {/if}
+                        </div>
+

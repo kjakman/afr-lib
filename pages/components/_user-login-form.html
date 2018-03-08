@@ -1,0 +1,17 @@
+
+
+          <form class="ajax-submit signin-form enter-to-submit" method="get" data-handler="user-login">
+            <div class="form-group form-group-icon-left"><i class="fa fa-user input-icon"></i>
+              <label>{'username or email'|translate:'c'}</label>
+              <input name="username" class="form-control" placeholder="e.g. johndoe@gmail.com" type="text" />
+            </div>
+            <div class="form-group form-group-icon-left"><i class="fa fa-lock input-icon"></i>
+              <label>{'password'|translate:'c'}</label>
+              <input name="password" class="form-control" type="password" placeholder="my secret password" />
+            </div>
+            <input name="redirect" type="hidden" class="form-control login-redirect" value="{$get.ref|remove_query_var:'act'}" />
+            <input name="uri" type="hidden" class="form-control" value="{$this_url|remove_query_var:'act'}" />
+            <input class="btn btn-primary" type="submit" value="{'log in'|translate:'c':0}" />
+            <div class='gap gap-small'></div>                      
+          </form>
+

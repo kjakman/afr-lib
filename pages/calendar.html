@@ -1,0 +1,15 @@
+  {{"extend": "base/admin.html"}}
+  {block name=content}
+
+{$slimmenu_class = "compact" }
+{* "include": "_user-menu.html" *}
+<div id="cal_parent" data-options='{literal}{"backgroundColor":"#ccc", "contOption": "99"}{/literal}'>
+{{"include": "_calendar.html"}}
+</div>
+
+  <div id='cal_menu' class='hidden'></div>
+  {{"include": "_calendar-dialog-simple.html"}}
+  {{"include": "_calendar-search-results.html"}}
+  {{"include": "_calendar-dialog.html"}}
+  {{"include": "_calendar-dialog-old.html"}} {* remove when done *}
+{/block}

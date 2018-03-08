@@ -1,0 +1,19 @@
+                                
+                                    <div class="booking-item booking-item-small">                                
+                                        <div class="row">
+                                            <div class="col-xs-4">
+                                                <img src="{$apt.media|photo:small}" alt="{$apt.name}" title="{$apt.name}" />
+                                            </div>
+                                            <div class="col-xs-5">
+                                                <h5 class="booking-item-title">{$apt.name}</h5>
+                                                <input type="number" readonly class="rating" 
+                                                   value="{$apt.review_score}"
+                                                   data-min="0" data-max="10"
+                                                   data-size="xxs" data-show-clear="false"
+                                                   data-show-caption="false">
+                                            </div>
+                                            <div class="col-xs-3"><span class="booking-item-price">{$apt.currency|currency}{$apt.rate_day}</span><br>{$apt.distance|string_format:"%.1f"}km
+                                            </div>
+                                        </div>
+                                    </div>
+

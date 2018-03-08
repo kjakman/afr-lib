@@ -1,0 +1,457 @@
+        {*$scope|dump*}
+        
+        {* id={$scope.rental.id} list={$smarty.get.id_list} *}
+        {$rental = $scope.rental}
+        
+      <article itemscope itemprop="location" itemtype="http://schema.org/Place" class="hidden"> 
+        <meta itemprop="name" value="{$scope.rental.name}" />
+        <div itemscope itemprop="address" itemtype="schema.org/PostalAddress"> 
+          <meta itemprop="streetAddress" content="{$scope.rental.address_street}" /> 
+          <meta itemprop="addressLocality" content="{$scope.rental.address_city}" /> 
+          <meta itemprop="postalCode" content="{$scope.rental.address_postcode}" /> 
+          <meta itemprop="addressCountry" content="{$scope.rental.address_country|get:'countries':'name'}" /> 
+        </div> 
+        <div itemprop="geo" itemscope itemtype="http://schema.org/GeoCoordinates">
+          <meta itemprop="latitude" content="{$scope.rental.location_lat}" />
+          <meta itemprop="longitude" content="{$scope.rental.location_long}" />
+        </div>
+      </article>
+        
+      <article id="shortstay-{$rental.id}" itemscope itemtype="http://schema.org/Offer">
+        <meta itemprop="url" content="{$site_url}{$rental|property_link}" />
+        <meta itemprop="serialNumber" content="{$rental.id}" />
+        <meta itemprop="category" content="Residence" />
+        <meta itemprop="businessFunction" content="rental" />
+        <meta itemprop="priceCurrency" content="{$rental.currency}" />
+        <meta itemprop="price" content="{$rental.rate_day|round}" />
+
+      
+        <header class="booking-item-header" id="rental_detail_header" data-id="{$scope.rental.id}">
+          <div class="row">
+            <div class="col-md-9">
+              <h2 itemprop="name" class="lh1em">{$scope.rental.name}</h2>
+              <p class="lh1em text-small"><i class="fa fa-map-marker"></i> {$scope.address}</p>
+            </div>
+            <div class="col-md-3">
+              {$discount_class = ($scope.discount > 0) ? "" : "hidden"}
+              <p class="booking-item-header-price">{$scope.rate_title} <span class='currency text-lg'>{$scope.rate_currency|currency}</span><span class='rate text-lg'>{$scope.rate_average|round}</span>/<span class='unit'>{$scope.rate_unit|default:"night"}</span></p>
+              <p class="booking-item-header-discount {$discount_class} green inline-block">- <span class='discount text-lg'>{$scope.discount}</span> discount</p>
+              <p class="booking-item-header-discount-rate {$discount_class} inline-block">= <span class='currency text-lg'>{$scope.rate_currency|currency}</span><span class='rate text-lg'>{$scope.discount_rate_average|round}</span>/<span class='unit'>{$scope.rate_unit|default:"night"}</span></p>
+              {* <br>{$scope.price_breakdown_link} *}
+            </div>
+          </div>
+        </header>
+        
+        <div class="row">
+          <div class="col-lg-8">
+            <div class="tabbable booking-details-tabbable">
+              <ul class="nav nav-tabs" id="myTab">
+                <li class="active">
+                  <a href="#rental-photos" data-toggle="tab"><i class="fa fa-camera"></i>{'photos'|translate:'c'}</a>
+                </li>
+                <li>
+                  <a href="#rental-map" data-toggle="tab"><i class="fa fa-map-marker"></i>{'on the map'|translate:'c'}</a>
+                </li>
+                {if ($scope.calendar)}
+                <li>
+                  <a href="#rental-calendar" data-toggle="tab"><i class="fa fa-calendar"></i>{'calendar'|translate:'c'}</a>
+                </li>
+                {/if}
+              </ul>
+              <div class="tab-content">
+                <div class="tab-pane fade in active" id="rental-photos">
+                  <div class="fotorama rental-detail-photos" data-height="480" data-allowfullscreen="true" data-nav="thumbs">
+                    {foreach from=$scope.images item=image}
+                      <img itemprop="image" src="{$image.src}" alt="{$image.name}" {if ($image.title)} data-caption="{$image.title}"{/if} />
+                    {/foreach}
+                  </div>
+                </div>
+                <div class="tab-pane fade" id="rental-map">
+                  <div id="map-canvas" data-types="{$global.location_types|default:'landmark,airport'}" data-lat={$scope.rental.location_lat} data-lng={$scope.rental.location_long} style="width:100%; height:500px;"></div>
+                </div>
+                {if ($scope.calendar)}                
+                <div class="tab-pane fade" id="rental-calendar">
+                  {{"include": "_rental-view-calendar.html"}}
+                </div>
+                {/if}
+              </div>
+            </div>
+          </div>
+         
+       
+          <div class="col-lg-4">
+            {if ($scope.rental.review_count > 0)}
+            {$next_class = ''}
+            <a class="text-default" href="#reviews">
+              <div class="booking-item-meta" itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">
+                <meta itemprop="reviewCount" content="{$rental.review_count|default:1}" />                   
+                <meta itemprop="bestRating" content="10" />                   
+                <meta itemprop="ratingValue" content="{$scope.rental.review_score}" />                   
+                <input type="number" readonly class="rating float-left"
+                     value="{$scope.rental.review_score}" 
+                     min=0 max=5 
+                     data-size="sm" 
+                     data-rtl="false" data-glyphicon="false" data-show-clear="false"                     
+                     data-show-caption="false">
+              
+                <!--h2 class="lh1em mt40">Exceptional!</h2>
+                <h3>{(($scope.rental.review_recommend/$scope.rental.review_count) * 100)|round} % <small >of guests recommend</small></h3-->
+                <div class="booking-item-rating">                       
+                    <span class="booking-item-rating-number"><b >{($scope.rental.review_score)|round:"1"}</b> / 5</span>
+                    <span class="text-normal">based on {$scope.rental.review_count} {'reviews'|translate}</span>
+                    
+                  </a>
+                </div>
+              </div>
+            </a>
+            {else}
+            {$next_class = ''} {* push box below up *}
+            {/if}
+            
+            {$handler = 'rental-availability'}
+            {$success_handler = 'rental_rate_handler'}
+
+            {if ($scope.rental.test && $app.live)}
+            This property will be available for booking soon.  
+            
+            {else}
+              
+              {$in = $smarty.get.in}
+              {$out = $smarty.get.out}
+              {$ng = $smarty.get.ng|default:1}
+              {$book_link = $smarty.const.PAGE_BOOK|link}
+              {$request_link = $smarty.const.PAGE_REQUEST|link}
+              {$inquiry_link = $smarty.const.PAGE_INQUIRY|link}
+              {$qstr = ""}
+              {if ($in && $out)}
+                {$qstr = "in=`$in`&amp;out=`$out`&amp;ng=`$ng`"}
+              {/if}
+            
+            <!-- date/ng form -->            
+            <div class="booking-item-dates-change {$next_class}">
+              <form id="booking-form" data-scroll="0" class="ajax-submit searchbar" data-handler="{$handler}" data-success_handler="{$success_handler}">
+                <input type="hidden" name="apt_id" id="sbd_apt_id" value="{$scope.rental.id}">                           
+
+                <div class="row">
+                  <div class="input-daterange" 
+                    data-date-start-date="+0d" id="detail_range" data-default-period="{$rental.min_stay|default:'3'}"
+                    data-date-dates-end-date = "{$scope.availability.last|default:'+2y'}"
+                    {if ($scope.availability.blocked_dates)}
+                    data-date-dates-disabled = '{$scope.availability.blocked_dates|@json_encode}'
+                    {/if}
+                    {if ($scope.availability.blocked_weekdays)}
+                    data-date-days-of-week-disabled = '{$scope.availability.blocked_weekdays|@json_encode}'
+                    {/if}
+                  >    
+                    <div class="col-sm-4 nogutter">
+                      <label><i class="fa fa-calendar"></i> {'check in'|translate:'c'}</label>
+                      <input type="text" value="{$smarty.get.in}" class="form-control default-cursor" id="sbd_in" name="in" data-apt_id="{$scope.rental.id}" placeholder="Checkin" readonly >
+                    </div>
+                    <div class="col-sm-4 nogutter form-group">
+                      <label><i class="fa fa-calendar"></i> {'check out'|translate:'c'}</label>
+                      <input type="text" value="{$smarty.get.out}" class="form-control default-cursor" id="sbd_out" name="out" placeholder="Checkout" readonly>    
+                    </div>
+                  </div>
+                  <div class="col-sm-4 nogutter form-group">
+                    <label><i class="fa fa-user"></i> {'guests'|translate:'c'}</label>
+                    <select name="ng" class="form-control" id="sbd_ng" >
+                      {section name=ng start=1 loop=$scope.rental.max_guests+1 step=1}
+                        <option{if ($ng == $smarty.section.ng.index)} selected="selected"{/if}>{$smarty.section.ng.index}</option>
+                      {/section}                      
+                    </select>
+                  </div>
+                </div>
+  
+                <!-- rate table -->
+                <div class="row">
+                  <div class="col-md-12">
+                    <div id="rr-spinner" class="center margin-bottom collapse">
+                      <i class="fa fa-spinner fa-spin fa-4x"></i>
+                    </div>                    
+                    <div class="messages" id="rr-message"></div>                    
+                    <table class="table collapse" id="rr-table">
+                      <tbody>
+                        <tr class="price-item">
+                          <td>
+                              <span id="rr-average">{$scope.rate.average|round}</span>
+                              <span id="rr-average_discounted" class="collapse">{$scope.rate.average_discounted|round}</span> 
+                            x <span class="rr-nd">{$scope.rate.nd}</span> {'nights'|translate}</span> 
+                              <i class="icon icon-question"></i><noscript></noscript>
+                            </td>
+                          <td class="text-right"><span class="rr-total rr-total_discounted">{$scope.rate.subtotal}</span></td>
+                        </tr>
+                        <tr class="price-item">
+                          <td><span>{$scope.rate.discount_percentage}% {$scope.rate.discount_type} {'price discount'|translate}</span> <span><i class="icon icon-question"></i><noscript></noscript></span></td>
+                          <td class="text-right"><div class="text-success">-<span id="rr-discount_week">{$scope.rate.discount}</span></td>
+                        </tr>
+                        
+                        <!--tr class="price-item discount-row collapse">
+                          <td><span><span id="rr-average_discounted">{$scope.rate.average_discounted|round}</span> x <span class="rr-nd">{$scope.rate.nd}</span> {'nights'|translate}</span> <span><i class="icon icon-question"></i><noscript></noscript></span></td>
+                          <td class="text-right"><span id="rr-total_discounted">{$scope.rate.subtotal_discounted}</span></td>
+                        </tr-->
+
+                        <tr class="price-item">                          
+                          <td><span>Cleaning fee</span> <span><i class="icon icon-question"></i><noscript></noscript></span></td>
+                          <td class="text-right"><span id="rr-fee_cleaning">{$scope.rate.fee_cleaning}</span></td>
+                        </tr>
+                        <tr class="price-item">
+                          <td><span>Service fee</span> <span><i class="icon icon-question"></i><noscript></noscript></span></td>
+                          <td class="text-right"><span id="rr-service_fee">{$scope.rate.service_fee}</span></td>
+                        </tr>
+                        <tr class="price-item">
+                          <td><span>Occupancy Taxes</span> <span><i class="icon icon-question"></i><noscript></noscript></span></td>
+                          <td class="text-right"><span id="rr-tax">{$scope.rate.city_tax}</span></td>
+                        </tr>
+                        <tr>
+                          <td><span>Total</span></td>
+                          <td class="text-right"><span id="rr-grand_total">{$scope.rate.grand_total}</span></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </form>
+                                
+
+                
+              <div class="row">
+                <div class="col-md-12 nogutter">
+                  <div id="rr-book-now" class="collapse"><a class="btn btn-success btn-block btn-large rr-link" href="{$book_link}{$scope.rental.id}?{$qstr}"><i class="fa fa-bolt"></i> {'instant book'|translate:'t'} </a></div>
+                  <div id="rr-request" class="collapse"><a class="btn btn-success btn-block btn-large rr-link" href="{$request_link}{$scope.rental.id}?{$qstr}"><i class="fa fa-check"></i> {'request to book'|translate:'t'} </a></div>
+                  <div id="rr-inquiry" class="collapse mt10"><a class="btn btn-primary btn-block btn-large rr-link" href="{$inquiry_link}{$scope.rental.id}?{$qstr}"><i class="fa fa-envelope"></i> {'send inquiry'|translate:'t'} </a></div>
+         
+                  <div id="rr-check-availability"><a class="btn btn-success btn-block btn-large" href="#" onclick="$('#sbd_in').datepicker('show');"> {'check availability'|translate:'t'} </a></div>
+
+                  
+                </div>                  
+              </div>
+              
+              
+            {/if}{* end if not test *}
+              
+            </div>
+            <div class="gap gap-small"></div>            
+            <div class="bg-grey br5 pad">
+              {$thisuser=$scope.host}
+              {$quote=$scope.quote}
+              {$user_type = 'host'}
+              {if ($site.golf_site)}
+              {{"include": "_user-profile-panel-golf.html"}}
+              {else}
+              {{"include": "_user-profile-panel.html"}}
+              {/if}
+            </div>
+            {if ($scope.rental.special_deal)}
+            <div class="br5 pad mt10">
+              {$deal_title =($site.golf_site) ? "{'golf deal'|translate:'c'}!" : "{'special deal'|translate:'c'}!"}
+              <h5>{$deal_title}</h5>
+              {$scope.rental.special_deal}
+            </div>
+            {/if}
+          </div>
+        </div>
+        <div class="gap"></div>
+
+        
+        <div class="row">
+          <div class="col-md-8">
+          
+            {if ($scope.edit_link)}<a href="{$scope.edit_link}" type="submit" class="btn btn-danger">{'edit'|translate:'t'}</a><br><br>{/if}
+
+            {if ($scope.rental.short_description)}
+            <h3>{'summary'|translate:'t'}</h3>
+              <p itemprop="description">
+              {$scope.rental.short_description}
+              </p>
+            <div class="gap gap-small"></div>
+            {/if}
+
+            {$details = [
+              "{'sleeps'|translate:'c'}: " => ['fa fa-user', {$rental.max_guests}], 
+              "{'bedrooms'|translate:'c'}: " =>     ['fa fa-bed', {$rental.num_bedrooms}],
+              "{'bathrooms'|translate:'c'}: " =>    ['im im-bathtub', {$rental.num_bathrooms}],
+              "{'beds'|translate:'c'}: " =>         ['fa fa-bed', {$rental.num_beds}],
+              "{'check-in'|translate:'c'}: " =>     ['fa fa-arrow-left', {$rental.checkin_from}],
+              "{'check-out'|translate:'c'}: " =>    ['fa fa-arrow-right', {$rental.checkout_to}],
+              "" =>               ['fa fa-home', {$rental.hosting_property_type|get:"hosting_property_type":"name"|translate:"c"}],
+              " " =>              ['fa fa-home', {$rental.hosting_room_type|get:"hosting_room_type":"name"|translate:"c"}]
+              ]}
+
+            <div class="row">
+              <div class="col-md-3">
+                <h4>{'the space'|translate:'t'}</h4>
+              </div>
+              <div class="col-md-9">
+                <div class="not-expandable expanded expandable-trigger-more" id="rental-details">
+                  <div class="not-expandable-content expandable-content-long" style="transition: none; -webkit-transition: none;">
+                    <!-- expandable content here -->
+                    <ul class="booking-item-features booking-item-features-expand-inline mb30 clearfix">
+                    {foreach from=$details item=ar key=title}
+                      {if ($ar[1])}
+                        <li class="col-xs-6 col-sm-4 col-md-6 col-lg-4 no-padding">
+                          <i class="{$ar[0]}"></i><span class="booking-item-feature-title">{$title}{$ar[1]}</span>
+                        </li>
+                      {/if}
+                    {/foreach}
+                    </ul>
+                    <div class="not-expandable-indicator"></div>
+                  </div>
+                  <a class="not-expandable-trigger-more collapse" href="#"><strong>+ {'more'|translate:'c'}</strong></a>
+                </div>
+                <div class="gap gap-small"></div>              
+              </div>
+            </div>
+            
+            {if ($scope.facs|@count)}
+            <div class="row">
+              <div class="col-md-3">
+                <h4>{'amenities'|translate:'t'}</h4>
+              </div>
+              <div class="col-md-9">
+                <div class="not-expandable expanded expandable-trigger-more" id="rental-amenities">
+                  <div class="not-expandable-content expandable-content-long" style="transition: none; -webkit-transition: none;">
+                    <!-- expandable content here -->
+                    <ul class="booking-item-features booking-item-features-expand-inline mb30 clearfix">
+                    {foreach from=$scope.facs item=fac}
+                      <li class="col-xs-6 col-sm-4 col-md-6 col-lg-4 no-padding">
+                        <i class="{$fac.icon}" id="fac_{$fac.id}"></i><span class="booking-item-feature-title">{$fac.name|translate:"c"}</span>
+                      </li>
+                    {/foreach}
+                                        
+                        <!--li class="col-xs-6 col-sm-4 col-md-6 col-lg-4 no-padding"><i class="icon-microwave" id="fac_{$fac.id}"></i><span class="booking-item-feature-title">Testing</span></li>            
+                            <li class="col-xs-6 col-sm-4 col-md-6 col-lg-4 no-padding"><i class="icon-microwave" id="fac_{$fac.id}"></i><span class="booking-item-feature-title">Testing</span -->                       
+                                                                                                                                                                                                       
+                    </ul>
+                    <div class="not-expandable-indicator"></div>
+                  </div>
+                  <a class="not-expandable-trigger-more collapse" href="#"><strong>+ {'more'|translate:'c'}</strong></a>
+                </div>
+                <div class="gap gap-small"></div>              
+              </div>
+            </div>
+            {/if}
+
+            {$cur = $rental.currency|currency}
+            {$currency = $rental.currency|lower}
+            {if ($currency == 'eur' || $currency == 'usd' || $currency == 'gbp' || $currency == 'jpy')}
+              {$icon_cur = "fa fa-`$currency`"}
+            {else}
+              {$icon_cur = "fa fa-usd"}
+            {/if}
+            {$icon_perc = "fa fa-percent"}
+            {$icon_cancel = "fa icon-cancel"}
+
+            {$cancellation_link = ''}
+            {$policy = $rental.cancellation_policy}
+            {if ($policy)}
+              {$cancellation_name = $policy|get:"cancellation_policy":"name"|lower}
+              {$cancellation_url = $smarty.const.PAGE_CANCELLATION_POLICY|link}
+              {$cancellation_link = "<a href='`$cancellation_url`#`$cancellation_name|lower`'> `$cancellation_name`</a>"}
+              
+            {/if}
+            
+            {$pricing = [        
+              "{'day'|translate:'c'}: " => [$icon_cur, {$rental.rate_day}, {$cur}], 
+              "{'week'|translate:'c'}: " => [$icon_cur, {$rental.rate_week}, {$cur}], 
+              "{'extra guests'|translate:'c'}: " => [$icon_cur, {$rental.rate_extraguest}, {$cur}, '/day'], 
+              "2 {'weeks'|translate:'c'}: " => [$icon_cur, {$rental.rate_2_weeks}, {$cur}], 
+              "3 {'weeks'|translate:'c'}: " => [$icon_cur, {$rental.rate_3_weeks}, {$cur}], 
+              "{'month'|translate:'c'}: " => [$icon_cur, {$rental.rate_month}, {$cur}], 
+              "{'weekly discount'|translate:'c'}: " =>  [$icon_perc, {$rental.discount_week}, '', '%'], 
+              "{'2-week discount'|translate:'c'}: " =>  [$icon_perc, {$rental.discount_2_weeks}, '', '%'], 
+              "{'3-week discount'|translate:'c'}: " =>  [$icon_perc, {$rental.discount_3_weeks}, '', '%'], 
+              "{'monthly discount'|translate:'c'}: " => [$icon_perc, {$rental.discount_month}, '', '%'], 
+              "{'weekend'|translate:'c'}: " => [$icon_cur, {$rental.rate_weekend}, {$cur}], 
+              "{'deposit'|translate:'c'}: " => [$icon_cur, {$rental.security_deposit}, {$cur}], 
+              "{'cleaning'|translate:'c'}: " => [$icon_cur, {$rental.fee_cleaning}, {$cur}], 
+              "{'cancellation'|translate:'c'}:" => [$icon_cancel, {$cancellation_link}, '']
+              ]}
+            <div class="row">
+              <div class="col-md-3">
+                <h4>{'pricing'|translate:'t'}</h4>
+              </div>
+              <div class="col-md-9">
+                <div class="not-expandable expanded expandable-trigger-more" id="rental-details">
+                  <div class="not-expandable-content expandable-content-long" style="transition: none; -webkit-transition: none;">
+                    <!-- expandable content here -->
+                    <ul class="booking-item-features booking-item-features-expand-inline mb30 clearfix">
+                    {foreach from=$pricing item=ar key=title}
+                      {if ($ar[1])}
+                        {$prefix = $ar[2]}
+                        {$sufffix = $ar[3]}
+                        <li class="col-xs-6 col-sm-4 col-md-6 col-lg-4 no-padding">
+                          <i class="{$ar[0]}"></i><span class="booking-item-feature-title">{$title}{$prefix}{$ar[1]}{$suffix}</span>
+                        </li>
+                      {/if}
+                    {/foreach}
+                    </ul>
+                    <div class="not-expandable-indicator"></div>
+                  </div>
+                  <a class="not-expandable-trigger-more collapse" href="#"><strong>+ {'more'|translate:'c'}</strong></a>
+                </div>
+                <div class="gap gap-small"></div>              
+              </div>
+            </div>
+
+            {if ($scope.description)}            
+            <h3>{'rental description'|translate:'t'}</h3>
+            <div class="not-expandable expanded expandable-trigger-more" id="rental-description">
+              <div class="not-expandable-content expandable-content-long" style="transition: none; -webkit-transition: none;">
+                <!-- expandable content here -->
+                {$scope.description}             
+                <div class="not-expandable-indicator"></div>
+              </div>
+              <a class="not-expandable-trigger-more collapse" href="#"><strong>+ {'more'|translate:'c'}</strong></a>
+            </div>
+            
+            <div class="gap gap-small"></div> 
+            {/if}
+            
+            {if ($scope.reviews|@count > 0)}
+            <h3 class="mb20">{$scope.reviews|@count} {if ($scope.reviews|@count == 1)}{'review'|translate:'c'}{else}{'reviews'|translate:'c'}{/if}</h3>                                    
+            <ul class="booking-item-reviews list" id="reviews">
+              {foreach from=$scope.reviews item=review}
+              <li>
+              {{"include": "_rental-review-item.html", "compact": "1"}}
+              </li>
+              {/foreach}
+            </ul>
+            {else}
+              {* <p>No reviews yet.</p> *}
+            {/if}
+         </div>
+
+          
+          <div class="col-md-4">
+            {if ($site.golf_site)}            
+            <h4>{'nearby golf courses'|translate:'t'}</h4>
+            <ul class="booking-list">
+              {foreach from=$scope.nearby_golf item=golf}
+              <li>
+                <a href="{$smarty.const.PAGE_GOLF_CLUB|link}{$golf|property_geolink}{$query_string}">
+                {{"include": "_golf-club-nearby.html"}}
+                </a>
+              </li>
+              {/foreach}
+            </ul>
+            {/if}
+
+            <h4>{'nearby properties'|translate:'t'}</h4>
+            <ul class="booking-list">
+              {foreach from=$scope.nearby_apts item=apt}
+              <li>
+                <a href="{$apt|property_link}{$query_string}">
+                {{"include": "_rental-nearby.html"}}
+                </a>
+              </li>
+              {/foreach}
+            </ul>
+            
+          </div>
+        </div>
+      </article>
+      
+
+      {if ($in && $out && $ng)}
+      <script>booking_form_update()</script>
+      {/if}

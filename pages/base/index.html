@@ -1,0 +1,155 @@
+<!doctype html>
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang=""> <!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!--meta name="viewport" content="width=device-width, initial-scale=.5, maximum-scale=12.0, minimum-scale=.25, user-scalable=yes"/-->
+  
+  <title>{$page.se_title|default:$page.name}</title>
+  <meta name="description" content="{$page.se_description}">
+  <meta name="keywords" lang="en" content="{$page.se_keywords}">
+  <meta name="author" lang="en" content="{$page.author|default:'Syspensa'}">  
+  <meta name="robots" content="noindex, nofollow">
+  
+  {foreach from = $app.header.meta item=meta}
+    {$meta|meta_tag}
+  {/foreach}
+
+  {foreach from = $app.header.link item=link}
+    {$link|header_link}
+  {/foreach}
+  {$version = $app.version}
+  <link rel="StyleSheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/themes/ui-lightness/jquery-ui.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" type="text/css" media="screen"/>
+
+  <link rel="StyleSheet" href="/afr/css/afr_base.css?v={$version}" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/afr/css/afr_rental.css?v={$version}" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/afr/css/afr_tooltip.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/afr/css/afr_cms.css?ver={$version}" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="//fonts.googleapis.com/css?family=Roboto:400,300,100,500,700" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="//fonts.googleapis.com/css?family=Open+Sans:400italic,400,300,600" type="text/css" media="screen"/>
+  
+  <link rel="StyleSheet" href="/afr/font/afr/styles.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/traveler/css/icomoon.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/traveler/css/styles.css?v={$version}" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/traveler/css/mystyles.css?v={$version}" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/css/site.css?ver={$version}" type="text/css" media="screen"/>
+
+  <link rel="StyleSheet" href="/afr/bower/fancybox/source/jquery.fancybox.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/afr/bower/summernote/dist/summernote.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/afr/bower/bootstrap3-wysihtml5-bower/dist/bootstrap3-wysihtml5.min.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/afr/bower/ionrangeslider/css/ion.rangeSlider.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/afr/bower/bootstrap-star-rating/css/star-rating.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/afr/css/google_pac.css" type="text/css" media="screen"/>
+  
+  <link rel="StyleSheet" href="/afr/bower/select2/select2.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/afr/bower/flag-icon-css/css/flag-icon.min.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/afr/bower/bootstrap-social/bootstrap-social.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/afr/bower/intl-tel-input/build/css/intlTelInput.css?v=11.0.4" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/afr/bower/magnific-popup/dist/magnific-popup.css" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/afr/bower/addtocalendar/atc.css?foo=bar" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/afr/bower/CodeMirror/lib/codemirror.css" type="text/css" media="screen"/>
+
+  {$styles = $app.header.styles|array_unique}
+  {foreach from = $styles item=style}
+    {$style|style_tag}
+  {/foreach}
+  
+  <link rel="canonical" href="{$full_path}" />
+  <link rel="stylesheet" href="/afr/css/print.css" type="text/css" media="print">
+
+  <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDqzndmgSgkwaD6AEATZOkeEWUo4foizEo&amp;libraries=places&amp;language=en"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.js"></script>    
+  
+  <script type="text/javascript" src="/afr/node/moment/moment.js"></script>
+  <script type="text/javascript" src="/afr/node/moment-range/dist/moment-range.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>  
+  
+  <script type="text/javascript" src="/afr/js/afr.js?v={$version}"></script>
+  <script type="text/javascript" src="/afr/js/afr_cms.js?v={$version}"></script>
+  <script type="text/javascript" src="/afr/js/afr_rental.js?v={$version}"></script>
+  <script type="text/javascript" src="/afr/bower/google-markerwithlabel/src/markerwithlabel.js"></script>
+  <script type="text/javascript" src="/afr/js/google_pac.js?v={$version}"></script>
+  <script type="text/javascript" src="/afr/bower/fancybox/source/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/afr/bower/summernote/dist/summernote.min.js"></script>
+  <script type="text/javascript" src="/afr/bower/bootstrap-datepicker/js/bootstrap-datepicker.js?v=1.6.4"></script>
+  <script type="text/javascript" src="/afr/bower/bootstrap3-wysihtml5-bower/dist/bootstrap3-wysihtml5.all.min.js"></script>
+  <script type="text/javascript" src="https://use.fontawesome.com/a22cbf3bb2.js"></script>
+    
+  {$scripts = $app.header.base_scripts|array_unique}
+  {foreach from = $scripts item=script}
+    {$script|script_tag}
+  {/foreach}
+  <script>
+    window['moment-range'].extendMoment(moment)
+  </script>
+
+  {foreach from = $app.header.code item=code}
+    {$code}
+  {/foreach}
+  
+</head>
+
+<body id="page_{$page.name|slugify}" data-id="{$page.id}">
+  
+  {block name=top}{/block}
+  {block name=body}{/block}
+  
+  <script type="text/javascript" src="/js/main.js?v={$version}"></script>
+  <script type="text/javascript" src="/traveler/js/slimmenu.js"></script>
+  <script type="text/javascript" src="/traveler/js/nicescroll.js"></script>
+  <script type="text/javascript" src="/traveler/js/dropit.js"></script>
+  <script type="text/javascript" src="/traveler/js/icheck.js"></script>
+  <script type="text/javascript" src="/traveler/js/fotorama.js"></script>
+  <script type="text/javascript" src="/traveler/js/typeahead.js"></script>
+  <script type="text/javascript" src="/traveler/js/card-payment.js"></script>
+  <script type="text/javascript" src="/traveler/js/owl-carousel.js"></script>
+  <script type="text/javascript" src="/traveler/js/fitvids.js"></script>
+  <script type="text/javascript" src="/traveler/js/tweet.js"></script>
+  <script type="text/javascript" src="/traveler/js/gridrotator.js"></script>
+  <script type="text/javascript" src="/afr/bower/magnific-popup/dist/jquery.magnific-popup.min.js"></script>
+  <script type="text/javascript" src="/afr/bower/select-to-autocomplete/jquery.select-to-autocomplete.js"></script>
+  <script type="text/javascript" src="/afr/bower/bootstrap-validator/dist/validator.min.js"></script>
+  <script type="text/javascript" src="/afr/bower/bootstrap-confirmation2/bootstrap-confirmation.js"></script>
+  <!--script type="text/javascript" src="/afr/bower/bootstrap-toggle/js/bootstrap-toggle.min.js"></script-->
+  <!--script type="text/javascript" src="/afr/bower/bootstrap-modal/js/bootstrap-modalmanager.js"></script>
+  <script type="text/javascript" src="/afr/bower/bootstrap-modal/js/bootstrap-modal.js"></script-->
+  <script type="text/javascript" src="/afr/bower/ionrangeslider/js/ion.rangeSlider.min.js"></script>
+  <script type="text/javascript" src="/afr/bower/bootstrap-star-rating/js/star-rating.min.js"></script>
+  <script type="text/javascript" src="/afr/bower/select2/select2.min.js"></script>
+  <script type="text/javascript" src="/afr/bower/jquery.countdown/dist/jquery.countdown.js"></script>
+  <script type="text/javascript" src="/afr/bower/intl-tel-input/build/js/intlTelInput.min.js?v=11.0.14"></script>
+  
+  <script type="text/javascript" src="/afr/bower/parallax/jquery.parallax.js"></script>
+  <script type="text/javascript" src="/afr/bower/accounting.js/accounting.min.js"></script>
+  <script type="text/javascript" src="/afr/bower/character-countdown/build/characterCountdown.min.js"></script>
+  <script type="text/javascript" src="/afr/bower/addtocalendar/atc.min.js"></script>
+  <script type="text/javascript" src="/afr/bower/handlebars/handlebars.min.js"></script>
+  <script type="text/javascript" src="/afr/bower/jquery-truncate-html/jquery.truncate.js"></script>
+  <script type="text/javascript" src="/afr/bower/CodeMirror/lib/codemirror.js"></script>
+  <script type="text/javascript" src="/afr/bower/CodeMirror/mode/smarty/smarty.js"></script>
+  <script type="text/javascript" src="/traveler/js/custom.js?v={$version}"></script>
+
+  {$scripts = $app.header.scripts|array_unique}
+  {foreach from = $scripts item=script}
+    {$script|script_tag}
+  {/foreach}
+
+  {if ($app.header.onload|@count)}
+  <script>
+    $(document).ready(function() {
+    {foreach from = $app.header.onload item=script}
+   {$script}
+    {/foreach}
+    });    
+  </script>
+  {/if}
+</body>
+
+</html>

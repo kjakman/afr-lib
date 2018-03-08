@@ -1,0 +1,178 @@
+            <form id="property_pricing_form" class="ajax-submit" data-handler="save" data-message='Saved!' data-reload_link="#rental-amenities">
+              <input name="obj_type" type="hidden" value="{$scope.rental.type}">
+              <input name="id" type="hidden" value="{$scope.rental.id}">
+              <h4>Pricing</h4>
+              <div class="form-group">
+                {$yes_no = [0 => "No", 1 => "Yes"]}
+                <label>Do you allow prospects to book your rental without prior contact when your calender shows its available?</label>
+                {html_options name="book_direct" class="form-control" options=$yes_no selected=$scope.rental.book_direct}                                            
+              </div>
+              <div class="form-group">
+                <label>Currency</label>
+                {"currency"|object_select:"currency":["class" => "form-control", "value" => $scope.rental.currency, "search" => ["accepted" => 1]]}                
+              </div>
+              <div class="form-group form-group-icon-left">
+                <i class="input-icon fa fa-{$scope.rental.currency|lower}"></i>                                  
+                <label>Basic rate per night</label>
+                <input min="10" name="rate_day" class="form-control" value="{$scope.rental.rate_day}" type="number" />
+              </div>
+              
+              <div class="form-group form-group-icon-left form-group-select-plus">
+                <label>Guests included in basic rate</label>
+                <div class="btn-group btn-group-select-num{if ($scope.rental.rate_num_guests >= 8)} hidden{/if}" data-toggle="buttons">
+                  {if (!$scope.rental.rate_num_guests)}{$scope.rental.rate_num_guests=2}{/if}
+                  {section name=ng start=1 loop=8 step=1}                  
+                  <label class="btn btn-primary{if ($scope.rental.rate_num_guests == $smarty.section.ng.index)} active{/if}">
+                    <input type="radio" name="options" class="set-target-value" data-target="#rate_num_guests" data-value="{$smarty.section.ng.index}"/>
+                    {$smarty.section.ng.index}
+                  </label>
+                  {/section}                      
+                  <label class="btn btn-primary"><input type="radio" name="options" />8+</label>
+                </div>
+                <select name="rate_num_guests" id="rate_num_guests" class="form-control{if ($scope.rental.rate_num_guests < 8)} hidden{/if}">
+                  {section name=ng start=1 loop=15 step=1}
+                  <option{if ($scope.rental.rate_num_guests == $smarty.section.ng.index)} selected="selected"{/if}>{$smarty.section.ng.index}</option>
+                  {/section}                      
+                </select>
+              </div>
+
+              <div class="form-group form-group-icon-left">
+                <i class="input-icon fa fa-{$scope.rental.currency|lower}"></i>                                  
+                <label>Rate per extra guest beyond above</label>
+                <input min="0" name="rate_extraperson" class="form-control" value="{$scope.rental.rate_extraperson}" type="number" />
+              </div>
+              
+              <div class="form-group form-group-icon-left">
+                <i class="input-icon fa fa-{$scope.rental.currency|lower}"></i>                                  
+                <label>Weekend rate (Friday and Saturday nights)</label>
+                <input min="0" name="rate_weekend" class="form-control" value="{$scope.rental.rate_weekend}" type="number" />
+              </div>
+
+              <div class="form-group form-group-icon-left">
+                <i class="input-icon fa fa-{$scope.rental.currency|lower}"></i>                                  
+                <label>Security Deposit</label>
+                <input min="0" name="security_deposit" class="form-control" value="{$scope.rental.security_deposit}" type="number" />
+              </div>
+              <div class="form-group form-group-icon-left">
+                <i class="input-icon fa fa-{$scope.rental.currency|lower}"></i>                                  
+                <label>Cleaning Fee</label>
+                <input min="0" name="fee_cleaning" class="form-control" value="{$scope.rental.fee_cleaning}" type="number" />
+              </div>
+
+              {if ($scope.rental.discount_week || $scope.rental.discount_month)}
+              {$active = 2}
+              {else}
+              {$active = 1}
+              {/if}
+              
+              <div class="form-group">
+                <label>Long Stay Discount</label>
+                <ul class="nav nav-tabs">
+                  <li {if ($active == 1)}class="active"{/if}><a data-toggle="tab" href="#fixed_rate">Fixed Rate</a></li>
+                  <li {if ($active == 2)}class="active"{/if}><a data-toggle="tab" href="#percentage_discount">Percent Discount</a></li>
+                </ul>
+                <div class="tab-content">
+                  <div id="fixed_rate" class="tab-pane fade {if ($active == 1)}in active{/if}">
+                    <p>Here you can set the default rate per week and month. In the <a href="#" class="linkref" data-target="#rental-calendar-link">calendar</a>, you can set higher or lower rates for any given week or month.</p>
+                    <p>If you use weekly/monthly pricing, the daily rates will be ignored for stays longer than a week or month.</p>
+                    <div class="form-group form-group-icon-left">
+                      <i class="input-icon fa fa-{$scope.rental.currency|lower}"></i>                                  
+                      <label>Weekly rate (7 days or more)</label>
+                      <input min="0" name="rate_week" class="form-control" value="{$scope.rental.rate_week}" type="number" />
+                    </div>
+                    <div class="form-group form-group-icon-left">
+                      <i class="input-icon fa fa-{$scope.rental.currency|lower}"></i>                                  
+                      <label>2-Week rate (14 days or more)</label>
+                      <input min="0" name="rate_2_weeks" class="form-control" value="{$scope.rental.rate_2_weeks}" type="number" />
+                    </div>
+                    <div class="form-group form-group-icon-left">
+                      <i class="input-icon fa fa-{$scope.rental.currency|lower}"></i>                                  
+                      <label>3-Week rate (21 days or more)</label>
+                      <input min="0" name="rate_3_weeks" class="form-control" value="{$scope.rental.rate_3_weeks}" type="number" />
+                    </div>
+                    <div class="form-group form-group-icon-left">
+                      <i class="input-icon fa fa-{$scope.rental.currency|lower}"></i>                                  
+                      <label>Monthly rate (28 days or more)</label>
+                      <input min="0" name="rate_month" class="form-control" value="{$scope.rental.rate_month}" type="number" />
+                    </div>
+                  </div>
+                  <div id="percentage_discount" class="tab-pane fade {if ($active == 2)}in active{/if}">
+                    <p>Here you can set a percentage discount for stays longer than a week or month (28 days).</p>
+                    <p>If you use weekly/monthly discount, the daily rates you set in the <a href="#" class="linkref" data-target="#rental-calendar-link">calendar</a> will be honored in the calculation and applied before the discount. Fixed rate per week/month will be ignored.</p>
+                    <div class="form-group form-group-icon-left">
+                      <i class="input-icon">%</i>                  
+                      <label>Weekly discount % (7 days or more)</label>
+                      <input min="0" max="90" name="discount_week" class="form-control" value="{$scope.rental.discount_week}" type="number" />
+                    </div>
+                    <div class="form-group form-group-icon-left">
+                      <i class="input-icon">%</i>                  
+                      <label>2-Week discount (14 days or more)</label>
+                      <input min="0" name="discount_2_weeks" class="form-control" value="{$scope.rental.discount_2_weeks}" type="number" />
+                    </div>
+                    <div class="form-group form-group-icon-left">
+                      <i class="input-icon">%</i>                  
+                      <label>3-Week discount (21 days or more)</label>
+                      <input min="0" name="discount_3_weeks" class="form-control" value="{$scope.rental.discount_3_weeks}" type="number" />
+                    </div>
+                    <div class="form-group form-group-icon-left">
+                      <i class="input-icon">%</i>                  
+                      <label>Monthly discount % (28 days or more)</label>
+                      <input min="0" max="90" name="discount_month" class="form-control" value="{$scope.rental.discount_month}" type="number" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {$fees = []}
+              {if ($rental && $rental.fee_json)}
+                {$fees = $rental.fee_json|@json_decode}
+              {/if}
+              
+              {* "include": "_booking-form-fees.html" *}
+              
+              {if ($client_id == 1001 && $user.user_level >= $smarty.const.USER_LEVEL_STAFF)}
+              <div class="row">
+                <div class="col-xs-4">
+                  <div class="form-group">
+                    <div class="checkbox">
+                      <label><input type="checkbox" name="charge_tax" value="1" {if ($scope.rental.charge_tax)}checked{/if}> {'charge VAT?'|translate:'c'}</label>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-xs-4">
+                  <div class="form-group">
+                    <div class="checkbox">
+                      <label><input type="checkbox" name="tax_included" value="1" {if ($scope.rental.tax_included)}checked{/if}> {'VAT included?'|translate:'c'}</label>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-xs-4">
+                  <div class="form-group">
+                    <div class="checkbox">
+                      <label><input type="checkbox" name="charge_city_tax" value="1" {if ($scope.rental.charge_city_tax)}checked{/if}> {'charge city tax?'|translate:'c'}</label>
+                    </div>
+                  </div>
+                </div>                
+              </div>
+              <div class="row">
+                <div class="col-xs-4">
+                  <div class="form-group">
+                    <div class="checkbox">
+                      <label><input type="checkbox" name="corporate" value="1" {if ($scope.rental.corporate)}checked{/if}> {'corporate?'|translate:'c'}</label>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-xs-4">
+                  <div class="form-group">
+                    <div class="checkbox">
+                      <label><input type="checkbox" name="licensed" value="1" {if ($scope.rental.licensed)}checked{/if}> {'licensed?'|translate:'c'}</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/if}
+              
+              <hr>
+              <input type="submit" class="btn btn-primary" value="Click here for next step">                      
+            </form>
+

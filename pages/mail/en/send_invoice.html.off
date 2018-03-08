@@ -1,0 +1,12 @@
+{$invoice = $scope.object}
+{$scope|dump}
+<p>You have a new invoice from {$scope.site_name} (attached).</p>
+<p>Click the link below to view this invoice online.</p>
+<p><a href="{$site_url}{$smarty.const.PAGE_INVOICE|link}{$invoice.id}" target="invoice">View Invoice</a></p>
+{if ($invoice.balance > $smarty.const.INV_TOLERANCE)}
+<p>Click the link below to pay the invoice.</p>
+<p><a href="{$site_url}{$smarty.const.PAGE_PAYMENT|link}{$invoice.id}" target="invoice">Pay Balance</a></p>
+{/if}
+<p>We appreciate your business.</p>
+
+<p>This is the template...</p>

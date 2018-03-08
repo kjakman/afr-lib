@@ -1,0 +1,43 @@
+<div id="lineitem_modal" class="modal fade" tabindex="-1" data-replace="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form class="form-horizontal ajax-submit" id="lineitem_form" data-handler="add" data-reload_link="#invoice-overview">
+        <input type="hidden" name="obj_type" value="inv_lineitem">
+        <input type="hidden" name="site_id" value="{$site.id}">
+        <input type="hidden" name="user_id" value="{$user.id}">
+        <input type="hidden" name="inv_id" value="{$invoice.id}">
+        <input type="hidden" name="currency" value="{$invoice.currency}">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+          <b id="overlay_title">Add Lineitem</b>
+        </div>
+        <div class="modal-body" class="container-fluid">
+          <div class="form-group col-sm-12">
+            <label>Type</label>
+            {"type"|object_select:"lineitem_type":["class" => "form-control", "value" => $scope.currency, "sort" => "name", "search" => ["can_add" => 1]]}
+          </div>
+          <div class="form-group col-sm-4">
+            <label>Tax Category</label>
+            {"tax_category"|object_select:"tax_category":["class" => "form-control", "value" => $scope.currency, "search" => ["active" => 1]]}
+          </div>
+          <div class="form-group col-sm-4">
+            <label>Quantity</label>
+            <input name="quantity" class="form-control" type="text" />
+          </div>
+          <div class="form-group col-sm-4">
+            <label>Amount</label>
+            <input name="amount" class="form-control" type="text" />
+          </div>
+          <div class="form-group col-sm-12">
+            <label>Description</label>
+            <input name="description" class="form-control" maxlength="255"/>      
+          </div>
+          <br>
+          <input type="submit" class="btn btn-primary" value="Save Changes">       
+          <button type="button" data-dismiss="modal" class="btn btn-danger">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+      

@@ -1,0 +1,42 @@
+  {{"extend": "base/default.html"}}
+  {block name=content}
+  
+
+        <div class="container">
+            <h1 class="page-title">Profile</h1>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3">
+                    <aside class="user-profile-sidebar">
+                        <div class="user-profile-avatar text-center">
+                            <img id="user_profile_photo" src="{$scope.profile.profile_picture}" alt="{$scope.profile.full_name}" title="AMaze" />
+                            <h5>{$scope.profile.display_name}</h5>
+                            <p>Member Since {$scope.profile.created|date}</p>
+                        </div>
+                        <nav data-target="#user-profile-container">
+                        <nav data-target="#user-profile-container" 
+                             data-controller="traveler_profile" 
+                             data-data='{$scope.data|@json_encode}'
+                             data-success_handler="traveler_ready">
+                        {{"include": "_user-profile-nav.html"}}
+                        </nav>
+                    </aside>
+                </div>
+                <div class="col-md-9" id="user-profile-container">
+                  {*"include": "_user-profile-overview.html"*}
+                  {$tpl = $scope.view|default:'_user-profile-overview.html'}
+                  {if ($tpl) }
+                  {include file="$tpl"}
+                  {else}
+                  No tpl
+                  {/if}                  
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="gap"></div>
+  {/block}

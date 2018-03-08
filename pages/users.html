@@ -1,0 +1,87 @@
+  {{"extend": "base/admin.html"}}
+  {block name=content}
+  
+
+          <h2>{$scope.title}</h2>
+          <form class="form-horizontal" role="form">
+              <div class="form-group col-md-3">
+                {"user_level"|object_select:"user_level":["class" => "form-control", "value" => $get.user_level, "sort" => "user_level", "first" => "Select User Level..."]}
+              </div>
+              <div class="form-group col-md-2 form-group-icon-left">
+                <input type="text" value="{$get.start}" class="form-control datepicker" id="start" name="start" placeholder="From">
+                <i class="fa fa-calendar input-icon click-parent-datepicker"></i>
+              </div>
+              <div class="form-group col-md-2 form-group-icon-left">
+                <input type="text" value="{$get.end}" class="form-control datepicker" id="end" name="end" placeholder="To">
+                <i class="fa fa-calendar input-icon click-parent-datepicker"></i>
+              </div>
+              <div class="form-group col-md-2">
+                <button type="submit" class="btn btn-success">Go</button>
+                {if ($scope.filters)}<a href="{$this_path}" class="btn btn-danger">Clear</a>{/if}
+              </div>
+          </form>
+          <div class="gap"></div>
+          
+          <table class="table" 
+             data-toggle="table" 
+             data-url="{$scope.data_url}" 
+             data-cache="false" 
+             data-pagination="true"
+             data-striped="true"
+             data-side-pagination="server"             
+             data-page-list="[5, 10, 20, 50, 100, 200]"
+             
+           data-toolbar="#toolbar"
+           data-search="true"
+           data-show-refresh="true"
+           data-show-toggle="true"
+           data-show-columns="true"
+           data-show-export="true"
+           data-detail-view="true"
+
+           data-id-field="id"              
+           data-editable-url="{$scope.edit_url}"
+           
+           data-detail-formatter="detailFormatter"
+           data-show-pagination-switch="true"
+             
+             data-search="true">
+             
+            <thead>     
+              <tr>
+                <th data-field="id" data-sortable="true">ID</th>
+                <th data-field="created" data-sortable="true">Created</th>
+                <th data-field="last_login" data-sortable="true">Last Login</th>
+                <th data-field="active" data-sortable="true">Active</th>
+                <th data-field="user_level" data-editable="true" data-editable-type="number">Level</th>
+                <th data-field="username" data-formatter="bstUsernameFormatter">Email</th>
+                {if ($site.property_site)}
+                  <th data-field="rentals" data-sortable="false">Rentals</td>
+                  <th data-field="listed_rentals" data-sortable="false">Listed</td>
+                {/if}                
+              </tr>
+            </thead>
+            <tfoot>     
+              <tr>
+                <th>Total</th>
+                <th></th>
+                <th></th>
+                <th></th>         
+                <th></th>
+                <th></th>                
+                {if ($site.property_site)}
+                  <th></td>
+                  <th></td>
+                {/if}                
+              </tr>
+            </tfoot>
+          </table>
+
+<script>
+function bstUsernameFormatter(value, row) {
+  console.log("bstUsernameFormatter: row", row);
+  var email = value;
+  return '<a href="/profile/' + row.id + '/" target="profile">' + email + '</a>';      
+}
+</script>           
+  {/block}

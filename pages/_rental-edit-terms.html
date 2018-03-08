@@ -1,0 +1,49 @@
+            <form id="property_terms_form" class="ajax-submit" data-handler="save"  data-obj_type="{$scope.rental.type}" data-obj_id="{$scope.rental.id}"
+                data-message='Saved! <a href="javascript:void(0);" class="linkref" data-target="#rental-pricing">Click here for next step.</a>'>
+              <input type="hidden" name="obj_type" value="{$scope.rental.type}">
+              <input type="hidden" name="id" value="{$scope.rental.id}">
+              <!--input type="hidden" name="book_direct" id="book_direct" value="{$scope.rental.book_direct}"-->              
+              <h4>Terms</h4>
+              <div class="form-group">
+                <label>Minimum Stay (nights)</label>
+                <input name="min_stay" class="form-control" value="{$scope.rental.min_stay}" type="number" min="0"/>
+                <div class="help-block with-errors">Please enter number of days</div>                
+              </div>
+              <div class="form-group">
+                <label>Maximum Stay</label>
+                <input name="max_stay" class="form-control" value="{$scope.rental.max_stay}"  type="number" min="0"/>
+                <div class="help-block with-errors">Please enter number of days or blank for no maximum stay.</div>                
+              </div>
+              <div class="form-group">
+                <label>Changeover</label>
+                {$weekdays = $smarty.session.weekdays}
+                {html_options name="changeover" class="form-control" options=$weekdays selected=$scope.rental.changeover}
+                <div class="help-block with-errors">Guests can only checkin on this day. <b>We discourage this</b>, but some hosts require it.
+                If you only require changeover days for certain periods, select this period in the 
+                <a href="#" class="linkref" data-target="#rental-calendar-link">calendar</a> and add a changeover for this period.
+                </div>                
+              </div>
+              <div class='row'>
+              <div class='col-xs-6'>  
+                <div class="form-group">
+                  <label>Checkin After</label>
+                  {"checkin_from"|object_select:"checkin_time":["class" => "form-control", "value" => $scope.rental.checkin_from]}
+                </div>
+              </div>
+              <div class='col-xs-6'>              
+                <div class="form-group">
+                  <label>Checkout Before</label>
+                  {"checkout_to"|object_select:"checkout_time":["class" => "form-control", "value" => $scope.rental.checkout_to]}
+                </div>
+              </div>
+              </div>
+
+              <div class="form-group">
+                <label>Cancellation Policy</label>
+                {"cancellation_policy"|object_select:"cancellation_policy":["class" => "form-control", "value" => $scope.rental.cancellation_policy]}
+                <a href="{$smarty.const.PAGE_CANCELLATION_POLICY|link}" target="other">Learn more »</a>
+              </div>
+              <hr>
+              <input type="submit" class="btn btn-primary" value="Save Changes">
+            </form>
+

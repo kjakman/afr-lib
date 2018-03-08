@@ -1,0 +1,31 @@
+
+
+
+            <h4>Locked Fields</h4>
+            {$locked_json = $scope.rental.locked|default:'["name"]'}
+            {$locked = $locked_json|@json_decode}
+            {if ($scope.rental.source_id > 0)}
+              {$source_name = $scope.rental.source_id|get:"source":"name"}
+              <p>The locked fields will be ignored when imported from {$source_name}</p>
+              {$fields = ['name' => 'Name', 'media' => 'Photos']}
+              {foreach from=$fields item=name key=field}
+                {$checked = $field|in_array:$locked}
+                <div class="checkbox">
+                  <label><input type="checkbox" class="locked-box checkbox2array" name="{$field}" 
+                                id="popup-option-{$field}" data-collection=".locked-box" 
+                                data-target="#rental_locked" {if ($checked)}checked{/if}> {$name|translate:'c'}</label>
+                  <br>
+                </div>            
+                
+              {/foreach}
+              <hr>
+            <form id="property_terms_form" class="ajax-submit autosave-off" data-handler="save"  data-obj_type="{$scope.rental.type}" data-obj_id="{$scope.rental.id}"
+                data-message='Saved!'>
+              <input type="hidden" name="obj_type" value="{$scope.rental.type}">
+              <input type="hidden" name="id" value="{$scope.rental.id}">
+              <input type="hidden"   name="locked" value='{$scope.rental.locked}' id="rental_locked">
+              <input type="submit" class="btn btn-primary" value="Save">                      
+            </form>
+            {else}
+              {"This rental is not automatically imported, so you cannot lock the fields.</a>"|alert:"error"}              
+            {/if}

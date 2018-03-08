@@ -1,0 +1,25 @@
+  {{"extend": "base/default.html"}}
+  {block name=content}
+  
+
+    {$booking = $scope.booking}
+    <div class="gap"></div>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-8">
+          <i class="fa fa-check round box-icon-large box-icon-center box-icon-success mb30"></i>	
+          <h2 class="text-center">{$user.display_name_short}, your inquriy has been sent!</h2>
+          <h5 class="text-center mb30">An email been sent to {$booking.email_address}</h5>
+          <h5 class="text-center mb30">Click <a href="{$smarty.const.PAGE_STATUS|link}{$booking.res_id}">here</a> for inquiry status.</h5>
+          <div class="gap gap-small"></div>
+        </div>
+        <div class="col-md-4">
+        {{"include": "_rental-payment-details.html"}}
+        </div>
+      </div>
+      <div class="gap"></div>
+    </div>
+  {/block}
+
+
+

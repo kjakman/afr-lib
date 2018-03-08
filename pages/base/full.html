@@ -1,0 +1,20 @@
+  {{"extend": "base/index.html"}}
+  
+  {block name=body}
+      {$edit_menu}
+      <div class="global-wrap">
+        <header id="main-header">   
+        
+        {block name=top}
+          {$nav_class = "navbar-fixed-top"}
+          {{"include": "_page-top.html"}}
+        {/block}
+        </header>
+
+        <section id="content_container" class="container-full">        
+        {block name=content}<!--$content-->{/block}
+        </section>
+        
+     </div>
+  {/block}
+  

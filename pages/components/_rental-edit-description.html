@@ -1,0 +1,108 @@
+          <form id="desc-edit-form" class="ajax-submit autosave" data-obj_type="{$scope.rental.type}" data-obj_id="{$scope.rental.id}" data-handler="save"
+              data-message='Saved!' data-reload_link="#rental-terms">
+          
+            <input name="user_id" type="hidden" value="{$user.id}" />
+            <input name="site_id" type="hidden" value="{$site.id}" />
+            <input name="obj_type" type="hidden" value="{$scope.rental.type}" />
+            <input name="id" type="hidden" value="{$scope.rental.id}" />
+
+            <h4>Description</h4>
+            <div class="form-group form-group-icon-left form-group-select-plus">
+              <label>Maximum occupancy of your rental</label>
+              <div class="btn-group btn-group-select-num{if ($scope.rental.max_guests >= 8)} hidden{/if}" data-toggle="buttons">
+                {section name=ng start=1 loop=8 step=1}
+                <label class="btn btn-primary{if ($scope.rental.max_guests == $smarty.section.ng.index)} active{/if}">
+                  <input type="radio" name="options" class="set-target-value" data-target="#max_guests" data-value="{$smarty.section.ng.index}"/>
+                  {$smarty.section.ng.index}
+                </label>
+                {/section}                      
+                <label class="btn btn-primary"><input type="radio" name="options" />8+</label>
+              </div>
+              <select name="max_guests" id="max_guests" class="form-control{if ($scope.rental.max_guests < 8)} hidden{/if}">
+                {section name=ng start=1 loop=25 step=1}
+                <option{if ($scope.rental.max_guests == $smarty.section.ng.index)} selected="selected"{/if}>{$smarty.section.ng.index}</option>
+                {/section}                      
+              </select>
+            </div>
+            <div class="form-group form-group-icon-left form-group-select-plus">
+              <label>Number of bedrooms</label>
+              <div class="btn-group btn-group-select-num{if ($scope.rental.num_bedrooms >= 4)} hidden{/if}" data-toggle="buttons">
+                {section name=nb start=1 loop=4 step=1}
+                <label class="btn btn-primary{if ($scope.rental.num_bedrooms == $smarty.section.nb.index)} active{/if}">
+                  <input type="radio" name="options" class="set-target-value" data-target="#num_bedrooms" data-value="{$smarty.section.nb.index}"/>
+                  {$smarty.section.nb.index}
+                </label>
+                {/section}                      
+                <label class="btn btn-primary"><input type="radio" name="options" />4+</label>
+              </div>
+              <select name="num_bedrooms" id="num_bedrooms" class="form-control{if ($scope.rental.num_bedrooms < 4)} hidden{/if}">
+                {section name=ng start=1 loop=15 step=1}
+                <option{if ($scope.rental.num_bedrooms == $smarty.section.ng.index)} selected="selected"{/if}>{$smarty.section.ng.index}</option>
+                {/section}                      
+              </select>
+            </div>
+            <div class="form-group form-group-icon-left form-group-select-plus">
+              <label>Number of bathrooms</label>
+              <div class="btn-group btn-group-select-num{if ($scope.rental.num_bathrooms >= 4)} hidden{/if}" data-toggle="buttons">
+                {section name=nbr start=1 loop=4 step=1}
+                <label class="btn btn-primary{if ($scope.rental.num_bathrooms == $smarty.section.nbr.index)} active{/if}">
+                  <input type="radio" name="options" name="options" class="set-target-value" data-target="#num_bathrooms" data-value="{$smarty.section.nbr.index}"/>
+                  {$smarty.section.nbr.index}
+                </label>
+                {/section}                      
+                <label class="btn btn-primary"><input type="radio" name="options" />4+</label>
+              </div>
+              <select name="num_bathrooms" id="num_bathrooms" class="form-control{if ($scope.rental.num_bathrooms < 4)} hidden{/if}">
+                {section name=ng start=1 loop=15 step=1}
+                <option{if ($scope.rental.num_bathrooms == $smarty.section.ng.index)} selected="selected"{/if}>{$smarty.section.ng.index}</option>
+                {/section}                      
+              </select>
+            </div>
+
+            <!--div class="form-group">
+              <label>Name Rental</label>
+              <input name="name" class="form-control" value="{$scope.rental.name}" type="text"  maxlength="35"
+              placeholder="Choose a short, descriptive and distinctive name" />
+              <div class="help-block with-errors">Maximum 35 characters</div>
+            </div-->
+            
+            <div class="form-group">
+              <label>Name Rental</label>
+              <input type="text" name="name" class="form-control character-countdown" type="text" maxlength="35"
+              placeholder="Name of rental?" value="{$scope.rental.name}">              
+              <span class="ccl"></span><span class='text-small'> characters left</span>
+              
+            </div>
+
+            <div class="form-group">
+              <label>Short description</label> 
+              <a href="#" data-toggle="tooltip" data-html="true" 
+               title="Example: {$scope.short_desc_example}">
+               <i class="fa fa-question-circle"></i>
+              </a>              
+              <!--a href="/home/app_data.php?oper=fetch-template&amp;template=_rental-description-example" class="template-popup-off" target="new" data-template="_rental-description-example"><i class="fa fa-info-circle"></i> Click here for a description example</a-->
+              <textarea name="short_description" class="form-control character-countdown autosave"  type="text" maxlength="250"
+              placeholder="Explain in 250 characters or less what makes your rental so special. We ask you for a more detailed description in the Rental Guide.">{$scope.rental.short_description}</textarea>
+              <span class="ccl"></span><span class='text-small'> characters left</span>
+            </div>
+
+            {if ($site.golf_site)}
+            <div class="form-group">
+              <label>{{"name": "rental-edit-deal", "type":"text", "value":"Golf Deals"}}</label>
+              <textarea name="special_deal" class="form-control character-countdown"  type="text" maxlength="250"
+              placeholder="Can you offer your guest specific deals for one or more courses in the area? If not, leave this field open.">{$scope.rental.special_deal}</textarea>
+              <span class="ccl"></span><span class='text-small'> characters left</span>
+            </div>
+            {/if}
+            
+            <div class="form-group">
+              <label>Testimonial</label>
+              <textarea name="quote" class="form-control character-countdown"  type="text" maxlength="150"
+              placeholder="Here you can add a reference from a friend or prior guests.">{$scope.rental.quote}</textarea>
+              <span class="ccl"></span><span class='text-small'> characters left</span>
+            </div>
+
+            <hr>
+            <input type="submit" class="btn btn-primary" value="Click here for next step">            
+          </form>
+

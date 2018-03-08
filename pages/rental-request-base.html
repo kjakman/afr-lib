@@ -1,0 +1,114 @@
+  {{"extend": "base/default.html"}}
+  {block name=content}
+
+      {$booking = $scope.booking}
+      
+      {$rental = $scope.rental}
+      {$type = $booking.type}
+      {$book_now = ($type == $smarty.const.RES_TYPE_DIRECT || $rental.book_direct == 1) ? 1 : 0}
+      {$res_id = $booking.res_id}        
+      {$handler = 'rental-inquiry'}
+              
+
+      {$in = $smarty.get.in}
+      {$out = $smarty.get.out}
+      {$ng = $smarty.get.ng|default:1}
+      {$qstr = "in=`$in`&amp;out=`$out`&amp;ng=`$ng`"}
+      
+      {* $booking|dump *}
+      {if ($scope.source_error)} {* special for remote source bookings (interhome) *}
+        {{"include":"_request-source-error.html"}}
+      {elseif ($scope.error)}
+        {$scope.error|alert:'error'}
+      {else}
+      
+        <div class="container mt20">
+          {block name=title}{/block}
+        
+          <div class="row">
+            <div class="col-md-8 col-sm-7">
+            
+              {if ($scope.source_services|@count)}
+                {{"include":"_request-source-services.html"}}
+              {/if}
+
+              {if ($user && $smarty.get.submit==1)}
+                <div class="alert alert-success" role="alert">
+                  <i class="fa fa-spinner fa-spin"></i> {'please wait while we process your requests'|translate:'c'}                 
+                </div>  
+              {/if}      
+              
+              <form id="request-form" class="ajax-submit" data-handler="{block name='operation'}{/block}">
+                {$debug = ($dev) ? 1 : 0}  
+                {$type = ($debug) ? "text" : "hidden"}
+                {if ($debug)}<br>type:{/if}<input type="{$type}" name="property_type" value="{$booking.property_type}" />
+                {if ($debug)}<br>apt:{/if} <input type="{$type}" name="apt_id" value="{$booking.apt_id}" />
+                {if ($debug)}<br>ng:{/if}  <input type="{$type}" name="ng" value="{$booking.num_guests}" />
+                {if ($debug)}<br>in:{/if}  <input type="{$type}" name="in" value="{$booking.checkin}" />
+                {if ($debug)}<br>out:{/if} <input type="{$type}" name="out" value="{$booking.checkout}" />
+                {if ($debug)}<br>dest:{/if}<input type="{$type}" name="dest_id" value="{$booking.dest_id}" />
+                {if ($debug)}<br>rid:{/if} <input type="{$type}" name="res_id" value="{$booking.res_id|default:$smarty.get.rid}" />
+              
+                <div class="row"><!-- inner row1 -->
+                  <div class="col-md-2 col-sm-3 user-avatar-big">
+                    <a href="{$smarty.const.PAGE_PROFILE|link}{$booking.host_id}">
+                      <img class="origin round" src="{$booking.host_id|userphoto:'thumb'}" title="{$booking.host_id|username}">
+                    </a>                      
+                  </div>
+                  <div class="col-md-10 col-sm-9">             
+                    {block name=top_text}{/block}                
+                    <textarea class="form-control character-countdown" name="extra_info" id="extra_info" maxlength="500" placeholder="{'your personal message'|translate:'c':0}...">{$smarty.get.extra_info}</textarea>
+                    <span class="ccl"></span><span class='text-small'> {'characters left'|translate}</span>                  
+                  </div>
+                </div><!-- inner row -->
+                
+                <div class="row"> <!-- inner row2 -->
+                  <div class="col-md-12">
+                  {block name=main_text}{/block}                
+                  <div class="gap gap-small"></div>
+                  
+                  {if ($user.id)}
+                  <a class="btn btn-success submit-parent" href="#">{block name='button_text'}{/block}</a> 
+                  {else}
+                  <a class="btn btn-success popup-text set-target-value rr-link" id="rr-book-now" href="#login-dialog" 
+                     data-effect="mfp-3d-unfold" data-panel="#login-container" data-mfp-handler="request_login_handler" 
+                     data-target=".login-redirect" data-value="{$this_url|add_query_var:'submit':'1'}" data-append-field="#extra_info"> {block name='button_text'}{/block} </a>
+                  {/if}
+                  <div class="gap gap-small"></div>                
+                  </div>
+                </div><!-- inner row2 -->
+  
+                <div class="row"> <!-- inner row3 -->
+                  <div class="col-md-12">
+                  {block name=bottom_text}{/block}
+                  
+                  {if ($res_id)}
+                    <div class="gap gap-small"></div>
+                    <a href="{$smarty.const.PAGE_STATUS|link}{$res_id}" class="btn btn-primary"> {'view booking'|translate:'c'}</a>
+                  {/if}
+                  </div>
+                </div><!-- inner row3 -->
+                
+              </form>
+            </div><!-- outer col-md-8 -->
+    
+            <div class="col-md-4 col-sm-5">
+              {{"include": "_rental-payment-details.html"}}
+            </div>
+          </div><!-- outer row -->
+          <div class="gap"></div>
+        </div><!-- container -->
+
+        {if ($user && $smarty.get.submit==1)}
+          {literal}
+          <script>
+            $( document ).ready(function() {
+              $("#request-form").submit();
+            });        
+          </script>
+          {/literal}
+        {/if}
+        
+      {/if}{* if scope.error *}
+      
+  {/block}        

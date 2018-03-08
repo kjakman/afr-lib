@@ -1,0 +1,57 @@
+
+          {if ($scope.articles)}
+            {$list = 1}
+            {$article.content = $article.content|truncate_html:300}
+          {/if}
+          
+
+          <article id="article-{$article.id}" class="post-inner prev-article row mb20">
+            <div class="blog-prev-date col-md-3 col-sm-3">
+              {{"include":"_article-header.html"}}							  
+            </div>
+            <div class="col-md-9 col-sm-9">
+              {* {"include":"_article-body.html"} *}              
+              {if ($list)}<a href="{$page.page_type|link}{$article.id}">{/if} 
+              <h4 class="post-title text-darken">{$article.title} 
+                {if ($list && !$article.published)} 
+                  <span title="{'this article has not yet been published'|translate:'c'}">
+                    <i class="fa fa-ban text-danger"></i> <small>({'not published'|translate:'c'})</small>
+                  </span>
+                {/if}
+                {if ($article.auth_edit_article)}
+                <a class="btn btn-success btn-sm" href="{$page.page_type|link}{$article.id}?edit"><i class="fa fa-pencil-square"></i> {'edit'|translate:'t'}</a>
+                {/if}
+                
+              </h4>
+              {if ($list)}</a>{/if} 
+              
+              {if (!$list && !$article.published)}
+                {'this article has not yet been published'|translate:'c'|alert:'warning'}
+                <div>
+                  <a href="{$this_url|add_query_var:'publish':1}" class="btn btn-success">{'publish now'|translate:'c'}</a>
+                </div>
+                <div class="gap gap-small"></div>
+              {/if}
+              
+              {if ($article.media)}
+              <header class="post-header" {if ($list)}style="width:50%"{/if}>
+                  {$mediaAr = $article.media|any2array}
+                <div class="fotorama" data-allowfullscreen="true" data-loop="true">
+                  {foreach from=$mediaAr item=media}
+                    <img src="{$media|photo}" alt="" title="" />
+                  {/foreach}
+                </div>
+              </header>
+              {/if}
+              
+              <p class="post-desciption">{$article.content}
+              {if ($list)}
+                 <!-- read more button -->
+                 <div class="text-right">
+                   <a href="{$page.page_type|link}{$article.id}" class="btn btn-xs btn-link"><i class="fa fa-sign-out"></i> {'read more'|translate:'u'}</a>
+                 </div>
+              {/if}                              
+              </p>
+            </div>
+          </article>
+         

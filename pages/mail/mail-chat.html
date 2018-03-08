@@ -1,0 +1,104 @@
+
+                                    {{"extend": "mail/mail-base-row-action-sub.html"}}
+
+                                    {$chat = $scope.chat}                                    
+                                    
+                                    {if ($chat)}
+                                                                          
+                                      {block name=sub_text}
+                                      {$sender = $scope.sender}
+                                      {$pic = $chat.sender_id|userphoto:'thumb':['full' => 1]}
+                                      <table cellspacing="3" cellpadding="0" border="0">
+                                        <tbody>
+                                          <tr>                
+                                            <td align="left" width="110">
+                                              <a href="{$site_url}{$smarty.const.PAGE_PROFILE|link}{$sender.id}" target="new">
+                                                <img src="{$pic|add_http}" style="width:100px" alt="{$sender.display_name}" /><br>                                                
+                                              </a>
+                                              <a href="{$site_url}{$smarty.const.PAGE_PROFILE|link}{$sender.id}" target="new">                                              
+                                                <small><b>{$sender.display_name}</b></small>
+                                              </a>
+                                              <br>
+                                              <small>
+                                              {if ($sender.country)}
+                                                <img src="{$site_url}/traveler/img/flags/16/{$sender.country|lower}.png" alt="{$sender.country}">
+                                              {/if} 
+                                              {if ($sender.city)} {$sender.city}{/if}
+                                            </small>
+                                            </td>
+                                            <td align="left">{$chat.message}</td>
+                                          </tr>
+                                        </tbody>
+                                      </table>
+                                      <br>
+                                      <hr>
+                                      
+                                      {$limit = $scope.limit}
+                                      {$count = $scope.count}
+                                      {if ($count > 1)}
+                                        {'%s messages in conversation'|transplace:'c':$count}
+                                        {if ($count > $limit)}
+                                          - {'showing last %s'|transplace:'c':$limit}<br>
+                                        {/if}
+                                        {foreach from=$scope.thread item=message}
+                                          <b>{$message.sender_id|username}:</b> "{$message.message}"<br>
+                                        {/foreach}
+                                        
+                                      {/if}
+                                      {/block}
+                                      
+                                      {block name=action_link}
+                                          <a href="{$site_url}{$smarty.const.PAGE_INBOX|link}{$chat.thread}" 
+                                             class="btn btn-large btn-success" target="_new">
+                                            {'view conversation online'|translate:'c'}
+                                          </a>
+                                      {/block}
+                                      
+                                      {if ($chat.parent_type == 'reservation')}                                      
+                                        
+                                        {block name=sub_left}
+                                          {{"include": "mail/_booking-details.html"}}
+                                          
+                                          {if ($scope.profile_id)}
+                                          <br><hr><br>
+                                          {{"include": "mail/_user-details.html"}}
+                                          {else}
+                                          {$scope|dump}
+                                          {$booking.first_name} <br>
+                                          {/if}
+                                        {/block}
+                                        
+                                        {block name=sub_right_image}
+                                          <a href="{$site_url}{$rental.id|property_link}" target="_new">
+                                            <img src="{$rental.media|photo:'ig':['full' => 1]|add_http}" style="max-width: 264px">                                          
+                                          </a>
+                                        {/block}
+                                        
+                                        {block name=sub_right_text}
+                                          {{"include": "mail/_rental-preview.html"}}
+                                        {/block}
+
+                                      {/if}
+                                      
+                                      
+                                      {if (0)}
+                                        {block name=sub_left}
+                                          {{"include": "mail/_account-details.html"}}
+                                        {/block}
+                                        
+                                        {block name=sub_right_image}
+                                          <a href="{$site_url}{$smarty.const.PAGE_PROFILE|link}{$thisuser.id}" target="_new">
+                                            <img src="{$thisuser.photo|photo:'ig':['full' => 1]|add_http}" style="max-width: 264px">                                          
+                                          </a>
+                                        {/block}
+                                        
+                                        {block name=sub_right_text}                                        
+                                          {{"include": "mail/_user-preview.html"}}
+                                        {/block}
+                                      {/if}
+                                      
+                                    {else}
+                                      {block name=main_text}
+                                      {"Conversation not found"|error:'0'}    
+                                      {/block}
+                                    {/if} {* if booking *}

@@ -1,0 +1,42 @@
+  {{"extend": "base/default.html"}}
+  {block name=content}
+  
+    {if ($query_vars)}
+      {$nav_data = $query_vars|array_remove_key:"_el"|array_filter}
+      {$qs = $nav_data|array_remove_key:"id_list"|http_build_query}      
+    {/if}
+    {$search_page = $smarty.const.PAGE_RENTAL_SEARCH|page}
+    <div class="container">      
+      <ul class="breadcrumb">
+        <li><a href="/">Home</a>
+        </li>
+        <li><a href="{$smarty.const.PAGE_RENTAL_SEARCH|link}{if ($qs)}?{$qs}{/if}">{$search_page.menu_title}</a>
+        </li>
+        <li class="active">{$scope.rental.name}</li>
+      </ul>
+            
+      {if ($nav_data.id_list)}
+      <nav class="rental-detail-links" data-searchurl="{$smarty.const.PAGE_RENTAL_SEARCH|link}" data-detailurl="{$this_path}" data-data='{$nav_data|@json_encode}'>
+        <ul class="pager">
+          <li>
+            <a href="{$smarty.const.PAGE_RENTAL_SEARCH|link}{if ($qs)}?{$qs}{/if}" class="btn btn-default rental-search-off"><i class="fa fa-search"></i> Search</a>
+          </li>
+          <li class="{$prev_class}">
+            <a href="javascript:void();" class="btn btn-default rental-previous"><i class="fa fa-arrow-left"></i> Previous</a>
+          </li>
+          <li class="{$next_class}">
+            <a href="javascript:void();" class="btn btn-default rental-next"><i class="fa fa-arrow-right"></i> Next</a>
+          </li>
+        </ul>
+      </nav>
+      {*$scope.pager*}
+      {/if}
+      
+      <div class="booking-item-details" id="rental_detail_container">
+      {{"include": "_rental-detail.html"}}
+      </div>
+      <div class="gap gap-small"></div>
+      {* $scope.test_facs *}
+    </div>
+  {/block}
+

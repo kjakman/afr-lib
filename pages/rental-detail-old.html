@@ -1,0 +1,266 @@
+    <div class="container">      
+      <ul class="breadcrumb">
+        <li><a href="/">Home</a>
+        </li>
+        <li><a href="{$this_path|parent_path}/">Serviced Apartments</a>
+        </li>
+        <li class="active">{$scope.rental.name}</li>
+      </ul>
+      {$scope.pager}
+      <div class="booking-item-details">
+        <header class="booking-item-header">
+          <div class="row">
+            <div class="col-md-9">
+              <h2 class="lh1em">{$scope.rental.name}</h2>
+              <p class="lh1em text-small"><i class="fa fa-map-marker"></i> {$scope.address}</p>
+              <ul class="list list-inline text-small">
+                <li><a href="{$smarty.const.PAGE_PROFILE|link}{$scope.host_id}?view=_user-profile-message.html&amp;parent_type={$scope.type}&amp;parent_id={$scope.id}"><i class="fa fa-envelope"></i> Contact host</a>
+                </li>
+                <!--li><a href="#"><i class="fa fa-home"></i> Agent Website</a>
+                </li>
+                <li><i class="fa fa-phone"></i> +1 (520) 466-9587</li-->
+              </ul>
+            </div>
+            <div class="col-md-3">
+              {$discount_class = ($scope.discount_rate_average) ? "" : "hidden"}
+              <p class="booking-item-header-price">Average <span class='currency text-lg'>{$scope.rental.currency|currency}</span><span class='rate text-lg'>{$scope.rate_average|round}</span>/<span class='unit'>{$scope.rate_unit|default:"night"}</span></p>
+              <p class="booking-item-header-discount {$discount_class} green inline-block">- <span class='discount text-lg'>{$scope.discount}</span>% discount</p>
+              <p class="booking-item-header-discount-rate {$discount_class} inline-block">= <span class='currency text-lg'>{$scope.rental.currency|currency}</span><span class='rate text-lg'>{$scope.discount_rate_average|round}</span>/<span class='unit'>{$scope.rate_unit|default:"night"}</span></p>
+              {$scope.price_breakdown_link}
+            </div>
+          </div>
+        </header>
+        <div class="row">
+          <div class="col-md-7">
+            <div class="tabbable booking-details-tabbable">
+              <ul class="nav nav-tabs" id="myTab">
+                <li class="active">
+                  <a href="#rental-photos" data-toggle="tab"><i class="fa fa-camera"></i>Photos</a>
+                </li>
+                <li>
+                  <a href="#rental-map" data-toggle="tab"><i class="fa fa-map-marker"></i>On the Map</a>
+                </li>
+                {if ($scope.calendar)}
+                <li>
+                  <a href="#rental-calendar" data-toggle="tab"><i class="fa fa-calendar"></i>Calendar</a>
+                </li>
+                {/if}
+              </ul>
+              <div class="tab-content">
+                <div class="tab-pane fade in active" id="rental-photos">
+                  <div class="fotorama" data-allowfullscreen="true" data-nav="thumbs">
+                    {foreach from=$scope.images item=image}
+                      <img src="{$image.src}" alt="{$image.name}" {if ($image.title)} data-caption="{$image.title}"{/if} />
+                    {/foreach}
+                  </div>
+                </div>
+                <div class="tab-pane fade" id="rental-map">
+                  <div id="map-canvas" data-lat={$scope.rental.location_lat} data-lng={$scope.rental.location_long} style="width:100%; height:500px;"></div>
+                </div>
+                {if ($scope.calendar)}                
+                <div class="tab-pane fade" id="rental-calendar">
+                  {{"include": "_rental-view-calendar.html"}}
+                </div>
+                {/if}
+              </div>
+            </div>
+          </div>
+          <div class="col-md-5">
+            {if ($scope.rental.review_nr > 0)}
+            <div class="booking-item-meta">
+              <!--h2 class="lh1em mt40">Exceptional!</h2>
+              <h3>{(($scope.rental.review_recommend/$scope.rental.review_nr) * 100)|round} % <small >of guests recommend</small></h3-->
+              <div class="booking-item-rating">
+                <input type="number" readonly class="rating" 
+                     value="{$scope.rental.review_score}" 
+                     min=0 max=10
+                     data-rtl="false" data-glyphicon="false" data-show-clear="false"                     
+                     data-show-caption="false">
+                     
+                <span class="booking-item-rating-number"><b >{($scope.rental.review_score/2)|round:"1"}</b> of 5 <small class="text-smaller">guest rating</small></span>
+                <p><a class="text-default" href="#">based on {$scope.rental.review_nr} reviews</a>
+                </p>
+              </div>
+            </div>
+            {else}
+            <div class="gap"></div>
+            {/if}
+            <div class="booking-item-dates-change">
+              <form id="booking-form" class="ajax-submit" data-handler="rental-booking">
+                <input type="hidden" name="guest_id" value="{$user.id}">                           
+                <input type="hidden" name="site_id" value="{$site.id}">                           
+                <input type="hidden" name="apt_id" value="{$scope.rental.id}">                           
+                <input type="hidden" name="t" value="{$scope.rental.type}">                           
+                <input type="hidden" name="ng" value="{$smarty.get.ng}">                           
+
+                <div class="row input-daterange">
+                  <div class="col-md-6">
+                    <div class="form-group form-group-icon-right">
+                      <label>Check in</label>
+                      <input type="text" value="{$get.in}" class="form-control" id="in" name="in" placeholder="Checkin">
+                      <span class="input-icon"><i class="icon-calendar"></i></span>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group form-group-icon-right">
+                      <label>Check out</label>
+                      <input type="text" value="{$get.out}" class="form-control" id="out" name="out" placeholder="Checkout">    
+                      <span class="input-icon"><i class="icon-calendar"></i></span>
+                    </div>
+                  </div>
+                </div>
+                
+                <!--div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group form-group-icon-left">
+                      <i class="fa fa-calendar input-icon"></i>
+                      <label>Check in</label>
+                      <input type="text" value="{$smarty.get.in_disp}" class="form-control datepicker" id="in_disp" name="in_disp" placeholder="Checkin" data-dependent_field="out">
+                      <input type="hidden" value="{$smarty.get.in}" id="in" name="in">          
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group form-group-icon-left">
+                      <i class="fa fa-calendar input-icon"></i>                    
+                      <label>Check out</label>
+                      <input type="text" value="{$smarty.get.out_disp}" class="form-control datepicker datepicker-2" id="out_disp" name="out_disp" placeholder="Checkout">    
+                      <input type="hidden" value="{$smarty.get.out}" id="out" name="out">    
+                    </div>
+                  </div>
+                </div-->
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group form-group-icon-left form-group-select-plus">
+                      <label>Guests</label>
+                      <div class="btn-group btn-group-select-num{if ($smarty.get.ng >= 4)} hidden{/if}" data-toggle="buttons">
+                        {section name=ng start=1 loop=4 step=1}
+                          <label class="btn btn-primary{if ($smarty.get.ng == $smarty.section.ng.index)} active{/if}"><input type="radio" name="options" />
+                          {$smarty.section.ng.index}
+                          </label>
+                        {/section}                      
+                        <label class="btn btn-primary"><input type="radio" name="options" />4+</label>
+                      </div>
+                      <select name="ng" class="form-control{if ($smarty.get.ng < 4)} hidden{/if}">
+                        {section name=ng start=1 loop=15 step=1}
+                          <option{if ($smarty.get.ng == $smarty.section.ng.index)} selected="selected"{/if}>{$smarty.section.ng.index}</option>
+                        {/section}                      
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div class="gap gap-small"></div>	
+                
+                {if ($scope.rental.book_direct)}
+                <input type="hidden" name="type" value="{$smarty.const.RES_TYPE_DIRECT}">                           
+                <input type="submit" class="btn btn-success btn-lg" value="Book now">
+                
+                {else}
+                <input type="hidden" name="type" value="{$smarty.const.RES_TYPE_REQUEST}">                           
+                <input type="submit" class="btn btn-success btn-lg" value="Request to Book">
+                {/if}
+                
+                <a href="#" class="btn btn-primary btn-lg submit-parent" role="button"  data-set_form_input="type" data-value="{$smarty.const.RES_TYPE_INQUIRY}">Contact Host</a>
+                <!--input type="submit" class="btn btn-primary btn-lg" value="Contact Host"-->
+                
+                {if ($scope.edit_link)}
+                <a href="{$scope.edit_link}" type="submit" class="btn btn-danger btn-lg">Edit</a>
+                {/if}
+              </form>
+            </div>
+          </div>
+        </div>
+        <div class="gap"></div>
+        <div class="row">
+          <div class="col-md-6">
+            <h3>Amenities</h3>
+            <ul class="booking-item-features booking-item-features-expand-inline  mb30 clearfix">
+            {foreach from=$scope.facs item=fac}
+              <li class="col-xs-6 col-sm-4 col-md-6 col-lg-4"><i class="{$fac.icon}" id="fac_{$fac.id}"></i><span class="booking-item-feature-title">{$fac.name}</span></li>
+            {/foreach}
+            </ul>
+          </div>
+          <div class="col-md-6">
+            <h3>Property description</h3>
+            {$scope.description}              
+          </div>
+        </div>
+        <div class="gap gap-small"></div>
+        <h3 class="mb20">{$scope.rental.review_nr} Property Review{if ($scope.rental.review_nr != 1)}s{/if}</h3>
+        <div class="row row-wrap">
+          <div class="col-md-8">
+            <ul class="booking-item-reviews list">
+            {if ($scope.rental.review_nr > 0)}
+              {foreach from=$scope.reviews item=review}
+              <li>
+              {{"include": "_rental-review-item.html", "compact": "1"}}
+              </li>
+              {/foreach}
+            {else}
+            <li>No reviews yet.</li>
+            {/if}
+            </ul>
+            {if ($scope.rental.review_nr > 0)}
+            <div class="row wrap">
+              <div class="col-md-5">
+                <p><small>{$scope.rental.review_nr} review{if ($scope.rental.review_nr != 1)}s{/if} on this property. &nbsp;&nbsp;Showing 1 to 7</small>
+                </p>
+              </div>
+              <div class="col-md-7">
+                <ul class="pagination">
+                  <li class="active"><a href="#">1</a>
+                  </li>
+                  <li><a href="#">2</a>
+                  </li>
+                  <li><a href="#">3</a>
+                  </li>
+                  <li><a href="#">4</a>
+                  </li>
+                  <li><a href="#">5</a>
+                  </li>
+                  <li><a href="#">6</a>
+                  </li>
+                  <li><a href="#">7</a>
+                  </li>
+                  <li class="dots">...</li>
+                  <li><a href="#">43</a>
+                  </li>
+                  <li class="next"><a href="#">Next Page</a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="gap gap-small"></div>
+            {/if}
+            
+          </div>
+          {if ($scope.nearby_golf)}
+          <div class="col-md-4">
+            <h4>Nearby golf courses</h4>
+            <ul class="booking-list">
+              {foreach from=$scope.nearby_golf item=golf}
+              <li>
+                <a href="{$smarty.const.PAGE_GOLF_CLUB|link}{$golf.id}{$query_string}">
+                {{"include": "_golf-club-nearby.html"}}
+                </a>
+              </li>
+              {/foreach}
+            </ul>
+            
+            <h4>Nearby properties</h4>
+            <ul class="booking-list">
+              {foreach from=$scope.nearby_apts item=apt}
+              <li>
+                <a href="{$apt.id|property_link}{$query_string}">
+                {{"include": "_rental-nearby.html"}}
+                </a>
+              </li>
+              {/foreach}
+            </ul>
+          </div>
+          {/if}
+          
+        </div>
+      </div>
+      <div class="gap gap-small"></div>
+    </div>
+

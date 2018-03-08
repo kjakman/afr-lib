@@ -1,0 +1,12 @@
+<label>{'name'|translate:'c'}:</label> {$address|name|default:$address.organization}<br>
+<label>{'address'|translate:'c'}:</label> {$address|address:', '}<br>
+
+{if ($show_contact)}
+  {if ($address.phone)}
+<label>{'phone'|translate:'c'}:</label> {$address.phone}<br>
+  {/if}
+  {if ($address.email_address)}
+<label>{'email'|translate:'c'}:</label> {$address.email_address}<br>
+  {/if}
+{/if}
+

@@ -1,0 +1,13 @@
+                <span class="date">
+									<i class="fa fa-calendar"></i> {$article.post_date|date_format:"%d"} <small>{$article.post_date|date_format:"%h"|capitalize} {$article.post_date|date_format:"%Y"}</small>
+								</span>
+								<span class="info hidden-xs">
+									<span class="block"><i class="fa fa-user"></i> {'by'|translate:'u'} <a href="{$smarty.const.PAGE_PROFILE|link}{$article.user_id}">{$article.user_id|username|upper}</a></span>
+									<!--span class="block"><i class="fa fa-folder-open-o"></i> POSTED IN <a href="blog.html">UNCATEGORIZED</a></span-->
+									<span class="block"><i class="fa fa-comments"></i> {'with'|translate:'u'} <a href="{$page.page_type|link}{$article.id}#comments">{$comment_count} {'comments'|translate:'u'}</a></span>
+									<!--span class="block"><i class="fa fa-link"></i> <a href="blog-single-sidebar.html">PERMALINK</a></span-->
+									{if ($article.auth_edit_article)}
+									<a class="btn btn-success btn-sm" href="{$page.page_type|link}{$article.id}?edit"><i class="fa fa-pencil-square"></i> {'edit'|translate:'t'}</a>
+									{/if}
+								</span>
+

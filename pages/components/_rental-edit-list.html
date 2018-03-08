@@ -1,0 +1,68 @@
+          
+          
+          {if (!$scope.rental_count)}
+            <div class="gap gap-small"></div>
+            <div class="alert alert-danger" role="alert">
+              <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+              You do not have any properties yet. Click <a href="{$smarty.const.PAGE_ADD_PROPERTY|link}">here</a> to add one.
+            </div>
+            {else}
+            {*
+            <div class="clearfix">
+              <div class="checkbox pull-right">
+              <label>Show Inactive?</label>                 
+                <input type="checkbox" data-target=".rental-inactive" checked class="bootstrap-toggle toggle-div" data-toggle="toggle" data-onstyle="success" data-offstyle="danger">              
+              </div>
+            </div>
+            *}
+
+
+            {$count = $scope.rental_count}
+            {$start = $scope.start|default:0}
+            {$limit = $scope.limit|default:10}
+            {$last = min($start + $limit, $count)}
+
+            {if ($page.page_type == $smarty.const.PAGE_EDIT_RENTAL)}
+              {$pagination_options = ["target" => "#subview-container", "success_handler" => "traveler_ready", "base_link" => "{$app.full_path}"]}
+            {else} {* partial view  needed for ajax pagination only supported for subviews for now *}
+              {$pagination_options = []}
+            {/if}
+            
+            {$count} Rentals found {if ($count|@count < $count)}(Showing {$start + 1} - {$last}){/if}
+            {$count|pagination:$start:$limit:$pagination_options}
+            
+            {if ($scope.rental_list|@count)}
+            <ul class="booking-list booking-list-wishlist" id="rental_list">
+              {foreach from=$scope.rental_list item=rental}
+              {{"include": "_rental-edit-list-item.html"}}
+              {/foreach}
+            </ul>
+            {/if}
+            
+            {if (0 && $scope.rental_listed|@count)}
+              <div class="panel panel-default">
+                <div class="panel-heading">Listed</div>
+                <div class="panel-body">
+                  <ul class="booking-list booking-list-wishlist">
+                  {foreach from=$scope.rental_listed item=rental}
+                  {{"include": "_rental-edit-list-item.html"}}
+                  {/foreach}
+                  </ul>
+                </div>
+              </div>
+            {/if}
+            {if (0 && $scope.rental_unlisted|@count)}
+              <div class="panel panel-default">
+                <div class="panel-heading">Unlisted</div>
+                <div class="panel-body">
+                  <ul class="booking-list booking-list-wishlist">
+                  {foreach from=$scope.rental_unlisted item=rental}
+                  {{"include": "_rental-edit-list-item.html"}}
+                  {/foreach}
+                  </ul>
+                </div>
+              </div>
+            {/if}
+  
+          {/if}
+          

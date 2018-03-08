@@ -1,0 +1,126 @@
+  {{"extend": "base/admin.html"}}
+  {block name=content}
+  
+
+          <h2>{$scope.title}</h2>
+          <form class="form-horizontal" role="form">
+              <div class="form-group col-md-3">
+                {"status"|object_select:"inv_status":["class" => "form-control", "value" => $get.status, "sort" => "id", "first" => "Select Status..."]}
+              </div>
+              <div class="form-group col-md-3">
+                {"org_id"|object_select:"org":["class" => "form-control", "value" => $get.org_id,  "first" => "Select Company...", "search" => ["org.id" => $scope.org_ids]]}
+              </div>
+              <div class="form-group col-md-2 form-group-icon-left">
+                <input type="text" value="{$get.start}" class="form-control datepicker" id="start" name="start" placeholder="From">
+                <i class="fa fa-calendar input-icon click-parent-datepicker"></i>
+              </div>
+              <div class="form-group col-md-2 form-group-icon-left">
+                <input type="text" value="{$get.end}" class="form-control datepicker" id="end" name="end" placeholder="To">
+                <i class="fa fa-calendar input-icon click-parent-datepicker"></i>
+              </div>
+              <div class="form-group col-md-2">
+                <button type="submit" class="btn btn-success">Go</button>
+                {if ($scope.filters)}<a href="{$this_path}" class="btn btn-danger">Clear</a>{/if}
+              </div>
+          </form>
+          <div class="gap"></div>
+              <!--label for="inputCity" class="col-lg-2 control-label">Status</label>
+              <label for="inputCity" class="col-lg-2 control-label"><i class="fa fa-building-o"></i> Company</label>
+              <label for="inputType" class="col-lg-1 control-label"><i class="fa fa-calendar"></i> From</label>
+              <label for="inputType" class="col-lg-1 control-label"><i class="fa fa-calendar"></i> To</label></label-->
+          
+          
+          
+          <table class="table" 
+             data-toggle="table" 
+             data-url="{$scope.data_url}" 
+             data-cache="false" 
+             data-pagination="true"
+             data-striped="true"
+             data-side-pagination="server"             
+             data-page-list="[5, 10, 20, 50, 100, 200]"
+             
+           data-toolbar="#toolbar"
+           data-search="true"
+           data-show-refresh="true"
+           data-show-toggle="true"
+           data-show-columns="true"
+           data-show-export="true"
+           data-detail-view="true"
+           data-detail-formatter="detailFormatter"
+           data-show-pagination-switch="true"
+             
+             data-search="true">
+             
+            <thead>     
+              <tr>
+                <th data-field="id" data-sortable="true" data-formatter="bstInvoiceFomatter">Number</th>
+                <th data-field="created" data-sortable="true">Created</th>
+                <th data-field="invoice_date" data-sortable="true">Sent</th>
+                <th data-field="status">Status</th>
+                <th data-field="total" data-sortable="true">Total</th>
+                <th data-field="paid">Paid</th>
+                <th data-field="balance">Balance</th>
+                <th data-field="org_id" data-sortable="true">Company</th>
+                <th data-field="parent_id" data-sortable="true" data-formatter="bstBookingFomatter">Booking</th>
+                <th data-field="apt_id" data-sortable="true" data-formatter="bstRentalFomatter">Rental</th>
+                <th data-field="concerning">Concerning</th>
+                
+              </tr>
+            </thead>
+            <tfoot>     
+              <tr>
+                <th>Total</th>
+                <th></th>
+                <th></th>
+                <th></th>            
+                <th></th>            
+                <th data-total-field="total"></th>
+                <th data-total-field="paid"></th>
+                <th data-total-field="balance"></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>                
+              </tr>
+            </tfoot>
+          </table>
+<script>
+
+function bstBookingFomatter(value, row, index) {
+  if(!value) return '';
+  return '<a href="/booking/'+ value +'" target="new">' + value + '</a>';
+}
+
+function bstRentalFomatter(value, row, index) {
+  if(!value) return '';
+  var print_val = row.apartment_name || value;
+  return '<a href="{$smarty.const.PAGE_RENTAL_DETAIL|link}'+ value +'" target="new">' + value + '</a>';
+}
+
+function bstInvoiceFomatter(value, row, index) {
+  if(!value) return '';
+  var print_val = row.invoice_id || value;
+  return '<a href="/invoice/'+ value +'" target="new">' + print_val + '</a>';
+}
+
+$(document).ready(function() {  
+  var $table = $("TABLE.table");
+  $table.bootstrapTable().on('load-success.bs.table', function(e, data) {      
+    console.log("load data=", data);
+    var totals = data.totals || [];
+    $.each(totals, function(k, v) {
+      console.log("total k=" + k + " v=" + v);
+      if(v) {
+        v = parseFloat(v);
+        v = v.toFixed(2);
+        var $target = $("TH[data-total-field='" + k + "']");
+        if(v && $target.length) {
+          $target.html(v);
+        }
+      }
+    });
+  });
+});
+</script>
+  {/block}

@@ -1,0 +1,9 @@
+{json file="/afr/json/timezones.json" assign="timezones"}
+
+
+{foreach from=$timezones item=group}
+  {$name = $group.name}
+  {foreach from=$group.zones item=zone}
+    <option value="{$zone.value}" data-alternative-spellings="{$zone.name}">{$zone.value}</option>
+  {/foreach}
+{/foreach}

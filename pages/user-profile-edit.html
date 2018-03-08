@@ -1,0 +1,46 @@
+  {{"extend": "base/subview.html"}}
+  
+  {block name=subview_top}
+  {/block}
+  
+  {block name=subview_title}
+    {'user profile'|translate:'c'}
+    
+    {*
+    <h2>{$scope.profile.display_name}</h2>
+    <a href="{$smarty.const.PAGE_PROFILE|link}{$scope.profile.user_id}/">View Public Profile</a>
+    <br><br>
+    *}
+    
+  {/block}
+  
+  {block name=subview_left_top}
+ {/block}
+
+  {block name=subview_aside}
+    <div class="user-profile-avatar text-center">
+        <img id="user_profile_photo" src="{$scope.profile.user_id|userphoto}" alt="{$scope.profile.user_id|username}" title="AMaze" />
+        <h5>{$scope.profile.user_id|username}</h5>
+        <p>Member Since {$scope.profile.created|date}</p>
+        <div>
+          <a href="{$smarty.const.PAGE_ACCOUNT|link}{$scope.profile.user_id}" class="btn btn-success"><i class="fa fa-key"></i> Account</a>
+        </div>
+        
+    </div>
+  {/block}
+
+  {block name=subview_left_bottom}
+  {/block}
+  
+  {block name=subview_nav}
+    {{"include": "_user-profile-nav.html"}}
+  {/block}
+  
+  {block name=subview_container}
+    {{ "subviews":["overview","settings","message","history","bookings","wishlist","inbox","verification","artist","gallery","collector"],"prefix": "_user-profile-edit-" }}
+  {/block}
+  
+  {block name=subview_bottom}
+  {/block}
+
+  

@@ -1,0 +1,55 @@
+  {{"extend": "base/subview.html"}}
+
+  {block name=subview_top}
+     {$booking = $scope.booking}
+     {$obj = $booking}
+     {$rental = $scope.rental}
+     {$in = $booking.checkin}
+     {$out = $booking.checkout}
+     {$status = $booking.status}
+     {$type_name = $scope.type_name}
+     {$obj_type = $scope.obj_type}
+  {/block}
+  
+  {block name=subview_title}
+    {$type_name} Status
+  {/block}
+  
+  {block name=subview_left_top}
+    <div class="panel panel-default">
+      <div class="panel-body nopadding">
+        {if ($scope.guest || $scope.host)}
+        {if ($scope.guest && $scope.guest.id != $user.id)} {* show guest *}
+        {$user_type = 'guest'}
+        {$thisuser = $scope.guest}
+        {else} {* show host *}
+        {$user_type = 'host'}
+        {$thisuser = $scope.host}
+        {/if}
+        {{"include": "_user-profile-panel.html"}}
+        {/if}
+      </div>
+    </div>
+  {/block}
+
+  {block name=subview_aside}
+    {if ($booking)}
+    {$obj_type = $scope.obj_type}            
+    {{"include": "_booking-sidebar.html"}}           
+    {/if}
+  {/block}
+
+  {block name=subview_left_bottom}
+    {{"include": "_booking-rate-panel.html"}}
+  {/block}
+  
+  {block name=subview_nav}
+    {{"include": "_booking-status-nav.html"}}
+  {/block}
+  
+  {block name=subview_container}
+    {{ "subviews":["overview","edit","feedback","chat","itinerary","send","recalculate","cancel","alter","upload","share"],"prefix": "_booking-status-" }}          
+  {/block}
+  
+  {block name=subview_bottom}
+  {/block}

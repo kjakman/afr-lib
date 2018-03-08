@@ -1,0 +1,36 @@
+
+                              <div class="row">
+                                <div class="col-sm-6">
+                                  <label>Street</label>
+                                  <input name="address1" class="form-control" value="{$address.address1}" type="text" />
+                                </div>
+                                <div class="col-sm-6">
+                                  <label>Line 2</label>
+                                  <input name="address2" class="form-control" value="{$address.address2}" type="text" />
+                                </div>
+                              </div>
+                              <div class="row">
+                                <div class="col-sm-6">
+                                  <label>ZIP/Postal</label>
+                                  <input name="zip" class="form-control" value="{$address.zip}" type="text" />
+                                </div>
+                                <div class="col-sm-6">
+                                  <label>City</label>
+                                  <input name="city" class="form-control" value="{$address.city}" type="text" />
+                                </div>
+                              </div>
+                              <div class="row">
+                                <div class="col-sm-6">
+                                  <label>State/Province</label>
+                                  <input name="state" class="form-control" value="{$address.state}" type="text" />
+                                </div>
+
+                                <div class="col-sm-6">
+                                  <label>Country</label>
+                                  <select name="country" id="country" data-value="{$address.country}" class="form-control auto-select-off" autofocus="autofocus" autocorrect="off" autocomplete="off">
+                                    <option value=""></option>
+                                    {{"include": "_countries.html"}}
+                                  </select>
+                                </div>
+                              </div>
+

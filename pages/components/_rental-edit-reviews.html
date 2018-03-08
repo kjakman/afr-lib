@@ -1,0 +1,14 @@
+            {if ($scope.reviews|@count > 0)}
+              <h3>{$scope.reviews|@count} {if ($scope.reviews|@count == 1)}{'review'|translate:'c'}{else}{'reviews'|translate:'c'}{/if}</h3>                                    
+              <ul class="booking-item-reviews list" id="reviews">
+                {foreach from=$scope.reviews item=review}
+                <li>
+                {{"include": "_rental-review-item.html", "compact": "1"}}
+                </li>
+                {/foreach}
+              </ul>
+            {else}
+              <h3>No reviews yet.</h3>
+            {/if}
+
+            {{"include":"_review-form.html"}}

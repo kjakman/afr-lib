@@ -1,0 +1,262 @@
+                      {$invoice = $scope.invoice}
+                      {$start = $invoice.start_date}
+                      {$end = $invoice.end_date}
+                      {$invoice_fields = ["salutation","first_name","last_name","organization","title","address1","address2","city","state","zip","country","email_address","phone"]}
+                      {assign 'contact_fields' ["org_id"]|array_merge:$invoice_fields}
+                      {if ($scope.auth_edit_invoice)}
+                      {$apply_all = 0}
+                      {$apply_parent = 0}
+                      {if ($invoice.sequence > 0 && $scope.inv_ids)}
+                        {$apply_all = 1}
+                      {/if}
+                      {if ($apply_all || ($invoice.parent_id && $invoice.parent_type))}
+                        {$apply_parent = 1}
+                      {/if}
+                        
+                      {if (0)}
+                        <!-- old shit -->
+                        Missing: Status, Export Timestamp, Invoice Type, Voucher ID, Billed By
+                        <div class="panel panel-primary">
+                          <div class="panel-heading">Basic</div>
+                          <div class="panel-body">
+                            {* $invoice|invoice_details:$user.user_level|print_array *}
+                            {if (!$invoice.invoice_id)}
+                            <br>
+                            <a href="#" class="btn btn-success btn-sm ajax-link" 
+                             data-load_text = "Setting..."
+                             data-reload_link = "#invoice-overview"
+                             data-handler = "set-invoice-id"
+                             data-data='{["inv_id" => $invoice.id,"user_id" => $user.id]|@json_encode}'
+                             ><i class="fa fa-plus"></i> Set Invoice Number</a>
+                            {/if}
+                          </div>
+                        </div>  
+                      {/if}
+                      
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">Details
+                        &nbsp;
+                        <a href="#" class="btn btn-success btn-sm edit-object" 
+                           data-obj_type="invoice" 
+                           data-obj_id="{$invoice.id}"
+                           data-fields='{["invoice_date", "start_date", "end_date", "concerning", "customer_notes"]|@json_encode}'
+                           data-reload_link="#invoice-overview" 
+                           >Edit</a>
+                        </div>
+                        <div class="panel-body">
+                          <label>{$invoice.status|get:"inv_status":"name"|ucfirst} {$invoice.type|get:"inv_type":"name"|ucfirst} invoice {$invoice.invoice_id} (Voucher ID: {$invoice.id})</label>{if ($invoice.export_timestamp)}, exported {$invoice.export_timestamp|date}{/if}<br>
+                          <label>Invoice Date:</label> {$invoice.invoice_date|date}<br>
+                          <label>Period:</label> {$invoice.start_date|daterange:$invoice.end_date}<br>
+                          <label>Concerning:</label> {$invoice.concerning}
+                            {if ($apply_all)}
+                            <a class="ajax-link" href="#" id="copy-concerning-{$invoice.id}" 
+                              data-toggle="confirmation" 
+                              data-load_text = "Applying..."
+                              data-data='{["obj_type" => "invoice", "obj_id" => $invoice.id, "target_ids" => $scope.inv_ids, "field" => "concerning"]|@json_encode}'
+                              data-handler="objects-copy"
+                              rel="tooltip" data-placement="top" title="Are you sure? "><i class="fa fa-copy"></i> Apply to all
+                            </a>
+                            {/if}                    
+                          <br>
+                          <label>Customer Notes:</label> {$invoice.customer_notes}
+                            {if ($apply_all)}
+                            <a class="ajax-link" href="#" id="copy-notes-{$invoice.id}" 
+                              data-toggle="confirmation" 
+                              data-load_text = "Applying..."
+                              data-handler="objects-copy"
+                              data-data='{["obj_type" => "invoice", "obj_id" => $invoice.id, "target_ids" => $scope.inv_ids, "field" => "customer_notes"]|@json_encode}'
+                              rel="tooltip" data-placement="top" title="Are you sure? "><i class="fa fa-copy"></i> Apply to all
+                            </a>
+                            {/if}                                                    
+                          <br>
+                        </div>
+                        
+                      </div>
+
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">Billing
+                        &nbsp;
+                        <a href="#" class="btn btn-success btn-sm edit-object" 
+                           data-obj_type="invoice" 
+                           data-obj_id="{$invoice.id}"
+                           data-fields='{["site_id", "legal_entity_id", "org_id", "contact_id", "agent_id", "bill_to"]|@json_encode}'
+                           data-reload_link="#invoice-overview" 
+                           >Edit</a>
+
+                        {if ($apply_parent)}
+                        <a class="btn btn-danger btn-sm ajax-link" href="#" id="copy-billing-{$invoice.id}" 
+                          data-toggle="confirmation" 
+                          data-load_text = "Applying..."
+                          data-handler="invoice-billing-copy"
+                          data-data='{["inv_id" => $invoice.id,"user_id" => $user.id]|@json_encode}'
+                          data-reload_link-off='#invoice-overview'
+                          rel="tooltip" data-placement="top" title="Are you sure? "><i class="fa fa-copy"></i> Apply to all
+                        </a>
+                        {/if}
+                           
+                        </div>
+                        <div class="panel-body">
+                          {$sites = "site"|find_all:[]:["field" => "name"]}
+                          {$legals = "legal_entity"|find_all:[]:["field" => "name"]}
+                          
+                          {if ($sites|@count > 1)}
+                          <label>Site:</label> {$invoice.site_id|get:"site":"name"}<br>
+                          {/if}
+                          {if ($legals|@count > 1)}
+                          <label>Billed By:</label> {$invoice.legal_entity_id|get:"legal_entity":"name"}<br>
+                          {/if}
+                          
+                          <label>Agent:</label> {$invoice.agent_id|get:"agent":"name"}
+                          {if ($invoice.agent_id)}
+                          {assign 'agent_fields' ["name"]|array_merge:$invoice_fields}
+                          <a href="#" class="edit-object btn btn-xs btn-success"
+                             data-obj_type="agent" 
+                             data-obj_id="{$invoice.agent_id}" 
+                             data-reload_link="#invoice-overview"
+                             data-fields='{$agent_fields|@json_encode}'
+                             ><i class="fa fa-pencil-square"></i> Edit Agent </a>
+                          {/if}
+                          
+                          <a href="#" class="add-object btn btn-xs btn-primary" 
+                             data-obj_type="agent" 
+                             data-fields='{$agent_fields|@json_encode}'
+                             data-reload_link="#invoice-overview"
+                             ><i class="fa fa-plus"></i> Add Agent </a><br>
+                          
+                          
+                          <label>Employer of guest:</label> {$invoice.org_id|get:"org":"name"}
+                          {if ($invoice.org_id)}
+                          {assign 'org_fields' ["name"]|array_merge:$invoice_fields}
+                          
+                          <a href="#" class="edit-object btn btn-xs btn-success"
+                             data-obj_type="org" 
+                             data-obj_id="{$invoice.org_id}" 
+                             data-reload_link="#invoice-overview"
+                             data-fields='{$org_fields|@json_encode}'
+                             ><i class="fa fa-pencil-square"></i> Edit Employer </a>
+                          {/if}
+                          
+                          <a href="#" class="add-object btn btn-xs btn-primary" 
+                             data-obj_type="org" 
+                             data-fields='{$org_fields|@json_encode}'
+                             data-reload_link="#invoice-overview"
+                             ><i class="fa fa-plus"></i> Add Employer </a><br>
+
+                          
+                          {if ($invoice.org_id)}
+                            {$org_id = $invoice.org_id}
+                            {$org = $org_id|get:"org"}
+                            
+                          <label>Department:</label>
+                            {if ($scope.contact)}                              
+                              {$contact = $scope.contact}
+                              {$contact.organization} {$contact.salutation} {$contact.first_name} {$contact.last_name}
+                            {else}
+                              [ none ]
+                            {/if}
+                            
+                            {$contactdata = ["org_id" => $org_id, "address1" => $org.address1, "address2" => $org.address2, "city" => $org.city, "state" => $org.state, "zip" => $org.zip, "country" => $org.country, "organization" => $org.organization]}
+                            {$handlerdata = ["inv_id" => $invoice.id]}
+
+                            {if ($invoice.contact_id)}
+                            <a href="#" class="edit-object btn btn-xs btn-success"
+                               data-obj_type="contact" 
+                               data-obj_id="{$invoice.contact_id}" 
+                               data-reload_link="#invoice-overview"
+                               data-fields='{$contact_fields|@json_encode}'
+                               ><i class="fa fa-pencil-square"></i> Edit Department</a>
+                            {/if}
+                                                    
+                            <a href="#" class="add-object btn btn-xs btn-primary" 
+                               data-obj_type="contact" 
+                               data-data='{$contactdata|@json_encode}'
+                               data-fields='{$contact_fields|@json_encode}'
+                               data-success_handler="add_contact_handler"
+                               data-handler_data='{$handlerdata|@json_encode}'
+                               data-reload_link="#invoice-overview"
+                               ><i class="fa fa-plus"></i> Add Department</a><br>
+                           
+                            {$contacts = $scope.contacts}
+                            {if ($edit_contact)}
+                              <select class="form-control">
+                              {foreach from=$contacts item=contact}
+                                {$contact.organization} {$contact.salutation} {$contact.first_name} {$contact.last_name}<br>
+                                {if ($contact.organization)}
+                                  {$contact_name = $contact.organization}
+                                {else}
+                                  {$contact_name = "`$contact.first_name` `$contact.last_name`"}
+                                {/if}
+                                <option value="{$contact.id}">{$contact_name}</option>
+                              {/foreach}
+                              </select>
+                             {/if} {* if ($edit_contact) *}
+                          {/if} {* if ($invoice.org_id) *}
+                          {$bta = $smarty.const.BILLTO}
+                          {$bt = $invoice.bill_to}
+                          <label>Billed To:</label> {$bta[$bt]}<br>
+                        </div>
+                        <div class="panel-footer">
+                          <p class="text-warning">
+                            <i class="fa fa-warning"></i> Note: Changes made here only affect this invoice, not the associated Booking or other invoices for this booking. 
+                            {if ($apply_parent)}<br>To update the booking and all other/future invoices, click <span class='btn-xs btn-danger text-danger'>Apply to all</span> above.{/if}
+                          </p>
+                        </div>
+                      </div>
+                                                             
+                      <div class="panel panel-primary">
+                        <div class="panel-heading">Address
+                        {if ($user.user_level >= $smarty.const.USER_LEVEL_STAFF)}
+                        {$invoice_fields[] = "email_address"}
+                        {/if}
+                        &nbsp;
+                        <a href="#" class="btn btn-success btn-sm edit-object" 
+                           data-obj_type="invoice" 
+                           data-obj_id="{$invoice.id}"
+                           data-fields='{$invoice_fields|@json_encode}'
+                           data-reload_link="#invoice-overview" 
+                           >Edit</a>                           
+                        {if ($apply_parent)}
+                        <a class="btn btn-danger btn-sm ajax-link" href="#" id="copy-address-{$invoice.id}" 
+                          data-toggle="confirmation" 
+                          data-load_text = "Applying..."
+                          data-handler="invoice-address-copy"
+                          data-data='{["inv_id" => $invoice.id,"user_id" => $user.id]|@json_encode}'
+                          data-reload_link-off='#invoice-overview'
+                          rel="tooltip" data-placement="top" title="Are you sure? "><i class="fa fa-copy"></i> Apply to all
+                        </a>
+                        {/if}
+                        </div>
+                        <div class="panel-body">
+                          {$show_contact = $scope.show_contact}
+                          
+                          {$address = $invoice}
+                          {{"include": "_address-details.html"}}
+                          <br>
+                        </div>
+                        <div class="panel-footer">
+                          <p class="text-warning">
+                            <i class="fa fa-warning"></i> Note: Changes made here only affect this invoice, not the associated Booking, Employer, Department, or Agent.
+                            {if ($apply_parent)}<br>Click <span class='btn-xs btn-danger text-danger'>Apply to all</span> above to copy name and address of this invoice to all other invoices (but not the booking){/if}
+                            </p>
+                        </div>                        
+                      </div>  
+
+                      {/if} {* if auth-edit *}
+
+                      {{"include": "_invoice-details.html"}}
+
+                      {{"include": "_invoice-payments.html"}}
+                      
+                      
+                      {if ($scope.mail_log|@count)}
+                        {$mail_log = $scope.mail_log}
+                        {{"include": "_mail-log.html"}}
+                      {/if}
+
+                      {if ($scope.change_log|@count)}
+                        {$change_log = $scope.change_log}
+                        {{"include": "_change-log.html"}}
+                      {/if}
+
+                      {{"include": "_invoice-modal.html"}}
+                      

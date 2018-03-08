@@ -1,0 +1,42 @@
+                {$thisuser = $scope.user}
+                {if ($thisuser)}                  
+                <table cellspacing="3" cellpadding="0" border="0">
+                  <tbody>
+                    <tr>                
+                      <td width="140">{'display name'|translate:'c'}</td>
+                      <td width="200">{$thisuser.display_name}</td>
+                    </tr>                    
+                    {if ($thisuser.username != $thisuser.email_address)}
+                    <tr>                
+                      <td width="140">{'username'|translate:'c'}</td>
+                      <td width="200">{$thisuser.username}</td>
+                    </tr>  
+                    {/if}
+                    <tr>                
+                      <td width="140">{'member since'|translate:'c'}</td>
+                      <td width="200">{$thisuser.created|date_format:"%e %B %Y"}</td>
+                    </tr>
+                    <tr>
+                      <td colspan="2"><br></td>
+                    </tr>
+                    
+                    <tr>                
+                      <td width="140">{'name'|translate:'c'}</td>
+                      <td width="200">{$thisuser|full_name}</td>
+                    </tr>                    
+                    <tr>                
+                      <td width="140">{'address'|translate:'c'}</td>
+                      <td width="200">{$thisuser|address}</td>
+                    </tr> 
+                    <tr>                
+                      <td width="140">{'phone'|translate:'c'}</td>
+                      <td width="200">{$thisuser.phone}</td>
+                    </tr>                    
+                    <tr>                
+                      <td width="140">{'email'|translate:'c'}</td>
+                      <td width="200">{$thisuser.email_address}</td>
+                    </tr>       
+                    
+                  </tbody>
+                </table>
+                {/if}

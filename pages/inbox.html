@@ -1,0 +1,41 @@
+  {{"extend": "base/default.html"}}
+  {block name=content}
+  
+
+        <div class="container">
+          {if ($scope.thread_id)}
+            {$booking = $scope.booking}
+            {$rental = $scope.rental}
+            {* $scope|dump *}
+        {if (!$scope.first_user || $user.id|in_array:$scope.user_ids)}
+          <h3>Conversation with {$scope.other_user.display_name}</h3>
+        {else}
+          <h3>Conversation between {$scope.first_user.display_name} and {$scope.other_user.display_name}</h3>
+        {/if}
+          <div class="row">
+            <div class="col-md-8">
+              {{"include": "_inbox-thread.html"}}                    
+            </div>
+            <div class="col-md-4">
+              <div class="panel panel-default">
+                <div class="panel-body nopadding">
+                {{"include": "_user-profile-panel.html", "thisuser": "$scope.other_user"}}                   
+                </div>
+              </div>            
+              <div class="panel panel-default">
+                <div class="panel-body nopadding">
+                {if ($booking)}
+                {{"include": "_booking-panel.html"}}
+                {else if ($rental)}
+                {{"include": "_rental-panel.html"}}
+                {/if}
+                </div>
+              </div>            
+            </div>
+          </div>
+          {else}
+          <h3>Inbox</h3>
+          {{"include": "_inbox-threads.html"}}
+          {/if}
+        </div>
+  {/block}

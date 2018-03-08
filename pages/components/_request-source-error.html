@@ -1,0 +1,11 @@
+          <h4>
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            {'we are sorry'|translate:'c'}...
+          </h4>  
+          <p>{{"name": "text-provider-error", "type":"text", "value":"Unfortunately the rental provider could not accept this request."}}</p>
+          {$scope.source_error|alert:"error"}
+          <p>{{"name": "text-provider-error-2", "type":"text", "value":"We do our best to make sure this does not happen, and will look into the cause. Please use the button below to continue your search."}}</p>
+          <br>
+          <a href="{$scope.search_url}" class="btn btn-success">{'continue searching'|translate:'c'}</a>
+          <div class="gap"></div>
+

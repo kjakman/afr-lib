@@ -1,0 +1,27 @@
+              
+            <form name="booking-form" class="ajax-submit" id="booking_form" data-handler="calendar-booking" data-success_handler="soft_reload">
+              <div class="panel panel-primary">
+                <div class="panel-heading">Edit Booking {$booking.res_id}</div>
+                <div class="panel-body">
+                {{"include": "_booking-form.html"}}
+                </div>
+                <div class="panel-footer">
+                  <div class="row">
+                    <div class="col-xs-10">
+                      {{"include": "_booking-form-footer.html"}}
+                    </div>
+                    <div class="col-xs-2">
+                      <button type="submit" class="btn btn-success" id="cd-save">Save</button>                
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </form>
+            
+            <script>
+            $(function() {
+              cal_update_fee_rows();
+              cal_update_total();
+              cal_bind_date_handlers();              
+            });
+            </script>

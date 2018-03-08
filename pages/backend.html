@@ -1,0 +1,196 @@
+  {{"extend": "base/admin.html"}}
+  {block name=content}
+      <h2 class="center">Database Administration</h2>
+
+      {if ($smarty.get.ac == 'add_class' || $smarty.get.ac == 'edit_class')}  {* show add-class form *}
+        {$add = $smarty.get.ac == 'add_class'}
+        {$std_fields = ['active', 'created', 'timestamp', 'client_id', 'site_id','user_id','name', 'description']}
+        <div class="container">
+          <h3 class="center">{if ($add)}Add{else}Edit{/if} Class</h3>
+          <form class="ajax-submit" data-handler="save-class">
+            <input type="hidden" name="obj_type"value="class" />
+            <input type="hidden" name="id"  value="{$scope.class_def.type}" />
+            <input type="hidden" name="user_id" value="{$user.id}" />
+            <input type="hidden" name="site_id" value="{$site.id}" />
+
+            <div class="form-group">
+              <label>Name</label>
+              <input name="name" class="form-control" type="text" value="{$scope.class_def.name}"/>
+            </div>         
+            <div class="form-group">
+              <label>Database Key</label>
+              <input name="key" class="form-control" type="text" value="{$scope.class_def.key|default:'id'}"/>
+            </div>         
+            <div class="form-group">
+              <label>Group</label>
+              {"group"|object_select:"class_group":["class" => "form-control", "value" => $scope.class_def.group]}
+            </div>         
+            <div class="form-group">
+              <label>User Level</label>
+              {"user_level"|object_select:"user_level":["class" => "form-control", "value" => $scope.class_def.user_level|default:$user.user_level]}
+            </div>                     
+            
+            {if ($add)}
+            <div class="form-group">
+              <label>First ID</label>            
+              <input name="first_id" class="form-control" type="number" value="1000"/>
+            </div>
+
+            <div class="form-group checkbox_group">
+              <label>Add Standard Fields</label> <br>          
+              <input name="add_fields" type="hidden" class="cb_target form-control" /><br>
+              {foreach from=$std_fields item=field}
+              <input type="checkbox" value="{$field}" class="form-control-off" /> {$field}<br>
+              {/foreach}
+            </div>
+            {else} {* edit *}
+              {$rows = []}
+              {$add_button = '<a href="#" class="btn btn-success btn-small add-object" data-obj_type="attribute" data-reload=1 title="Add"><i class="fa fa-plus-square"> Add</i></a>'}
+              {$rows[] = [$add_button, "Name", "Field", "Type", "Default", "Length"]}
+            
+              {foreach from=$scope.class_attributes item=attr}
+                {$link_options = ["class" => "edit-object", "data-obj_type" => "attribute", "data-obj_id" => $attr.id, "data-fields" => []]}
+                {$row = ['#'|anchor:edit:$link_options, $attr.name, $attr.field, $attr.type, $attr.default_value, $attrl.length]}
+                {$rows[] = $row}
+              {/foreach}  
+              
+            <div class="panel panel-primary">
+              <div class="panel-heading">
+                Fields
+              </div>
+              <div class="panel-body">
+              {$rows|table:["class" => "table table-bordered table-striped table-booking-history"]}
+              </div>
+            </div>
+            {/if}
+            <div class="form-group checkbox_group" data-flags="1">
+            
+              <label>Class Flags</label> <br>          
+              <input name="flags" id="cbr_flags" type="hidden" class="cb_target form-control" /><br>
+              {foreach from=$scope.class_flags key=flag item=value}
+              <input type="checkbox" value="{$value}" class="form-control-off" /> {$flag}<br>
+              {/foreach}
+            </div>
+
+            <input type="submit" class="btn btn-primary" value="Save">
+            <a href="{$smarty.const.PAGE_ADMIN|link}" class="btn btn-danger">Cancel</a>
+            <br><br>
+          </form>
+        
+        </div>
+      {else if (!$scope.obj_type)}  {* show menu *}
+      
+        <div class="container">
+          <div class="margin-bottom">
+            <a href="?ac=add_class" class="btn btn-success btn-small" title="Add Class"><i class="fa fa-plus-square"> Add Class</i></a>
+          </div>
+        {foreach from=$scope.classes key=group item=classes}
+          {$slug = $group|slug}
+          <a role="button" data-toggle="collapse" data-parent="#accordion" href="#{$slug}" aria-expanded="true" aria-controls="{$slug}">
+            <h5>{$group} <i class="fa fa-caret-down"></i></h5>
+          </a>
+          <div id="{$slug}" class="collapse" role="tabpanel" aria-labelledby="headingOne">
+            {foreach from=$classes key=name item=obj_type}
+            <a href="{$smarty.const.PAGE_ADMIN|link}?obj_type={$obj_type}" class="margin-left">{$name}</a><br>
+            {/foreach}
+          </div>
+        {/foreach}
+        </div>
+      {else} 
+      
+        {if ($scope.fields)}      
+        <h3 class="center">{$scope.obj_name} 
+          <a class="btn btn-success" href="?obj_type={$scope.obj_type}&amp;ac=edit_class"><i class="fa fa-pencil-square"></i> Edit</a>
+        </h3>
+        <table class="table" 
+           data-toggle="table" 
+           data-url="{$scope.data_url}" 
+           data-cache="false" 
+           data-pagination="true"
+           data-striped="true"
+           data-side-pagination="server"             
+           data-page-list="[5, 10, 20, 50, 100, 200]"
+           
+           data-toolbar="#toolbar"
+           data-search="true"
+           data-show-refresh="true"
+           data-show-toggle="true"
+           data-show-columns="true"
+           data-show-export="true"
+           data-detail-view="false"
+           data-detail-formatter="detailFormatter"
+           data-show-pagination-switch="true"
+           
+           data-search="true">
+           
+          <thead>     
+            <tr>
+              <th data-field="operate" data-formatter="operateFormatter" data-events="operateEvents">            
+              {if ($scope.auth_add)}
+                <a href="#" class="btn btn-success btn-small add-object" data-obj_type="{$scope.obj_type}" data-reload=1 title="Add"><i class="fa fa-plus-square"> Add</i></a>
+                {/if}
+              </th>
+              {foreach from=$scope.fields key=field item=name}
+              <th data-field="{$field}" data-sortable="true">{$name}</th>
+              {/foreach}                
+            </tr>
+          </thead>
+          <tfoot>     
+            <tr>
+              <th></th>
+              {foreach from=$scope.fields key=field item=name}
+              <th></th>
+              {/foreach}                                
+            </tr>
+          </tfoot>
+        </table>
+      
+        <script>
+      function operateFormatter(value, row, index) {
+          return [
+  {if ($scope.auth_view)}    
+              '<a class="view view-object" data-obj_type="{$scope.obj_type}" data-obj_id="' + row.{$scope.obj_key} + '" href="javascript:void(0)" title="View">',
+              '<i class="fa fa-eye"></i>',
+              '</a>  ',
+  {/if}            
+  {if ($scope.auth_edit)}        
+              '<a class="edit text-success edit-object" data-obj_type="{$scope.obj_type}" data-obj_id="' + row.{$scope.obj_key} + '" href="javascript:void(0)" title="Edit">',
+              '<i class="fa fa-pencil-square"></i>',
+              '</a>  ',
+  {/if}            
+  {if ($scope.auth_del)}      
+              '<a class="delete text-danger" data-obj_type="{$scope.obj_type}" data-obj_id="' + row.{$scope.obj_key} + '" href="javascript:void(0)" title="Remove" ',
+              'data-toggle="confirmation" data-on-confirm="delete_object" id="delete-' + row.{$scope.obj_key} + '">',
+              '<i class="fa fa-times-circle"></i>',
+              '</a>'
+  {/if}                        
+          ].join('');
+      }
+      window.operateEvents = {
+          'click .view': function (e, value, row, index) {
+              //alert('You click like view, row: ' + JSON.stringify(row));
+              return false;
+          },
+          'click .edit': function (e, value, row, index) {
+              return false;
+          },
+          'click .delete': function (e, value, row, index) {
+              if(confirm('Are you sure you want to delete this row?')) {
+                var result = delete_object('{$scope.obj_type}', row.{$scope.obj_key});
+                console.log("delete result=" + result);
+                var $table = $('TABLE.table');
+                $table.bootstrapTable('remove', {
+                    field: 'id',
+                    values: [row.{$scope.obj_key}]
+                });
+              }
+          }
+      };
+          
+        </script>
+
+        {/if}
+      {/if}
+      
+
+{/block}

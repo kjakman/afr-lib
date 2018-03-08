@@ -1,0 +1,104 @@
+
+
+    {$photos = $rental.media_json|json_decode}
+    {$first = $photos[0]}
+    {$first_pic = $first->filename|replace:'/square/':'/ig/'}
+    {$rental.url = $rental|property_link:$scope.property_link}
+    
+    <div class="col-md-6"> <!-- col-lg-4 -->       
+      <div id="shortstay-{$rental.id}" class="air-item listing" itemscope itemtype="http://schema.org/Offer"
+          data-facs="" 
+          data-lat="{$rental.location_lat}" 
+          data-lng="{$rental.location_long}" 
+          data-type="{$rental.type}" 
+          data-name="{$rental.name}" 
+          data-url="{$rental.link}" 
+          data-user="{$rental.host_id}"
+          data-fid="{$rental.guid}"
+          data-source_id="{$rental.source_id}"
+          data-id="{$rental.id}">
+          
+        <div class="listing-img media-photo" unselectable="on" style="-webkit-user-select: none;">
+          <div class="listing-img-container media-photo image-rotation" data-current="0" 
+            data-images='{$rental.media_json}' data-image-replace='/square/|/ig/'>
+            {if ($rental.wishlist_data)}
+            {$wishlist_id = $rental.wishlist_data.wishlist_id} 
+            <div class="abs-top-right pointer ztop margin">
+              <a href="#" data-data='{$rental.wishlist_data|@json_encode}' class="wishlist-link">
+                <i class="abs-top-right pointer ztop fa {if ($wishlist_id)}fa-heart{else}fa-heart-o{/if} white fa-2x"/>
+              </a>
+            </div>
+            {/if}
+            {if ($rental.auth_edit)}
+            <div class="abs-top-left pointer ztop margin">
+              <a class="btn btn-success btn-xs" target="edit_property" href="{$scope.edit_property_link}{$rental.id}/"><i class="fa fa-pencil"></i></a>
+            </div>
+            {/if}
+            <img itemprop="image" src="{$first_pic}" class="rental-list-photo" data-url="{$rental.url}">
+          </div>
+          <div class="image-rotation-control block-link image-rotation-prev">
+            <i class="icon icon-chevron-left listing-slideshow-chevron">&lt;</i>
+          </div>
+          <div class="image-rotation-control block-link image-rotation-next">
+            <i class="icon icon-chevron-right listing-slideshow-chevron">&gt;</i>
+          </div>
+        </div>
+        <div class="listing-footer clearfix">
+          {*y
+          <a class="listing-host-img media-link media-photo" href="{$scope.profile_link}{$rental.host_id}">
+            <img src="{$rental.host_id|userphoto:'thumb'}">
+          </a>
+          *}
+          
+          <div class="row">
+            <div class="col-xs-12">
+              <meta itemprop="serialNumber" content="{$rental.id}" />
+              <meta itemprop="name" content="{$rental.name}" />
+              <meta itemprop="category" content="Residence" />
+              <meta itemprop="businessFunction" content="rental" />
+              <meta itemprop="priceCurrency" content="{$rental.currency}" />
+              <meta itemprop="url" content="{$site_url}{$rental.url}" />              
+              <a class="listing-quick-info property-detail-link" href="{$rental.url}" title="{$rental.name}">{$rental.name}</a>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-xs-7">
+              <a class="listing-quick-info property-detail-link" href="{$rental.url}" title="{$rental.name}">              
+                <span class="listing-room-type">
+                  {$rental.address_city}<br>                  
+                </span>
+              </a>
+            </div>
+            <div class="col-xs-5">            
+              <div class="price">
+                <span class="currency">{$rental.currency|currency}</span>
+                <span class="price-amount" itemprop="price">{$rental.rate_day|round}</span> 
+                <span class="price-discount">{$rental.discount}</span> 
+                <span class="price-status"></span>
+                <div class="discount-div collapse">
+                  <span class="currency">{$rental.currency|currency}</span>
+                  <span class="discount-rate">{$rental.rate_discount}</span>
+                  <span class="discount-status"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-xs-7">
+              <div class="listing-status">
+                {if ($rental.review_score > 0)}
+                  {$rental.review_score|stars}
+                {/if}              
+              </div>
+            </div>
+            <div class="col-xs-5">
+              {if ($rental.book_direct)}
+                <i class="fa fa-bolt red"></i> {'book direct'|translate:'t'}<br>
+              {/if}
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+

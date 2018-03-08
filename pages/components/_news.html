@@ -1,0 +1,13 @@
+
+  {if ($scope.article)}
+    {$article = $scope.article}
+    {{"include": "_article-single.html"}}
+  {else}
+    {{"include": "_article-list.html"}}
+  {/if}
+  
+  {{"include": "_map-modal.html"}}									
+
+  {if ($scope.auth_add_article || $scope.auth_edit_article)}
+    {{"include": "_article-dialog.html"}}                                              
+  {/if}

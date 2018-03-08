@@ -1,0 +1,159 @@
+  {{"extend": "base/admin.html"}}
+  {block name=content}
+
+          <h2>{$scope.title}</h2>
+          <form class="form-horizontal" role="form">
+              <div class="form-group col-md-3">
+                <select name="active" class="form-control">
+                  <option value="1" {if (!isset($get['active']) && $get['active'] == 1)}SELECTED{/if}>Listed</option>
+                  <option value="0" {if (isset($get['active']) && $get['active'] == 0)}SELECTED{/if}>Not Listed</option>
+                </select>
+              </div>       
+              {if ($scope.host_ids|@count > 1)}
+              <div class="form-group col-md-3">
+                {$key = "user"|object_key:true}
+                {"host_id"|object_select:"user":["class" => "form-control", "value" => $get.host_id,  "first" => "Select Host...", "search" => [$key => $scope.host_ids]]}
+              </div>
+              {/if}
+              {if (isset($get.address_country) || $scope.countries|@count > 1)}
+              <div class="form-group col-md-3">
+                {"address_country"|object_select:"countries":["class" => "form-control", "value" => $get.address_country,  "first" => "Select Country...", "search" => ["id" => $scope.countries]]}
+              </div>
+              {/if}
+              <div class="form-group col-md-2">
+                <button type="submit" class="btn btn-success">Go</button>
+                {if ($scope.filters)}<a href="{$this_path}" class="btn btn-danger">Clear</a>{/if}
+              </div>
+          </form>
+          <div class="gap"></div>
+          <table class="table" 
+             data-toggle="table" 
+             data-url="{$scope.data_url}" 
+             data-cache="false" 
+             data-pagination="true"
+             data-striped="true"
+             data-side-pagination="server"             
+             data-page-list="[5, 10, 20, 50, 100, 200]"
+             
+             data-toolbar="#toolbar"
+             data-search="true"
+             data-show-refresh="true"
+             data-show-toggle="true"
+             data-show-columns="true"
+             data-show-export="true"
+             data-detail-view="true"
+             data-detail-formatter="detailFormatter"
+             data-show-pagination-switch="true"
+               
+             data-id-field="id"              
+             data-editable-url="{$scope.edit_url}"
+             data-search="true">
+             
+            <thead>     
+              <tr>
+                <th data-field="id" data-sortable="true" data-formatter="bstIdFomatter">ID</th>
+                <th data-field="created" data-sortable="true">Created</th>
+                <th data-field="name" data-sortable="true" data-formatter="bstNameFomatter">Name</th>
+                <th data-field="active">Active</th>
+                <th data-field="pageviews" data-sortable="true" data-editable="false" data-editable-type="number">Views</th>
+                {if ($user.user_level >= $smarty.const.USER_LEVEL_STAFF)}
+                <th data-field="priority" data-sortable="true" data-editable="true" data-editable-type="number">Priority</th>
+                <th data-field="host_id" data-sortable="true" data-formatter="bstUserFomatter">Host</th>
+                {/if}
+                <th data-field="address_street">Address</th>
+                <th data-field="city_name" data-sortable="true">City</th>
+                <th data-field="address_country">Country</th>
+                <th data-field="currency">Currency</th>
+                <th data-field="rate_day">Rate</th>
+                <th data-field="rate_weekend">Fri/Sat</th>
+                <th data-field="max_guests" data-sortable="true">Sleeps</th>
+                <th data-field="min_stay" data-sortable="true">Min.Stay</th>
+                <th data-field="book_direct" data-sortable="true" data-formatter="bstBoolFomatter">Book Direct?</th>
+                
+              </tr>
+            </thead>
+          </table>
+
+<script>
+
+function bstNameFomatter(value, row, index) {
+  var guid = row.guid;
+  var source = row.source_id;
+  var name = row.name;
+  if(!guid) return name;
+  if(source == 30) return '<a href="http://www.interhome.com/'+ guid +'" target="ih">' + name + '</a>';
+  return name;
+}
+
+function bstBookingFomatter(value, row, index) {
+  if(!value) return '';
+  return '<a href="/booking/'+ value +'" target="new">' + value + '</a>';
+}
+
+function bstBoolFomatter(value, row, index) {
+  return value ? "&#9989;" : "&#10060";
+}
+
+function bstRentalFomatter(value, row, index) {
+  if(!value) return '';
+  var print_val = row.apartment_name || value;
+  return '<a href="{$smarty.const.PAGE_RENTAL_DETAIL|link}'+ value +'" target="new">' + print_val + '</a>';
+}
+
+function bstUserFomatter(value, row, index) {
+  if(!value) return '';
+  var print_val = row.display_name || value;
+  return '<a href="{$smarty.const.PAGE_PROFILE|link}'+ value +'" target="new">' + print_val + '</a>';
+}
+
+function bstEditRentalFomatter(value, row, index) {
+  if(!value) return '';
+  var print_val = row.apartment_name || value;
+  return '<a href="/edit-rental/'+ value +'" target="new">' + value + '</a>';
+}
+
+function bstIdFomatter(value, row, index) {
+  if(!value) return '';
+  var print_val = row.invoice_id || value;
+  return '<a href="{$smarty.const.PAGE_RENTAL_DETAIL|link}'+ value +'" target="new">' + print_val + '</a>';
+}
+
+$(document).ready(function() {  
+  var $table = $("TABLE.table");
+  $table.bootstrapTable().on('load-success.bs.table', function(e, data) {      
+    console.log("load data=", data);
+    var totals = data.totals || [];
+    $.each(totals, function(k, v) {
+      console.log("total k=" + k + " v=" + v);
+      if(v) {
+        v = parseFloat(v);
+        v = v.toFixed(2);
+        var $target = $("TH[data-total-field='" + k + "']");
+        if(v && $target.length) {
+          $target.html(v);
+        }
+      }
+    });
+  }).on('editable-save.bs.table', function(e, params, obj) {
+    var field = params;
+    var val = obj[field];
+    var ajax_url = $table.data('editable-url');
+    var id_field = $table.data('id-field') || 'id';
+    var id = obj[id_field];
+    var data = new Object;
+    data[field] = val;
+    data[id_field] = id;
+    console.log("save editable:  setting " + field + " to " + val + " url=" + ajax_url + " data:", data);
+    $.post(ajax_url, data, function(response) {
+      if(response.success) {
+        console.log("Ok, saved using POST");
+      } else {
+        console.log(response);
+        alert("Ooops");
+      }
+    }, "json");
+    // console.log("save editable params",params," obj",obj);
+  });
+});
+</script>
+  {/block}

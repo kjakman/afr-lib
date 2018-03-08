@@ -1,0 +1,60 @@
+
+          {$count = $scope.review_count}
+          {$start = $scope.start}
+          {$limit = $scope.limit}
+          {$last = min($scope.start + $scope.limit, $scope.review_count)}
+          {$pagination_options = ["target" => "#subview-container", "success_handler" => "traveler_ready", "base_link" => "{$app.full_path}"]}
+          {$fields = ["created", "parent_type", "parent_id", "apt_id", "host_id", "published", "first_name", "last_name", "city", "state", "country", "checkin", "checkout", "feedback_overall", "feedback_comments", "media"]}
+          {$data = ["parent_type" => "property", "parent_id" => $scope.rental.id, "apt_id" => $scope.rental.id, "host_id" => $scope.rental.host_id, "published" => 1, "user_id" => $user.id]}
+          
+          {if (!$count)}
+          <h4>{"You do not have any reviews yet"|translate}</h4>
+          {else}
+          {$count} Reviews found {if ($scope.reviews|@count < $scope.review_count)}(Showing {$scope.start + 1} - {$last}){/if}
+          {$scope.review_count|pagination:$scope.start:$scope.limit:$pagination_options}
+          
+          <table class="table table-bordered table-striped table-review-history">
+            <thead>     
+              <tr>
+                <th>Guest</th>
+                <th>Location</th>
+                <th>Review Date</th>
+                <th>Travel Dates</th>
+                <th>Overall</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody>
+            {foreach from=$scope.reviews item=review}
+              <tr>
+                <td>{$review.first_name} {$review.last_name}</td>
+                <td>{$review.city}, {$review.state} {$review.country}</td>
+                <td>{$review.created|date}</td>
+                <td>{$review.checkin|date} <i class="fa fa-long-arrow-right"></i> {$review.checkout|date}</td>
+                <td>{$review.feedback_overall}</td>
+                <td>
+                {if ($review.user_id == $user.id || $user.user_level >= $smarty.const.USER_LEVEL_STAFF)}
+                  <a href="#" class="btn btn-success btn-sm edit-object" 
+                     data-obj_type="feedback" 
+                     data-obj_id="{$review.id}"
+                     data-fields='{$fields|@json_encode}'
+                     data-reload_link="#rental-edit-reviews" 
+                     >Edit</a>
+                {/if}
+                </td>
+                
+              </tr>
+            {/foreach}
+            </tbody>
+          </table>          
+          {/if}
+          
+          {if ($scope.auth_edit)}
+          <a href="#" class="btn btn-success btn-large add-object" 
+             data-obj_type="feedback" 
+             data-fields='{$fields|@json_encode}'
+             data-data='{$data|@json_encode}'
+             data-reload_link="#rental-reviews-link" 
+             >Add Review</a>
+          
+          {/if}

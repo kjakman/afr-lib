@@ -1,0 +1,67 @@
+  {{"extend": "base/default.html"}}
+  {block name=content}
+  
+  
+    {$preview = 0}
+    {$debug = 0 && $user.user_level >= $smarty.const.USER_LEVEL_STAFF}
+    {if ($debug)}  {* debug *}
+      {$preview = 1}
+      {$handler = "mail-preview"}
+      {$class = "mail-form"}
+    {else}
+      {$handler = "mail-preview-send"}
+    {/if}
+    
+    <!-- CONTENT -->
+      <div class="gap gap-small"></div>
+			<section>
+				<div class="container">
+
+					<div class="row">
+
+						<!-- FORM -->
+						<div class="col-sm-8">
+
+
+							<!-- Alert -->
+							{if ($smarty.get.c)}
+														
+              <h1><i class="fa fa-check text-success"></i> {'thank you'|translate:'c'}!</h1>
+              	
+              
+              <h3>{'your message was sent'|translate:'c'}</h3>
+							{else}
+							
+
+              {if (!$scope.hide_title)}
+							<h3>{{"name": "title", "type":"html", "value": "Drop us a line."}}</h3>
+							<p>{{"name": "subtitle", "type":"text", "value": ""}}</p>
+              {/if}
+							
+              {if (!$user)}
+                {{"include": "_user-login-third-party.html"}}
+              {/if}
+              
+              {{"include": "_contact-form.html"}}
+ 
+               {/if}
+						</div>
+						<!-- /FORM -->
+
+
+						<!-- INFO -->
+						<div class="gap"></div>
+
+						{if ($preview)}  {* debug *}
+            <br>
+            {{"include": "_mail-preview.html"}}
+						{/if}
+						<!-- /INFO -->
+
+					</div>
+
+				</div>
+			</section>
+			<!-- /CONTENT -->
+			
+{/block}

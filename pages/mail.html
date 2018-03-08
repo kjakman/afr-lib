@@ -1,0 +1,36 @@
+  {{"extend": "base/admin.html"}}
+  {block name=content}
+
+{$vars = $scope.vars}
+{$url = $vars.url}
+{$tpl = $vars.template}
+{$ctrl = $vars.controller}
+{$data = $vars.data}
+
+<div class="container mt20 mb20">
+  
+  {$staff = ($user.user_level >= $smarty.const.USER_LEVEL_STAFF) ? 1 : 0}  
+  {$mail = $scope.mail}
+  {if ($mail)} {* existing mail or form *}
+    
+    {if ($scope.mail.id)} {* existing mail *}
+      {{"include": "_mail-header.html"}}
+    {else} {* show form *}
+      {if ($staff)}
+        <a href="{$smarty.const.PAGE_MAIL_CAMPAIGN|link}" class="btn btn-primary">New Mail Campaign</a>
+        <div class="gap gap-small"></div>
+      {/if}
+      {{"include": "_mail-form.html"}}
+      {{"include": "_address-book-modal.html"}}
+    {/if}
+  
+    
+    <br>
+    {{"include": "_mail-preview.html"}}
+    
+  {else}
+    <h2>Nothing to see here...</h2>
+  {/if}
+  
+</div>
+  {/block}
