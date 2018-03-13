@@ -1,8 +1,17 @@
-# Patina - An old mishmash of code
+# AFR - An old mishmash of code
 
-This project was started more than 10 years ago to implement a rental platform for short stay housing. At the time, there were not really any good PHP frameworks, and OOP was a joke, so I wrote my own MVC framework inspired by 	[ATK](https://github.com/atkphpframework/atk).  
+This project was started more than 10 years ago to implement a rental platform for short stay housing
+(Apartments For Rent)
 
-It was never cleaned up and includes tons of old unused code. It's all procedural, and does not adhere to modern coding standards. 
+At the time, there were not really any good PHP frameworks, and OOP was a joke, so I wrote my own MVC 
+framework inspired by 	[ATK](https://github.com/atkphpframework/atk).  
+
+There is also a simple front-end CMS system built-in (CKEditor based semi-WYSIWYG editor which does not require file access),
+but this is no longer is use, in favor of template editing with file access. The plan was to replace this with Grav CMS using flat-file
+storage rather than database.
+
+It was never cleaned up and includes tons of old unused code. It's all procedural, and does not adhere 
+to modern coding standards. 
 
 Whereas this code is actually used in production for [Apartments-For-Rent](https://www.apartments-for-rent.com), [YourAmsterdamHousing](https://www.youramsterdamhousing.com), [vPatina](https://www.vpatina.com), [Hitabrick](https://www.hitabrick.com), and [ElasticTools](https://elastictools.io) the code in this repository will not (yet) run out of the box. I will complete this when I have time.
 
@@ -53,7 +62,8 @@ Defined in afr/include/controllers.inc
 }`
 
 The controller writes data to `$scope = $app->page->scope`
-The value of `$scope->foo` is accessible in the smarty template as `{scope.foo}`. Note that even though `$scope` is an object in the controller, it's converted to an array before being passed to smarty.
+The value of `$scope->foo` is accessible in the smarty template as `{scope.foo}`. Note that even though 
+`$scope` is an object in the controller, it's converted to an array before being passed to smarty.
 
 ## Bootstrap
 `index.php`
@@ -64,7 +74,8 @@ Loads `afr/include/set_env.inc` and calls `site_application($app)`
 
 ## Config files
 `config/main.yml`: Non-sensitive config data. Loaded into `$app->config` with `config_load()` in `set_env.inc`
-`/web/.priv/.priv.txt`: Json file with sensitive passwords for database etc, outside web document root. Use `get_config($key, $site_id)` to read key.
+`/web/.priv/.priv.txt`: Json file with sensitive passwords for database etc, outside web document root. 
+Use `get_config($key, $site_id)` to read key.
 `/web/.priv/.priv-dev.txt`: Same, but for dev subdomain (see below)
 
 # Subdomains
