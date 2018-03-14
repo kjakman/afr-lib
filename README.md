@@ -88,14 +88,21 @@ Use `get_config($key, $site_id)` to read key.
 
 ## afr/include/class_handlers.inc
 
-## Directories
-
 ## Files
 
+# Example Project
+See [Patina](https://github.com/kjakman/patina) for and example project using AFR.
+
+## Directories
+The `afr/include` directory is project specific, and should be moved to the project directory (e.g. Patina)
+
 ## Composer
+See `composer.json`. Currently duplicated in project directory (Patina).
 
 ## Started OOP, but unfished:
 In `afr/classes/` is the beginning of a slightly more modern version, using OOP classes for Model/View/Controller
 
 ## Logging
+
+
 

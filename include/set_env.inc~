@@ -37,11 +37,17 @@ $system_cache_dir = $_SESSION['system_cache_dir'] = "/web/cache/";
 $system_log_file = $_SESSION['system_log_file'] = $_SESSION['main_log'] = $main_log = 'system_log.txt';
 
 $live = $host_sub == 'www' || $host_sub == '';
-$app_dir = $live ? 'apt' : 'apt-dev';
-if($staging) $app_dir = 'apt-staging';
+//$app_dir = $live ? 'apt' : 'apt-dev';
+//if($staging) $app_dir = 'apt-staging';
 $doc_root = rtrim($_SERVER['DOCUMENT_ROOT'], '/').'/';
-$app_root = "/web/comps/php/{$app_dir}";
-set_include_path(get_include_path().PATH_SEPARATOR."{$app_root}/include".PATH_SEPARATOR."{$app_root}/includes".PATH_SEPARATOR."{$doc_root}afr".PATH_SEPARATOR."{$doc_root}include");
+
+$app_root = is_dir("{$doc_root}../afr/") ? "{$doc_root}../afr/" : "{$doc_root}/afr/";
+if(!is_dir($app_root)) die("App root {$app_root} not found");
+//$app_root = clean_path($app_root);
+  
+//die("App root = {$app_root}");
+set_include_path(get_include_path().PATH_SEPARATOR."{$doc_root}/afr/include".PATH_SEPARATOR."{$doc_root}/afr/includes".PATH_SEPARATOR."{$doc_root}afr".PATH_SEPARATOR."{$doc_root}include");
+//set_include_path(get_include_path().PATH_SEPARATOR."{$app_root}/include".PATH_SEPARATOR."{$app_root}/includes".PATH_SEPARATOR."{$doc_root}afr".PATH_SEPARATOR."{$doc_root}include");
 
 
 session_start();       
@@ -91,6 +97,7 @@ $_SESSION['aid'] = isset($_GET['_aid']) ? $_GET['_aid'] : $_SESSION['aid'];
 $live = $_SESSION['live'] = !($dev || $test || $beta || $staging || $local) ? 1 : 0; // www or no sub
 
 $_SESSION['deployment'] = $live ? 'live' : $host_sub;
+if($local) $_SESSION['deployment'] = 'local'; 
 $_SESSION['send_mail'] = ['live' => 1, 'test' => 0, 'dev' => 0, 'staging' => 0, 'beta' => 0, 'local' => 0]; // whether to send if not live
 if(!$_SESSION['live']) $version = $_SESSION['version'] = date('mdHis');
 $_SESSION['log_db'] = !$_SESSION['live'] && isset($_GET['log_db']) ? 1 : 0;
@@ -138,7 +145,13 @@ define('SITE_URL', siteURL());
 
 $uri = strip_query_string($_SERVER['REQUEST_URI']);
 $minisite = null;
-$site_id = $_SESSION['site_id'] = env_site_id($site_domain); /** inline switch */
+
+
+if($site_id = $config['site_id']) { /** single tenant */
+  //die("site_id=$site_id");
+} else { /** multi tenant */
+  $site_id = $_SESSION['site_id'] = env_site_id($site_domain); /** inline switch */
+}
 
 print_log("Set-env: uri={$uri} site_id={$site_id} domain: {$domain}", 'minisite', LOG_LEVEL_ALWAYS);
 
@@ -239,7 +252,7 @@ if($msObj) {
   $siteObj->admin_user_id = $msObj->admin_user_id;
   $app->minisite = $msObj;
   
-  if(isset($_GET['foo'])) die("Set-env: uri={$uri} site_id={$site_id} domain: {$site_domain} ms:".dump($msObj,true));
+  //if(isset($_GET['foo'])) die("Set-env: uri={$uri} site_id={$site_id} domain: {$site_domain} ms:".dump($msObj,true));
 
   //dump($pageObj);
   //dump($msObj);
@@ -489,7 +502,9 @@ $mem = bytes2human(memory_get_usage());
 //print_log("Auth={$__AUTH_EDIT} edit={$__EDIT_MODE}", 'set_env', LOG_LEVEL_TEST); 
 print_log("Loaded env in {$time}s using {$mem}", 'app', LOG_LEVEL_TEST); 
 
-echo("<br><br><br>");dump($dbconf);
-dump($app->config);
+//echo("<br><br><br>");dump($dbconf);
+//dump($app->config);
 
-dump($_SESSION['config']);
+//dump($_SESSION['config']);
+
+//die("Local={$local}");
