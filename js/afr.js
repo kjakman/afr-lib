@@ -1444,7 +1444,7 @@ function obj2qs(data) {
 
 function iphoneSwitchOnOff($target, value) {
   var handler = $target.data('handler');
-  var ajax_url = '/home/app_data.php?oper=' + handler;
+  var ajax_url = '/ajax.php?oper=' + handler;
   var id = $target.prop('id');
   var target_field = $target.data('target');
   var data = $target.data('data') || {};
@@ -1734,7 +1734,7 @@ $(document).on("click", "A.process-payment", function() {
   if(url && data) {
     log("Process payment url=" + url);
     log(data);
-    var ajax_url = '/home/app_data.php?oper=process-payment'  + '&' + obj2qs(data);
+    var ajax_url = '/ajax.php?oper=process-payment'  + '&' + obj2qs(data);
     $div.load(ajax_url, function(responseText) {
        log(responseText);
     });      
@@ -2171,7 +2171,7 @@ $(document).on("click", ".bst-edit-link", function(e) {
   var $table = $modal.find(".table"); 
   var ajax_url = $target.data('url');
   var obj_type = $target.data('obj_type') || 'foo';
-  var edit_url = $target.data('edit_url') || '/admin/app_data.php?oper=edit&obj_type=' + obj_type;
+  var edit_url = $target.data('edit_url') || '/ajax.php?oper=edit&obj_type=' + obj_type;
   if(!g_columns) {
     alert("Missing column model");
     return;
@@ -2190,10 +2190,10 @@ $(document).on("click", ".bst-edit-link", function(e) {
     $editable = $('.editable');
     $.each($editable, function(index) {
       $(this).attr('data-pk', "id");
-      $(this).attr('data-url', "/admin/app_data.php?oper=foo");
+      $(this).attr('data-url', "/ajax.php?oper=foo");
     });
     
-    $('.editable').data('url', "/admin/app_data.php?oper=foo");
+    $('.editable').data('url', "/ajax.php?oper=foo");
     
     $('.editable').on('save',function(e, params) {
       var responseJson = params.response;
@@ -2290,7 +2290,7 @@ function mail_preview(form_id) {
   }
   
   $("#mail_preview").attr("srcdoc", "Loading preview...");
-  var ajax_url = "/home/app_data.php?oper=mail-preview";
+  var ajax_url = "/ajax.php?oper=mail-preview";
   console.log("url=" + ajax_url);
   jQuery.ajax({
     type: "POST",
@@ -2381,10 +2381,10 @@ function ajax_handler($target, override) {
   }
   
   if(id && options.handler) {
-    var script = options.script || options.handler_url || "/home/app_data.php";
+    var script = options.script || options.handler_url || "/ajax.php";
     var url = options.url = script + "?oper=" + options.handler;
     console.log("\n\n\najax_handler url=" + url);
-    //var url = options.url = "/home/app_data.php?oper=" + options.handler;
+    //var url = options.url = "/ajax.php?oper=" + options.handler;
     
     delete(options.handler); // app_data method: to be confused with success_handler
     
@@ -3230,7 +3230,7 @@ function afr_ready() {
     var url = $input.data('url');
     var operation = $input.data('operation');
     var public_operation = $input.data('public');
-    var path = public_operation ? "/home/app_data.php" : "/admin/app_data.php";
+    var path = public_operation ? "/ajax.php" : "/ajax.php";
     var ajax_url = operation ? path + "?oper=" + operation : url;
     
     var target_name = $input.data('target');
@@ -3318,7 +3318,7 @@ function afr_ready() {
     var $input = $(this);
     var url = $input.data('url');
     var operation = $input.data('operation');
-    var ajax_url = operation ? "/admin/app_data.php?oper=" + operation : url;
+    var ajax_url = operation ? "/ajax.php?oper=" + operation : url;
 
     if(ajax_url) {
       var bh = new Bloodhound({
@@ -3527,7 +3527,7 @@ function fullcalendar_init($fullcalendar) {
         //console.log("resized " + obj_type + " " + obj_id + " days=" + days);
         if((obj_type =='reservation' || obj_type == 'res_exception') && obj_id && days) {
           var end_field = obj_type == 'reservation' ? 'checkout' : 'end';
-          var ajax_url = '/admin/app_data.php?oper=edit&obj_type=' + obj_type + '&id=' + obj_id + "&" + end_field + "=" + event.end.format(g_moment_sql_format);
+          var ajax_url = '/ajax.php?oper=edit&obj_type=' + obj_type + '&id=' + obj_id + "&" + end_field + "=" + event.end.format(g_moment_sql_format);
           //console.log("Calling " + ajax_url);          
           $.getJSON(ajax_url, function(json) {
             success = json.success;
@@ -3552,7 +3552,7 @@ function fullcalendar_init($fullcalendar) {
         if((obj_type =='reservation' || obj_type == 'res_exception') && obj_id && days) {
           var end_field = obj_type == 'reservation' ? 'checkout' : 'end';
           var start_field = obj_type == 'reservation' ? 'checkin' : 'start';
-          var ajax_url = '/admin/app_data.php?oper=edit&obj_type=' + obj_type + '&id=' + obj_id + "&" + start_field + "=" + event.start.format(g_moment_sql_format) + "&" + end_field + "=" + event.end.format(g_moment_sql_format);
+          var ajax_url = '/ajax.php?oper=edit&obj_type=' + obj_type + '&id=' + obj_id + "&" + start_field + "=" + event.start.format(g_moment_sql_format) + "&" + end_field + "=" + event.end.format(g_moment_sql_format);
           //console.log("Calling " + ajax_url);          
           $.getJSON(ajax_url, function(json) {
             success = json.success;
@@ -4664,7 +4664,7 @@ function init_uploader($target) {
 
   // defaults
   var extensions = options.allowed_extensions || ['jpeg', 'jpg', 'gif', 'png'];
-  var endpoint = options.endpoint || '/admin/app_data.php?oper=upload';
+  var endpoint = options.endpoint || '/ajax.php?oper=upload';
   var allow_multiple = options.allow_multiple || false;
   var title = options.title || 'Click or Drop';
   var sizeLimit = options.maximum_file_size || 10 * 1024 * 1024; // 10M default
@@ -4773,7 +4773,7 @@ function init_uploader($target) {
 
       if(media_id)
         if($file_list.length) {
-          var ajax_url = '/admin/app_data.php?oper=load-function&function=file_list&param1=' + encodeURIComponent(value);
+          var ajax_url = '/ajax.php?oper=load-function&function=file_list&param1=' + encodeURIComponent(value);
           //alert(ajax_url);
           $file_list.load(ajax_url, function(responseText) {   
           });                    
@@ -5252,7 +5252,7 @@ $(document).on("click", ".download_media", function() {
   $target = $(this);
   var data = $target.data('data') || {};
   var operation = 'download-media';
-  var ajax_url = "/home/app_data.php?oper=" + operation + "&" + obj2qs(data);
+  var ajax_url = "/ajax.php?oper=" + operation + "&" + obj2qs(data);
 
   //var $messages = $('#ajax_messages');
   //var $errors = $('#ajax_errors');
@@ -5507,7 +5507,7 @@ $(document).on("change", ".variant_chooser", function() {
   $target = $(this);
   var data = {'site_id': site_id, 'product_id': product_id, 'variant_id': variant_id, 'price': price, 'name': name};
   var operation = 'cart-row-update';
-  var ajax_url = "/home/app_data.php?oper=" + operation + "&" + obj2qs(data);
+  var ajax_url = "/ajax.php?oper=" + operation + "&" + obj2qs(data);
   //console.log(ajax_url);
   ajax_cart_update($target, ajax_url, operation); // server side
   //return false;
@@ -5535,7 +5535,7 @@ $(document).on("click", ".add_cart, .remove_cart, .remove_floating_cart", functi
   var data = $target.data('data') || {};
   var floating_cart = $target.hasClass('remove_floating_cart') || $target.hasClass('add_cart') ? true : false;
   var operation = $target.hasClass('add_cart') ? 'cart-add' : 'cart-remove';
-  var ajax_url = "/home/app_data.php?oper=" + operation + "&" + obj2qs(data);
+  var ajax_url = "/ajax.php?oper=" + operation + "&" + obj2qs(data);
   ajax_cart_update($target, ajax_url, operation);
   return false;
 });
@@ -5822,7 +5822,7 @@ $(document).on("click", ".vp-loader-galleria", function() {
   var search = $(this).data('search') || {};
   var aid = search.aid;
   var id = search.id;
-  var ajax_url = '/admin/app_data.php?oper=get-gallery';
+  var ajax_url = '/ajax.php?oper=get-gallery';
   if(aid) ajax_url += '&aid=' + aid;
   if(id) ajax_url += '&id=' + id;
   //$('.galleria-image').fadeIn('fast');
@@ -5858,7 +5858,7 @@ $(document).on("click", ".verify-link", function() {
   var html = $link.html();
   var loading = '<i class="fa fa-spinner fa-spin"></i> Verifying...';
   var data = $link.data();
-  var ajax_url = '/admin/app_data.php?oper=user-verification';
+  var ajax_url = '/ajax.php?oper=user-verification';
   $link.html(loading)    
   $link.attr('disabled', true);
   //console.log('url=' + ajax_url);
@@ -5888,7 +5888,7 @@ $(document).on("click", ".vp-loader-data", function() {
   var search = $(this).data('search') || {};
   var aid = search.aid;
   var id = search.id;
-  var ajax_url = '/admin/app_data.php?oper=get-gallery';
+  var ajax_url = '/ajax.php?oper=get-gallery';
   var params = {
     format: "json",
     viewer: "galleria",
@@ -5957,7 +5957,7 @@ function template_load(target, template, controller, options, data) {
   console.log("language=" + language + " options= ", options);
 
   if($target.length && template) {
-    var base_url = options.unauth ? '/home/app_data.php' : '/admin/app_data.php';
+    var base_url = options.unauth ? '/ajax.php' : '/ajax.php';
     ajax_url = base_url + '?oper=fetch-template&template=' + template + '&controller=' + controller;
     if(language) ajax_url += "&__sl=" + language;
     //if(data) ajax_url = ajax_url + '&' + obj2qs(data);
@@ -6013,7 +6013,7 @@ $(document).on("click", "A.helpful-link", function() {
   var obj_type = data.obj_type = $item.data('obj_type');
   var obj_id = data.obj_id = $item.data('obj_id');
   //console.log("helpful on " + obj_type + " " + obj_id);
-  var ajax_url = "/home/app_data.php?oper=helpful";
+  var ajax_url = "/ajax.php?oper=helpful";
   if(obj_type && obj_id) {
     $item.removeClass("fa-thumbs-up").addClass("fa-spinner fa-spin");    
     $.getJSON(ajax_url, data, function(result) {
@@ -6039,7 +6039,7 @@ $(document).on("click", "A.wishlist-link", function() {
    
    //console.log("wishlist data=", data);   
    //console.log("wishlist icon class=", $icon.attr('class'));
-   ajax_url = "/admin/app_data.php?oper=wishlist&" + obj2qs(data);
+   ajax_url = "/ajax.php?oper=wishlist&" + obj2qs(data);
    $icon.removeClass("fa-heart fa-heart-o fa-times").addClass("fa-spinner fa-spin");
    //console.log("Remove=" + remove);
    //return false;
@@ -6202,7 +6202,7 @@ $(document).on("click", ".vmenu-item", function() {
   var section = ajax_url.split('?section=')[1];
   //alert("handler=" + handler + " target=" + target + " section=" + section);       
   if(handler && target && section) {      
-    ajax_url = '/admin/app_data.php?oper=' + handler + '&section=' + section; // todo: allow unauth ?
+    ajax_url = '/ajax.php?oper=' + handler + '&section=' + section; // todo: allow unauth ?
     if(data) ajax_url = ajax_url + '&' + obj2qs(data);
     $('#' + target).load(ajax_url, function(responseText) {        
       var onload = $anchor.data('onload'); // optionally call JS function on load
@@ -6332,7 +6332,7 @@ $(document).on("click", ".new-tab", function(event) {
     $tabs.tabs( "refresh" );
     $tabs.tabs('option', 'active', -1); //  Activate the last one
     var $content = $('#' + tab_id);
-    $content.html("Loading...").load("/home/app_data.php?oper=explore-gallery" + '&' + obj2qs(data));
+    $content.html("Loading...").load("/ajax.php?oper=explore-gallery" + '&' + obj2qs(data));
   }
   var target_id = $(this).data('target');
   event.preventDefault();
@@ -6402,8 +6402,8 @@ $(document).on("click", ".gmenu UL LI A.previous, .gmenu UL LI A.next", function
   }
   if(operation) {                                                                                                          
     var ajax_url = parent_id ? 
-      '/admin/app_data.php?oper=load-function-json&function=' + operation + '&param1=' + site_id + '&param2=' + parent_id + '&param3=' +  JSON.stringify(options) :
-      '/admin/app_data.php?oper=load-function-json&function=' + operation + '&param1=' + site_id + '&param2=' +  JSON.stringify(options);
+      '/ajax.php?oper=load-function-json&function=' + operation + '&param1=' + site_id + '&param2=' + parent_id + '&param3=' +  JSON.stringify(options) :
+      '/ajax.php?oper=load-function-json&function=' + operation + '&param1=' + site_id + '&param2=' +  JSON.stringify(options);
       
       //alert(ajax_url);return;
     
@@ -6687,7 +6687,7 @@ function fancyConfirm_text() {
 //function save_object(form_id, obj_type, action, handler, reload, keepalive) {
 function save_object(form_id, obj_type, action, options) {
   if(typeof options == "undefined") var options = {};
-  var ajax_url = '/admin/app_data.php?obj_type='+ obj_type + '&oper=' + action;
+  var ajax_url = '/ajax.php?obj_type='+ obj_type + '&oper=' + action;
   submit_form(form_id, ajax_url, options);
   return false;
 }
@@ -6736,7 +6736,7 @@ function success_handler(params, data, parent_id) {
   // call app_data operation and print result to target
   if(operation && target_id && $target.length) {
     $target.addClass("loading-big");
-    var ajax_url = '/admin/app_data.php?oper=' + operation;
+    var ajax_url = '/ajax.php?oper=' + operation;
     if(data) ajax_url = ajax_url + '&' + obj2qs(data);
     //alert(dump(data));
   
@@ -6784,7 +6784,7 @@ function load_div(handler, div_id, params, options) {
   $dialog.addClass("loading-big");
   $dialog.html('<div class="round pad border margin_top">Loading...</div>');
 
-  var ajax_url = '/home/app_data.php?oper=' + handler;
+  var ajax_url = '/ajax.php?oper=' + handler;
   if(params) ajax_url = ajax_url + '&' + obj2qs(params);
   //alert(ajax_url);
 
@@ -6877,7 +6877,7 @@ function disableForm(form_id) {
 // ajax print log
 function print_log(string, file, level) {
   if(typeof options == "level") var level = 0;
-  var ajax_url = '/home/app_data.php?oper=print-log';
+  var ajax_url = '/ajax.php?oper=print-log';
   jQuery.ajax({
     type: "POST",
     data: {'string': string, 'file': file, 'log_level': level},
@@ -7000,7 +7000,7 @@ function ajaxSubmit(params) {
   var reload_link = params.reload_link || '';
   var org_text = params.org_text;
   var operation = params.operation;
-  var script = params.script || params.handler_url || "/home/app_data.php";
+  var script = params.script || params.handler_url || "/ajax.php";
   
   console.log("\n\nscript=" + script + "\n\n"); 
   
@@ -7428,7 +7428,7 @@ function init_fileuploader($target, loadData, extra_options) {
 
   // defaults
   var extensions = options.allowed_extensions || ['jpeg', 'jpg', 'gif', 'png'];
-  var endpoint = options.endpoint || '/admin/app_data.php?oper=upload';
+  var endpoint = options.endpoint || '/ajax.php?oper=upload';
   var allow_multiple = options.allow_multiple || false;
   var title = options.title || 'Click or Drop';
   var sizeLimit = options.maximum_file_size || 10 * 1024 * 1024; // 10M default
@@ -7452,7 +7452,7 @@ function init_fileuploader($target, loadData, extra_options) {
   //  mediaData.parent_id = parent_id;
   //}
 
-  var endpoint = '/admin/app_data.php?oper=jq-file-upload';
+  var endpoint = '/ajax.php?oper=jq-file-upload';
   var params = {
       options: JSON.stringify(options),
       mediaData: JSON.stringify(mediaData)
@@ -7964,16 +7964,16 @@ function sortable_object_list($target, options) {
       var href_str = hrefs.toString();
       
       //var ranks_str = ranks.toString();
-      //$.ajax({ url: "/admin/app_data.php?obj_type=" + obj_type, type: "POST", data: "obj_type="+obj_type+"&oper=edit&data_field=rank&id="+ ids_str + "&rank="+ranks_str });
+      //$.ajax({ url: "/ajax.php?obj_type=" + obj_type, type: "POST", data: "obj_type="+obj_type+"&oper=edit&data_field=rank&id="+ ids_str + "&rank="+ranks_str });
       if(inline) {
         if(hrefs.length && obj_id && obj_field) { 
-          ajax_url = "/admin/app_data.php?oper=save&obj_type=" + obj_type + "&id=" + obj_id + "&" + obj_field + "=" + encodeURIComponent(href_str);
+          ajax_url = "/ajax.php?oper=save&obj_type=" + obj_type + "&id=" + obj_id + "&" + obj_field + "=" + encodeURIComponent(href_str);
         } else {
           console.log("sortable_object_list inline: no data, returning...");
           return;
         }
       } else {      
-        ajax_url = "/admin/app_data.php?oper=rank_update&obj_type=" + obj_type + "&id_list=" + ids_str;
+        ajax_url = "/ajax.php?oper=rank_update&obj_type=" + obj_type + "&id_list=" + ids_str;
       }
       console.log("Rank update url=" + ajax_url);
       
@@ -8015,7 +8015,7 @@ function jfu_load($target, mediaData, call_handler) {
   var options = $target.data("options") || {};
   var edit_url = options.edit_url;
   var edit_target = options.edit_target;
-  var url = '/admin/app_data.php?oper=jq-get-media&parent_type=' + pt + '&parent_id=' + pid + '&parent_field=' + pf + '&inline=' + inline;
+  var url = '/ajax.php?oper=jq-get-media&parent_type=' + pt + '&parent_id=' + pid + '&parent_field=' + pf + '&inline=' + inline;
   if(edit_url) url = url + "&edit_url=" + encodeURIComponent(edit_url);
   if(edit_target) url = url + "&edit_target=" + encodeURIComponent(edit_target);
   
@@ -8244,7 +8244,7 @@ function file_get_exif(file, mediaData) { // By Kjetil
   pid = mediaData.parent_id;
   pt = mediaData.parent_type;
   pf = mediaData.parent_field;
-  var ajax_url = '/admin/app_data.php?oper=jq-save-exif&parent_type=' + pt + '&parent_id=' + pid + '&parent_field=' + pf;
+  var ajax_url = '/ajax.php?oper=jq-save-exif&parent_type=' + pt + '&parent_id=' + pid + '&parent_field=' + pf;
   if(!(pid && pt && pf)) {
     //console.log("file_get_exif: no media data, exiting");
   }
@@ -8303,7 +8303,7 @@ var fixHelper = function(e, ui) {
 $(document).on("click", ".template-popup", function() {
   var $link = $(this);
   var template = $link.data('template');
-  var ajax_url = "/home/app_data.php?oper=fetch-template&template=" + template;
+  var ajax_url = "/ajax.php?oper=fetch-template&template=" + template;
 
   if(!template) return true;
   console.log("Template=" + template);

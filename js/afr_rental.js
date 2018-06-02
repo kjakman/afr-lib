@@ -75,7 +75,7 @@ function booking_form_update() {
     var handler = $form.data('success_handler');
     console.log("op=" + operation);
     if(operation) {
-      var ajax_url = "/home/app_data.php?oper=" + operation;    
+      var ajax_url = "/ajax.php?oper=" + operation;    
       $.getJSON(ajax_url, data, function(json) {
         $form.data('submitting', 0);          
         $("#rr-spinner").hide();
@@ -222,7 +222,7 @@ function map_add_locations(loc_types, bounds, map_id) {
   console.log("map_add_locations types=", loc_types);
   console.log("map_add_locations bounds=", bounds);
   console.log("map_add_locations bounds_str=" + bounds_str + " id=" + map_id);
-  var ajax_url = "/home/app_data.php?oper=location-search&loc_types=" + loc_types + "&bounds=" + encodeURIComponent(bounds_str);
+  var ajax_url = "/ajax.php?oper=location-search&loc_types=" + loc_types + "&bounds=" + encodeURIComponent(bounds_str);
   console.log("find-locations url:", ajax_url);
   $.getJSON(ajax_url, function(response) {
     console.log("find-locations returned:", response);

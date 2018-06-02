@@ -553,7 +553,7 @@ function product_dialog($invObj_or_id=NULL) {
       var inv_id = idAr[1].substr(4);
       //alert("res_id=" + res_id + " inv_id=" + inv_id);
       if(res_id && inv_id) {
-        ajax_url = "/admin/app_data.php?oper=view&obj_type=reservation&id=" + res_id;
+        ajax_url = "/ajax.php?oper=view&obj_type=reservation&id=" + res_id;
         //alert(ajax_url);
         jQuery.ajax({
           type: "POST",

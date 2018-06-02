@@ -744,7 +744,7 @@ function property_uploader($ptype, $aptObj_or_id, $options = array()) {
   $upload_options['show_file_list'] = false;
   $upload_options['title'] = "Click or drag to upload property images";
   
-  $edit_url = "/admin/app_data.php?oper=save&site_id=$site_id&user_level=$u_level&user_id=$u_id&obj_type=media"; // id will be appended
+  $edit_url = "/ajax.php?oper=save&site_id=$site_id&user_level=$u_level&user_id=$u_id&obj_type=media"; // id will be appended
   $upload_options['edit_url'] = $edit_url;
   //$upload_options['edit_target'] = '#edit-rental-image';
   

@@ -577,7 +577,7 @@ function cal_update_total() {
 /** dialog: ajax call to fetch live booking */
 function cal_fetch_object(obj_type, obj_id) {
   console.log("Fetching live " + obj_type + " " + obj_id);
-  var ajax_url = "/admin/app_data.php?oper=rental-calendar-get&obj_type=" + obj_type + "&obj_id=" + obj_id;
+  var ajax_url = "/ajax.php?oper=rental-calendar-get&obj_type=" + obj_type + "&obj_id=" + obj_id;
   $("#dt_total").hide();
   $("#dt_spinner").show();
   $("#cd-save").prop("disabled", true);
@@ -661,7 +661,7 @@ function cal_fetch_rate() {
   }
 
   
-  var ajax_url = "/admin/app_data.php?oper=rental-calendar-rate&apt_id=" + apt_id + "&in=" + cin + "&out=" + out + "&ng=" + ng;
+  var ajax_url = "/ajax.php?oper=rental-calendar-rate&apt_id=" + apt_id + "&in=" + cin + "&out=" + out + "&ng=" + ng;
   $("#cd-save").prop("disabled", true);
   cal_reset_fees();
   

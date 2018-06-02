@@ -61,7 +61,7 @@ function geocode_galleries() {
 }
 
 /** return list of artist names for an exhibition */
-function collection_artist_list($collectionObj_or_id) {
+function collection_artist_list($collectionObj_or_id, $options=[]) {
   $collectionObj = any2obj('media_collection', $collectionObj_or_id);
   //$artist_names = find_objects('media_collection_map', ['media_collection_id' => $collection_id, 'active' => 1], ['fields' => 'distinct artist_name']);
   $artist_id = $collectionObj->artist_id;
@@ -74,11 +74,20 @@ function collection_artist_list($collectionObj_or_id) {
   if(!is_array($artist_ids) || !count($artist_ids)) return '';
 
   print_log("id: {$collectionObj->id}  ids:".dump($artist_ids, true), 'backend', LOG_LEVEL_TEST);
-  $artist_names = find_objects('user_profile', ['user_id' => $artist_ids], ['fields' => 'distinct display_name']);
-  
-  return implode(', ', $artist_names);
+
+  if($options['link']) { /** not yet implemented */
+    foreach($artist_ids as $artist_id) {
+    }
+  } else {
+    $artist_names = find_objects('user_profile', ['user_id' => $artist_ids], ['fields' => 'distinct display_name']); 
+    return implode(', ', $artist_names);
+  }
 }
 
+/** not yet implemented */
+function collection_artist_links($collectionObj_or_id) {
+  return collection_artist_list($collectionObj_or_id, ['link' => true]);
+}
 
 /** 
   Data for plugin 
@@ -537,19 +546,19 @@ function gallery_explore($siteObj_or_id, $obj_type, $id, $options = array()) {
   $pageObj->controller = $controller;
   
   $output = '';
-  $load_url = "/admin/app_data.php?oper=load-content&site_id=$site_id&user_level=$u_level&user_id=$u_id&obj_type=$obj_type&id=$id";      
+  $load_url = "/ajax.php?oper=load-content&site_id=$site_id&user_level=$u_level&user_id=$u_id&obj_type=$obj_type&id=$id";      
   $preview_button = html_link("#", html_i('', "fa fa-arrow-left")." ".phrase('back_to_preview', CAPITALIZE), array('class' => 'btn btn-success ajax-loader', 'data-url' => $load_url, 'data-target' => '#cms_viewer'))." ";
   if($edit) {
     //$output .= $preview_button;    
   } else if($auth_edit) {
     if(!$embed) {
-      $load_url = "/admin/app_data.php?oper=load-content&site_id=$site_id&user_level=$u_level&user_id=$u_id&obj_type=$edit_obj_type&id=$edit_obj_id&edit=1"; 
+      $load_url = "/ajax.php?oper=load-content&site_id=$site_id&user_level=$u_level&user_id=$u_id&obj_type=$edit_obj_type&id=$edit_obj_id&edit=1"; 
       $edit_button = html_link("#", html_i('', "fa fa-pencil")." ".phrase('edit', CAPITALIZE), array('class' => 'btn btn-success ajax-loader', 'data-url' => $load_url, 'data-target' => '#cms_viewer'));
       $output .= $edit_button;
     }
     if($obj_type == 'media_collection') {
       $class = $embed ? "visuallyhidden" : ""; /** we still need this link for reloading, but don't show it */
-      $load_url = "/admin/app_data.php?oper=load-content&site_id=$site_id&user_level=$u_level&user_id=$u_id&obj_type=$edit_obj_type&id=$edit_obj_id&embed=1"; 
+      $load_url = "/ajax.php?oper=load-content&site_id=$site_id&user_level=$u_level&user_id=$u_id&obj_type=$edit_obj_type&id=$edit_obj_id&embed=1"; 
       //$embed_button = html_link("#", html_i('', "fa fa-link")." ".phrase('embed', CAPITALIZE), array('id' => 'embed_link', 'class' => "btn btn-success ajax-loader $class", 'data-url' => $load_url, 'data-target' => '#cms_viewer'));
       $embed_button = html_link(site_page_link($siteObj, PAGE_PLUGIN)."?pt={$edit_obj_type}&pid={$edit_obj_id}", html_i('', "fa fa-link")." ".phrase('embed', CAPITALIZE), array('id' => 'embed_link', 'class' => "btn btn-success", 'target' => 'embed'));
       $output .= " ".$embed_button;
@@ -681,7 +690,7 @@ function gallery_uploader($galleryObj_or_id, $options = array()) {
 
 
   // add edit button to uploader
-  $edit_url = "/admin/app_data.php?oper=load-content&site_id=$site_id&user_level=$u_level&user_id=$u_id&obj_type=media&edit=1"; // id will be appended
+  $edit_url = "/ajax.php?oper=load-content&site_id=$site_id&user_level=$u_level&user_id=$u_id&obj_type=media&edit=1"; // id will be appended
   $upload_options['edit_url'] = $edit_url;
   $upload_options['edit_target'] = '#cms_viewer';
 
@@ -815,7 +824,7 @@ function gallery_media_form($siteObj, $obj=null, $options = array()) {
   global $u_level,$u_id;
   $site_id = $siteObj->id;
   $media_id = $obj->id;
-  $load_url = "/admin/app_data.php?oper=load-content&site_id=$site_id&user_level=$u_level&user_id=$u_id&obj_type=media&id=$media_id";      
+  $load_url = "/ajax.php?oper=load-content&site_id=$site_id&user_level=$u_level&user_id=$u_id&obj_type=media&id=$media_id";      
   $preview_button = html_div(html_link("#", html_i('', "fa fa-check")." ".phrase('save', CAPITALIZE), array('class' => 'ajax-loader', 'data-url' => $load_url, 'data-target' => '#cms_viewer')));
 
   return html_div($preview_button, 'margin-top').object_form($obj_type, $obj, $editOptions).html_div($help_text);
@@ -843,7 +852,7 @@ function gallery_collection_form($siteObj, $obj=null, $options = array()) {
   global $u_level,$u_id;
   $site_id = $siteObj->id;
   $id = $obj->id;
-  $load_url = "/admin/app_data.php?oper=load-content&site_id=$site_id&user_level=$u_level&user_id=$u_id&obj_type=$obj_type&id=$id";      
+  $load_url = "/ajax.php?oper=load-content&site_id=$site_id&user_level=$u_level&user_id=$u_id&obj_type=$obj_type&id=$id";      
   $preview_button = html_div(html_link("#", html_i('', "fa fa-eye")." ".phrase('preview', CAPITALIZE), array('class' => 'ajax-loader', 'data-url' => $load_url, 'data-target' => '#cms_viewer')));
 
   return html_div($preview_button, 'margin-top').object_form($obj_type, $obj, $editOptions).html_div($help_text);
@@ -2139,7 +2148,7 @@ function gallery_object_list_item($siteObj_or_id, $obj_type, $id, $options=NULL)
     // edit button
     $edit_obj_type = $edit_obj_type ?: $obj_type; 
     $edit_obj_id = $id;
-    $load_url = "/admin/app_data.php?oper=load-content&site_id=$site_id&user_level=$u_level&user_id=$u_id&obj_type=$edit_obj_type&id=$edit_obj_id&edit=1"; //&obj_type=media&id=$obj->id";
+    $load_url = "/ajax.php?oper=load-content&site_id=$site_id&user_level=$u_level&user_id=$u_id&obj_type=$edit_obj_type&id=$edit_obj_id&edit=1"; //&obj_type=media&id=$obj->id";
     $edit_button = html_link("#", html_i('', "fa fa-pencil")." ".phrase('edit', CAPITALIZE), array('class' => 'ajax-loader', 'data-url' => $load_url, 'data-target' => '#cms_viewer'));
   }
 

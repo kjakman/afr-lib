@@ -176,7 +176,7 @@ function gallery_print(target, data) {
   
   var output = '';
   var returntype = data.returntype;
-  var ajax_url = "/admin/app_data.php?oper=gallery-get-collection&print&" + obj2qs(data); // obj_type=media_collection&obj_ id=" + my_collection_id + "&site_id=" + site_id + "&user_id=" + user_id;
+  var ajax_url = "/ajax.php?oper=gallery-get-collection&print&" + obj2qs(data); // obj_type=media_collection&obj_ id=" + my_collection_id + "&site_id=" + site_id + "&user_id=" + user_id;
   console.log("gallery_load: target=" + target + " len=" + $viewer.length + " url=" + ajax_url + " data=", data );
   $viewer.load(ajax_url, function() {
     $viewer.css('opacity', '1');    
@@ -254,7 +254,7 @@ function gallery_load(target, data) {
   var $viewer = $(target);
   var output = '';
   var returntype = data.returntype;
-  var ajax_url = "/admin/app_data.php?oper=gallery-get-collection&" + obj2qs(data); // obj_type=media_collection&obj_ id=" + my_collection_id + "&site_id=" + site_id + "&user_id=" + user_id;
+  var ajax_url = "/ajax.php?oper=gallery-get-collection&" + obj2qs(data); // obj_type=media_collection&obj_ id=" + my_collection_id + "&site_id=" + site_id + "&user_id=" + user_id;
   console.log("gallery_load: url=" + ajax_url + " data=", data);
   $.getJSON(ajax_url, function(response) { // start loading data from server
     if(response.success) {
@@ -293,11 +293,11 @@ function gallery_load(target, data) {
      console.log("wishlist data=", data);   
      //console.log("wishlist icon class=", $icon.attr('class'));
   
-     //ajax_url = "/admin/app_data.php?oper=wishlist&" + obj2qs(data);
+     //ajax_url = "/ajax.php?oper=wishlist&" + obj2qs(data);
      $icon.removeClass("fa-star fa-star-o fa-times").addClass("fa-spinner fa-spin");
      //console.log("Remove=" + remove);
      //return false;
-      var ajax_url = '/admin/app_data.php';
+      var ajax_url = '/ajax.php';
       //$('#galleria .galleria-stage').addClass("loading-big");
       //var $galleria;
       //var $galleria_div = $('#galleria');

@@ -724,7 +724,7 @@ function payment_rows($payments, $user_level=USER_LEVEL_GUEST) {
       $site_id = $_SESSION['site_id'];
       $verified = $paymentObj->verified;
       $can_refund = $verified && $paymentObj->amount > 0 && in_array($paymentObj->payment_type, $refundable_types) && in_array($paymentObj->payment_status, $refundable_statuses);
-      if($verified) $actions[] = html_link("/admin/app_data.php?oper=verify-payment&site_id=$site_id&user_id=$u_id&payment_id=$paymentObj->id", html_i('', 'fa fa-check text-success'), array('class' => '', 'title' => phrase('verified', CAPITALIZE), 'data-data' => array('payment_id' => $paymentObj->id, 'gateway_id' => $paymentObj->gateway_id), 'data-toggle' => "modal", 'data-target' => "#verify_modal"));
+      if($verified) $actions[] = html_link("/ajax.php?oper=verify-payment&site_id=$site_id&user_id=$u_id&payment_id=$paymentObj->id", html_i('', 'fa fa-check text-success'), array('class' => '', 'title' => phrase('verified', CAPITALIZE), 'data-data' => array('payment_id' => $paymentObj->id, 'gateway_id' => $paymentObj->gateway_id), 'data-toggle' => "modal", 'data-target' => "#verify_modal"));
       if($can_refund) {
         $icon = '<span class="fa-stack fa-lg"><i class="fa fa-money fa-stack-1x text-success"></i><i class="fa fa-long-arrow-left fa-stack-1x "></i></span>';
         $actions[] = html_link('#', $icon, array('class' => 'fill-form', 'data-form' => '#refund_form', 'data-data' => array('payment_id' => $paymentObj->id, 'amount' => $paymentObj->amount, 'currency' => $paymentObj->currency), 'data-toggle' => "modal", 'data-target' => "#refund_modal", 'title' => phrase('refund', CAPITALIZE)));

@@ -69,7 +69,7 @@ function env_minisite($domain, $uri) {
             'user_id' => 20361, 
             //'header_text' => 'Gallery closed for Summer. Reopens Saturday September 9th.',
             'type' => 'gallery',
-            'social_links' => ['facebook' => 'https://www.facebook.com/stigtervandoesburg/', 'instagram' => 'https://www.instagram.com/explore/tags/stigtervandoesburg/'],
+            'social_links' => ['facebook' => 'https://www.facebook.com/stigtervandoesburg/', 'instagram' => 'https://www.instagram.com/explore/locations/285426524/stigter-van-doesburg/?hl=en'],
             'basepath' => $minisite_basepath];
     // 'home' => 'stigtervandoesburg/home', 
   }
@@ -2387,15 +2387,21 @@ function clean_path($path ) {
 
 // return document root, always with trailing slash (as this can be inconsistent)
 // http://serverfault.com/questions/173977/inconsistent-trailing-slash-in-document-root-variable-in-php-when-using-apache
+/** location of index.php - web document root */
 function docroot($trailing_slash = true) {
   $realpath = realpath ($_SERVER['DOCUMENT_ROOT']."/");
   $docroot = str_replace ("//", "/", $realpath);
   return rtrim($docroot, "/").($trailing_slash ? '/' : '');
 }
 
+/** location of AFR library */
+function libroot($trailing_slash = true) {
+  return docroot(false)."/afr".($trailing_slash ? '/' : '');
+}
+
+/** location of web application directory - parent of docroot */
 function approot($trailing_slash = true) {
-  global $__APP_ROOT;
-  return rtrim($__APP_ROOT, "/").($trailing_slash ? '/' : '');
+  return str_replace('/www', '', docroot($trailing_slash));
 }
 
 // full URL of current URL, with http or https 

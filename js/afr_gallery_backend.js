@@ -73,7 +73,7 @@ function gbe_artists_tagit() {
       minLength: 2,
       source: function( request, response ) {
       $.ajax({
-        url: "/admin/app_data.php",
+        url: "/ajax.php",
         dataType: "json",
         data: {
           oper: "find-artists",

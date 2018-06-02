@@ -22,6 +22,8 @@ function controller_minisite($app, $options = []) {
   $msObj = $scope->msObj = $app->minisite;
   if($css = $msObj->css) $__header->styles[] = "/css/minisites/{$msObj->url}/{$css}?v={$app->version}";
   
+  $se_title = $se_description = '';
+  
   $scope->minisite = $minisite = $msObj->url;
   $scope->basepath = $msObj->internal ? "/{$minisite}" : '';    
   $scope->minisite_name = $msObj->name;
@@ -67,6 +69,8 @@ function controller_minisite($app, $options = []) {
   
   print_log("type={$type} path: {$path} page:{$page} slug:{$slug} id: {$obj_id} name: {$name} sub:{$subview} options".dump($options,true), 'minisite', LOG_LEVEL_TEST);  
   
+  $se_title = $minisite;
+  $se_description = $minisite;
   
   switch($type) {
   case 'artist':
@@ -76,7 +80,7 @@ function controller_minisite($app, $options = []) {
 
     $artist->slug = slugify($uObj->display_name);
     $artist->collections = $exhibitionObjs = find_objects('media_collection', $search);
-    if($page == 'home') $tpl = $page = 'artist';
+    //if($page == 'home') $tpl = $page = 'artist';
     
     
     /**
@@ -108,8 +112,11 @@ function controller_minisite($app, $options = []) {
 
       foreach($artist_ids as $artist_id) {
         $uObj = get_user($artist_id);    
-        //$collectionObj = find_object('media_collection', ['artist_id' => $uObj->id, 'active' => 1, 'type' => COLLECTION_TYPE_PROJECT]);
-        $collectionObj = find_object('media_collection', ['user_id' => $user_id, 'artist_id' => $uObj->id, 'active' => 1, 'type' => COLLECTION_TYPE_EXHIBITION, 'start_date' => '']);
+        
+        /** For an artist to show on Artists page, an active collection needs to exist of type exhibition with artist_id and no start date */
+        $colSearch = ['user_id' => $user_id, 'artist_id' => $uObj->id, 'active' => 1, 'type' => COLLECTION_TYPE_EXHIBITION, 'start_date' => ''];
+        //dump($colSearch);
+        $collectionObj = find_object('media_collection', $colSearch);
         print_log("artist {$uObj->display_name} ({$artist_id}) id={$collectionObj->id} type={$collectionObj->type} title={$collectionObj->title}", 'debug', LOG_LEVEL_TEST);
         
         if(!$collectionObj) {
@@ -209,7 +216,7 @@ function controller_minisite($app, $options = []) {
         print_log("Ex page {$subview}", 'minisite', LOG_LEVEL_TEST);
       }        
       
-      print_log("Found $count {$when} exhibitions for page=$page sub=$subview", 'minisite', LOG_LEVEL_TEST);
+      //print_log("Found $count {$when} exhibitions for page=$page sub=$subview", 'minisite', LOG_LEVEL_TEST);
       
       $exhibition_ids = $exhibitions = [];
       foreach($exhibitionObjs as $exhibitionObj) {
@@ -250,6 +257,11 @@ function controller_minisite($app, $options = []) {
         $search = ['media_collection_id' => $collection_id, 'active' => 1];
         $scope->artworks = $mapObjs = find_objects('media_collection_map', $search, ['sort' => 'rank']);
       }        
+      
+      $se_title = $artist->display_name;
+      $se_description = $artist->description;
+                          
+      
       $scope->show_images = 1;
       $scope->show_solo = strlen(strip_blank($artist->gallery_solo_shows)) > 0 ? 1 : 0;
       $scope->show_group = strlen(strip_blank($artist->gallery_group_shows)) > 0 ? 1 : 0;
@@ -266,6 +278,15 @@ function controller_minisite($app, $options = []) {
         print_log("no $slug in ".dump($exhibitions,true), 'minisite', LOG_LEVEL_TEST);
         return scope_error($app, "Exhibition {$slug} not found", '404');
       }
+      
+      $artist_names = collection_artist_list($collectionObj);
+      
+      
+      $se_title = "{$collectionObj->title}, {$artist_names}";
+      $se_description = $collectionObj->description;
+      
+      
+      
       $scope->collection = $collectionObj;
       $scope->collection_id = $collection_id = $collectionObj->id;
       if($loc_id = $collectionObj->location_id) {
@@ -298,20 +319,27 @@ function controller_minisite($app, $options = []) {
       break;
     case 'private':
       break;
-    case 'home':
+    case 'home': /** not fully implemented yet - assumes existence of custom page for this artist */
+      //$tpl = "{$minisite}/{$tpl}";
+      //die("page={$page} tpl={$tpl}");
       break;
     default:
       return scope_error($app, "Page {$page} not found", '404');
       break;
   }
   
+  
   //dump($_SERVER);
   $docroot = docroot(false);
   $custom_filename = "{$docroot}/user/minisite/{$minisite}/pages/{$page}/default.html";
   if(is_file($custom_filename)) {
+    //print_log("page=$page path={$path} slug={$slug} subview={$subview} tpl={$pageObj->template}".dump($parts,true), 'minisite', LOG_LEVEL_TEST);
     list($custom_header, $custom_content) = site_parse_pagefile($custom_filename);
     $scope->headers = $custom_header;
     $scope->custom_content = $custom_content;
+
+    print_log("Found custom file {$custom_filename} content={$custom_content}", 'minisite', LOG_LEVEL_TEST);
+
   }
   
   $pageObj->template = "minisites/{$tpl}";
@@ -320,8 +348,14 @@ function controller_minisite($app, $options = []) {
   $scope->slug = $slug;
   $scope->subview = $subview;
   $scope->title = $title;
+
+  $keywords = implode(',', array_filter([$minisite, $display_name, $page, $slug, $subview, $site->name, $page->name, $type, $se_title]));
   
-  //print_log("page=$page path={$path} slug={$slug} subview={$subview} tpl={$pageObj->template}".dump($parts,true), 'minisite', LOG_LEVEL_TEST);
+  $app->page->se_title = htmlspecialchars($se_title);
+  $app->page->se_keywords = htmlspecialchars($keywords);
+  $app->page->se_description = htmlspecialchars($se_description);
+    
+  print_log("page=$page path={$path} slug={$slug} subview={$subview} tpl={$pageObj->template}".dump($parts,true), 'minisite', LOG_LEVEL_TEST);
   return;
 }
 
@@ -854,8 +888,8 @@ function controller_rentals($app, $options = []) {
   $filter_json = count($filters) ? json_encode($filters) : '';
   $scope->obj_type = $obj_type;
   $obj_name = get_object_name($obj_type);
-  $scope->data_url = "/admin/app_data.php?oper=get-rows&obj_type=$obj_type".($filter_json ? "&filters=".urlencode($filter_json) : '');
-  $scope->edit_url = "/admin/app_data.php?oper=save&obj_type=$obj_type";
+  $scope->data_url = "/ajax.php?oper=get-rows&obj_type=$obj_type".($filter_json ? "&filters=".urlencode($filter_json) : '');
+  $scope->edit_url = "/ajax.php?oper=save&obj_type=$obj_type";
   $scope->title = $obj_name."s ".($client_id ? " for $client_name" : "")." ({$count})";
   
   return;
@@ -1609,8 +1643,8 @@ function controller_dictionary($app, $options = []) {
   $scope->filters = $filters;
   $filter_json = count($filters) ? json_encode($filters) : '';
   $scope->obj_type = $obj_type;
-  $scope->data_url = "/admin/app_data.php?oper=get-rows&obj_type=$obj_type".($filter_json ? "&filters=".urlencode($filter_json) : '');
-  $scope->edit_url = "/admin/app_data.php?oper=save&obj_type=$obj_type";
+  $scope->data_url = "/ajax.php?oper=get-rows&obj_type=$obj_type".($filter_json ? "&filters=".urlencode($filter_json) : '');
+  $scope->edit_url = "/ajax.php?oper=save&obj_type=$obj_type";
   $scope->title = "Dictionary";
     
   return;
@@ -1662,8 +1696,8 @@ function controller_users($app, $options = []) {
   $scope->filters = $filters;
   $filter_json = count($filters) ? json_encode($filters) : '';
   $scope->obj_type = $obj_type;
-  $scope->data_url = "/admin/app_data.php?oper=get-rows&obj_type=$obj_type".($filter_json ? "&filters=".urlencode($filter_json) : '');
-  $scope->edit_url = "/admin/app_data.php?oper=edit-user";
+  $scope->data_url = "/ajax.php?oper=get-rows&obj_type=$obj_type".($filter_json ? "&filters=".urlencode($filter_json) : '');
+  $scope->edit_url = "/ajax.php?oper=edit-user";
   $scope->title = ucfirst($obj_type)."s ".($client_id ? " for $client_name" : "");
     
   return;
@@ -1733,7 +1767,7 @@ function controller_backend($app, $options = []) {
       if(!($attributes[ATT_FLAGS] & AF_HIDE_LIST)) $fields[$field] = $attributes[ATT_NAME];      
     }
     $scope->fields = $fields;
-    $scope->data_url = "/admin/app_data.php?oper=list&obj_type=$obj_type&limit=$limit";
+    $scope->data_url = "/ajax.php?oper=list&obj_type=$obj_type&limit=$limit";
         
     //$scope->auth_add = auth_action($obj_type, 'add');
   } else {
@@ -1842,7 +1876,7 @@ function controller_invoices($app, $options = []) {
   $filter_json = count($filters) ? json_encode($filters) : '';
   $scope->obj_type = $obj_type;
   $obj_name = get_object_name($obj_type);
-  $scope->data_url = "/admin/app_data.php?oper=get-rows&obj_type=$obj_type".($filter_json ? "&filters=".urlencode($filter_json) : '');
+  $scope->data_url = "/ajax.php?oper=get-rows&obj_type=$obj_type".($filter_json ? "&filters=".urlencode($filter_json) : '');
   $scope->title = $obj_name."s ".($client_id ? " for $client_name" : "");
   
   if(in_array($obj_type, array('payment', 'invoice'))) {
@@ -1898,7 +1932,7 @@ function controller_invoices($app, $options = []) {
     if($currency) $search['payment_currency'] = $currency;
     
     $search_json = json_encode($search);    
-    $scope->outstanding_url = "/admin/app_data.php?oper=get-rows&obj_type=payment&filters=".urlencode($search_json);
+    $scope->outstanding_url = "/ajax.php?oper=get-rows&obj_type=payment&filters=".urlencode($search_json);
     
     /** Outstanding Corrections and Transfers */
     $search = array();
@@ -1913,7 +1947,7 @@ function controller_invoices($app, $options = []) {
     if($currency) $search['payment_currency'] = $currency;
 
     $search_json = json_encode($search);    
-    $scope->correction_url = "/admin/app_data.php?oper=get-rows&obj_type=payment&filters=".urlencode($search_json);
+    $scope->correction_url = "/ajax.php?oper=get-rows&obj_type=payment&filters=".urlencode($search_json);
     
     $hostsAr = array();
     $hostsAr[0] = "Select Host...";
@@ -1995,7 +2029,7 @@ function controller_bookings($app, $options = []) {
     }  
     $scope->bookings = $bookings;
   } else {
-    $scope->bookings_url = "/admin/app_data.php?oper=get-rows&obj_type=reservation&filters=".urlencode(json_encode($search));
+    $scope->bookings_url = "/ajax.php?oper=get-rows&obj_type=reservation&filters=".urlencode(json_encode($search));
   }
   
   //$scope->booking_count = count($bookings);
@@ -2015,7 +2049,7 @@ function controller_bookings($app, $options = []) {
     $scope->trips = $trips;
     $scope->trip_count = count_objects("reservation", $search);
   } else {
-    $scope->trips_url = "/admin/app_data.php?oper=get-rows&obj_type=reservation&filters=".json_encode($search);
+    $scope->trips_url = "/ajax.php?oper=get-rows&obj_type=reservation&filters=".json_encode($search);
   }
   
   return;
@@ -2440,8 +2474,8 @@ function controller_invoice_status($app, $options = []) {
     $__header->scripts[] = "/afr/bower/x-editable/dist/bootstrap3-editable/js/bootstrap-editable.js";
     
     $__header->styles[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.css";
-    $scope->data_url = "/admin/app_data.php?oper=get-rows&obj_type=inv_lineitem&search=$inv_id"; //&return=rows";
-    $scope->edit_url = "/admin/app_data.php?oper=edit&obj_type=inv_lineitem";
+    $scope->data_url = "/ajax.php?oper=get-rows&obj_type=inv_lineitem&search=$inv_id"; //&return=rows";
+    $scope->edit_url = "/ajax.php?oper=edit&obj_type=inv_lineitem";
     $scope->title = "Edit invoice ".$invObj->invoice_number ?: $inv_id;
     
     
@@ -3340,7 +3374,7 @@ function controller_article($app, $options = []) {
   $search = ['site_id' => $siteObj->id, 'type' => $type, 'language' => $lang, 'active' => 1, 'user_level' => array('<=', $u_level ?: 0)];
   if(!$auth_add) $search['published'] = 1;
   
-  $searchOptions = ["sort" => "created DESC", "start" => $start, "limit" => $limit];
+  $searchOptions = ["sort" => "post_date DESC", "start" => $start, "limit" => $limit];
   $articles = find_objects($obj_type, $search, $searchOptions);  
   
   $sidebar_limit = 5;
@@ -4108,7 +4142,7 @@ function controller_gallery_backend($app, $options = []) {
         $filters[DB_LOGICAL_OR2] = ['user_id' => $app->user_id, 'artist_id' => $artist_ids];
       }
       $filter_json = count($filters) ? json_encode($filters) : '';
-      $scope->list_url = "/admin/app_data.php?oper=get-rows&obj_type=artwork".($filter_json ? "&filters=".urlencode($filter_json) : '');
+      $scope->list_url = "/ajax.php?oper=get-rows&obj_type=artwork".($filter_json ? "&filters=".urlencode($filter_json) : '');
       break;
     case "plugin":
       $scope->section = 'plugin';
@@ -4165,7 +4199,7 @@ function controller_gallery_backend($app, $options = []) {
       }
       
       $filter_json = count($filters) ? json_encode($filters) : '';
-      $scope->list_url = "/admin/app_data.php?oper=get-rows&obj_type=plugin&amp;sort=id%20desc&amp;".($filter_json ? "&filters=".urlencode($filter_json) : '');
+      $scope->list_url = "/ajax.php?oper=get-rows&obj_type=plugin&amp;sort=id%20desc&amp;".($filter_json ? "&filters=".urlencode($filter_json) : '');
       break;
 
     case "website":
@@ -4194,7 +4228,7 @@ function controller_gallery_backend($app, $options = []) {
 
       $filters = $u_level < USER_LEVEL_ADMIN ? ['user_id' => $app->user_id] : [];
       $filter_json = count($filters) ? json_encode($filters) : '';
-      $scope->list_url = "/admin/app_data.php?oper=get-rows&obj_type=minisite&amp;sort=id%20desc&amp;".($filter_json ? "&filters=".urlencode($filter_json) : '');
+      $scope->list_url = "/ajax.php?oper=get-rows&obj_type=minisite&amp;sort=id%20desc&amp;".($filter_json ? "&filters=".urlencode($filter_json) : '');
       break;
       
     case "medium":
@@ -4219,7 +4253,7 @@ function controller_gallery_backend($app, $options = []) {
       $filters = ['active' => 1];
       $filters[DB_LOGICAL_OR2] = ['user_id' => $app->user_id, 'artist_id' => $artist_ids]; 
       $filter_json = count($filters) ? json_encode($filters) : '';
-      $scope->list_url = "/admin/app_data.php?oper=get-rows&obj_type=media".($filter_json ? "&filters=".urlencode($filter_json) : '');
+      $scope->list_url = "/ajax.php?oper=get-rows&obj_type=media".($filter_json ? "&filters=".urlencode($filter_json) : '');
       break;
     case "vault":
       $scope->section = 'vault';
@@ -4240,7 +4274,7 @@ function controller_gallery_backend($app, $options = []) {
       $filters['parent_id'] = $id ?: 0;
       //$filters[DB_LOGICAL_OR2] = ['user_id' => $app->user_id, 'artist_id' => $artist_ids]; 
       $filter_json = count($filters) ? json_encode($filters) : '';
-      $scope->list_url = "/admin/app_data.php?oper=get-rows&obj_type=gallery".($filter_json ? "&filters=".urlencode($filter_json) : '');
+      $scope->list_url = "/ajax.php?oper=get-rows&obj_type=gallery".($filter_json ? "&filters=".urlencode($filter_json) : '');
       break;
     case "network":
       $scope->section = 'network';
@@ -4250,7 +4284,7 @@ function controller_gallery_backend($app, $options = []) {
       $filters = ['active' => 1, 'user.site_id' => $app->site->id];
       if($u_level < USER_LEVEL_ADMIN) $filters['user_id'] = $user_ids;
       $filter_json = count($filters) ? json_encode($filters) : '';
-      $scope->list_url = "/admin/app_data.php?oper=get-rows&obj_type=user&amp;sort=id%20desc&amp;".($filter_json ? "&filters=".urlencode($filter_json) : '');
+      $scope->list_url = "/ajax.php?oper=get-rows&obj_type=user&amp;sort=id%20desc&amp;".($filter_json ? "&filters=".urlencode($filter_json) : '');
       break;
     case "settings":
       $scope->section = 'settings';
@@ -4293,7 +4327,7 @@ function controller_gallery_backend($app, $options = []) {
       $filters = ['type' => COLLECTION_TYPE_EXHIBITION];
       if($u_level < USER_LEVEL_ADMIN) $filters['user_id'] = $app->user_id;
       $filter_json = count($filters) ? json_encode($filters) : '';
-      $scope->list_url = "/admin/app_data.php?oper=get-rows&obj_type=media_collection&amp;sort=id%20desc&amp;".($filter_json ? "&filters=".urlencode($filter_json) : '');
+      $scope->list_url = "/ajax.php?oper=get-rows&obj_type=media_collection&amp;sort=id%20desc&amp;".($filter_json ? "&filters=".urlencode($filter_json) : '');
       break;
       
     case "exhibition":

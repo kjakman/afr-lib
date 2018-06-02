@@ -495,7 +495,7 @@ function print_payments($payments, $user_level=USER_LEVEL_GUEST) {
       $site_id = $_SESSION['site_id'];
       $verified = $paymentObj->verified;
       $can_refund = $verified && $paymentObj->amount > 0 && in_array($paymentObj->payment_type, $refundable_types) && in_array($paymentObj->payment_status, $refundable_statuses);
-      if($verified) $actions[] = html_link("/admin/app_data.php?oper=verify-payment&site_id=$site_id&user_id=$u_id&payment_id=$paymentObj->id", html_i('', 'fa fa-check text-success'), array('class' => '', 'title' => phrase('verified', CAPITALIZE), 'data-data' => array('payment_id' => $paymentObj->id, 'gateway_id' => $paymentObj->gateway_id), 'data-toggle' => "modal", 'data-target' => "#verify_modal"));
+      if($verified) $actions[] = html_link("/ajax.php?oper=verify-payment&site_id=$site_id&user_id=$u_id&payment_id=$paymentObj->id", html_i('', 'fa fa-check text-success'), array('class' => '', 'title' => phrase('verified', CAPITALIZE), 'data-data' => array('payment_id' => $paymentObj->id, 'gateway_id' => $paymentObj->gateway_id), 'data-toggle' => "modal", 'data-target' => "#verify_modal"));
       if($can_refund) {
         $icon = '<span class="fa-stack fa-lg"><i class="fa fa-money fa-stack-1x text-success"></i><i class="fa fa-long-arrow-left fa-stack-1x "></i></span>';
         $actions[] = html_link('#', $icon, array('class' => 'fill-form', 'data-form' => '#refund_form', 'data-data' => array('payment_id' => $paymentObj->id, 'amount' => $paymentObj->amount, 'currency' => $paymentObj->currency), 'data-toggle' => "modal", 'data-target' => "#refund_modal", 'title' => phrase('refund', CAPITALIZE)));
@@ -794,7 +794,7 @@ function reservation_events($resObj, $options=NULL) {
 function reservation_event_form($resObj, $eventObj=NULL) {
   $event_id = $eventObj->id;
   $form_name = 'add_event_form';
-  $ajax_url = '/afr/home/app_data.php?oper=add_event';
+  $ajax_url = '/afr/ajax.php?oper=add_event';
   $ajax_handler = 'load_events';
 
   $hidden_fields = array('res_id' => $resObj->res_id, 'event_id' => $eventObj->id);
@@ -873,7 +873,7 @@ function event_fields($resObj, $eventObj=NULL, $options=NULL) {
 function catering_form($res_id, $lineitem_id, $supplier_id) {          
   $form_name = 'add_catering_form';   
   $referer = public_action_link($res_id, 'reservation');
-  $ajax_url = '/afr/home/app_data.php?oper=add_catering';
+  $ajax_url = '/afr/ajax.php?oper=add_catering';
   $ajax_handler = 'load_events';
 
   $resObj = get_object('reservation', $res_id);
@@ -3209,7 +3209,7 @@ function request_form($site_id, $type, $id, $options = NULL) {
   // $fieldset[''] = form_input('', 'text', 10);
 
   $form_name = 'request_form';
-  $action = "/home/app_data.php?oper=$handler";
+  $action = "/ajax.php?oper=$handler";
 
   // $on_save = "onclick=\"var result =  alert('result=' + result); return false;\"";
   $on_cancel = "onclick=\"close_parent_dialog('$form_name');return false;\"";    

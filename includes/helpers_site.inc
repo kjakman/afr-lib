@@ -100,6 +100,7 @@ function site_url($siteObj_or_id, $options = []) {
   return $siteObj->url;
 }
 
+/** no longer in use */
 function site_docroot($siteObj_or_id) {  
   $siteObj = any2obj('site', $siteObj_or_id);
   $domain = $_SESSION['live'] ? 'www.'.$siteObj->domain : 'test.'.$siteObj->domain;
@@ -370,7 +371,7 @@ function site_edit_menu($siteObj, $pageObj, $options = array()) {
     if($template = $pageObj->template) {
       //list($filename, $ext) = split_filename($template);
       $filename = str_replace(".html", "", $template);
-      $file = clean_path(docroot()."/pages/$filename".'.html');    
+      $file = clean_path(__DIR__."/pages/$filename".'.html');    
       $is_writable = is_writable($file);
       $is_file = is_file($file);
       if($is_file && $is_writable) {
@@ -1252,8 +1253,10 @@ function smarty_save_page_element($pageElement) {
   $siteObj = $site_id == $__SITE_ID ? $__SITE : get_object('site', $site_id);
 
   $domain = $siteObj->domain;
-  $docroot = site_docroot($site_id);
-  $base_path = "{$docroot}/content/{$domain}";
+  
+  $approot = approot(false);
+  $base_path = "{$approot}/content/{$domain}";
+  
   $path = $pageElement->path;
   if(!$path) die("smarty_save_page_element: Missing path");
   if(!$site_id) die("smarty_save_page_element: Missing site id");
@@ -1293,8 +1296,7 @@ function smarty_parse_template($app, $filename, $options = array()) {
   $root = $options['root']; // top level page template? - not in use
   $main = $options['main']; // main template (content)
   
-  
-  $docroot = rtrim($_SERVER['DOCUMENT_ROOT'], '/');
+  $approot = approot(false);
   $userObj = $app->user;
 
   $query_string = get_query_string();
@@ -1318,7 +1320,7 @@ function smarty_parse_template($app, $filename, $options = array()) {
   //$globalAr = obj2array($global);
 
   $template = $_SESSION['page_template'];
-  $template_dir = $docroot.'pages';
+  $template_dir = $approot.'pages';
   
   $smarty = new Smarty();
 
@@ -1326,10 +1328,10 @@ function smarty_parse_template($app, $filename, $options = array()) {
 
   $globals = array('u_id' => $u_id, 'u_level' => $u_level);
   
-  $smarty->setTemplateDir($docroot.'/smarty/templates');
-  $smarty->setCompileDir($docroot.'/smarty/templates_c');
-  $smarty->setCacheDir($docroot.'/smarty/cache');
-  $smarty->setConfigDir($docroot.'/smarty/configs');
+  $smarty->setTemplateDir($approot.'/smarty/templates');
+  $smarty->setCompileDir($approot.'/smarty/templates_c');
+  $smarty->setCacheDir($approot.'/smarty/cache');
+  $smarty->setConfigDir($approot.'/smarty/configs');
 
   // custom modifiers                       
   $smarty->registerPlugin('modifier', 'currency', 'currency2html');
@@ -1523,8 +1525,14 @@ function smarty_parse_template($app, $filename, $options = array()) {
   $smarty->assign('scope', $scopeAr);
   $smarty->assign('global', $globalAr);
   $smarty->assign('template', $template);   
-  $smarty->assign('doc_root', docroot(false)); // no trailing slash
-  $smarty->assign('app_root', approot(false)); // no trailing slash
+  
+  //$smarty->assign('doc_root', docroot(false)); // no trailing slash
+  //$smarty->assign('app_root', approot(false)); // no trailing slash
+  
+  $smarty->assign('app_root', __DIR__); // no trailing slash
+  $smarty->assign('doc_root', __DIR__."/www"); // no trailing slash
+  $smarty->assign('lib_root', __DIR__."/afr"); // no trailing slash
+  
   $smarty->assign('this_path', this_path());
   $smarty->assign('path_var', $__PATH_VAR);
   $smarty->assign('full_path', full_path());
@@ -1548,7 +1556,7 @@ function smarty_parse_template($app, $filename, $options = array()) {
   $output =  '';
   
   if($_SESSION['__edit_mode']) {
-    $full_filename = docroot().'/pages/'.$filename;
+    $full_filename = __DIR__.'/../pages/'.$filename;
     if(is_file($full_filename) && is_writeable($full_filename)) {
       $output .= '<a class="btn btn-success __edit_template __edit_link" data-template="'.$full_filename.'" href="#"><i class="fa fa-code"></i> Edit Template '.$filename.'</a>';
     } else {
@@ -1926,15 +1934,15 @@ function smarty_template($app, $filename, $options = array()) {
   print_log("smarty_template: {$filename}", 'smarty', LOG_LEVEL_TEST);
   if(!$filename) mydie("smarty_template: no filename");
   if(0 && $app->live) {
-    $docroot = docroot(false);
+    $approot = approot(false);
     if(!strpos($filename, '.html')) $filename .= ".html";
     if($filename[0] == '_') $filename = "components/{$filename}"; // components
-    $tpl_filename = "{$docroot}/smarty/templates/{$filename}";
+    $tpl_filename = "{$approot}/smarty/templates/{$filename}";
   } else {
     if(!$pageObj->path) $pageObj->path = $app->page->path = this_path();
     $pageObj->page_elements = $pageElementArray = smarty_page_elements($app);    
     $tpl_filename = smarty_preparse_template($app, $filename); // parse our own template structure, write smarty template
-    if(!$tpl_filename) die("smarty_template: preparse $filename returned null - template=$template");
+    if(!$tpl_filename) die("smarty_template: preparse $filename returned null - template=$tpl_filename");
   }
   if($pageObj->http_header) header($pageObj->http_header);
   if($pageObj->http_status) header($pageObj->http_status);  
@@ -1947,12 +1955,13 @@ function smarty_preparse_template($app, $filename, $options = array()) {
   global $__LOCAL_TEMPLATE, $__TEMPLATE, $__TEMPLATE_PATH;
   $siteObj = $app->site;
   $pageObj = $app->page;
-  $docroot = $_SERVER['DOCUMENT_ROOT']."/";
-  $webroot = is_dir($_SERVER['DOCUMENT_ROOT']."/www/") ? : $_SERVER['DOCUMENT_ROOT']."/";
-  $approot = $_SESSION['app_root'];
-  $smarty_dir = $docroot.'smarty/templates';
   
-  //die("Fn={$filename} docroot={$docroot} webroot={$webroot} approot={$appoot}");
+  $approot = approot(true);
+  $docroot = $approot."www/";
+  $libroot = $approot."afr/";
+         
+  $smarty_dir = $approot.'smarty/templates';
+  
   if(!strpos($filename, '.html')) $filename .= ".html";
   if($filename[0] == '_') $filename = "components/{$filename}"; // components
   
@@ -1962,8 +1971,9 @@ function smarty_preparse_template($app, $filename, $options = array()) {
   
   $__LOCAL_TEMPLATE = 0;
                      
-  $site_template_file = $webroot."pages/$filename";
-  $app_template_file = "$approot/pages/$filename";
+  $site_template_file = $approot."pages/$filename";
+  $app_template_file = $libroot."pages/$filename"; 
+  
   if(file_exists($site_template_file)) {
     $__LOCAL_TEMPLATE = 1;
     $template_file = $site_template_file;
@@ -1974,6 +1984,7 @@ function smarty_preparse_template($app, $filename, $options = array()) {
     return ''; // no template
   }
 
+  print_log("site: {$site_template_file} lib:{$app_template_file}", 'smarty', LOG_LEVEL_TEST);
   print_log("smarty_preparse_template {$filename} => {$template_file}", 'smarty', LOG_LEVEL_TEST);
   
   $__TEMPLATE = $filename;
@@ -1989,7 +2000,7 @@ function smarty_preparse_template($app, $filename, $options = array()) {
   $parsed_template = "{* automatically generated on $now from $template_file. DO NOT EDIT *}".PHP_EOL.
     smarty_preparser($app, $raw_template, $options).PHP_EOL;
     
-  $smarty_template = $docroot."smarty/templates/$filename";
+  $smarty_template = $approot."smarty/templates/$filename";
   $path_parts = pathinfo($smarty_template);
   $dir = $path_parts['dirname']."/";
   if(!is_dir($dir) && !mkdir($dir, 0775, true)) die("smarty_preparse_template: Failed to create $dir");
@@ -2354,6 +2365,40 @@ function move_site_content($from_site, $to_site, $options = array()) {
   return $output;
 }
 
+
+/** Delete all tables not defined in classes */
+function delete_unused_tables($app, $delete = false) {
+  $classes = get_classes();
+  $count = count($classes);
+  $all_tables = db_getCol("SHOW TABLES");
+  $db_count = count($all_tables);
+  
+  $rows = $class_tables = array();
+  foreach($classes as $classObj) {    
+    $obj_type = $classObj->type;
+    $table = $classObj->table;
+    $class_tables[] = $table;
+    //$skip = ['dictionary'];
+    //if(in_array($table, $skip)) continue;    
+  }
+
+  $cl_count = count($class_tables);
+    
+  echo("<h2>Class Tables:</h2>");
+
+  $output .= "<h2>{$count} classes, {$cl_count}/{$db_count} db classes</h2>";
+              
+  foreach($all_tables as $db_table) {
+    if(in_array($db_table, $class_tables)) {
+      $output .= html_div($db_table, 'green');
+    } else {
+      if($delete) db_query("Drop table $db_table");
+      $output .= html_div($db_table.($delete ? " (deleted)" : ''), 'red strike');
+    }      
+  }
+  return $output;
+}
+
 /** Delete all content in database that does not belong to this site/client */
 function delete_site_content($siteObjorId, $options = array()) {
   $siteObj = any2obj('site', $siteObjorId);
@@ -2375,7 +2420,7 @@ function delete_site_content($siteObjorId, $options = array()) {
   foreach($classes as $classObj) {    
     $obj_type = $classObj->type;
     $table = $classObj->table;
-    $skip = ['dictionary'];
+    $skip = ['dictionary', 'config', 'attempts', 'requests', 'sessions'];
     if(in_array($table, $skip)) continue; 
     $fields = class_fields($obj_type, false);
     

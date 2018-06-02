@@ -1,4 +1,5 @@
 <?php
+# New version June 2018
 $start_time = microtime(true); // start timer
 $expires = 3600*24*30; // 30 days (in seconds)
 set_time_limit(90); // increase max allowed execution time.
@@ -49,7 +50,6 @@ if(!is_dir($app_root)) die("App root {$app_root} not found");
 set_include_path(get_include_path().PATH_SEPARATOR."{$doc_root}/afr/include".PATH_SEPARATOR."{$doc_root}/afr/includes".PATH_SEPARATOR."{$doc_root}afr".PATH_SEPARATOR."{$doc_root}include");
 //set_include_path(get_include_path().PATH_SEPARATOR."{$app_root}/include".PATH_SEPARATOR."{$app_root}/includes".PATH_SEPARATOR."{$doc_root}afr".PATH_SEPARATOR."{$doc_root}include");
 
-
 session_start();       
 $cookie_hash = $_COOKIE['authID'];
 $session_hash = $_SESSION['hash']; /** need this for phpauth logout below, before session is destroyed */
@@ -59,7 +59,7 @@ if(strpos($_SERVER['REQUEST_URI'], 'act=logout')) {
 
 /** move these to $app. get rid of all session vars except those really needed (user/site/lang/deployment) */
 $_SESSION['auth_token'] = $_SESSION['auth_token'] ?: md5(rand(0, 100000)); // random token
-$_SESSION['version'] = $version=1519209000; // used for cachebusting. Don't change, hotfix.sh depends on this exact line.
+$_SESSION['version'] = $version=1519209001; // used for cachebusting. Don't change, hotfix.sh depends on this exact line.
 $_SESSION['debug_db'] = false;
 $_SESSION['system_cache'] = true; /** now using Redis - this is in use */
 $_SESSION['redis_cache'] = true;
@@ -105,10 +105,10 @@ $__header = ['end_scripts' => [], 'scripts' => [], 'styles' => []];
 
 
 require_once("vendor/autoload.php");                          
-require_once("auth/php/languages/en_GB.php");
+require_once("vendor/phpauth/phpauth/languages/en_GB.php");
 $auth_lang = $lang; // $lang is included in file above. Do not delete this line.
-require_once("auth/php/config.class.php");
-require_once("auth/php/auth.class.php");
+require_once("vendor/phpauth/phpauth/config.class.php");
+require_once("vendor/phpauth/phpauth/auth.class.php");
 
 /** read config file */
 $_SESSION['config'] = $config = !$_SESSION['config'] || isset($_GET['reload-config']) ? config_load() : $_SESSION['config'];
@@ -147,6 +147,7 @@ $uri = strip_query_string($_SERVER['REQUEST_URI']);
 $minisite = null;
 
 
+
 if($site_id = $config['site_id']) { /** single tenant */
   //die("site_id=$site_id");
 } else { /** multi tenant */
@@ -180,6 +181,7 @@ if($lib_prefix = $siteObj->library_prefix ?: $siteObj->shortname) {
   include_once($lib_prefix."_routing.inc");
 }  
 
+//dump($siteObj);
 //print_log("included files:".dump(get_included_files(), true), 'app', LOG_LEVEL_TEST);
 
 /** if login */
@@ -225,6 +227,7 @@ $null = is_dir($cache_dir) ?: mkdir($cache_dir, 0700, true);
 
 
 /** which page */
+
 
   
 if($msObj) {  

@@ -4065,7 +4065,7 @@ function object_media_upload($qqfile, $mediaData, $options) {
         } else {
           //$result[''] = "Deleted $
         }
-        $result['files'][0]->deleteUrl = "/admin/app_data.php?oper=del&obj_type=media&id=$mid"; // used by jquery-file-uploader
+        $result['files'][0]->deleteUrl = "/ajax.php?oper=del&obj_type=media&id=$mid"; // used by jquery-file-uploader
         $result['files'][0]->url = print_media($mediaObj, array('size' => 'medium', 'source_only' => true));
         if($mediaObj->resize) $result['files'][0]->thumbnailUrl = print_media($mediaObj, array('size' => 'thumb', 'source_only' => true));
         

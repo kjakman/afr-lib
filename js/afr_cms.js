@@ -1033,10 +1033,10 @@ function dynatree_totrash(sourceNode) {
   var key = node.data.key; 
   var id = key.split('_').pop();
 
-  var ajax_url = "/admin/app_data.php?oper=tree_update&obj_type=site_page&ac=tree_update&id=" + source_id + "&target=" + id + "&mode=" + hitMode + "&trash=1";
+  var ajax_url = "/ajax.php?oper=tree_update&obj_type=site_page&ac=tree_update&id=" + source_id + "&target=" + id + "&mode=" + hitMode + "&trash=1";
   alert("source=" + source_id + " target=" + id + " url=" + ajax_url);
 
-  //var ajax_url = "/admin/app_data.php?oper=tree_update&obj_type=site_page&ac=tree_update&id=" + sourceNode.data.key + "&target=" + target_id + "&mode=" + hitMode + "&trash=1";
+  //var ajax_url = "/ajax.php?oper=tree_update&obj_type=site_page&ac=tree_update&id=" + sourceNode.data.key + "&target=" + target_id + "&mode=" + hitMode + "&trash=1";
   // alert(ajax_url);
   //return;
   jQuery.ajax({
@@ -1065,7 +1065,7 @@ function dynatree_empty_trash(node) {
 
   var ids_str = ids.toString();
   $.ajax({ 
-    url: "/admin/app_data.php?obj_type=site_page", 
+    url: "/ajax.php?obj_type=site_page", 
     type: "POST", 
     data: "obj_type=site_page&oper=del&id="+ ids_str,
     success: function(responseText) {
@@ -1254,7 +1254,7 @@ function dynatree_init(site_id, id, trash) {
         var id = key.split('_').pop();
         //alert("source=" + source_id + " target=" + id);
         //return;    
-        ajax_url = "/admin/app_data.php?oper=tree_update&obj_type=site_page&ac=tree_update&id=" + source_id + "&target=" + id + "&mode=" + hitMode + "&trash=" + trash;
+        ajax_url = "/ajax.php?oper=tree_update&obj_type=site_page&ac=tree_update&id=" + source_id + "&target=" + id + "&mode=" + hitMode + "&trash=" + trash;
         jQuery.ajax({
           type: "get",
           url: ajax_url,
@@ -1295,7 +1295,7 @@ function dynatree_init(site_id, id, trash) {
     //var page_type = $("#page_type").val();
     //
     //var rootNode = active ? active : $tree.dynatree("getRoot");
-    //var ajax_url = "/admin/app_data.php?oper=add&obj_type=site_page&oper=add";
+    //var ajax_url = "/ajax.php?oper=add&obj_type=site_page&oper=add";
     //alert(ajax_url);
     //jQuery.ajax({
     //  type: "POST",
@@ -1347,7 +1347,7 @@ function create_file_uploader(input_id, options) {
     //element: document.getElementById(id + '-uploader'),
             
     debug: true,
-    action: '/admin/app_data.php',
+    action: '/ajax.php',
     params: {
         param1: upload_dir,
         param2: mediaData
@@ -1476,7 +1476,7 @@ $(document).on("click", ".template_edit_cancel", function() {
 $(document).on("click", ".__edit_template", function() {
   var file = $(this).data('template');
   console.log("edit template " + file);
-  var ajax_url = "/admin/app_data.php?oper=readfile&filename=" + encodeURI(file);
+  var ajax_url = "/ajax.php?oper=readfile&filename=" + encodeURI(file);
   var $textarea = $('#codemirror_text'); 
   $textarea.html('');
   var $form = $('#template_edit_form');
@@ -1678,7 +1678,7 @@ function operation_object(obj_type, id, action, options, data) {
   var reload = options.reload;
   var keepalive = options.keepalive;
 
-  var ajax_url = '/admin/app_data.php?obj_type='+ obj_type + '&id=' + id + '&oper=' + action;
+  var ajax_url = '/ajax.php?obj_type='+ obj_type + '&id=' + id + '&oper=' + action;
   //alert(dump(options));
   //alert(dump(data));
   //alert(ajax_url);
@@ -1786,7 +1786,7 @@ function cms_media_handler(params, data) {
     parent_node.activate();  
     var newNode = parent_node.addChild({
       key: obj_type + '-' + data.id,
-      url: '/admin/app_data.php?oper=load-content&site_id=' + site_id + '&user_level=10&user_id=' + user_id + '&obj_type=media&id=' + data.id,
+      url: '/ajax.php?oper=load-content&site_id=' + site_id + '&user_level=10&user_id=' + user_id + '&obj_type=media&id=' + data.id,
       title: data.name || "(No title)",
       icon: 'palette-paint-brush.png',
       isFolder: false
@@ -1805,7 +1805,7 @@ function new_media_handler(params, data) {
   //alert(dump(data));
   var obj_type = data.obj_type || params.obj_type || 'media';
   //alert("ot=" + obj_type);
-  var ajax_url = '/admin/app_data.php?oper=load-function&function=gallery_object_list_item&param1=' + site_id + '&param2=' + obj_type + '&param3=' + data.id + '&param4=' + JSON.stringify(params);
+  var ajax_url = '/ajax.php?oper=load-function&function=gallery_object_list_item&param1=' + site_id + '&param2=' + obj_type + '&param3=' + data.id + '&param4=' + JSON.stringify(params);
   //alert(ajax_url);
   
   $.get(ajax_url, function(response) {
@@ -1823,7 +1823,7 @@ function new_pet_handler(params, data) {
   var user_id = data.user_id;
   console.log(params);
   console.log(data);
-  var ajax_url = '/admin/app_data.php?oper=load-function&function=pet_list&param1=' + site_id +'&param2=' + user_id;
+  var ajax_url = '/ajax.php?oper=load-function&function=pet_list&param1=' + site_id +'&param2=' + user_id;
   console.log(ajax_url);
   $.get(ajax_url, function(response) {
     var $pl = $('#pet_list');
@@ -1882,7 +1882,7 @@ function save_object_dialog(parent_id, obj_type, form_id, unauthenticated) {
   var $dialog_errors = $('#new_object_dialog_errors');
   var $dialog_messages = $('#new_object_dialog_messages');
   var form_data_str = $('#' + form_id).serialize();
-  //ajax_url = "/admin/app_data.php?oper=add&" + form_data_str;
+  //ajax_url = "/ajax.php?oper=add&" + form_data_str;
   // var form_data = $('#' + form_id);
 
   ajax_url = "/" + (unauthenticated ? "home" : "admin") + "/app_data.php?oper=add&obj_type=" + obj_type;
@@ -2015,8 +2015,8 @@ function publish_site(site_id, options) {
   options.unauthenticated  = 0;
   options.html = "<div class='progressbar'></div>Processed <span class='progress_count'>0</span> of <span class='progress_total'>?</span>";
 
-  //var url = '/admin/app_data.php?oper=progress-bar-create&name=kj4&total=100';
-  var url = '/admin/app_data.php?oper=get-site-tree&site_id='+site_id;
+  //var url = '/ajax.php?oper=progress-bar-create&name=kj4&total=100';
+  var url = '/ajax.php?oper=get-site-tree&site_id='+site_id;
   $.ajax({
     url: url,            
     success: function (msg) {      
@@ -2106,7 +2106,7 @@ function traverseTree(site_id, dialog_id, tree) {
     var dyn_items = [];
     
     if(node.dynamic == 0) {
-      var url = '/admin/app_data.php?oper=publish-node&site_id='+site_id+'&node=' + escape(array2json(node));;
+      var url = '/ajax.php?oper=publish-node&site_id='+site_id+'&node=' + escape(array2json(node));;
       $.ajax({
         url: url,            
         success: function (msg) {      
@@ -2137,8 +2137,8 @@ function progress_bar_handler(dialog_id, pb_id) {
     alert("progress_bar_handler: no id");
     return;
   }
-  //var url = '/admin/app_data.php?oper=progress-bar&id=' + pb_id;
-  var url = '/admin/app_data.php?oper=progress-bar&id=' + pb_id;
+  //var url = '/ajax.php?oper=progress-bar&id=' + pb_id;
+  var url = '/ajax.php?oper=progress-bar&id=' + pb_id;
   $.ajax({
     url: url,             
     success: function (msg) {
@@ -2369,7 +2369,7 @@ function ckeditor_config(id) {
   if(autosave) {
     toolbarAr.unshift('Autosave');
     config.extraPlugins = 'autosave';
-    config.autosaveTargetUrl = '/admin/app_data.php?oper=ckeditor_autosave';
+    config.autosaveTargetUrl = '/ajax.php?oper=ckeditor_autosave';
     if(data) config.autosaveRequestParams = obj2qs(data);
   } else if(0) { // not sure when we can show save button yet
     toolbarAr.unshift('Save');
@@ -2528,7 +2528,7 @@ function load_events(params, data) {
   var $events = $('#reservation_events_div');
   var $dialog = $('#add_catering_div');
   $events.addClass("loading-big");
-  var ajax_url = '/admin/app_data.php?oper=load_events&res_id=' + res_id;
+  var ajax_url = '/ajax.php?oper=load_events&res_id=' + res_id;
   $events.load(ajax_url, function(responseText) {
     $dialog.html('').hide('fast');
     $events.removeClass("loading-big");
@@ -2557,7 +2557,7 @@ function load_event_form(res_id, event_id) {
   $dialog.addClass("loading-big");
   $dialog.html('<div class="round pad border margin_top">Loading...</div>');
 
-  var ajax_url = '/admin/app_data.php?oper=load_event_form&res_id=' + res_id+"&event_id=" + event_id;
+  var ajax_url = '/ajax.php?oper=load_event_form&res_id=' + res_id+"&event_id=" + event_id;
   //alert(ajax_url);
   $dialog.load(ajax_url, function(responseText) {   
     //alert("loaded");
@@ -2586,7 +2586,7 @@ function load_catering(res_id, lineitem_id) {
   $dialog.addClass("loading-big");
   $dialog.html('<div class="round pad border margin_top">Loading...</div>');
 
-  var ajax_url = '/admin/app_data.php?oper=load_catering&lineitem_id=' + lineitem_id + "&supplier_id=" + supplier_id + "&res_id=" + res_id;
+  var ajax_url = '/ajax.php?oper=load_catering&lineitem_id=' + lineitem_id + "&supplier_id=" + supplier_id + "&res_id=" + res_id;
   $dialog.load(ajax_url, function(responseText) {
     $dialog.removeClass("loading-big");
     catering_delivery_update();
@@ -2594,7 +2594,7 @@ function load_catering(res_id, lineitem_id) {
 }
 
 function delete_uploaded_file(parent_id, list_index, filename) {
-  ajax_url = "/admin/app_data.php?oper=delete_file";
+  ajax_url = "/ajax.php?oper=delete_file";
   jQuery.ajax({
     type: "post",
     data: "filename="+filename,
@@ -2630,7 +2630,7 @@ function save_layout(parent_id) {
 
   
   // var form_data_str = $('#layout_form').serialize();
-  ajax_url = "/admin/app_data.php?oper=save_layout"; 
+  ajax_url = "/ajax.php?oper=save_layout"; 
   var $selected = $("#" + parent_id + " .css_select option:selected"); 
   var val  = $selected.val();
   if(!val) {alert("Save Layout: No element selected");return false;}
@@ -2724,7 +2724,7 @@ function product_fetch() {
   // alert('product update');
   var product_id = $("#product_id").val();
   if(product_id) {
-    ajax_url = "/admin/app_data.php?oper=view&obj_type=product&id=" + product_id;
+    ajax_url = "/ajax.php?oper=view&obj_type=product&id=" + product_id;
     jQuery.ajax({
       type: "POST",
       url: ajax_url,
@@ -2987,7 +2987,7 @@ function sharing_form_handler(form_id, div_id) {
     divs.push({"name": ".afr_sharing_button", "title": "button", "selectors": selectors_button});
     divs.push({"name": ".afr_sharing_container", "title": "container", "selectors": selectors_div});
     //alert("type =" + type);
-    ajax_url = "/afr/home/app_data.php?oper=preview-sharing"
+    ajax_url = "/afr/ajax.php?oper=preview-sharing"
     var selectorAr = [];    
 
     $.each(show, function(index, value) {
@@ -3038,7 +3038,7 @@ function sharing_form_handler(form_id, div_id) {
     }, 
   }, 
   submitHandler: function(form) {
-    var ajax_url = '/afr/home/app_data.php?oper=add-sharing';                                                                                                                   
+    var ajax_url = '/afr/ajax.php?oper=add-sharing';                                                                                                                   
     var handler   =  'sharing_handler';
     $("#share_form_panel").addClass("disabled loading-big");
     ajaxSubmit({form: form_id, url: ajax_url, type: "post", "handler": handler, "div_id": div_id});
@@ -3051,7 +3051,7 @@ function sharing_handler(params, data) {
   $("#share_form_preview").show();
 
   //alert("done adding params = " + dump(params) + " data=" + dump(data));
-  ajax_url = "/admin/app_data.php?oper=view&obj_type=sharing&id=" + data.id;
+  ajax_url = "/ajax.php?oper=view&obj_type=sharing&id=" + data.id;
   jQuery.ajax({
     type: "POST",
     url: ajax_url,
@@ -3189,7 +3189,7 @@ function edit_gallery_init(obj_type) {
     // use ajax to set image inactive
     var img_id = $item.find('img').prop("id");				
     img_id = img_id.substr(4); // strip leaing img_
-    var $url = "/admin/app_data.php?obj_type=" + obj_type;
+    var $url = "/ajax.php?obj_type=" + obj_type;
     //alert($url + "id=" + img_id);
     $.ajax({ url: $url, type: "POST", data: "obj_type=" + obj_type + "&oper=edit&active=0&id="+img_id});
     emptyTrashButton(1);
@@ -3205,7 +3205,7 @@ function edit_gallery_init(obj_type) {
     // use ajax to set image active
     var img_id = $item.find('img').prop("id");
     img_id = img_id.substr(4); // strip leaing img_
-    $.ajax({ url: "/admin/app_data.php?obj_type=" + obj_type, type: "POST", data: "obj_type=" + obj_type + "&oper=edit&active=1&id="+img_id});
+    $.ajax({ url: "/ajax.php?obj_type=" + obj_type, type: "POST", data: "obj_type=" + obj_type + "&oper=edit&active=1&id="+img_id});
     emptyTrashButton(-1);
   }
 
@@ -3247,7 +3247,7 @@ function edit_gallery_init(obj_type) {
       ids.push(img_id);
     });
     var ids_str = ids.toString();
-    $.ajax({ url: "/admin/app_data.php?obj_type=" + obj_type, type: "POST", data: "obj_type=" + obj_type + "&oper=del&id="+ ids_str });
+    $.ajax({ url: "/ajax.php?obj_type=" + obj_type, type: "POST", data: "obj_type=" + obj_type + "&oper=del&id="+ ids_str });
     $('#trash ul li').remove();
     emptyTrashButton(-1);
     return false;
@@ -3461,7 +3461,7 @@ function cms_ready_script() {
           var ids_str = ids.toString();
           var ranks_str = ranks.toString();
           //alert("ot=" + obj_type + ' ' + ids_str + '=' + ranks_str);
-          $.ajax({ url: "/admin/app_data.php?obj_type=" + obj_type, type: "POST", data: "obj_type=" + obj_type + "&oper=edit&data_field=rank&id="+ ids_str + "&rank="+ranks_str });
+          $.ajax({ url: "/ajax.php?obj_type=" + obj_type, type: "POST", data: "obj_type=" + obj_type + "&oper=edit&data_field=rank&id="+ ids_str + "&rank="+ranks_str });
         }
       });
     }
@@ -3533,7 +3533,7 @@ $(document).on("click", "UL.add_to LI A, UL.move_to LI A", function() {
   data.collection_id = $item.data('collection_id');
   data.gallery_id = $item.data('gallery_id');
   data.media_id = ids;
-  var ajax_url = "/admin/app_data.php?oper=" + operation; // + '&' + obj2qs(data);
+  var ajax_url = "/ajax.php?oper=" + operation; // + '&' + obj2qs(data);
   var params = {};
   params.url = ajax_url;
   params.data = data;
@@ -3620,7 +3620,7 @@ $(document).on("click", ".gmenu LI A.gshare, .gmenu LI A.publish, .gmenu LI A.ex
   alert("click ac=" + action + ' ot=' + obj_type + ' ts=' + target_selector + ' ids=' + ids + dump(options));
 
   //alert(dump(data));
-  var ajax_url = "/admin/app_data.php?oper=" + operation; // + '&' + obj2qs(data);
+  var ajax_url = "/ajax.php?oper=" + operation; // + '&' + obj2qs(data);
   console.log("going to: " + ajax_url + ' data=' + dump(data));
   var params = {"url": ajax_url, "data": data, "handler": handler};
   ajaxSubmit(params);
@@ -3651,7 +3651,7 @@ $(document).on("click", ".gmenu LI A.grotate", function() {
   if(obj_type && ids) {
     //alert("target= " + target_selector + " checked=" + ids + " handler=" + handler + dump($list.data('data')));return;
     //if(confirm("Are you sure you want to permanently delete " + obj_type + " " + ids + "?")) delete_object(obj_type, ids, options);
-    var ajax_url = '/admin/app_data.php?oper=load-function&function=rotate_media&param1=' + ids + '&param2=' + degrees;
+    var ajax_url = '/ajax.php?oper=load-function&function=rotate_media&param1=' + ids + '&param2=' + degrees;
     //alert("Rotate " + ids + " " + degrees + " url=" + ajax_url); return false;
     
     var $messages = $('#ajax_messages');
@@ -3905,7 +3905,7 @@ function ajaxFileUpload(field_id, data) {
   $.ajaxFileUpload
   (
     {
-      url: '/admin/app_data.php?oper=file-upload',
+      url: '/ajax.php?oper=file-upload',
       secureuri: false,
       fileElementId: field_id,
       dataType: 'json',

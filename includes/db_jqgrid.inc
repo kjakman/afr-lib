@@ -128,12 +128,12 @@ function jqGrid($obj_type, $filters = array(), $options = array()) {
   // Build Javascript
   //$app_link = get_page_link(PAGE_ADMIN) ?: '/admin/app.php';
 
-  $url = "/admin/app_data.php?oper=grid-list-old&obj_type=$obj_type";
+  $url = "/ajax.php?oper=grid-list-old&obj_type=$obj_type";
   if($filters) $url .= "&search=".urlencode(json_encode($filters));
-  //$url = "/admin/app_data.php?oper=grid-list&obj_type=$obj_type";
-  $edit_url = "/admin/app_data.php?oper=edit&obj_type=$obj_type";
-  $add_url = "/admin/app_data.php?oper=add&obj_type=$obj_type";
-  $del_url = "/admin/app_data.php?oper=del&obj_type=$obj_type";
+  //$url = "/ajax.php?oper=grid-list&obj_type=$obj_type";
+  $edit_url = "/ajax.php?oper=edit&obj_type=$obj_type";
+  $add_url = "/ajax.php?oper=add&obj_type=$obj_type";
+  $del_url = "/ajax.php?oper=del&obj_type=$obj_type";
 
   if($filters) $add_url .= "&".http_build_query($filters);
   
@@ -437,7 +437,7 @@ function jqGrid($obj_type, $filters = array(), $options = array()) {
 }
 
 function jqGrid_select($obj_type, $filters='', $sort='') {
-  $select_url = "/admin/app_data.php?oper=grid-select&obj_type=$obj_type&format=jq_select";
+  $select_url = "/ajax.php?oper=grid-select&obj_type=$obj_type&format=jq_select";
   if($filters) $select_url .= "&select_filters=".urlencode(seaarch2sql($filters));
   if($sort) $select_url .= "&select_sort=".urlencode($sort);
   $script = "

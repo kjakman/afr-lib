@@ -11,7 +11,7 @@
       childArray.push(sib_id);                    
     });
     var id_list = childArray.join(',');
-    var ajax_url = '/admin/app_data.php?oper=rank_update&obj_type=' + child_type + '&id_list=' + id_list;
+    var ajax_url = '/ajax.php?oper=rank_update&obj_type=' + child_type + '&id_list=' + id_list;
     $.getJSON(ajax_url, function(json) {        
       if(json.success) {
         console.log('ok, update rank of ' + child_type);
@@ -41,7 +41,7 @@
     //console.log("Select node: ",node, " ccount=" + child_count);
     
     var lang = $('#jst_language').val();    
-    var ajax_url = "/admin/app_data.php?oper=cms-explore&site_id=" + site_id + "&user_id=" + user_id + "&obj_type=" + obj_type + "&obj_id=" + obj_id+"&child_count=" + child_count + "&name=" + encodeURIComponent(node.text) + "&parent_id=" + node.parent + '&language=' + lang;
+    var ajax_url = "/ajax.php?oper=cms-explore&site_id=" + site_id + "&user_id=" + user_id + "&obj_type=" + obj_type + "&obj_id=" + obj_id+"&child_count=" + child_count + "&name=" + encodeURIComponent(node.text) + "&parent_id=" + node.parent + '&language=' + lang;
     $('#cms_viewer').html('<i class="fa fa-spinner fa-spin"></i>Loading...');
     $('#cms_viewer').load(ajax_url, function() {
       console.log("cms load ready");
@@ -57,7 +57,7 @@
       update_tree = true;
     }
     console.log("Jst delete id=" + obj_id);
-    var ajax_url = '/admin/app_data.php?oper=delete&obj_type=site_page&id=' + obj_id;
+    var ajax_url = '/ajax.php?oper=delete&obj_type=site_page&id=' + obj_id;
     $.getJSON(ajax_url, function(json) {        
       if(json.success) {
         console.log('ok, deleted node,');
@@ -75,7 +75,7 @@
     var active = $('#jst_show_active').is(':checked') ? 1 : 0;
     var show_menu = $('#jst_show_menu').is(':checked')  ? 1 : 0;
     var lang = $('#jst_language').val();    
-    var url = '/admin/app_data.php?oper=site-tree&active=' + active + '&show_menu=' + show_menu + '&lang=' + lang;
+    var url = '/ajax.php?oper=site-tree&active=' + active + '&show_menu=' + show_menu + '&lang=' + lang;
     console.log('refresh with url=' + url);
     $('#tree').jstree(true).settings.core.data.url = url;
     $('#tree').jstree(true).refresh();    
@@ -95,13 +95,13 @@
         },
         "themes" : { "stripes" : true },
         'data' : {
-          'url' : '/admin/app_data.php?oper=site-tree&active=1&show_menu=1&lang=' + lang,
+          'url' : '/ajax.php?oper=site-tree&active=1&show_menu=1&lang=' + lang,
           /**
           function (node) {
             // return node.id === '#' ? 'ajax_demo_roots.json' : 'ajax_demo_children.json';
             var active = 1;
             var show_menu = 1;
-            return '/admin/app_data.php?oper=site-tree&site_id=' + site_id + '&node_id='+ node.id + '&active=' + active + '&show_menu=' + show_menu;
+            return '/ajax.php?oper=site-tree&site_id=' + site_id + '&node_id='+ node.id + '&active=' + active + '&show_menu=' + show_menu;
           },
           */
           "dataType" : "json",
@@ -159,7 +159,7 @@
       var obj_id = data.node.id;
       var name = data.node.text;
       console.log("Rename node data:", data, " val=" + name);
-      var ajax_url = '/admin/app_data.php?oper=save&obj_type=site_page&id=' + obj_id + '&name=' + encodeURIComponent(name);
+      var ajax_url = '/ajax.php?oper=save&obj_type=site_page&id=' + obj_id + '&name=' + encodeURIComponent(name);
       console.log("saving..." + ajax_url);
       $.getJSON(ajax_url, function(json) {        
         if(json.success) {
@@ -182,7 +182,7 @@
         jst_rankUpdate(id);
         if(parent != old_parent) {
           var parent_id = parent < 0 ? 0 : parent;
-          var ajax_url = '/admin/app_data.php?oper=save&obj_type=site_page&id=' + id + '&parent_id=' + parent_id;
+          var ajax_url = '/ajax.php?oper=save&obj_type=site_page&id=' + id + '&parent_id=' + parent_id;
           console.log("saving..." + ajax_url);
           $.getJSON(ajax_url, function(json) {        
             if(json.success) {

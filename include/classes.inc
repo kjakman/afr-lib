@@ -6,6 +6,12 @@ $__CLASSES = array(
 //   CLASS                          USER_LEVEL  GROUP TABLE KEY FLAGS DESCRIPTOR SORT  PARENT_CLASS PARENT_FIELD
 //                                    0           1     2    3     4      5       6        7            8
 
+// security - used by php auth
+    'config' =>                array(USER_LEVEL_SYSTEM, 'config',   '', 'id', 0, 'setting', '', ''),
+    'attempts' =>              array(USER_LEVEL_SYSTEM, 'attempts', '', 'id', 0, 'ip', '', ''),
+    'requests' =>              array(USER_LEVEL_SYSTEM, 'requests', '', 'id', 0, 'rkey', '', ''),
+    'sessions' =>              array(USER_LEVEL_SYSTEM, 'sessions', '', 'id', 0, 'ip', '', ''),
+
 // object model
     'class' =>                array(USER_LEVEL_SYSTEM, 'object_model', '', 'type', NF_CACHE, 'name', '', ''),
     'class_group' =>          array(USER_LEVEL_SYSTEM, 'object_model', '', 'name', NF_CACHE, 'name', '', ''),

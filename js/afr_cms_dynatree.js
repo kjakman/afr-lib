@@ -11,7 +11,7 @@ $(document).on("click", ".cms-sharing-link", function() {
   var data = $link.data('data');
   console.log("new sharing");
   console.log(data);
-  var ajax_url = '/admin/app_data.php?oper=new-sharing&' + obj2qs(data);
+  var ajax_url = '/ajax.php?oper=new-sharing&' + obj2qs(data);
   $('#cms_viewer').load(ajax_url);  
   return false;
 });
@@ -103,7 +103,7 @@ $(document).on("click", ".cms-delete", function() {
     var site_id = $target.data('site_id');
     var user_id = $target.data('user_id');
     var message = '';
-    var ajax_url = '/admin/app_data.php?oper=cms-delete&obj_type=' + obj_type + '&site_id=' + site_id + '&user_id=' + user_id + '&id=' + id;
+    var ajax_url = '/ajax.php?oper=cms-delete&obj_type=' + obj_type + '&site_id=' + site_id + '&user_id=' + user_id + '&id=' + id;
     console.log(ajax_url);
     $.getJSON(ajax_url, function(json) {        
       console.log(json);
@@ -163,7 +163,7 @@ $(document).on("click", ".cms-create", function() {
   var parent_node = parent_key ? tree.getNodeByKey(parent_key) : null;
 
   var title = "New " + what;
-  var ajax_url = '/admin/app_data.php?oper=add&obj_type=' + obj_type + '&site_id=' + site_id + '&user_id=' + user_id + '&title=' + title + '&active=1';
+  var ajax_url = '/ajax.php?oper=add&obj_type=' + obj_type + '&site_id=' + site_id + '&user_id=' + user_id + '&title=' + title + '&active=1';
   if(type) ajax_url = ajax_url + "&type=" + type;
   console.log(ajax_url);
   $.getJSON(ajax_url, function(json) {        
@@ -303,7 +303,7 @@ function rankUpdate(parent) {
     var id_list = childArray.join(',');
     console.log('parent=' + parent_type + ' ' + parent_id);
     console.log(child_type + ' order=' + id_list);
-    var ajax_url = '/admin/app_data.php?oper=rank_update&obj_type=' + child_type + '&id_list=' + id_list;
+    var ajax_url = '/ajax.php?oper=rank_update&obj_type=' + child_type + '&id_list=' + id_list;
     $.getJSON(ajax_url, function(json) {        
       if(json.success) {
         console.log('ok, update rank of ' + child_type);
@@ -406,7 +406,7 @@ function dragDrop(node, sourceNode, hitMode, ui, draggable) {
   //send = false;
   
   if(send) {
-    ajax_url = '/admin/app_data.php?oper=' + method + '&obj_type=' + source_obj_type + '&id=' + source_id + "&dest_type=" + dest_obj_type + "&dest_id=" + dest_id + ajax_tail;
+    ajax_url = '/ajax.php?oper=' + method + '&obj_type=' + source_obj_type + '&id=' + source_id + "&dest_type=" + dest_obj_type + "&dest_id=" + dest_id + ajax_tail;
     ajax_url = ajax_url + '&site_id=' + site_id + '&user_id=' + user_id + '&user_level=' + user_level;
     $.getJSON(ajax_url, function(json) {        
       console.log("After drop. Calling:" + ajax_url);
@@ -503,7 +503,7 @@ function editNode(node){
         break;
       }
       
-      var ajax_url = '/admin/app_data.php?oper=edit&obj_type=' + obj_type + '&id=' + id + '&' + title_field + '=' + title + '&active=1';
+      var ajax_url = '/ajax.php?oper=edit&obj_type=' + obj_type + '&id=' + id + '&' + title_field + '=' + title + '&active=1';
       $.getJSON(ajax_url, function(json) {        
         //console.log(json);
         if(json.success) {

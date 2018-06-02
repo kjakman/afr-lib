@@ -829,7 +829,7 @@ function change_reservation($canvas, $target, obj_type, obj_id, variable, value)
   
   console.log("Change res: " + ajax_url);
   if(obj_type && obj_id) {
-    var ajax_url = '/admin/app_data.php?oper=edit&obj_type=' + obj_type + '&id=' + obj_id + qstr;
+    var ajax_url = '/ajax.php?oper=edit&obj_type=' + obj_type + '&id=' + obj_id + qstr;
     ajax_load($canvas, $target, ajax_url); // change checkin
   } else {
     calendar_error($canvas, "Missing object type or id");
@@ -964,7 +964,7 @@ $(document).on("hide.bs.modal", "#overlay_content", function() {
 
 $(document).on('click', '.test-pricing', function () {
   var qs = $("#calendar_simple_form").serialize();
-  var ajax_url = "/admin/app_data.php?oper=test-pricing&" + qs; 
+  var ajax_url = "/ajax.php?oper=test-pricing&" + qs; 
   console.log(ajax_url);
 
   $.ajax({
@@ -1232,7 +1232,7 @@ function showMenu2(obj_type, obj_id, event) {
   showMenu($canvas, cached_obj_data, inds, true);
    
   // load live
-  var ajax_url = "/admin/app_data.php?oper=rental-calendar-get&obj_type=" + obj_type + "&obj_id=" + obj_id;
+  var ajax_url = "/ajax.php?oper=rental-calendar-get&obj_type=" + obj_type + "&obj_id=" + obj_id;
   g_loading_menu = true;
   $.getJSON(ajax_url, function(response) { // start loading data from server
     if(response.success) {
@@ -1300,7 +1300,7 @@ function showMenuSingle($target, obj_type, obj_id) {
   $menu.html("Loading...");  
   
   // load live
-  var ajax_url = "/admin/app_data.php?oper=rental-calendar-get&&obj_type=" + obj_type + "&obj_id=" + obj_id;
+  var ajax_url = "/ajax.php?oper=rental-calendar-get&&obj_type=" + obj_type + "&obj_id=" + obj_id;
   g_loading_menu = true;
   $.getJSON(ajax_url, function(response) { // start loading data from server
     if(response.success) {
@@ -1519,7 +1519,7 @@ $(document).on("submit", "#cal-search-form", function(e) {
   // search db
   
   if(val) {
-    var ajax_url = '/admin/app_data.php?oper=calendar-search&obj_type=' + g_cal_params.obj_type + '&q=' + val;
+    var ajax_url = '/ajax.php?oper=calendar-search&obj_type=' + g_cal_params.obj_type + '&q=' + val;
     var options = {};
     var modal = "#calendar_search_dialog"; // '#calModal'
 
@@ -1624,7 +1624,7 @@ $(document).on("click", "#cal_search", function() {
 });
     
 $(document).on("click", "#cal_show_help", function() {
-  var ajax_url = "/admin/app_data.php?oper=rental-calendar-help";
+  var ajax_url = "/ajax.php?oper=rental-calendar-help";
   show_fancy_dialog(ajax_url, "Help");
   return false;
 });
@@ -1636,14 +1636,14 @@ $(document).on("click", "#cal_show_stats", function() {
   var cal_end = g_cal_params.end_date.date;
   var res_list = g_cal_params.res_list;
   
-  var ajax_url = "/admin/app_data.php?oper=rental-calendar-stats&res_list=" + res_list;
+  var ajax_url = "/ajax.php?oper=rental-calendar-stats&res_list=" + res_list;
   //console.log("stats url=" + ajax_url);
   show_fancy_dialog(ajax_url, "Stats");
   return false;
 });
 
 $(document).on("click", "#cal_show_pricing", function() {
-  var ajax_url = "/admin/app_data.php?oper=rental-calendar-pricing";
+  var ajax_url = "/ajax.php?oper=rental-calendar-pricing";
   show_fancy_dialog(ajax_url, "Pricing and Rules");
   return false;
 });
@@ -1660,7 +1660,7 @@ $(document).on("click", "#cal_show_changes", function() {
   }
   
   var title = 'Changes';
-  var ajax_url = "/admin/app_data.php?oper=rental-calendar-changes&obj_type=" + obj_type + "&res_list=" + res_list;
+  var ajax_url = "/ajax.php?oper=rental-calendar-changes&obj_type=" + obj_type + "&res_list=" + res_list;
   show_fancy_dialog(ajax_url, title);
   return false;
 });

@@ -4,6 +4,7 @@
 /** check if URL is our site - todo: use file cache */
 function env_site_id($domain) {
   $domain = str_replace(".dev", ".com", $domain); // doesn't work for .nl
+  //die("domain=$domain");
   switch($domain) {
     case 'patina.tech'                    : return 100;
     case 'apartments-for-rent.com'        : return 10;

@@ -99,7 +99,7 @@ function get_functions_in_file($file, $sort = FALSE) {
 
 /** return undefined function calls in all included user files */
 function print_undefined_functions_calls() {
-  //require_once("admin/app_data.php");
+  //require_once("ajax.php");
   //require_once("admin/cronscripts.php");
   require_once("db_withdraw.inc");
   //require_once("golfswitch.inc");
@@ -117,7 +117,7 @@ function print_undefined_functions_calls() {
   $files = included_files();
   $user_files = $files['user'];
   $app_root = approot(false);
-  $user_files[] = "{$app_root}/admin/app_data.php";
+  $user_files[] = "{$app_root}/ajax.php";
   $user_files[] = "{$app_root}/admin/cronscripts.php";
   foreach($user_files as $file) {
     $functions = undefined_function_calls($file);
@@ -1106,7 +1106,7 @@ function file_list($val, $options=NULL) {
   	
   	
   	$iconAr = array();
-  	$iconAr[html_link('#', 'i', array('title' => phrase('information', CAPITALIZE), 'class' => 'tooltip-ajax info-link', 'data-url' => "/admin/app_data.php?oper=load-function&function=media_info&param1=$id"))] = array('class' => 'tiny-icon info');
+  	$iconAr[html_link('#', 'i', array('title' => phrase('information', CAPITALIZE), 'class' => 'tooltip-ajax info-link', 'data-url' => "/ajax.php?oper=load-function&function=media_info&param1=$id"))] = array('class' => 'tiny-icon info');
   	$iconAr[html_link('#', 'x', array('title' => phrase('delete', CAPITALIZE), 'class' => 'delete_object', 'data-options' => json_encode($delOptions), 'data-data' => $data_json))] = array('class' => 'tiny-icon delete');
     $icons = html_ul($iconAr, 'tiny-icons', array('item_class' => ''));
     
@@ -1114,7 +1114,7 @@ function file_list($val, $options=NULL) {
     //$image = print_media($file, array('size' => 'square', 'class' => "preview"));
     $items[$id]= html_div($image.$icons, 'tinyCont relative inline-block'); // preview
   }
-  if($update_parent) $update_parent_script = '$.ajax({ url: "/admin/app_data.php?obj_type='.$parent_type.'", type: "POST", data: "obj_type='.$parent_type.'&oper=edit&id='.$parent_id.'&'.$parent_field.'="+ids_str });';
+  if($update_parent) $update_parent_script = '$.ajax({ url: "/ajax.php?obj_type='.$parent_type.'", type: "POST", data: "obj_type='.$parent_type.'&oper=edit&id='.$parent_id.'&'.$parent_field.'="+ids_str });';
   
   $script = html_script_inline('
     $("#'.$list_id.'").sortable({
@@ -1132,7 +1132,7 @@ function file_list($val, $options=NULL) {
         });
         var ids_str = ids.toString();
         var ranks_str = ranks.toString();
-        $.ajax({ url: "/admin/app_data.php?obj_type=media", type: "POST", data: "obj_type=media&oper=edit&data_field=rank&id="+ ids_str + "&rank="+ranks_str });
+        $.ajax({ url: "/ajax.php?obj_type=media", type: "POST", data: "obj_type=media&oper=edit&data_field=rank&id="+ ids_str + "&rank="+ranks_str });
         '.$update_parent_script.'
       }
    });    

@@ -938,7 +938,7 @@ function gmap3_update_map(id, map) {
       //console.log("form data=", form_data);
       var options = $map.data('options') || {};
   
-      var ajax_url = "/home/app_data.php?oper=property-search&" + form_data;
+      var ajax_url = "/ajax.php?oper=property-search&" + form_data;
       console.log("gmap search url=" + ajax_url);
       if(query_data) {
         var qvars = ['p', 'pp', 'cc'];
@@ -979,7 +979,7 @@ function get_markers(apts) {
 }
 
 function gmap3_get_locations(id, loc_types, bounds_str) {
-  var ajax_url = "/home/app_data.php?oper=find-locations&loc_types=" + loc_types + "&bounds=" + encodeURIComponent(bounds_str);
+  var ajax_url = "/ajax.php?oper=find-locations&loc_types=" + loc_types + "&bounds=" + encodeURIComponent(bounds_str);
   console.log("find-locations url:", ajax_url);
   $.getJSON(ajax_url, function(response) {
     console.log("find-locations returned:", response);
@@ -1052,7 +1052,7 @@ function gmap3_update_search(id, data) {
     
     template_load("#property-list", "_rental-list.html", "rental_search", options, data)
     
-    // var ajax_url = "/home/app_data.php?oper=property-print&id_list=" + id_list + "&" + formData;
+    // var ajax_url = "/ajax.php?oper=property-print&id_list=" + id_list + "&" + formData;
       
     gmap3_removemarkers(id); 
     var gmarkers = gmap3_loadmarkers(id, search_markers, false); 
@@ -1366,7 +1366,7 @@ function gmap3_load_markers(map, types) {
   var gbounds = map.getBounds();
   var bounds = gmap3_bounds2json(gbounds);
   var bounds_str = JSON.stringify(bounds);            
-  var ajax_url = "/home/app_data.php?oper=find-locations&loc_types=" + encodeURIComponent(types) + "&bounds=" + encodeURIComponent(bounds_str);
+  var ajax_url = "/ajax.php?oper=find-locations&loc_types=" + encodeURIComponent(types) + "&bounds=" + encodeURIComponent(bounds_str);
   $.getJSON(ajax_url, function(response) {
     if(response.success) {
       bounds_timer = 0;

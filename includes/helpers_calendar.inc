@@ -3302,7 +3302,7 @@ function res_dialog($cal_params, $obj=NULL) {
     $rate_class_str = ucfirst($rate_class_name)." ".phrase('rate', CAPITALIZE);
     if($pbid = $obj->price_breakdown_id) {
       $name = get_object('price_breakdown', $pbid, 'reason');
-      $link = "/home/app_data.php?oper=price-breakdown&id=$pbid";
+      $link = "/ajax.php?oper=price-breakdown&id=$pbid";
       $rate_class_str .= ": ".html_fancybox_link($link, $name); 
     }
     $rates .= html_span($rate_class_str, '', array('id' => 'special_rate')).html_span($obj->rate_locked ? '('.phrase('locked').')' : '', 'margin_left', array('id' => 'special_rate_lock'));
