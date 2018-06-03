@@ -1,0 +1,25 @@
+{
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/PHPAuth/PHPAuth"
+    }
+  ],
+  "require": {
+      "hybridauth/hybridauth": "2.9.*",
+      "mollie/mollie-api-php": "1.2.x",
+      "guzzlehttp/guzzle": "^6.0",
+      "abraham/twitteroauth": "0.5.*",
+      "swiftmailer/swiftmailer": "^5.4",
+    "phpauth/phpauth": "@stable",
+    "smarty/smarty": "^3.1",
+    "cloudinary/cloudinary_php": "^1.4",
+    "league/glide": "^1.1",
+    "monolog/monolog": "^1.22",
+    "php-di/php-di": "^5.4",
+    "league/html-to-markdown": "^4.4",
+    "altorouter/altorouter": "^1.2",
+    "mongodb/mongodb": "^1.1",
+    "elasticsearch/elasticsearch": "^5.3"
+    }
+}
