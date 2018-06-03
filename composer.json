@@ -19,7 +19,5 @@
     "php-di/php-di": "^5.4",
     "league/html-to-markdown": "^4.4",
     "altorouter/altorouter": "^1.2",
-    "mongodb/mongodb": "^1.1",
-    "elasticsearch/elasticsearch": "^5.3"
     }
 }
