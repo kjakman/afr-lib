@@ -967,26 +967,26 @@ function jfu_dependencies($app, $options = array()) {
   $__header->scripts[] = '/afr/bower/blueimp-load-image/js/load-image.all.min.js';
   $__header->scripts[] = '/afr/bower/blueimp-canvas-to-blob/js/canvas-to-blob.min.js';
   $__header->scripts[] = '/afr/bower/blueimp-gallery/js/jquery.blueimp-gallery.min.js';
-  $__header->scripts[] = '/afr/bower/jquery-file-upload/js/vendor/jquery.ui.widget.js';  
-  $__header->scripts[] = '/afr/bower/jquery-file-upload/js/jquery.iframe-transport.js';
-  $__header->scripts[] = '/afr/bower/jquery-file-upload/js/jquery.fileupload.js';
-  $__header->scripts[] = '/afr/bower/jquery-file-upload/js/jquery.fileupload-process.js';
-  $__header->scripts[] = '/afr/bower/jquery-file-upload/js/jquery.fileupload-image.js';
-  $__header->scripts[] = '/afr/bower/jquery-file-upload/js/jquery.fileupload-audio.js';
-  $__header->scripts[] = '/afr/bower/jquery-file-upload/js/jquery.fileupload-video.js';
+  $__header->scripts[] = '/afr/bower/blueimp-file-upload/js/vendor/jquery.ui.widget.js';  
+  $__header->scripts[] = '/afr/bower/blueimp-file-upload/js/jquery.iframe-transport.js';
+  $__header->scripts[] = '/afr/bower/blueimp-file-upload/js/jquery.fileupload.js';
+  $__header->scripts[] = '/afr/bower/blueimp-file-upload/js/jquery.fileupload-process.js';
+  $__header->scripts[] = '/afr/bower/blueimp-file-upload/js/jquery.fileupload-image.js';
+  $__header->scripts[] = '/afr/bower/blueimp-file-upload/js/jquery.fileupload-audio.js';
+  $__header->scripts[] = '/afr/bower/blueimp-file-upload/js/jquery.fileupload-video.js';
   
-  //$__header->scripts[] = '/afr/bower/jquery-file-upload/js/jquery.fileupload-validate.js';
+  //$__header->scripts[] = '/afr/bower/blueimp-file-upload/js/jquery.fileupload-validate.js';
   $__header->scripts[] = '/afr/js/jquery.fileupload-validate.js';
              
-  $__header->scripts[] = '/afr/bower/jquery-file-upload/js/jquery.fileupload-ui.js';
+  $__header->scripts[] = '/afr/bower/blueimp-file-upload/js/jquery.fileupload-ui.js';
   //$__header->scripts[] = '/afr/bower/exif-js/exif.js';
   
-  //if($version == 'jquery') $__header->scripts[] = '/afr/bower/jquery-file-upload/js/jquery.fileupload-jquery-ui.js';
+  //if($version == 'jquery') $__header->scripts[] = '/afr/bower/blueimp-file-upload/js/jquery.fileupload-jquery-ui.js';
   $__header->scripts[] = "literal:".jfu_download_template($download_template);
   $__header->scripts[] = "literal:".jfu_upload_template($upload_template);
   $__header->styles[] = '/afr/bower/blueimp-gallery/css/blueimp-gallery.min.css';
-  $__header->styles[] = '/afr/bower/jquery-file-upload/css/jquery.fileupload-ui.css';
-  $__header->styles[] = '/afr/bower/jquery-file-upload/css/jquery.fileupload.css';
+  $__header->styles[] = '/afr/bower/blueimp-file-upload/css/jquery.fileupload-ui.css';
+  $__header->styles[] = '/afr/bower/blueimp-file-upload/css/jquery.fileupload.css';
   $__header->styles[] = '/afr/css/fileupload.css';             
   
 }
