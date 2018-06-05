@@ -2396,7 +2396,7 @@ function docroot($trailing_slash = true) {
 
 /** location of AFR library */
 function libroot($trailing_slash = true) {
-  return docroot(false)."/afr".($trailing_slash ? '/' : '');
+  return docroot(false)."/afr-lib".($trailing_slash ? '/' : '');
 }
 
 /** location of web application directory - parent of docroot */

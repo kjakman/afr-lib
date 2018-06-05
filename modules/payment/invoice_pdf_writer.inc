@@ -4,7 +4,7 @@ $ul=$_SESSION['loggedin']['user_level'];
 
 # require('vendor/docnet/tfpdf/tfpdf.php');
 
-$font_dir = approot(false).'/afr/vendor/docnet/tfpdf/src/font/';
+$font_dir = approot(false).'/afr-lib/vendor/docnet/tfpdf/src/font/';
 define('FPDF_FONTPATH',$font_dir);
 if(!is_dir($font_dir)) die("Missing tFPDF font directory {$font_dir}");
 if(!is_writeable($font_dir)) die("tFPDF font directory not writeable {$font_dir}");

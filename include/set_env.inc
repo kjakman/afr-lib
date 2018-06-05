@@ -43,7 +43,7 @@ $doc_root = rtrim($_SERVER['DOCUMENT_ROOT'], '/').'/';
 $app_root = is_dir("{$doc_root}../afr/") ? "{$doc_root}../afr/" : "{$doc_root}/afr/";
 if(!is_dir($app_root)) die("App root {$app_root} not found");
   
-set_include_path(get_include_path().PATH_SEPARATOR."{$doc_root}afr/include".PATH_SEPARATOR."{$doc_root}afr/includes".PATH_SEPARATOR."{$doc_root}afr/classes".PATH_SEPARATOR."{$doc_root}afr/modules".PATH_SEPARATOR."{$doc_root}afr".PATH_SEPARATOR."{$doc_root}../include");
+set_include_path(get_include_path().PATH_SEPARATOR."{$doc_root}afr-lib".PATH_SEPARATOR."{$doc_root}afr-lib/include".PATH_SEPARATOR."{$doc_root}afr-lib/includes".PATH_SEPARATOR."{$doc_root}afr-lib/classes".PATH_SEPARATOR."{$doc_root}afr-lib/modules".PATH_SEPARATOR."{$doc_root}afr".PATH_SEPARATOR."{$doc_root}../include");
 
 session_start();       
 $cookie_hash = $_COOKIE['authID'];

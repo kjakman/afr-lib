@@ -1957,8 +1957,8 @@ function smarty_preparse_template($app, $filename, $options = array()) {
   $pageObj = $app->page;
   
   $approot = approot(true);
-  $docroot = $approot."www/";
-  $libroot = $approot."afr/";
+  $docroot = docroot(true);
+  $libroot = libroot(true);
          
   $smarty_dir = $approot.'smarty/templates';
   
