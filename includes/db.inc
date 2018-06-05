@@ -1172,9 +1172,9 @@ function clean_property_db() {
   $dCount = db_getOne("SELECT count(*) FROM property_description WHERE property_type in ('hotel', 'realestate', 'longstay', 'boat', 'office') AND property_id in ($ids_str)");
 
   if($count) {
-    echo("DELETE FROM property WHERE id in ($ids_str)").html_break();                                  
-    echo("DELETE FROM media WHERE parent_type in ('hotel', 'realestate', 'longstay', 'boat', 'office') AND parent_id in ($ids_str)").html_break();
-    echo("DELETE FROM property_description WHERE property_type in ('hotel', 'realestate', 'longstay', 'boat', 'office') AND property_id in ($ids_str)").html_break();
+    echo("DELETE FROM property WHERE id in ($ids_str)");                                  
+    echo("DELETE FROM media WHERE parent_type in ('hotel', 'realestate', 'longstay', 'boat', 'office') AND parent_id in ($ids_str)");
+    echo("DELETE FROM property_description WHERE property_type in ('hotel', 'realestate', 'longstay', 'boat', 'office') AND property_id in ($ids_str)");
                
     db_query("DELETE FROM property WHERE id in ($ids_str)");
     db_query("DELETE FROM media WHERE parent_type in ('hotel', 'realestate', 'longstay', 'boat', 'office') AND parent_id in ($ids_str)");

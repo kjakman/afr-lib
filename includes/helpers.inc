@@ -2582,7 +2582,7 @@ function get_address_string($addObj, $glue='<br />', $show_contact=0, $show_suff
 
 function mydie($str) {
   global $__SITE, $u_id;
-  echo($str).html_break();
+  echo("{$str}<br>");
   echo("Stack:".caller_stack());
   echo("Included:".dump(get_included_files(), true));
   echo("Site".dump($__SITE, true));

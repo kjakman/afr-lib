@@ -19,6 +19,6 @@
     "php-di/php-di": "^5.4",
     "league/html-to-markdown": "^4.4",
       "altorouter/altorouter": "^1.2",
-      "docnet/tFPDF" : "@stable"
+      "docnet/tFPDF" : "^2.1"
     }
 }

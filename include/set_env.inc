@@ -170,7 +170,7 @@ if($lib_prefix = $siteObj->library_prefix ?: $siteObj->shortname) {
   include_once($lib_prefix."_class_handlers.inc");
   include_once($lib_prefix."_class_constants.inc");
   include_once($lib_prefix."_helpers.inc");
-  require_once($lib_prefix."_controllers.inc");
+  include_once($lib_prefix."_controllers.inc");
   include_once($lib_prefix."_cronscripts.inc");
   include_once($lib_prefix."_routing.inc");
 }  
