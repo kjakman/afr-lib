@@ -3870,12 +3870,7 @@ function object_media_upload($qqfile, $mediaData, $options) {
   //print_log("New upload: fileArray=".dump($qqfile, true)."options=\n".dump($options, true), 'upload', $log_level_test);
   extract($options);
   
-  $uploadlib = 'jquery_fileupload';
-  if($uploadlib == 'jquery_fileupload') { // jquery-file-upload
-    require_once("bower/jquery-file-upload/php/UploadHandler.php");
-  } else {  // valum file uploader (fine uploader)  
-    require_once("jquery/file-uploader-3.3/server/php/qqFileUploader.php");
-  }
+  require_once("bower/blueimp-file-upload/php/UploadHandler.php");
 
   $target_field = $options['target_field'];
 

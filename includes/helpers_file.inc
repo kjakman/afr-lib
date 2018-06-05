@@ -111,7 +111,7 @@ function print_undefined_functions_calls() {
   require_once("paypal/paypal.inc");
   require_once("xml/xml_interhome.inc");
   require_once("services/helpers_kigo.inc");
-  require_once("bower/jquery-file-upload/php/UploadHandler.php");
+  require_once("bower/blueimp-file-upload/php/UploadHandler.php");
   //require_once("jquery/file-uploader-3.3/server/php/qqFileUploader.php");
 
   $files = included_files();
