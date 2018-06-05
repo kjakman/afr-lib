@@ -3935,31 +3935,35 @@ function object_media_upload($qqfile, $mediaData, $options) {
   $upload_dir  = clean_path($_SERVER['DOCUMENT_ROOT'].$upload_path);
   if(!is_dir($upload_dir) && !mkdir($upload_dir, 0777, true)) json_error("Upload file: Could not make $upload_dir");    
   
+  
+  // set options
+
+  $uploaderOptions['upload_dir'] = $upload_dir;
+  $uploaderOptions['upload_url'] = $upload_path;
+  
+  $uploader = new UploadHandler($uploaderOptions, false); // false to not initialize
+  
+  // upload file
+  $result = $uploader->post(false); // don't generate response
+  $result_file = $result['files'][0];
+
+  foreach($qqfile as $k => $v) if(!isset($result[$k])) $result[$k] = $v;
+  $result['size'] = $qq_size = $result_file->size;
+  $result['name'] = $qq_name = $upload_name = $result_file->name;
+  $result['type'] = $qq_mime = $result_file->type;
+  $result['error'] = $qq_error = $error = $result_file->error ?: '';
+  $result['tmp_name'] = $qq_tmp = $result_file->tmp_name;
+  $result['success'] = $qq_size && !$qq_error ? 1 : 0; 
+  if($qq_error) return json_error_object($qq_error);
+  
   //json_error("dir={$upload_dir} lib={$uploadlib}");
+
   
   // now invoke PHP handler to move uploaded file - incl. addition error checking
+  /** Not in use: Valum Fine Uploader 
   if($uploadlib == 'jquery_fileupload') {
-    // set options
-
-    $uploaderOptions['upload_dir'] = $upload_dir;
-    $uploaderOptions['upload_url'] = $upload_path;
     
-    $uploader = new UploadHandler($uploaderOptions, false); // false to not initialize
-    
-    // upload file
-    $result = $uploader->post(false); // don't generate response
-    $result_file = $result['files'][0];
-
-    foreach($qqfile as $k => $v) if(!isset($result[$k])) $result[$k] = $v;
-    $result['size'] = $qq_size = $result_file->size;
-    $result['name'] = $qq_name = $upload_name = $result_file->name;
-    $result['type'] = $qq_mime = $result_file->type;
-    $result['error'] = $qq_error = $error = $result_file->error ?: '';
-    $result['tmp_name'] = $qq_tmp = $result_file->tmp_name;
-    $result['success'] = $qq_size && !$qq_error ? 1 : 0; 
-    if($qq_error) return json_error_object($qq_error);
-    
-  } else { /** Not in use: Valum Fine Uploader */ 
+  } else {  
     $uploader = new qqFileUploader();
   
     $uploader->sizeLimit = $size_limit;
@@ -3973,7 +3977,9 @@ function object_media_upload($qqfile, $mediaData, $options) {
     foreach($qqfile as $k => $v) if(!isset($result[$k])) $result[$k] = $v;
 
   }
-
+  */
+  
+  
   $result['upload_name'] = $upload_name;
   $result['upload_path'] = $upload_path;
   $result['upload_dir'] = $upload_dir;
