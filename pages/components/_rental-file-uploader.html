@@ -1,0 +1,17 @@
+
+JFU: {$scope.media_data|@json_encode}
+
+<div class='jquery-file-uploader-container'>
+  <div 
+    data-value_list='1109265' 
+    data-ui='full' 
+    data-id='{$scope.type}-{$scope.id}-media' id='{$scope.type}-{$scope.id}-media' 
+    data-handler='refreshActiveNode'
+    data-handler_options='{literal}{"handler":"refreshActiveNode"}{/literal}'
+    data-media_data='{$scope.media_data|@json_encode}'
+    data-options='{literal}{"allow_multiple":true,"allowed_types":["image","audio","video"],"allowed_extensions":["mp3","aac","aif","aifc","aiff","flac","wav","gif","jpe","jpeg","jpg","png","mp4","mpeg","mpg","mpe","mov","avi"],"title":"Click or drag to upload digital content","resize":1,"minimum_file_size":1024,"minimum_size":[1080,1920],"maximum_file_size":104857600,"edit_url":"/ajax.php?oper=load-content&site_id=247&user_level=50&user_id=501&obj_type=media&edit=1","edit_target":"#cms_viewer"}{/literal}' 
+    data-tip='Allowed types: image,audio,video<br>Allowed extensions: mp3,aac,aif,aifc,aiff,flac,wav,gif,jpe,jpeg,jpg,png,mp4,mpeg,mpg,mpe,mov,avi<br>Minimum file size: 1 KB<br>Maximum file size: 100 MB<br>The longest side must be at least 1920 pixels, or the shortest side must be at least 1080 pixels<br>The highest published resolution is 1920 x 1080 pixels.<br>Allow multiple: Yes<br>Automatically resized: Yes' 
+    data-version='bootstrap' class='jquery-fileupload'>
+  </div>
+</div>
+
