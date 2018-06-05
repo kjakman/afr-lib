@@ -45,6 +45,12 @@
     "geocomplete": "^1.7.0",
     "simpleWeather": "^3.1.0",
     "bootstrap-table": "^1.12.1",
-    "blueimp-file-upload": "jquery-file-upload#^9.21.0"
+    "blueimp-file-upload": "jquery-file-upload#^9.21.0",
+    "jquery-file-download": "^1.4.6",
+    "confirm-bootstrap": "^1.1.0",
+    "blueimp-gallery": "^2.33.0",
+    "bootstrap-toggle": "^2.2.2",
+    "table-export": "*",
+    "jquery.are-you-sure": "^1.9.0"
   }
 }
