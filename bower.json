@@ -43,6 +43,8 @@
     "addtocalendar": "^1.5.5",
     "jquery-truncate-html": "jquery-truncate#*",
     "geocomplete": "^1.7.0",
-    "simpleWeather": "^3.1.0"
+    "simpleWeather": "^3.1.0",
+    "bootstrap-table": "^1.12.1",
+    "blueimp-file-upload": "jquery-file-upload#^9.21.0"
   }
 }
