@@ -51,6 +51,7 @@
     "blueimp-gallery": "^2.33.0",
     "bootstrap-toggle": "^2.2.2",
     "table-export": "*",
-    "jquery.are-you-sure": "^1.9.0"
+    "jquery.are-you-sure": "^1.9.0",
+    "bootstrap-tags": "^1.1.6"
   }
 }
