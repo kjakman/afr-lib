@@ -1,2 +1,6 @@
 /vendor
+/bower_components
+/includes/old
+*.bak
+*.old
 *~

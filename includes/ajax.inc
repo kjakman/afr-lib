@@ -31,11 +31,11 @@
     $lang = $inputVars['__sl'];
     if($lang != $_SESSION['lang']) $__LANG = $__LANGUAGE = $_SESSION['language'] = $lang;
   }
-  $log_file   = $log_dir.'app_data.txt';
+  $log_file   = $log_dir.'ajax.txt';
 
   $now = now();
   $ip = client_ip();
-  print_log("{$now} from {$ip} "."oper=$oper", 'app_data', LOG_LEVEL_TEST);
+  print_log("{$now} from {$ip} "."oper=$oper", 'ajax', LOG_LEVEL_TEST);
 
   //die($log_file);
   $oper = $oper ?: $action;
@@ -74,7 +74,7 @@
 
   // todo: more security
   // basic hack to allow non-logged in user for only select objects actions
-  print_log("u=$u_id oper=$oper obj_type=$obj_type id=$id\n", 'app_data', LOG_LEVEL_ALWAYS); // "\n------------\n\n"
+  print_log("u=$u_id oper=$oper obj_type=$obj_type id=$id\n", 'ajax', LOG_LEVEL_ALWAYS); // "\n------------\n\n"
   $u = $__USER;
   $u_id = $__USER->id;
   
@@ -139,7 +139,7 @@
   $options =  $_GET['options'] ? json_decode(htmlspecialchars_decode($_GET['options']), true) : array();
   $errors = $messages = array();
 
-  print_log("data:".dump($obj_data,true), 'app_data', LOG_LEVEL_TEST);
+  print_log("data:".dump($obj_data,true), 'ajax', LOG_LEVEL_TEST);
   
   $timer['switch'] = microtime(true);
   switch($oper) {
@@ -1451,7 +1451,7 @@
       
     case 'calendar-import': // import calendar from remote soure
       //json_error(dump($obj_data,true)); exit;
-      require_once("xml_airbnb.inc");
+      require_once("xml/xml_airbnb.inc");
       
       if($error = check_required($obj_data, array("user_id" => "User id", "source_id" => "Source ID"))) json_error("Missing: ".implode(', ', $error));
   
@@ -3048,7 +3048,7 @@
 
       //$outputAr[]= print_price_breakdown($aptObj, $priceObj);
       $name = phrase('price_breakdown', CAPITALIZE);
-      $link = "/home/app_data.php?oper=price-breakdown&t={$ptype}&apt_id={$apt_id}&in={$in}&out={$out}";
+      $link = "/ajax.php?oper=price-breakdown&t={$ptype}&apt_id={$apt_id}&in={$in}&out={$out}";
 
       $fees = formatFloat($priceObj->fees);
       $tax = formatFloat($priceObj->tax);
@@ -3844,7 +3844,7 @@
       extract($obj_data);
       switch($source_id) {
         case SOURCE_ID_INTERHOME:
-          require_once('xml_interhome.inc');
+          require_once('xml/xml_interhome.inc');
           $result = interhome_import('import', $obj_data);
           break;
         default:
@@ -5251,7 +5251,6 @@
         $event_data['start_time'] = $start_time = $obj_data['catering_pickup_time']; // => 2012-09-15 14:00:00
         $event_data['end_time'] = add_interval($start_time, 1, 'HOUR'); // => 2012-09-15 14:00:00
       }
-      //print_log("app_date: Adding object $obj_type\n", 'app_data', LOG_DEBUG);
       
       if($event_id = $event_data['event_id']) {
         list($id, $errors) = update_object('event', $event_data, $event_id);
@@ -5491,7 +5490,7 @@
           $mediaObj->media_id = $mapObj->media_id;
           $mediaObj->map_id = $mediaObj->obj_id = $mapObj->id;
           $mediaObj->obj_type = 'media_collection_map';
-          $mediaObj->delete_url = "/admin/app_data.php?oper=del&obj_type=media_collection_map&id=".$mapObj->id;
+          $mediaObj->delete_url = "/ajax.php?oper=del&obj_type=media_collection_map&id=".$mapObj->id;
           //if($mapObj->artwork_id) {
           //  $file->title = get_object('artwork', $mapObjs->artwork_id, 'title');            
           //}
@@ -5512,7 +5511,7 @@
         $thumb_size = $mediaObj->resize === 1 ? 'thumb' : ''; 
         $thumb_url = print_media($mediaObj, array('size' => $thumb_size, 'source_only' => true));
         $fileEl = array('url' => $url, 'name' => $mediaObj->user_filename, 'size' => $mediaObj->file_size);
-        $fileEl['deleteUrl'] = $mediaObj->delete_url ?: "/admin/app_data.php?oper=del&obj_type=media&id=".$mediaObj->id;
+        $fileEl['deleteUrl'] = $mediaObj->delete_url ?: "/ajax.php?oper=del&obj_type=media&id=".$mediaObj->id;
         $fileEl['deleteType'] = 'DELETE';
         if($fileEl['editUrl'] = ($edit_url ? "$edit_url&id=".$mediaObj->id : '')) {
           $fileEl['editTarget'] = $edit_target;
@@ -5618,7 +5617,7 @@
 
         // upload to cloud
         if($cloud) {
-          require_once("xml_cloudinary.inc");
+          require_once("xml/xml_cloudinary.inc");
           $res = cloudinary_upload_media($mediaObj);
           if($res->success && !$res->error) {
             print_log("Cloud upload OK ({$mediaObj->id})", 'upload', LOG_LEVEL_ERROR);             
@@ -5939,7 +5938,7 @@
   case 'update-tree':
     extract($_GET);
     $nodes = $objects = array();
-    $load_url = "/admin/app_data.php?oper=load-content&site_id=$site_id&user_level=$user_level&user_id=$user_id"; //&obj_type=media&id=$obj->id";
+    $load_url = "/ajax.php?oper=load-content&site_id=$site_id&user_level=$user_level&user_id=$user_id"; //&obj_type=media&id=$obj->id";
     list($obj_type, $obj_id) = explode('-', $key);
     if($obj_type && $obj_id) { // object
       switch($obj_type) {
@@ -6037,13 +6036,13 @@
     $is_artist = $user_id && user_has_role($user_id, USER_ROLE_ARTIST);
     $debug = " ul=$user_level is_staff=$is_staff is_admin = $is_admin";
     $debug = '';
-    $nodeAr = array('art' => array('title' => phrase('my_studio', CAPITALIZE), 'url' => "/admin/app_data.php?oper=load-content&site_id=$site_id&user_level=$user_level&user_id=$user_id&obj_type=folder_list", 'hideCheckbox' => true), 
-                    'published' => array('title' => phrase('shared', CAPITALIZE), 'icon' => '/images/icons-16/folder-share.png', 'url' => "/admin/app_data.php?oper=load-content&site_id=$site_id&user_level=$user_level&user_id=$user_id&obj_type=media_collection&type=".MEDIA_COLLECTION_TYPE_PROJECT, 'hideCheckbox' => true), 
+    $nodeAr = array('art' => array('title' => phrase('my_studio', CAPITALIZE), 'url' => "/ajax.php?oper=load-content&site_id=$site_id&user_level=$user_level&user_id=$user_id&obj_type=folder_list", 'hideCheckbox' => true), 
+                    'published' => array('title' => phrase('shared', CAPITALIZE), 'icon' => '/images/icons-16/folder-share.png', 'url' => "/ajax.php?oper=load-content&site_id=$site_id&user_level=$user_level&user_id=$user_id&obj_type=media_collection&type=".MEDIA_COLLECTION_TYPE_PROJECT, 'hideCheckbox' => true), 
                     'shared' => array('title' => phrase('shared', CAPITALIZE), 'icon' => '/images/icons-16/user-share.png', 'hideCheckbox' => true), 
                     'artist' => array('title' => phrase('artists', CAPITALIZE), 'icon' => '/images/icons-16/user-medium.png', 'hideCheckbox' => true), 
                     'curator' => array('title' => phrase('curators', CAPITALIZE), 'icon' => '/images/icons-16/user-business.png','hideCheckbox' => true), 
-                    'exhibited' => array('title' => phrase('my_exhibitions', CAPITALIZE), 'icon' => '/images/icons-16/blue-folder-open-image.png', 'url' => "/admin/app_data.php?oper=load-content&site_id=$site_id&user_level=$user_level&user_id=$user_id&obj_type=media_collection&type=".MEDIA_COLLECTION_TYPE_EXHIBITION, 'hideCheckbox' => true), 
-                    'trash' => array('title' => phrase('archive', CAPITALIZE), 'icon' => '/images/icons-16/paper-bag-recycle.png', 'url' => "/admin/app_data.php?oper=load-content&site_id=$site_id&user_level=$user_level&user_id=$user_id&obj_type=trash_list", 'hideCheckbox' => true)
+                    'exhibited' => array('title' => phrase('my_exhibitions', CAPITALIZE), 'icon' => '/images/icons-16/blue-folder-open-image.png', 'url' => "/ajax.php?oper=load-content&site_id=$site_id&user_level=$user_level&user_id=$user_id&obj_type=media_collection&type=".MEDIA_COLLECTION_TYPE_EXHIBITION, 'hideCheckbox' => true), 
+                    'trash' => array('title' => phrase('archive', CAPITALIZE), 'icon' => '/images/icons-16/paper-bag-recycle.png', 'url' => "/ajax.php?oper=load-content&site_id=$site_id&user_level=$user_level&user_id=$user_id&obj_type=trash_list", 'hideCheckbox' => true)
                    );
     if(!$is_curator) {unset($nodeAr['exhibited']);unset($nodeAr['shared']);}
     if(!$is_artist) {unset($nodeAr['art']);unset($nodeAr['published']);}
@@ -6681,11 +6680,11 @@
         if($_SESSION['debug_invoice_address'] && $obj_type == 'invoice') {
           $cc1 = $obj_data['country'];
           $cc2 = get_object('invoice', $id, 'country');
-          print_log("app_data invoice $id: before=$cc1", "address", LOG_LEVEL_ALWAYS);        
+          print_log("ajax invoice $id: before=$cc1", "address", LOG_LEVEL_ALWAYS);        
         }
         list($id, $errors) = update_object($obj_type, $obj_data, $id);
         if($_SESSION['debug_invoice_address'] && $obj_type == 'invoice') {
-          print_log("app_data invoice $id: after=$cc2", "address", LOG_LEVEL_ALWAYS);        
+          print_log("ajax invoice $id: after=$cc2", "address", LOG_LEVEL_ALWAYS);        
         }
       }
 
@@ -6695,7 +6694,7 @@
       $obj = get_object($obj_type, $id);
       break;
     case 'add': 
-      print_log("app_date: Adding object $obj_type\n", 'app_data', LOG_DEBUG);
+      print_log("app_date: Adding object $obj_type\n", 'ajax', LOG_DEBUG);
       $key = get_object_key($obj_type);
       unset($obj_data[$key]); // jqgrid sends _empty in key
       list($id, $errors) = add_object($obj_type, $obj_data);

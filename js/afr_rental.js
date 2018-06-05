@@ -1007,7 +1007,6 @@ function init_rental_map($map) {
     return;
   }
   var map = new google.maps.Map(document.getElementById(map_id), myOptions);
-  console.log('map1', bounds);
 
 
   var marker = new google.maps.Marker({

@@ -23,7 +23,7 @@
             <div class='gap gap-small'></div>                      
             <input name="redirect" type="hidden" class="form-control login-redirect" value="{$get.ref|remove_query_var:'act'}" />
             <input name="uri" type="hidden" class="form-control" value="{$this_url|remove_query_var:'act'}" />
-            <input name="user_terms" type="hidden" value="1" />By signing up, I agree to the <a class='fancybox-noscroll fancybox.ajax' href='/home/app_data.php?oper=load-page-content&amp;site_id={$site.id}&amp;page_type=1005'>Terms &amp; Conditions</a>
+            <input name="user_terms" type="hidden" value="1" />By signing up, I agree to the <a class='fancybox-noscroll fancybox.ajax' href='ajax.php?oper=load-page-content&amp;site_id={$site.id}&amp;page_type=1005'>Terms &amp; Conditions</a>
             <div class='gap gap-small'></div>                      
             <input name="site_id" type="hidden" value="{$site.id}" />
           </form>

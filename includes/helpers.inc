@@ -899,7 +899,7 @@ function is_country($country) {
   return in_array($country, array('AD','AE','AF','AG','AI','AL','AM','AO','AQ','AR','AS','AT','AU','AW','AX','AZ','BA','BB','BD','BE','BF','BG','BH','BI','BJ','BL','BM','BN','BO','BQ','BR','BS','BT','BV','BW','BY','BZ','CA','CC','CD','CF','CG','CH','CI','CK','CL','CM','CN','CO','CR','CU','CV','CW','CX','CY','CZ','DE','DJ','DK','DM','DO','DZ','EC','EE','EG','EH','ER','ES','ET','FI','FJ','FK','FM','FO','FR','GA','GB','GD','GE','GF','GG','GH','GI','GL','GM','GN','GP','GQ','GR','GS','GT','GU','GW','GY','HK','HM','HN','HR','HT','HU','ID','IE','IL','IM','IN','IO','IQ','IR','IS','IT','JE','JM','JO','JP','KE','KG','KH','KI','KM','KN','KP','KR','KW','KY','KZ','LA','LB','LC','LI','LK','LR','LS','LT','LU','LV','LY','MA','MC','MD','ME','MF','MG','MH','MK','ML','MM','MN','MO','MP','MQ','MR','MS','MT','MU','MV','MW','MX','MY','MZ','NA','NC','NE','NF','NG','NI','NL','NO','NP','NR','NU','NZ','OM','PA','PE','PF','PG','PH','PK','PL','PM','PN','PR','PS','PT','PW','PY','QA','RE','RO','RS','RU','RW','SA','SB','SC','SD','SE','SG','SH','SI','SJ','SK','SL','SM','SN','SO','SR','SS','ST','SV','SX','SY','SZ','TC','TD','TF','TG','TH','TJ','TK','TL','TM','TN','TO','TR','TT','TV','TW','TZ','UA','UG','UM','US','UY','UZ','VA','VC','VE','VG','VI','VN','VU','WF','WS','YE','YT','ZA','ZM','ZW'));
 }
 
-function is_email($email,$allow_multiple) {
+function is_email($email,$allow_multiple = true) {
   if($allow_multiple && strpos($email,',')) {
     $emails = explode(',', $email);
     foreach($emails as $email) if(!is_email($email)) return false;
@@ -2428,7 +2428,7 @@ function full_path($path = '') {
 // returns the path after stripping away city/language/affiliate ID if any
 function this_path($uri='') {
   if(!$uri) $uri = $_SERVER['REDIRECT_URL'] ?: $_SERVER['REQUEST_URI'];
-  if(strpos($uri, 'app_data.php') && $_SERVER['HTTP_REFERER']) $uri = $_SERVER['HTTP_REFERER']; 
+  if(strpos($uri, 'ajax.php') && $_SERVER['HTTP_REFERER']) $uri = $_SERVER['HTTP_REFERER']; 
   $parts = parse_url($uri);
   return $parts['path'];
   
@@ -2478,7 +2478,7 @@ function get_query_string($url = '', $use_amps = false) {
   //return $_SERVER['QUERY_STRING'];
   
   $uri = $url ?: $_SERVER['REQUEST_URI'];
-  if(strpos($uri, 'app_data.php') && $_SERVER['HTTP_REFERER']) $uri = $_SERVER['HTTP_REFERER']; 
+  if(strpos($uri, 'ajax.php') && $_SERVER['HTTP_REFERER']) $uri = $_SERVER['HTTP_REFERER']; 
   
   //$req_uri = str_replace(array('?__cam', '&__cam', '&amp;__cam'), '', $req_uri); // little hack as we don't want this (combine and modify used by spider/publish);
   if($pos = strpos($uri, '?')) return $use_amps ? str_replace('&', '&amp;', substr($uri, $pos+1)) : substr($uri, $pos+1);
@@ -3531,7 +3531,7 @@ function json_error($text, $options=NULL) {
   echo($output);
   if($field == 'error') {
     global $log_dir;
-    $log_file   = $log_dir.'app_data.txt';
+    $log_file   = $log_dir.'ajax.txt';
     write_file($log_file, "JSON Error: $text\n", 'a');
   }
   
@@ -3859,10 +3859,10 @@ function tree_count_debug($tree, $options=NULL) {
   return $count;
 }
 
-// returns a link for given operation to /home/app_data or /admin/app_data
+// returns a link for given operation to /ajax.php
 function ajax_operation_link($operation, $data=NULL, $options=NULL) {
   $public = $options['public'] || $options['unauthenticated'];
-  $ajax_url = "/".($public ? "home" : "admin")."/app_data.php?oper=$operation";
+  $ajax_url = "/ajax.php?oper=$operation";
   if($data = (array) $data) $ajax_url .= "&".array2qs($data); 
   return $ajax_url;
 }

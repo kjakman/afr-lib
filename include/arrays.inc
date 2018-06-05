@@ -55,7 +55,7 @@ $descriptionActionArray = array('' => 'Select Action', ACTION_PREPEND => 'Prepen
 $reservation_media_options = $product_media_options = $event_media_options = $single_media_options = $user_media_options = $gallery_media_options = $property_media_options = $std_media_options = $std_image_options = array(
   'minimum_size' => 100, 
   'minimum_file_size' => '1K', 
-  'maximum_file_size' => '100M', 
+  'maximum_file_size' => '20M', 
   'allow_multiple' => true, 
   'allowed_types' => array('image','audio','video'), 
   'resize' => 1

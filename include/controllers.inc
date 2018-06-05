@@ -472,7 +472,7 @@ function controller_site_edit($app, $options = []) {
   return;
 }
 
-/** generic controller for back-end, e.g site_edit. Called from app_data: cms-explore */
+/** generic controller for back-end, e.g site_edit. Called from ajax.php: cms-explore */
 function controller_cms_explore($app, $options = []) {
   $siteObj = $app->site;
   $scope = $app->page->scope;
@@ -650,7 +650,7 @@ function controller_rental_search($app, $options = []) {
   
   print_log("controller_rental_search: rs={$rs} isset={$isset} count={$count}", 'rental-search', LOG_LEVEL_TEST);
   
-  if($rs || $count) { /** new - search now happens in app_data rental-search, returns json */
+  if($rs || $count) { /** new - search now happens in ajax.php: rental-search, returns json */
     $scope->loaded = 1;
     $preset = 1;
     $search = null;
@@ -776,7 +776,7 @@ function controller_event_calendar($app, $options = []) {
   
   $scope = $app->page->scope;
   $__header->scripts[] = "/afr/bower/fullcalendar/dist/fullcalendar.js";
-  $__header->scripts[] = "/afr/bower/ubilabs-geocomplete/jquery.geocomplete.min.js";
+  $__header->scripts[] = "/afr/bower/geocomplete/jquery.geocomplete.min.js";
   $__header->styles[] = "/afr/bower/fullcalendar/dist/fullcalendar.css";
 
   $__header->scripts[] = "/afr/js/afr_gmap.js";
@@ -807,7 +807,7 @@ function controller_rental_add($app, $options = []) {
   $__header = $app->header; 
   
   $ver = $app->version;  
-  $__header->scripts[] = "/afr/bower/ubilabs-geocomplete/jquery.geocomplete.min.js";
+  $__header->scripts[] = "/afr/bower/geocomplete/jquery.geocomplete.min.js";
   $scope = $app->page->scope;
   $scope->currency = "EUR";
   $scope->host_ids = $host_ids = user_host_list($u_id) ?: array();
@@ -992,7 +992,7 @@ function controller_rental_edit($app, $options = []) {
   if(!$id) return  controller_error($app, "Missing rental ID");
 
   /** OK: edit single rental */  
-  $__header->scripts[] = "/afr/bower/ubilabs-geocomplete/jquery.geocomplete.min.js";
+  $__header->scripts[] = "/afr/bower/geocomplete/jquery.geocomplete.min.js";
   $__header->scripts[] = "/afr/js/admincal-dialog.js?v=$ver";
   $__header->styles[] = "/afr/css/afr_tooltip.css";
       
@@ -1198,7 +1198,7 @@ function controller_rental_detail($app, $options = []) {
   $method = $_SERVER['REQUEST_METHOD'];
   $ref    = $_SERVER['HTTP_REFERER'];
   
-  $redirect = $url != $this_url && !$edit && !$scope->ajax && $method == 'GET' && !strpos($script, 'app_data.php') ? 1 : 0;
+  $redirect = $url != $this_url && !$edit && !$scope->ajax && $method == 'GET' && !strpos($script, 'ajax.php') ? 1 : 0;
   if(0 && $redirect) {
     print_log("rental_controller: redirecting: script: {$script} method:{$method} ref:{$ref}", 'rental', LOG_LEVEL_TEST);
     $qs = get_query_string();
@@ -2865,7 +2865,7 @@ function controller_edit_profile($app, $options = []) {
   $siteObj = $app->site;
   
   $__header->scripts[] = "/afr/bower/bootstrap-tags/dist/js/bootstrap-tags.min.js";
-  $__header->scripts[] = "/afr/bower/ubilabs-geocomplete/jquery.geocomplete.min.js";
+  $__header->scripts[] = "/afr/bower/geocomplete/jquery.geocomplete.min.js";
   $__header->styles[] = "/afr/bower/bootstrap-tags/dist/css/bootstrap-tags.css";
 
   $__header->scripts[] = "/afr/js/afr_gmap.js";
@@ -3256,7 +3256,7 @@ function controller_event($app, $options = []) {
   $siteObj = $app->site;
   
   
-  $__header->scripts[] = "/afr/bower/ubilabs-geocomplete/jquery.geocomplete.min.js";
+  $__header->scripts[] = "/afr/bower/geocomplete/jquery.geocomplete.min.js";
   $__header->scripts[] = "/afr/js/afr_gmap.js";
   $__header->scripts[] = "/afr/jquery/periodpicker/build/jquery.periodpicker.full.min.js";
 
@@ -4018,7 +4018,7 @@ function controller_gallery_backend($app, $options = []) {
 
   $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
 
-  $__header->scripts[] = "/afr/bower/ubilabs-geocomplete/jquery.geocomplete.min.js";
+  $__header->scripts[] = "/afr/bower/geocomplete/jquery.geocomplete.min.js";
   $__header->scripts[] = "/afr/bower/confirm-bootstrap/confirm-bootstrap.js";
   $__header->scripts[] = "/afr/bower/bootstrap-toggle/js/bootstrap-toggle.min.js";
 
@@ -4042,7 +4042,7 @@ function controller_gallery_backend($app, $options = []) {
   $__header->scripts[] = "https://cdnjs.cloudflare.com/ajax/libs/bootstrap-timepicker/0.5.2/js/bootstrap-timepicker.min.js";
   
   if(0) { // cloudinary direct upload
-    require_once("xml_cloudinary.inc");
+    require_once("xml/xml_cloudinary.inc");
     $ci_config = get_config('ci', $siteObj->id);
     if(!$ci_config) return scope_error($app, "Missing Cloudinary Configuration");
     if(!$ci_config->preset_name) return scope_error($app, "Missing Cloudinary Preset");
@@ -4688,7 +4688,7 @@ function controller_gallery_artworks($app, $options = []) {
     }
     
     $scope->artist = $artistObj = $artist_id ? get_user($artist_id) : null;
-  } elseif($objects = $scope->objects) { /** from app_data?oper=gallery-get-collection */
+  } elseif($objects = $scope->objects) { /** from ajax.php?oper=gallery-get-collection */
     $scope->items = $items = $scope->objects;
     /** all collected images */
     $scope->user_collection = $user_collection_id ? find_objects('media_collection_map', array('media_collection_id' => $user_collection_id, 'active' => 1), array('fields' => 'distinct (media_id)', 'sort' => 'id DESC')) : array();      

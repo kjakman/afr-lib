@@ -100,7 +100,7 @@
         } else {
           //console.log("setting rate for v2 " + cid);
           $price.html("<i class='fa fa-spinner fa-spin'></i>");              
-          var ajax_url = '/home/app_data.php?oper=rental-availability&t=' + type + '&apt_id=' + id + '&in=' + cin + '&out=' + cout + '&ng=' + ng;
+          var ajax_url = '/ajax.php?oper=rental-availability&t=' + type + '&apt_id=' + id + '&in=' + cin + '&out=' + cout + '&ng=' + ng;
           $.getJSON(ajax_url, [], function(json) {
             rental_rate_update(cin, cout, $item, json, org_price);
             g_rates[cid] = json;

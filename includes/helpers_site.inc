@@ -2420,7 +2420,7 @@ function delete_site_content($siteObjorId, $options = array()) {
   foreach($classes as $classObj) {    
     $obj_type = $classObj->type;
     $table = $classObj->table;
-    $skip = ['dictionary', 'config', 'attempts', 'requests', 'sessions'];
+    $skip = ['dictionary', 'phpauth_config', 'phpauth_attempts', 'phpauth_requests', 'phpauth_sessions'];
     if(in_array($table, $skip)) continue; 
     $fields = class_fields($obj_type, false);
     

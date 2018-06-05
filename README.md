@@ -1,4 +1,4 @@
-# AFR - An old mishmash of code
+# AFR-lib - Light procedural PHP Framework
 
 This project was started more than 10 years ago to implement a rental platform for short stay housing
 (Apartments For Rent)
@@ -47,7 +47,8 @@ These are wrappers for PDO functions that manipulate the underlying database.
 
 
 ## Views
-Smarty template files defined in afr/pages, can be overwritten per site
+Smarty template files defined in afr/pages, can be overwritten per site in the App directory
+
 
 `afr/pages/base`: base views
 
@@ -73,10 +74,11 @@ Loads `afr/include/set_env.inc` and calls `site_application($app)`
 `site_application()` is defined in includes/helpers_site.inc
 
 ## Config files
+
 `config/main.yml`: Non-sensitive config data. Loaded into `$app->config` with `config_load()` in `set_env.inc`
-`/web/.priv/.priv.txt`: Json file with sensitive passwords for database etc, outside web document root. 
+`config/private.txt`: Json file with sensitive passwords for database etc, outside web document root. 
 Use `get_config($key, $site_id)` to read key.
-`/web/.priv/.priv-dev.txt`: Same, but for dev subdomain (see below)
+`/config/private-dev.txt`: Same, but for dev subdomain (see below)
 
 # Subdomains
 `dev.domain.com`:   Dev database, dev codebase
@@ -91,10 +93,10 @@ Use `get_config($key, $site_id)` to read key.
 ## Files
 
 # Example Project
-See [Patina](https://github.com/kjakman/patina) for and example project using AFR.
+See [Afr-App](https://github.com/kjakman/afr-app) for and example project using AFR.
 
 ## Directories
-The `afr/include` directory is project specific, and should be moved to the project directory (e.g. Patina)
+The `afr/include` directory is project specific, and should be moved to the project directory (e.g. /web/sites/afr-app)
 
 ## Composer
 See `composer.json`. Currently duplicated in project directory (Patina).

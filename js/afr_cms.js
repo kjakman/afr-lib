@@ -1648,7 +1648,7 @@ function update_object(obj_type, id, options, data) {
   return operation_object(obj_type, id, 'edit', options, data);
 }
 
-// add/update/delete object, or some other handler in app_data
+// add/update/delete object, or some other handler in ajax
 function operation_object(obj_type, id, action, options, data) {
   if(typeof options == "undefined") var options = {};
   if(typeof data == "undefined") var data = {};
@@ -1885,7 +1885,7 @@ function save_object_dialog(parent_id, obj_type, form_id, unauthenticated) {
   //ajax_url = "/ajax.php?oper=add&" + form_data_str;
   // var form_data = $('#' + form_id);
 
-  ajax_url = "/" + (unauthenticated ? "home" : "admin") + "/app_data.php?oper=add&obj_type=" + obj_type;
+  ajax_url = "/ajax.php?oper=add&obj_type=" + obj_type;
   //alert(ajax_url);
 
   jQuery.ajax({
@@ -2167,7 +2167,7 @@ function progress_bar_handler(dialog_id, pb_id) {
 }
 
 
-// creates a dialog (jQuery UI or fancybox) with content from app_data operation
+// creates a dialog (jQuery UI or fancybox) with content from ajax operation
 // alternatively; just return the ajax_url (options: url_only)
 //function load_dialog(obj_type, id, fields, data, handler, reload, unauthenticated) {  
 function load_dialog(obj_type, id, options, url_only) {  
@@ -2213,7 +2213,7 @@ function load_dialog(obj_type, id, options, url_only) {
 
   //alert(dump(options));
  
-  ajax_url = "/" + (unauthenticated ? "home" : "admin") + "/app_data.php?oper=" + operation + "&obj_type=" + obj_type + "&id=" + id + "&reload=" + reload_bool;
+  ajax_url = "/ajax.php?oper=" + operation + "&obj_type=" + obj_type + "&id=" + id + "&reload=" + reload_bool;
   
   if(fields) ajax_url += "&fields=" + array2json(fields);
   if(handler) ajax_url += '&handler=' + handler;
@@ -2494,7 +2494,7 @@ function new_object_dialog(parent_id, obj_type, title, unauthenticated) {
   });
   $dialog.dialog('option', 'title', 'Loading...'); 
   $dialog.dialog('open'); // jquery call to show overlay
-  ajax_url = "/" + (unauthenticated ? "home" : "admin") + "/app_data.php?oper=new_object_dialog&obj_type=" + obj_type + "&inline_pid=" + parent_id;
+  ajax_url = "/ajax.php?oper=new_object_dialog&obj_type=" + obj_type + "&inline_pid=" + parent_id;
   //alert(ajax_url);
   $dialog.load(ajax_url, function (responseText) {
     $dialog.dialog('option', 'title', title);
@@ -3392,7 +3392,7 @@ function article_list(obj_type, target_id, search, options) {
 
 // same as find_objects in back-end
 function find_objects(obj_type, search, sort, fields, limit, offset, handler) {  
-  ajax_url = "/" + (unauthenticated ? "home" : "admin") + "/app_data.php?oper=list&obj_type=" + obj_type + "&id=" + id + "&reload=" + reload_bool;
+  ajax_url = "/ajax.php?oper=list&obj_type=" + obj_type + "&id=" + id + "&reload=" + reload_bool;
 
   if(search) ajax_url += "&search=" + array2json(search);
   if(fields) ajax_url += "&fields=" + array2json(fields);

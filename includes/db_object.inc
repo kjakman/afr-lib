@@ -2214,7 +2214,7 @@ function action_button($action, $obj_type, $parent_type, $parent_id) {
 
 // returns a printable value for a given field of a given object
 // can override field type to avoid redunancy
-// use in app_data.php
+// use in ajax.php
 function get_attribute_value_string($obj_type, $obj, $fld, $class, $fld_type='') {
   if(!$fld_type) $fld_type  = $class[ATT_TYPE];
   $att_flags = $class[ATT_FLAGS];

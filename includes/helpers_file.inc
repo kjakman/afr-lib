@@ -101,16 +101,16 @@ function get_functions_in_file($file, $sort = FALSE) {
 function print_undefined_functions_calls() {
   //require_once("ajax.php");
   //require_once("admin/cronscripts.php");
-  require_once("db_withdraw.inc");
+  require_once("payment/db_withdraw.inc");
   //require_once("golfswitch.inc");
-  require_once("xml_airbnb.inc");
+  require_once("xml/xml_airbnb.inc");
   require_once("classes/sms_api.class.inc");
-  require_once("xml_cloudinary.inc");
+  require_once("xml/xml_cloudinary.inc");
   require_once("Smarty/Smarty.class.php");    
   require_once("paypal/do_refund.inc");
   require_once("paypal/paypal.inc");
-  require_once("xml_interhome.inc");
-  require_once("helpers_kigo.inc");
+  require_once("xml/xml_interhome.inc");
+  require_once("services/helpers_kigo.inc");
   require_once("bower/jquery-file-upload/php/UploadHandler.php");
   //require_once("jquery/file-uploader-3.3/server/php/qqFileUploader.php");
 

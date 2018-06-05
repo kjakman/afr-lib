@@ -38,17 +38,12 @@ $system_cache_dir = $_SESSION['system_cache_dir'] = "/web/cache/";
 $system_log_file = $_SESSION['system_log_file'] = $_SESSION['main_log'] = $main_log = 'system_log.txt';
 
 $live = $host_sub == 'www' || $host_sub == '';
-//$app_dir = $live ? 'apt' : 'apt-dev';
-//if($staging) $app_dir = 'apt-staging';
 $doc_root = rtrim($_SERVER['DOCUMENT_ROOT'], '/').'/';
 
 $app_root = is_dir("{$doc_root}../afr/") ? "{$doc_root}../afr/" : "{$doc_root}/afr/";
 if(!is_dir($app_root)) die("App root {$app_root} not found");
-//$app_root = clean_path($app_root);
   
-//die("App root = {$app_root}");
-set_include_path(get_include_path().PATH_SEPARATOR."{$doc_root}/afr/include".PATH_SEPARATOR."{$doc_root}/afr/includes".PATH_SEPARATOR."{$doc_root}afr".PATH_SEPARATOR."{$doc_root}include");
-//set_include_path(get_include_path().PATH_SEPARATOR."{$app_root}/include".PATH_SEPARATOR."{$app_root}/includes".PATH_SEPARATOR."{$doc_root}afr".PATH_SEPARATOR."{$doc_root}include");
+set_include_path(get_include_path().PATH_SEPARATOR."{$doc_root}afr/include".PATH_SEPARATOR."{$doc_root}afr/includes".PATH_SEPARATOR."{$doc_root}afr/classes".PATH_SEPARATOR."{$doc_root}afr/modules".PATH_SEPARATOR."{$doc_root}afr".PATH_SEPARATOR."{$doc_root}../include");
 
 session_start();       
 $cookie_hash = $_COOKIE['authID'];
@@ -105,10 +100,10 @@ $__header = ['end_scripts' => [], 'scripts' => [], 'styles' => []];
 
 
 require_once("vendor/autoload.php");                          
-require_once("vendor/phpauth/phpauth/languages/en_GB.php");
+require_once("phpauth/languages/en_GB.php");
 $auth_lang = $lang; // $lang is included in file above. Do not delete this line.
-require_once("vendor/phpauth/phpauth/config.class.php");
-require_once("vendor/phpauth/phpauth/auth.class.php");
+require_once("phpauth/Config.php");
+require_once("phpauth/Auth.php");
 
 /** read config file */
 $_SESSION['config'] = $config = !$_SESSION['config'] || isset($_GET['reload-config']) ? config_load() : $_SESSION['config'];
@@ -137,8 +132,9 @@ require_once("helpers_html.inc");
 require_once("helpers_time.inc");
 require_once("helpers_media.inc");
 require_once("helpers_mail.inc");
-require_once("helpers_google.inc");
 require_once("helpers_site.inc"); /** This needs to be after, as it looks for controllers from above */
+
+require_once("services/google/google.inc");
 
 /** which site */
 define('SITE_URL', siteURL());
@@ -164,47 +160,54 @@ if($msObj = env_minisite($site_domain, $uri)) {
 }
 
 
-//echo("<br><br><br><br>uri={$uri} site_id:{$site_id} user_id:{$user_id} base:{$minisite_basepath} minisite:{$minisite} internal:{$int}");
-
 if(!$site_id) die("Don't know {$site_domain}");
 
 $siteObj = $__SITE = get_object('site', $site_id); /** uses Redis */
 
-/** site specific includes */
+/** site specific includes - this will go away */
 if($lib_prefix = $siteObj->library_prefix ?: $siteObj->shortname) {
   include_once($lib_prefix."_classes.inc");
   include_once($lib_prefix."_class_handlers.inc");
   include_once($lib_prefix."_class_constants.inc");
   include_once($lib_prefix."_helpers.inc");
-  include_once($lib_prefix."_controllers.inc");
+  require_once($lib_prefix."_controllers.inc");
   include_once($lib_prefix."_cronscripts.inc");
   include_once($lib_prefix."_routing.inc");
 }  
 
-//dump($siteObj);
-//print_log("included files:".dump(get_included_files(), true), 'app', LOG_LEVEL_TEST);
 
 /** if login */
 require_once("db_user.inc");
 
-if(1 || $siteObj->property_site) { /** only rental sites */
-  require_once("db_rental.inc");
-  require_once("db_booking.inc");
-  require_once("db_reservation.inc"); /** get rid of */
-  require_once("db_apartment.inc"); /** get rid of */
-  require_once("db_location.inc");  
+/** todo: move to site config */
+$siteObj->modules = ['gallery','payment','rating','rental'];
+
+if(in_array('gallery', $siteObj->modules)) {
+  require_once("gallery/helpers_gallery.inc");
 }
 
-if(1 || $siteObj->gallery_site) { /** only gallery sites */
-  require_once("helpers_gallery.inc");
+if(in_array('golf', $siteObj->modules)) {
+  require_once("golf/golfswitch.inc");
 }
 
-if(1 || $siteObj->payment_site) { /** only if payment */
-  require_once("db_invoice.inc");
-  require_once("db_payment.inc");
-  require_once("db_rating.inc");
-  require_once("invoice_pdf_writer.inc");
+if(in_array('payment', $siteObj->modules)) {
+  require_once("payment/db_invoice.inc");
+  require_once("payment/db_payment.inc");
+  require_once("payment/invoice_pdf_writer.inc");
 } 
+
+if(in_array('rating', $siteObj->modules)) {
+  require_once("rating/db_rating.inc");
+}
+
+if(in_array('rental', $siteObj->modules)) {
+  require_once("rental/db_rental.inc");
+  require_once("rental/db_booking.inc");
+  require_once("rental/db_reservation.inc"); /** get rid of */
+  require_once("rental/db_apartment.inc"); /** get rid of */
+  require_once("rental/db_location.inc");  
+}
+
 
 $_SESSION['client_id'] = $siteObj->client_id; 
 $_SESSION['legal_id'] = $siteObj->legal_entity_id; 
@@ -351,10 +354,6 @@ if($u_id = $_SESSION['u_id']) {
   $_SESSION['auth_debug'] = false; // $_SESSION['live'] ? false : true;
 
   if($provider_name = $_GET["provider"]) {
-    /** hyridauth: version 2.9.5 */
-    //require_once('/web/comps/php/vendor/hybridauth/hybridauth/hybridauth/Hybrid/Auth.php'); #Hybridauth API
-    //require_once('/web/comps/php/vendor/hybridauth/hybridauth/vendor/autoload.php'); #Facebook API
-    
     $user_id = user_provider_login($provider_name);
     print_log("user_provider_login for {$provider_name} = {$user_id}", 'provider', LOG_LEVEL_ALWAYS);
     $provider_login = $user_id ? true : false;

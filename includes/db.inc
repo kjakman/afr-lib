@@ -1103,7 +1103,7 @@ function rank_down($obj_type, $id, $search='', $rank_field='rank') {
   db_query($qs);
   db_query("UPDATE $table SET $rank_field = $rank_field+1 WHERE $key = '$id'");   
 
-  $log_file   = $_SESSION['log_dir'].'app_data.txt';
+  $log_file   = $_SESSION['log_dir'].'ajax.txt';
   write_file($log_file, "rank_down $obj_type $id \n".print_r($search, true).$qs, 'a'); // "\n------------\n\n"
 
 }

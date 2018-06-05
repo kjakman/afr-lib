@@ -1274,7 +1274,7 @@ function pre_add_media($obj_type, $data) {
    
    
   /*
-  if($_FILES && !$file_uploaded) { // file upload from client computer (old style: not ajax - in which case it has already been uploaded in app_data.php)
+  if($_FILES && !$file_uploaded) { // file upload from client computer (old style: not ajax - in which case it has already been uploaded in ajax.php)
     return array($data, $data);
     list($upload_error, $upload_errors) = upload_user_file($org_dir, $allowedExtensions);
     // dump($upload_errors); echo("upload errors: $upload_error_msg<br>");
@@ -1322,7 +1322,7 @@ function pre_add_media($obj_type, $data) {
     
     if($min_size && max($height, $width) < $min_size) return array($data, array("The resolution is too low for use on this site. Please choose an image whose longest side is at least $min_size pixels."));
   
-    if(0) { /** Moved to app_data.php after json output for speed */
+    if(0) { /** Moved to ajax.php after json output for speed */
       // return array($data, array("All ok: org-src=$org_src h=$height w=$width type=$mime_type"));
       $resize = $data['resize'];
       if(is_array($resize)) $resize = array_filter($resize); // some weirdness in json params passed
@@ -2271,7 +2271,7 @@ function obj_remote_upload($dest_id, $obj_type, $array_obj_or_id, $changes='') {
 
   if($dest_id != SOURCE_ID_TEQA) return; // not implemented
   
-  require_once('xml_ireserve.inc');
+  require_once('xml/xml_ireserve.inc');
   $send = $_SESSION['dev'] ? false : true;
   $echo  = $_SESSION['dev'] ? true : false;
   $test = false;
@@ -3839,7 +3839,7 @@ function post_edit_reservation($id, $changes) {
   $cancel_interhome = $interhome && $fid && $obj->status < STATUS_PROPOSED;
 
   if($book_interhome) {
-    require_once("xml_interhome.inc");
+    require_once("xml/xml_interhome.inc");
     $result = interhome_booking($obj); // add interhome booking
     print_log("Interhome booking result:".dump($result,true), "interhome", LOG_LEVEL_ALWAYS);
     if($result->success && $result->fid) {
@@ -3847,11 +3847,11 @@ function post_edit_reservation($id, $changes) {
       db_query("UPDATE reservation SET fid='{$fid}' WHERE res_id={$id}");
     }
   } elseif($ratify_interhome) {
-    require_once("xml_interhome.inc");
+    require_once("xml/xml_interhome.inc");
     $result = interhome_ratify_booking($obj);      
     print_log("Interhome ratify booking {$fid} result:".dump($result,true), "interhome", LOG_LEVEL_ALWAYS);
   } elseif($cancel_interhome) {
-    require_once("xml_interhome.inc");
+    require_once("xml/xml_interhome.inc");
     $result = interhome_cancel_booking($obj);      
     print_log("Interhome cancel booking {$fid} result:".dump($result,true), "interhome", LOG_LEVEL_ALWAYS);
   }

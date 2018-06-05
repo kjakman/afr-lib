@@ -2386,7 +2386,7 @@ function ajax_handler($target, override) {
     console.log("\n\n\najax_handler url=" + url);
     //var url = options.url = "/ajax.php?oper=" + options.handler;
     
-    delete(options.handler); // app_data method: to be confused with success_handler
+    delete(options.handler); // ajax method: to be confused with success_handler
     
     // pre processing
     
@@ -6705,7 +6705,7 @@ function bootstrap_error_message(message) {
 }
 
 // generic handler called after an ajax form has been successfully submitted
-// requires that handler_operation is defined (the php operation in app_data.php)
+// requires that handler_operation is defined (the php operation in ajax.php)
 function success_handler(params, data, parent_id) {
   var target_id = params.handler_target || params.target || '';
   if(target_id) target_id = target_id.replace(/^#/, ''); // strip leading # if exists
@@ -6733,7 +6733,7 @@ function success_handler(params, data, parent_id) {
   
   //console.log("Success handler; Got here autosave=",autosave);
   
-  // call app_data operation and print result to target
+  // call ajax operation and print result to target
   if(operation && target_id && $target.length) {
     $target.addClass("loading-big");
     var ajax_url = '/ajax.php?oper=' + operation;
@@ -6799,7 +6799,7 @@ function load_div(handler, div_id, params, options) {
 }
 
 // generic wrapper for dialog.
-// method must be defined in app_data.php
+// method must be defined in ajax.php
 // only works if data contains at least one key/value pair (or else nothing is posted)
 function generic_load_dialog(dialog_id, method, data, options) {
   if(typeof options == "undefined") var options = {};
@@ -6832,10 +6832,8 @@ function generic_load_dialog(dialog_id, method, data, options) {
   // alert(dump(data));return;
   $dialog.dialog('option', 'title', title); 
   $dialog.dialog('open'); // jquery call to show overlay
-  ajax_url = "/" + (unauthenticated ? "home" : "admin") + "/app_data.php?oper=" + method;
-  //if(data) ajax_url += "&data=" + escape(array2json(data));
+  ajax_url = "/ajax.php?oper=" + method;
   if(options) ajax_url += "&options=" + escape(array2json(options));
-  //ajax_url = "/" + (unauthenticated ? "home" : "admin") + "/app_data.php?oper=" + method;
 
   //alert(ajax_url);
   //var data = [];

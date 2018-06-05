@@ -255,7 +255,7 @@
                             console.log("Stop timer");
                             stopTimer("We still could not verify the transaction, please check back in a few minutes...");
                           } else {
-                            var ajax_url = "/home/app_data.php?oper=check-transaction&site_id=" + site_id + "&inv_id=" + inv_id + "&txn_id=" + txn_id;
+                            var ajax_url = "/ajax.php?oper=check-transaction&site_id=" + site_id + "&inv_id=" + inv_id + "&txn_id=" + txn_id;
                             console.log("count= " + myCount + " calling " + ajax_url);
                             
                             $.getJSON(ajax_url, function(result) {

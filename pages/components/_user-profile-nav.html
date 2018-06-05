@@ -12,6 +12,8 @@
                           <li class="class-filter"><a href="{$p}/wishlist"></i>Wishlist</a></li>                       
                           <li class="class-filter"><a href="{$p}/inbox"></i>Inbox</a></li>
                           {/if}
+                          
+                        {if ($site.gallery_site)}
                           {if ($scope.user|has_role:$smarty.const.USER_ROLE_ARTIST)}
                           <li class="class-filter"><a href="{$p}/artist"></i>CV</a></li>                       
                           {/if}
@@ -21,7 +23,7 @@
                           {if (0 && $scope.user|has_role:$smarty.const.USER_ROLE_COLLECTOR)}
                           <li class="class-filter"><a href="{$p}/collector"></i>Collector</a></li>                       
                           {/if}
-
+                        {/if}
                           <!--li><a href="{$p}/photos"></i>My Travel Photos</a>
                           </li-->
                         {else}

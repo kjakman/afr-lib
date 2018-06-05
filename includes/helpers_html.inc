@@ -1052,6 +1052,7 @@ function jfu_fix_options($options) {
   // size
   $system_post_size = ini_get('post_max_size');
   $system_file_size = ini_get('upload_max_filesize');
+  
   $system_post_size_b = human2bytes($system_post_size);
   $system_file_size_b = human2bytes($system_file_size);
   $system_file_size_b = min($system_post_size_b, $system_file_size_b);
@@ -1062,7 +1063,8 @@ function jfu_fix_options($options) {
  
   if($size_limit_b > $system_file_size_b) {
     $size_limit_b = $system_file_size_b;
-    $options['error'] = "System Max. Filesize = $system_file_size.<br>Contact system administrator.";
+    $system_file_size = bytes2human($system_file_size_b);
+    $options['error'] = "System Max. Filesize = {$system_file_size}. Required: {$maximum_file_size} <br>Contact system administrator.";
   }
   
   if($minimum_file_size) {

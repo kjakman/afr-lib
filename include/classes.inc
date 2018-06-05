@@ -7,16 +7,17 @@ $__CLASSES = array(
 //                                    0           1     2    3     4      5       6        7            8
 
 // security - used by php auth
-    'config' =>                array(USER_LEVEL_SYSTEM, 'config',   '', 'id', 0, 'setting', '', ''),
-    'attempts' =>              array(USER_LEVEL_SYSTEM, 'attempts', '', 'id', 0, 'ip', '', ''),
-    'requests' =>              array(USER_LEVEL_SYSTEM, 'requests', '', 'id', 0, 'rkey', '', ''),
-    'sessions' =>              array(USER_LEVEL_SYSTEM, 'sessions', '', 'id', 0, 'ip', '', ''),
+    'phpauth_config' =>                array(USER_LEVEL_SYSTEM, 'phpauth_config',   '', 'id', 0, 'setting', '', ''),
+    'phpauth_attempts' =>              array(USER_LEVEL_SYSTEM, 'phpauth_attempts', '', 'id', 0, 'ip', '', ''),
+    'phpauth_requests' =>              array(USER_LEVEL_SYSTEM, 'phpauth_requests', '', 'id', 0, 'rkey', '', ''),
+    'phpauth_sessions' =>              array(USER_LEVEL_SYSTEM, 'phpauth_sessions', '', 'id', 0, 'ip', '', ''),
 
 // object model
     'class' =>                array(USER_LEVEL_SYSTEM, 'object_model', '', 'type', NF_CACHE, 'name', '', ''),
     'class_group' =>          array(USER_LEVEL_SYSTEM, 'object_model', '', 'name', NF_CACHE, 'name', '', ''),
     'attribute' =>            array(USER_LEVEL_SYSTEM, 'object_model', '', 'id', NF_CACHE,   'name', 'id', ''),
     'attribute_type' =>       array(USER_LEVEL_SYSTEM, 'object_model', '', 'name', NF_CACHE_ASSOC,   'name', '', ''),
+    'object_description' =>   array(USER_LEVEL_STAFF, 'content', '', '', 0, '', '', ''),
     //'default_class' =>        array(USER_LEVEL_SYSTEM, 'object_model', '', '', 0, '', '', ''),
 
 // system
@@ -46,19 +47,21 @@ $__CLASSES = array(
     'db_sequence' =>          array(USER_LEVEL_SYSTEM, 'system', '', 'seq_name', 0, 'seq_name', 'seq_name', ''),
 
 // site
-    'server' =>               array(USER_LEVEL_SYSTEM, 'site', '', '', NF_CACHE, 'name', '', ''),
+    /** get rid of the next 2 - use config file */
     'site' =>                 array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE_OFF|NF_COMPACT_LIST, 'name', '', ''),
-    'site_role' =>            array(USER_LEVEL_SYSTEM, 'site', '', '', NF_CACHE_ASSOC|NF_NO_ACTIONS, '', '', ''),
+    'site_content' =>         array(USER_LEVEL_STAFF,  'site', '', '', 0, 'title', '', ''),
+
     'minisite' =>             array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'name', '', ''),
-    'font' =>                 array(USER_LEVEL_SYSTEM, 'site', '', '', 0, '', '', ''),
+    
+    /** get rid of the next 4 - CMS no longer in use */
     'site_page' =>            array(USER_LEVEL_STAFF,  'site', '', '', 0, '', 'parent_id, rank, id', ''),
     'page_content' =>         array(USER_LEVEL_STAFF,  'site', '', '', NF_NO_ADD, 'title', '', ''),
     'page_element' =>         array(USER_LEVEL_STAFF,  'site', '', '', 0, '', 'rank', ''),
     'page_type' =>            array(USER_LEVEL_SYSTEM, 'site', '', '', NF_CACHE, '', 'id', ''),
 
     'message' =>              array(USER_LEVEL_STAFF,  'site', '', '', 0, '', '', ''),
-    'site_content' =>         array(USER_LEVEL_STAFF,  'site', '', '', 0, 'title', '', ''),
     'google_application' =>   array(USER_LEVEL_USER,   'site', '', '', 0, '', '', ''),
+    'font' =>                 array(USER_LEVEL_SYSTEM, 'site', '', '', 0, '', '', ''),
 
     'sharing' =>              array(USER_LEVEL_STAFF,  'social', '', '', 0, 'title', '', ''),
     'share_log' =>            array(USER_LEVEL_STAFF,  'social', '', '', 0, 'title', '', ''),
@@ -67,7 +70,6 @@ $__CLASSES = array(
     'article' =>              array(USER_LEVEL_USER,   'content', '', '', 0, 'title', 'created desc', ''),
     'comment' =>              array(USER_LEVEL_USER,   'content', '', '', 0, 'title', 'created desc', ''),
     'newsletter' =>           array(USER_LEVEL_USER,   'content', '', '', 0, 'email_address', 'created desc', ''),
-    'object_description' =>   array(USER_LEVEL_STAFF, 'content', '', '', 0, '', '', ''),
     'article_type' =>         array(USER_LEVEL_USER,   'content', '', '', NF_CACHE_ASSOC, '', '', ''),
                                                                              
 
@@ -80,13 +82,12 @@ $__CLASSES = array(
     'auth_log' =>             array(USER_LEVEL_SYSTEM, 'user', '', '', NF_NO_DELETE, 'display_name', '', ''),
     'user_profile' =>         array(USER_LEVEL_STAFF,  'user', '', '', 0, 'display_name', '', ''),
     'provider_profile' =>     array(USER_LEVEL_STAFF,  'user', '', '', 0, 'display_name', '', ''),
-    'password_reset' =>       array(USER_LEVEL_SYSTEM, 'user', '', '', NF_NO_ACTIONS, '', '', ''),
+    // 'password_reset' =>       array(USER_LEVEL_SYSTEM, 'user', '', '', NF_NO_ACTIONS, '', '', ''),
     'wishlist' =>             array(USER_LEVEL_SYSTEM, 'user', '', '', 0, '', '', ''),
 
     
     'org' =>                  array(USER_LEVEL_STAFF,  'user', '', '', 0, 'name', 'name', ''),
     'contact' =>              array(USER_LEVEL_SYSTEM, 'user', '', '', 0, 'first_name,last_name,organization', '', ''),
-    'agent' =>                array(USER_LEVEL_ADMIN,  'user', '', '', 0, 'name', 'name', ''),
 
     'contact_status' =>       array(USER_LEVEL_SYSTEM, 'user', '', '', NF_CACHE_ASSOC, '', '', ''),
 
@@ -101,10 +102,7 @@ $__CLASSES = array(
     'rate_class' =>           array(USER_LEVEL_SYSTEM, 'enquiry', '', '', NF_CACHE_ASSOC, '', '', ''),
     'enq_status' =>           array(USER_LEVEL_SYSTEM, 'enquiry', '', '', 0, '', '', ''),
     'res_exception' =>        array(USER_LEVEL_SYSTEM, 'enquiry', '', '', 0, '', 'rank', ''),
-    'chat' =>                 array(USER_LEVEL_SYSTEM, 'enquiry', '', '', NF_NO_ACTIONS, '', 'created DESC', ''),
-    'feedback' =>             array(USER_LEVEL_SYSTEM, 'enquiry', '', '', 0, '', '', ''),
-    'feedback_purpose' =>     array(USER_LEVEL_SYSTEM, 'enquiry', '', '', 0, 'name', 'id', ''),
-    'feedback_profile' =>     array(USER_LEVEL_SYSTEM, 'enquiry', '', '', 0, 'name', 'id', ''),
+
     'price_breakdown'      => array(USER_LEVEL_USER,   'enquiry', '', '', 0, '', '', ''),
     'price_breakdown_row'  => array(USER_LEVEL_USER,   'enquiry', '', '', 0, '', 'date', ''),
 
@@ -121,23 +119,23 @@ $__CLASSES = array(
     'checkin_time' =>         array(USER_LEVEL_SYSTEM, 'property', '', '', NF_CACHE_ASSOC, '', 'id', ''),
     'checkout_time' =>        array(USER_LEVEL_SYSTEM, 'property', '', '', NF_CACHE_ASSOC, '', 'id', ''),
     'calendar_import' =>      array(USER_LEVEL_OWNER,  'property', '', '', 0, '', 'id', ''),
+    'agent' =>                array(USER_LEVEL_ADMIN,  'user', '', '', 0, 'name', 'name', ''),
 
 // review
     'review' =>              array(USER_LEVEL_ADMIN,  'review', '', '', 0, '', 'id', ''),
     'review_item' =>         array(USER_LEVEL_ADMIN,  'review', '', '', 0, '', 'id', ''),
     'review_score' =>        array(USER_LEVEL_ADMIN,  'review', '', '', 0, '', 'id', ''),
+    'chat' =>                 array(USER_LEVEL_SYSTEM, 'enquiry', '', '', NF_NO_ACTIONS, '', 'created DESC', ''),
+    'feedback' =>             array(USER_LEVEL_SYSTEM, 'enquiry', '', '', 0, '', '', ''),
+    'feedback_purpose' =>     array(USER_LEVEL_SYSTEM, 'enquiry', '', '', 0, 'name', 'id', ''),
+    'feedback_profile' =>     array(USER_LEVEL_SYSTEM, 'enquiry', '', '', 0, 'name', 'id', ''),
                                     
 // event
     'event' =>                array(USER_LEVEL_OWNER,  'event', '',      '', NF_LOG, '', '', ''),
-    //'checkin' =>              array(USER_LEVEL_OWNER,  'event', 'event', '', NF_LOG, '', '', 'event'),
-    //'checkout' =>             array(USER_LEVEL_OWNER,  'event', 'event', '', NF_LOG, '', '', 'event'),
-    //'cleaning' =>             array(USER_LEVEL_OWNER,  'event', 'event', '', NF_LOG, '', '', 'event'),
-    //'transport' =>            array(USER_LEVEL_OWNER,  'event', 'event', '', NF_LOG, '', '', 'event'),
-    //'maintenance' =>          array(USER_LEVEL_OWNER,  'event', 'event', '', NF_LOG, '', '', 'event'),
     'event_type' =>           array(USER_LEVEL_SYSTEM, 'event', '', '', NF_CACHE_ASSOC, '', '', ''),
     'event_status' =>         array(USER_LEVEL_SYSTEM, 'event', '', '', NF_CACHE_ASSOC, '', '', ''),
 
-    // gallery    
+// gallery    
     'plugin' =>               array(USER_LEVEL_STAFF,  'gallery', '', '', 0, 'name', '', ''),
     'gallery' =>              array(USER_LEVEL_USER,   'gallery', '', '', 0, 'title', 'rank ', ''),
     'media_collection' =>     array(USER_LEVEL_USER,   'gallery', '', '', 0, 'title', 'rank ', ''),
@@ -321,6 +319,8 @@ $__CLASS_ATTRIBUTES = array(
      'score' =>             array('Score',             'int',   0, AF_HIDE_ADD),
   ),
 
+  /** legacy - used to print old quotes on home page */
+  
   "feedback_purpose" =>
   array(
      'id'=>            	    array('ID',                	'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
@@ -2156,14 +2156,7 @@ $__CLASS_ATTRIBUTES = array(
      'label'=>         array('Label class',       'str',   '', 0, 32 ),
      'color'=>         array('Color',             'color',   '000000', 0, 6),
   ),
-          
-  "site_role" =>       
-  array(
-     'id'=>            array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 2),
-     'name'=>          array('Name',              'str',   '', 1, 20 ),
-     'description'=>   array('Description',       'str',   '', 1, 255 ),
-  ),
-            
+                      
   "event_status" => 
   array(
      'id'=>            array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 2),
@@ -2800,8 +2793,7 @@ $__CLASS_ATTRIBUTES = array(
      'built'  =>            array('Built?',             'bool', 0, AF_HIDE_ADD, 0),
      'live'   =>            array('Live?',              'bool', 0,  AF_HIDE_ADD, 0),
      'secure'   =>          array('Secure?',            'bool', 0,  AF_HIDE_ADD, 0),
-     'roles'=>              array('Roles',              'msel', '', 0, 'site_role'),
-     
+          
      'name'=>              array('Name / Title',      'str',   '', 1, 100 ),
      'shortname'=>         array('Shortname',         'str',   '', AF_OBLIGATORY|AF_UNIQUE, 50),
      'library_prefix'=>    array('Libarary Prefix',   'str',   '', AF_HIDE_ADD, 20),
