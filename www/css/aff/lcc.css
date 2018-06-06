@@ -1,9 +1,0 @@
-BODY { background-color: #000; color: #000;
-       font-family: Verdana, Arial, Helvetica, sans-serif;
-       font-size:10px; font-style: normal; font-weight: normal; font-variant: normal;
-       line-height: normal; text-align: left }
-
-.heading {font-size:14px;color:#DFDFDF;background-color:#000;text-align:left;padding:8px;font-weight:bold;}
-.subheading {font-size:12px;color:#DFDFDF;background-color:#000;text-align:left;padding:3px;font-weight:bold;}
-.subsection {color: #fff; text-align:left;margin-left:10px; }
-.subheading A {color: #fff}

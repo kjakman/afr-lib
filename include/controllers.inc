@@ -4913,12 +4913,11 @@ function controller_gallery_collections($app, $options = []) {
 }
 
 function controller_test($app, $options = []) {
+  if($app->user_level < USER_LEVEL_ADMIN) return scope_error($app, "Test page", '404');
   $scope = $app->page->scope;
   $scope->debug = 'some debug message';  
   $scope->error = 'some random error';  
   $scope->message = ['message1', 'message2'];  
-  //$scope->redirect = 'http://www.google.com';
-  //$scope->template = 'test2';
   return;
 }
 

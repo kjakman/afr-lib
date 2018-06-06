@@ -2675,37 +2675,6 @@ $__CLASS_ATTRIBUTES = array(
   
      ),
   
-  
-  
-  "server" => 
-  array(
-     'id'=>                array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 3),
-     'created'=>           array('Created',           'date',   ATT_DEFAULT_TODAY, AF_HIDE_LIST|AF_READONLY, 6 ),
-     'timestamp'=>         array('Timestamp',         'timestamp',   0, AF_HIDE|AF_READONLY, 14 ),
-     'active'=>            array('Active',            'bool',   1, 0),
-     'production'=>        array('Production Server?', 'bool',   0, 1),
-     'name'=>              array('Name',              'str',   '', AF_OBLIGATORY, 100 ),
-     'description'=>       array('Description',       'text',  '', AF_HIDE_LIST, 255),
-  
-     'hostname'=>          array('Hostname',          'str',  '', AF_OBLIGATORY|AF_READONLY_EDIT, 100 ),
-     'ip'=>                array('IP',                'ip',   '', AF_SEARCHABLE|AF_READONLY|AF_HIDE_ADD, 10 ),
-     'country'=>           array('Country',           'many2one', 0, AF_SEARCHABLE|AF_READONLY|AF_HIDE_ADD, 'countries'),
-  
-     'webroot'=>           array('Web root',           'str',   '/web/sites/', AF_HIDE_LIST, 100),
-     'imageroot'=>         array('Image root',         'str',   '/web/images/', AF_HIDE_LIST, 100),
-     'dataroot'=>          array('Data root',         'str',   '/web/data/', AF_HIDE_LIST, 100),
-     'logdir'=>            array('Log dir',           'str',   '/web/logs/', AF_HIDE_LIST, 100),
-  
-     'apachename'=>        array('Apache name',       'str',   'apache2', AF_HIDE_LIST, 20),
-  
-     'db_type'=>           array('DB name',           'valSelect',   'mysql', 0, $db_type_array),
-     'db_db'=>             array('DB name',           'str',   '', 0, 50),
-     'db_user'=>           array('DB user',           'str',   '', AF_HIDE_LIST, 20),
-     'db_password'=>       array('DB password',       'password',   '', AF_HIDE_LIST, 50),
-     
-  ),
-  
-  
   // per language defaults for site      
   "site_content" => 
   array(
@@ -2725,14 +2694,6 @@ $__CLASS_ATTRIBUTES = array(
      'se_description'=>    array('Search Engine Description', 'text', '__pagename __pathvar __sitename', AF_HIDE_LIST),
      'se_keywords'=>       array('Search Engine Keywords',    'text', '', AF_HIDE_LIST),
   
-     //'site_header'=>           array('Header (HTML)',            'html', '', AF_HIDE_LIST),
-     //'site_footer'=>           array('Footer (HTML)',            'html', '', AF_HIDE_LIST),
-     //'site_extra'=>            array('Extra  (HTML)',            'html', '', AF_HIDE_LIST),
-                                                                                         
-     //'mail_header'=>           array('Header (HTML)',            'html', '', AF_HIDE_LIST),
-     //'mail_footer'=>           array('Footer (HTML)',            'html', '', AF_HIDE_LIST),
-     
-     //'alt_site_id'=>     array('Alternate Site for this language', 'many2one', ATT_DEFAULT_NULL, 0, 'site'),
      'machine_translated'=>    array('Machine Translated on',    'str',  '', AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT, 20),
               
      

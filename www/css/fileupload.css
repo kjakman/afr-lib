@@ -1,9 +1,0 @@
-/* New Blueimp Jquery File upload */
-.file-container { list-style-type: none; margin: 0; padding: 0; overflow:auto;}
-.file-container li {border:4px solid red; margin: 3px 3px 3px 0; padding: 1px; float: left; width: 120px; height: 130px; text-align: center; border:1px solid #ccc;margin:4px;padding:4px}
-.file-container .thumbCont, .file-container .thumbCont img {width:100px;height:100px;}      
-.file-container DIV.buttons {position: absolute;top:5px;left:10px;}
-.file-container DIV.name {position: absolute;top:104px;left:0px;font-size:0.8em;width:100px;height:20px;overflow:hidden;text-overflow: ellipsis;}
-
-.template-download .thumbCont IMG  {max-width: 100px}
-

@@ -1353,13 +1353,13 @@ function print_exception($ex, $options=NULL) {
     $ex_json = json_encode($data);      
 
     $type = get_object('property', $apt_id, 'type');
-    $link = array();
-    $links[] = html_link('#', html_image('/images/icons/edit_tiny.png', phrase('edit', CAPITALIZE)), array('js' => "onclick='load_div(\"load_exception_form\", \"add_exception_div\", $ex_json);return false'"));
-    $links[] = html_link('#', html_image('/images/icons/delete_tiny.png', phrase('remove', CAPITALIZE)), array('js' => "onclick='if(!confirm(\"Are you sure you want to permanently delete this exception?\")) return false; delete_object(\"res_exception\", $ex->id, {\"handler\": \"print_host_exceptions\", \"handler_data\": $data_json});return false'"));
+    $link = array();                                              
+    $links[] = html_link('#', '<i class="fa fa-pencil-square"></i>', array('js' => "onclick='load_div(\"load_exception_form\", \"add_exception_div\", $ex_json);return false'"));
+    $links[] = html_link('#', '<i class="fa fa-times"></i>', array('js' => "onclick='if(!confirm(\"Are you sure you want to permanently delete this exception?\")) return false; delete_object(\"res_exception\", $ex->id, {\"handler\": \"print_host_exceptions\", \"handler_data\": $data_json});return false'"));
 
-    if($count > 1 && $i > 0) $links[] = html_link('#', html_image('/images/icons/16/arrow-090.png', phrase('move_up', CAPITALIZE)), array('js' => "onclick='operation_object(\"res_exception\", $ex->id, \"rank_up\", {\"handler\": \"print_host_exceptions\", \"handler_data\": $data_json}, $search_json);return false'"));
-    if($count > 1 && $i < $count-1) $links[] = html_link('#', html_image('/images/icons/16/arrow-270.png', phrase('move_down', CAPITALIZE)), array('js' => "onclick='operation_object(\"res_exception\", $ex->id, \"rank_down\", {\"handler\": \"print_host_exceptions\", \"handler_data\": $data_json}, $search_json);return false'"));
-    $links_str = implode(' ', $links);
+    if($count > 1 && $i > 0) $links[] = html_link('#', '<i class="fa fa-arrow-up"></i>', array('js' => "onclick='operation_object(\"res_exception\", $ex->id, \"rank_up\", {\"handler\": \"print_host_exceptions\", \"handler_data\": $data_json}, $search_json);return false'"));
+    if($count > 1 && $i < $count-1) $links[] = html_link('#', '<i class="fa fa-arrow-down"></i>', array('js' => "onclick='operation_object(\"res_exception\", $ex->id, \"rank_down\", {\"handler\": \"print_host_exceptions\", \"handler_data\": $data_json}, $search_json);return false'"));
+    $links_str = implode(' ', $links);                                         
   }
   $reason = $ex->description ? " ($ex->description) " : "";
   $item = implode(' - ', $in).' => '.implode(' - ', $out)." $reason";

@@ -781,34 +781,6 @@ function getGDversion() {
   return $gd_version_number;
 } 
 
-/** unsused - automatic comment added on  */
-function generate_corners($color, $image_dir_output='') {
-  if(!$color) return "FFFFFF"; // default fg color is white
-  $color = fix_color($color);
-  $image_dir_input = $_SERVER['DOCUMENT_ROOT']."/images/corners/";
-  if(!$image_dir_output) $image_dir_output = $image_dir_input;
-  if(file_exists($image_dir_output.$color."_BL.png")) return $color; // nothing to do 
-  ColorReplace($image_dir_input."FFFFFF_BL.png", $color, $image_dir_output.$color."_BL.png");
-  ColorReplace($image_dir_input."FFFFFF_BR.png", $color, $image_dir_output.$color."_BR.png");    
-  ColorReplace($image_dir_input."FFFFFF_TL.png", $color, $image_dir_output.$color."_TL.png");    
-  ColorReplace($image_dir_input."FFFFFF_TR.png", $color, $image_dir_output.$color."_TR.png");
-  return $color;
-}
-
-/** unsused - automatic comment added on  */
-function generate_borders($color, $image_dir_output='') {
-  if(!$color) return ""; // default border is black
-  $color = fix_color($color);
-  $image_dir_input = $_SERVER['DOCUMENT_ROOT']."/images/corners/";
-  if(!$image_dir_output) $image_dir_output = $image_dir_input;
-  if(file_exists($image_dir_output.$color."_BLB.gif")) return $color; // nothing to do
-  ColorReplace($image_dir_input."000000_BLB.gif", $color, $image_dir_output.$color."_BLB.gif");    
-  ColorReplace($image_dir_input."000000_BRB.gif", $color, $image_dir_output.$color."_BRB.gif");    
-  ColorReplace($image_dir_input."000000_TLB.gif", $color, $image_dir_output.$color."_TLB.gif");    
-  ColorReplace($image_dir_input."000000_TRB.gif", $color, $image_dir_output.$color."_TRB.gif"); 
-  return $color;
-}
-
 function ColorReplace($url, $color, $save_to='')
 {
     if($save_to && file_exists($save_to)) return $url; // already exists
