@@ -1,0 +1,91 @@
+/* old tool tips - thank you: */
+.tooltip-old {margin-left:4px;}
+.modaltip {margin-left:4px;}
+.infotip {margin-left:4px;}
+
+/* nice tool tips - thank you: */
+.afr-tooltip {
+}
+
+/* kjetil: hide bottom border of anchor if showing icon */
+/*
+A.afr-tooltip span > img {                
+  position: absolute;
+  border: none;
+  vertical-align: bottom;
+  top: 0px;
+  left: 4px;
+  padding: 0px;
+  background:white;
+}
+*/
+
+.afr-tooltip span {                
+  margin-left: -999em;
+  position: absolute;
+  color: #000;
+  text-align: left;
+  font-size: 1em;
+  min-width: 200px;
+}
+
+.afr-tooltip:hover {
+}
+
+.afr-tooltip:hover span {
+  border-radius: 5px 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; 
+  box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.1); -webkit-box-shadow: 5px 5px rgba(0, 0, 0, 0.1); -moz-box-shadow: 5px 5px rgba(0, 0, 0, 0.1);
+  font-family: Calibri, Tahoma, Geneva, sans-serif;
+  z-index: 999 !important;
+  position: absolute; 
+  left: 1em; top: 2em; 
+  margin-left: 0;
+  padding-left: 55px !important;
+}
+  
+/* big icon */
+
+.afr-tooltip:hover em, .msg em {
+  font-family: Candara, Tahoma, Geneva, sans-serif; font-size: 1.2em; font-weight: bold;
+  display: block; padding: 0.2em 0 0.6em 0;
+}
+/* html a:hover { background: transparent; } */
+.afr-tooltip .custom    { padding: 0.5em 0.8em 0.8em 2em;}
+.afr-tooltip .classic   { padding: 0.5em; background: #FFFFAA; border: 1px solid #FFAD33; }
+.afr-tooltip .help      { background: #9FDAEE; border: 1px solid #2BB0D7;}
+.afr-tooltip .info      { background: #9FDAEE; border: 1px solid #2BB0D7;	}
+.afr-tooltip .success   { background: #F0FFF0; border: 1px solid #3D8B37;	}
+.afr-tooltip .warning, .afr-tooltip .warn   { background: #FFFFAA; border: 1px solid #FFAD33; }
+.afr-tooltip .critical, .afr-tooltip .error { background: #FFCCAA; border: 1px solid #FF3334;	}
+
+/* jquery UI tooltip */
+
+.ui-tooltip DIV {
+  border-radius: 5px 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; 
+  box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.1); -webkit-box-shadow: 5px 5px rgba(0, 0, 0, 0.1); -moz-box-shadow: 5px 5px rgba(0, 0, 0, 0.1);
+  font-family: Calibri, Tahoma, Geneva, sans-serif;
+  z-index: 999 !important;
+}
+
+/* the big icon */
+.afr-tooltip span i {
+  border: 0; 
+  margin: -20px 0 0 -75px;
+  position: absolute;
+  z-index: 99999 !important;
+} 
+
+
+.ui-tooltip .custom    { padding: 0.5em 0.8em 0.8em 2em;}
+.ui-tooltip .classic   { padding: 0.5em; background: #FFFFAA; border: 1px solid #FFAD33; }
+.ui-tooltip .help      { background: #9FDAEE; border: 1px solid #2BB0D7;}
+.ui-tooltip .info      { background: #9FDAEE; border: 1px solid #2BB0D7;	}
+.ui-tooltip .success   { background: #F0FFF0; border: 1px solid #3D8B37;	}
+.ui-tooltip .warning, .ui-tooltip .warn   { background: #FFFFAA; border: 1px solid #FFAD33; }
+.ui-tooltip .critical, .ui-tooltip .error { background: #FFCCAA; border: 1px solid #FF3334;	}
+
+
+/* puts currency inside input 
+Thanks: http://stackoverflow.com/questions/2913236/html-text-input-field-with-currency-symbol
+*/
+

@@ -54,7 +54,7 @@ if(strpos($_SERVER['REQUEST_URI'], 'act=logout')) {
 
 /** move these to $app. get rid of all session vars except those really needed (user/site/lang/deployment) */
 $_SESSION['auth_token'] = $_SESSION['auth_token'] ?: md5(rand(0, 100000)); // random token
-$_SESSION['version'] = $version=1519209001; // used for cachebusting. Don't change, hotfix.sh depends on this exact line.
+$_SESSION['version'] = $version = 1519209001; // used for cachebusting. Don't change, hotfix.sh depends on this exact line.
 $_SESSION['debug_db'] = false;
 $_SESSION['system_cache'] = true; /** now using Redis - this is in use */
 $_SESSION['redis_cache'] = true;

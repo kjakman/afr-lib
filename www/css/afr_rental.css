@@ -1,0 +1,235 @@
+  
+.accounting_table {border-spacing: 0}
+.accounting_table td, .accounting_table th {border-right: 1px solid black;padding:0 4px;}
+.accounting_table th {border-bottom: 1px solid black;}
+.accounting_table th:last, .accounting_table td~td {text-align: right;vertical-align:bottom}
+
+.rate-table {border-spacing: 0}
+.rate-table th {border-right: 1px double #444;padding:0 8px 0 4px;}
+.rate-table td {padding:0 8px;}
+.rate-table th:last, .rate-table td~td {text-align: right;vertical-align:bottom}
+
+/* full calendar */
+.fc-rental-rate {font-size: 0.8em;color: #666;margin-left:6px;}
+.fc-weekend-rate {color: #A66;}
+.fc-special-rate {color: #6A6;}
+.fc-rental-rate.red {color: #A66;}
+
+TD.fc-event-container {font-size: 0.8em}
+TD.fc-event-container .fc-reservation, TD.fc-event-container .fc-exception {padding-left:4px} 
+TD.fc-event-container .fc-reservation.fc-start, TD.fc-event-container .fc-day-grid-event.fc-start {margin-left: 20px !important;}
+TD.fc-event-container .fc-reservation.fc-end, TD.fc-event-container .fc-day-grid-event.fc-end {margin-right: -20px !important;}
+
+
+TD.fc-event-container .fc-exception.fc-start {margin-left: 0px;}
+TD.fc-event-container .fc-exception.fc-end {margin-right: 0px;}
+TD.fc-event-container .fc-exception {border-radius: 0px;}
+
+.fc-week-number {width: 55px !important;border:1px solid red;background-color: #efefef;}
+
+/* We could generate this from DB - also in admincal.css.php */
+.fc-status-complete {background-color: #008800 !important;}
+.fc-status-blocked {background-color: #880000 !important;}
+.fc-status-reserved {background-color: #cc0000 !important;}
+.fc-status-proposed {background-color: #0066ff !important;}
+.fc-status-pending {background-color: #ffff00 !important;}
+.fc-status-request {background-color: #ff8800 !important;}
+.fc-status-draft {background-color: #ffff00 !important;}
+.fc-status-declined {background-color: #aaaaaa !important;}
+.fc-status-cancelled, .fc-status-canceled {background-color: #888888 !important;}
+.fc-status-rejected {background-color: #666666 !important;}
+.fc-status-expired {background-color: #444444 !important;}
+             
+.fc-week-rate {margin-top:50%;text-align:left;position:relative;width:40px;background-color:transparent;z-index:2}
+.fc-month-rate {margin-top:10px;}
+
+.fc-highlight {
+  background: #844 !important;
+}
+
+.booking-item-details .booking-item-header-discount-rate .text-lg {
+  font-size: 42px;
+  line-height: 1em;
+}
+
+.rental-detail-photos IMG {
+}
+
+.rental-list-photo, .listing-img-container {
+  cursor: pointer;
+}
+
+LI.listing-item {
+  border: 1px solid #ccc;
+  padding:10px;
+  margin: 10px;
+}
+
+UL.ui-autocomplete {z-index: 10999}
+.pac-item .icon {font-size: 16px; margin-right: 5px;}
+
+.avatar-wrapper {text-align: center}
+.user-avatar IMG {max-width: 100px}
+
+.expandable {position:relative}
+.expandable .expandable-content{position:relative;height:7em;overflow:hidden;-webkit-transition:height 0.2s;-moz-transition:height 0.2s;-o-transition:height 0.2s;transition:height 0.2s}
+.expandable .expandable-content.expandable-content-long{height:14em}
+.expandable .expandable-content-full{overflow:hidden;opacity:0;visibility:hidden;position:absolute;z-index:-1;-webkit-transition:height 0.2s,opacity 0.2s;-moz-transition:height 0.2s,opacity 0.2s;-o-transition:height 0.2s,opacity 0.2s;transition:height 0.2s,opacity 0.2s}
+.expandable .expandable-indicator{position:absolute;width:100%;height:3em;bottom:0;background:rgba(245,245,245,0);background:-moz-linear-gradient(top, rgba(245,245,245,0) 0%, rgba(245,245,245,0.9) 50%, rgba(245,245,245,0.9) 50%, #f5f5f5 100%);background:-webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(245,245,245,0)), color-stop(50%, rgba(245,245,245,0.9)), color-stop(50%, rgba(245,245,245,0.9)), color-stop(100%, #f5f5f5));background:-o-linear-gradient(top, rgba(245,245,245,0) 0%, rgba(245,245,245,0.9) 50%, rgba(245,245,245,0.9) 50%, #f5f5f5 100%);background:-ms-linear-gradient(top, rgba(245,245,245,0) 0%, rgba(245,245,245,0.9) 50%, rgba(245,245,245,0.9) 50%, #f5f5f5 100%);filter:progid:DXImageTransform.Microsoft.gradient( startColorstr='#00f5f5f5', endColorstr='#fff5f5f5',GradientType=0 );background:linear-gradient(top, rgba(245,245,245,0) 0%, rgba(245,245,245,0.9) 50%, rgba(245,245,245,0.9) 50%, #f5f5f5 100%)}
+.expandable .expandable-indicator.expandable-indicator-light{background:rgba(255,255,255,0);background:-moz-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.9) 50%, rgba(255,255,255,0.9) 50%, #fff 100%);background:-webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(255,255,255,0)), color-stop(50%, rgba(255,255,255,0.9)), color-stop(50%, rgba(255,255,255,0.9)), color-stop(100%, #fff));background:-o-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.9) 50%, rgba(255,255,255,0.9) 50%, #fff 100%);background:-ms-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.9) 50%, rgba(255,255,255,0.9) 50%, #fff 100%);filter:progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', endColorstr='#ffffffff',GradientType=0 );background:linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.9) 50%, rgba(255,255,255,0.9) 50%, #fff 100%)}
+.expandable.expanded .expandable-indicator,.expandable.expanded .expandable-trigger-more,.expandable.expanded .expandable-content-summary{display:none}
+.expandable.expanded .expandable-content,.expandable.expanded .expandable-content-long{height:auto}
+.expandable.expanded .expandable-content-full{opacity:1;visibility:visible;z-index:auto;position:relative}
+
+.expandable H4 {margin-top:10px;margin-bottom:6px !important}
+
+SPAN.cc-logo {
+  position: absolute;
+  left: 50px;
+	background-image: url("https://www.mollie.nl/images/payscreen/methods/creditcard.png");
+	background-repeat: no-repeat;
+	width: 50px !important;
+	top: -2px;
+	height: 40px !important;
+}
+
+.methods-option {
+	background-position: 8px 0 !important;
+	background-repeat: no-repeat !important;
+}
+.methods-option span {
+	padding-left: 50px;
+}
+.methods-option.ideal {
+	background-image: url("https://www.mollie.nl/images/payscreen/methods/ideal.png");
+}
+.methods-option.creditcard {
+	background-image: url("https://www.mollie.nl/images/payscreen/methods/creditcard.png");
+}
+.methods-option.mistercash {
+	background-image: url("https://www.mollie.nl/images/payscreen/methods/mistercash.png");
+}
+.methods-option.paypal {
+	background-image: url("https://www.mollie.nl/images/payscreen/methods/paypal.png");
+}
+.methods-option.paysafecard {
+	background-image: url("https://www.mollie.nl/images/payscreen/methods/paysafecard.png");
+}
+.methods-option.banktransfer {
+	background-image: url("https://www.mollie.nl/images/payscreen/methods/banktransfer.png");
+}
+.methods-option.bitcoin {
+	background-image: url("https://www.mollie.nl/images/payscreen/methods/bitcoin.png");
+}
+.methods-option.sofort {
+	background-image: url("https://www.mollie.nl/images/payscreen/methods/sofort.png");
+}
+.methods-option.belfius {
+	background-image: url("https://www.mollie.nl/images/payscreen/methods/belfius.png");
+}
+.methods-option.directdebit {
+	background-image: url("https://www.mollie.nl/images/payscreen/methods/directdebit.png");
+}
+
+.methods-option.paypal_or_cc span {
+	padding-left: 100px !important;
+}
+
+
+.payscreen form ul {
+	margin: 20px;
+	list-style: none;
+}
+
+.payscreen form  li {
+	display: block;
+	margin-bottom: 8px;
+}
+.payscreen form li button {
+	height:        40px;
+	font-size:     14px;
+	font-weight:   500;
+	text-align:    left;
+	text-shadow:   none;
+	padding:       0;
+	line-height:   38px;
+
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-ms-border-radius: 3px;
+	border-radius: 3px;
+}
+
+.payscreen form li button span {
+	line-height: 38px;
+	margin-left: 4px;
+}
+
+.ui-autocomplete A.ui-state-focus { /** weird behavior on focus in places autocomplete menu */
+  border: none !important;
+  margin: 0 !important;
+}
+
+.overview-map-cont {
+  position: fixed;
+  top: 67px;
+  left: 0px;
+  bottom: 0px;
+  width: 40%;
+  height: 100%;
+  padding-bottom: 60px;
+}
+.overview-map {
+  width: 100%;
+  height: 100%;
+}
+
+.container-full { /* Bootstrap hack to use full screen width */
+  margin: 0 auto;
+  padding-right:20px;
+  width: 100%;
+}
+
+.air-item {
+  margin: 0;
+  padding: 0;
+  box-sizing:border-box;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;
+  border: 1px solid white;
+}
+
+.map-auto-refresh {
+  padding: 0 8px;
+}
+
+.map-panel {
+  border: 1px solid #dce0e0;
+  background-color: #fff;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  border-radius: 0;
+}
+#property-list .col-md-6, #property-list .col-lg-4 {padding-left: 5px;padding-right:5px;} 
+
+
+.air-item.selected {
+  border: 1px solid red;
+  margin:-1px;  
+}
+
+#rental-description H4 {
+  margin-top: 10px !important;
+}
+
+.datepicker-days .disabled-date {
+  background-color: #800 !important;
+  opacity: 0.3 !important;
+}
+
+input[readonly].default-cursor {
+  cursor: default;
+}
+
+.star-rating .fa {
+  color: #fde16d;
+}
+
