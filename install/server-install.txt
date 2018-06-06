@@ -1,0 +1,309 @@
+# Notes for setting up a fresh Ubuntu 18.04 LTS server with MariaDB, Nginx, and PHP 7.2.x
+
+# make required directories
+
+sudo mkdir /backup
+sudo mkdir /backup/db
+
+sudo chown -R afr:afr /backup
+
+sudo mkdir /web
+sudo mkdir /web/code
+sudo mkdir /web/code/php
+sudo mkdir /web/code/sh
+sudo mkdir /web/data
+sudo mkdir /web/templates
+sudo mkdir /web/logs
+sudo mkdir /web/sites
+
+sudo chown -R afr:afr /web
+sudo chmod -R 750 /web
+
+sudo chown -R afr:www-data /web/data /web/logs
+sudo chmod 770 /web/data
+sudo chmod 770 /web/logs
+
+# create key pair
+cd ~/.ssh
+ssh-keygen -t rsa
+
+# copy key to remote server with soure
+ssh-copy-id [remote-user]@[remote-server]
+
+# copy data
+rsync -az [remote-user]@[remote-server]:/web/code/php/sh/ /web/code/sh/
+rsync -az [remote-user]@[remote-server]:/web/data/ /web/data/
+
+# copy shell scripts
+rsync -az [remote-user]@[remote-server]:/web/code/php/sh/* /web/code/sh/
+
+# copy db
+scp [remote-user]@[remote-server]:/backup/db/vpatina.sql /backup/db
+
+
+# edit bashrc
+cd;
+nano .bashrc
+
+# add the below two lines to the end
+# alias ls='ls -l'
+# export PATH=$PATH:/web/code/sh/
+
+source .bashrc
+
+
+# install software
+
+sudo apt update
+sudo apt -y install nginx
+
+sudo ufw allow 'Nginx Full'
+sudo ufw allow 'OpenSSH'
+
+sudo systemctl enable nginx
+sudo systemctl start nginx
+
+sudo apt install -y mariadb-server mariadb-client
+sudo systemctl enable mariadb.service
+sudo systemctl start nginx.service
+
+sudo mysql_secure_installation
+sudo systemctl restart mariadb.service
+
+# below won't work without root user in new versions
+sudo mysql -u root -p
+
+create database afr;
+create database afrdev;
+
+# to get hashed password
+select password ('xxx'); 
+grant all on afr.* to afr@localhost identified by password 'hashed password';
+grant all on afrdev.* to afr@localhost identified by password 'hashed password';
+use afr;
+source /backup/db/afr.sql
+
+# PHP 7.2
+
+sudo apt -y install php-fpm php-mysql
+sudo nano /etc/php/7.2/fpm/php.ini 
+# uncomment and set to 0: cgi.fix_pathinfo=0
+# set upload_max_filesize = 30M
+# set post_max_size = 30M
+
+sudo systemctl enable php7.2-fpm
+sudo systemctl restart php7.2-fpm
+
+sudo apt -y install php-pear php-dev
+sudo apt -y install php-curl php-xml
+sudo apt -y install zip unzip php7.2-zip
+sudo apt -y install libyaml-dev libz-dev
+sudo apt -y install php-raphf php-propro php7.2-mbstring php7.2-gd
+sudo apt -y install imagemagick php-imagick
+
+# php.ini
+sudo emacs /etc/php/7.2/fpm/php.ini
+extension=yaml.so
+extension=http.so
+extension=ssh2.so
+extension=raphf.so
+extension=propro.so
+
+# optionally
+extension=redis.so
+extension=mongodb.so
+
+# pear / pecl
+sudo pecl channel-update pecl.php.net
+sudo pecl install imagick geoip
+sudo pecl install yaml-beta
+sudo pecl install pecl_http
+sudo pear install Mail
+
+# node / npm
+sudo apt -y install software-properties-common
+curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+sudo apt -y install -y nodejs
+
+# restart fpm and nginx
+sudo systemctl restart php7.2-fpm
+sudo systemctl restart nginx
+
+# git
+git config --global user.email "you@email.com"
+git config --global user.name "Your Name"
+
+# pull git repos
+cd /web/code/php/
+
+# Pull Application Library
+git clone https://github.com/kjakman/afr-lib.git 
+
+# tFPDF font directory must be writeable
+sudo chgrp -R www-data afr-lib/vendor/docnet/tfpdf/src/font/
+sudo chmod -R ug+rw afr-lib/vendor/docnet/tfpdf/src/font/
+
+# Pull Web Application
+cd /web/sites/
+git clone https://github.com/kjakman/afr-app.git 
+
+# below should probably be handled by git repo, but...
+# create smarty dirs and make writeable
+mkdir afr-app/smarty
+mkdir afr-app/smarty/templates
+mkdir afr-app/smarty/templates_c
+sudo chgrp -R www-data afr-app/smarty/*
+sudo chmod -R ug+rw afr-app/smarty/*
+
+# also, the user directory afr-app/www/user/ should be writeable by www-data
+# default is to symlink this to /web/data/user/ or /web/data/[site]/user/
+sudo chgrp -R www-data afr-app/www/user
+sudo chmod -R ug+rw afr-app/www/user
+
+
+# bower
+cd /web/code/php/afr-lib/
+sudo npm install -g bower
+bower install -f
+ln -s bower_components www/bower
+# if asked, use bootstrap version 3.3.x
+
+# below were used for installation - result stored in bower.json
+# no need to run these. bower install takes care of it.
+bower install --save moment moment-range fancybox summernote bootstrap-datepicker google-markerwithlabel bootstrap3-wysihtml5-bower
+bower install --save fullcalendar magnific-popup ion-range-slider bootstrap=validator select-to-autocomplete bootstrap-star-rating
+bower install --save bootstrap-validator bootstrap-confirmation2@2.x.x parallax accounting.js codemirror
+bower install --save character-countdown jquery.countdown intl-tel-input jquery-truncate geocomplete
+bower install --save foundation-icon-fonts bootstrap-social flag-icon-css select2 addtocalendar
+bower install --save simpleWeather blueimp-file-upload
+
+# addtocalendar has no styles
+cd /web/code/php/afr-lib/bower_components/addtocalendar
+git clone https://github.com/AddToCalendar/addtocalendar-styles.git
+
+
+# composer
+cd
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+php -r "if (hash_file('SHA384', 'composer-setup.php') === '544e09ee996cdf60ece3804abc52599c22b1f40f4323403c44d44fdfdd586475ca9813a858088ffbc1f233e9b180f061') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+php composer-setup.php
+php -r "unlink('composer-setup.php');"
+sudo mv composer.phar /usr/bin
+sudo ln -s /usr/bin/composer.phar /usr/bin/composer
+cd /web/code/php/afr-lib/
+composer install
+
+# Set up nginx
+
+# plain version
+sudo cp /web/sites/afr-app/nginx/security /etc/nginx
+sudo cp /web/sites/afr-app/nginx/afr-app /etc/nginx/sites-available/
+cd /etc/nginx/sites-enabled/
+sudo ln -s ../sites-available/afr-app
+
+# rental version
+sudo cp /web/sites/afr-app-rental/nginx/security /etc/nginx
+sudo cp /web/sites/afr-app-rental/nginx/afr-app-rental /etc/nginx/sites-available/
+cd /etc/nginx/sites-enabled/
+sudo ln -s ../sites-available/afr-app-rental
+
+# gallery version
+sudo cp /web/sites/afr-app-gallery/nginx/security /etc/nginx
+sudo cp /web/sites/afr-app-gallery/nginx/afr-app-gallery /etc/nginx/sites-available/
+cd /etc/nginx/sites-enabled/
+sudo ln -s ../sites-available/afr-app-gallery
+
+# restart web server
+/web/code/sh/restartweb.sh
+
+# done
+
+
+# Todo:
+# ext-curl ext-dom
+
+
+
+# The below file needs to be saved as function.json.php in the smarty plugins directory
+# It's now in the GitHub repos
+
+# /web/code/php/afr-lib/vendor/smarty/smarty/libs/plugins/function.json.php
+
+<?php
+/**
+ * Smarty {json} plugin
+ *
+ * Type:       function
+ * Name:       json
+ * Date:       Apr 12, 2009
+ * Purpose:    Read JSON from file, decode and assign data to Smarty template variable
+ * Syntax:     {json file="filename.json"}: 'file' is a required parameter (URL)
+ *             Predefined additional parameters:
+ *             - assign="data": assign all JSON data to template variable $data
+ *             - obj2obj [ Boolean | default:false ]:
+ *               decodes JSON objects as either PHP associative arrays or PHP objects
+ *             - debug [ Boolean | default:false ]: print decoded data in template
+ *             Variable parameters:
+ *             {json file="filename.json" home="homepage" lang="languages"}:
+ *               assign (JSONdata)["homepage"] to template variable $home
+ *               and (JSONdata)["languages"] to $lang,
+ *               compare to: {config_load file="filename.conf" section="homepage"}
+ * Install:    Drop into the plugin directory
+ * @link       http://jlix.net/extensions/smarty/json
+ * @author     Sander Aarts <smarty at jlix dot net>
+ * @copyright  2009 Sander Aarts
+ * @license    LGPL License
+ * @version    1.0.1
+ * @param      array
+ * @param      Smarty
+ 
+ * Rewritten by Kjetil Larsen for Smarty v3 in 2016
+ 
+ */
+function smarty_function_json($params, &$smarty)
+{
+	if(!is_callable('json_encode')) {
+		return "{json} requires json_encode() function (PHP 5.2.0+)";
+	}
+	if (empty($params['file'])) {
+		return "{json} parameter 'file' must not be empty";
+	}
+	if (isset($params['assign'], $params[$params['assign']])) {
+		return "{json} parameter 'assign' conflicts with a variable assign parameter (both refer to the same variable)";
+	}
+	
+	$data = file_get_contents($_SERVER['DOCUMENT_ROOT'].$params['file']);
+	if (empty($data))
+		$json = '';
+	else
+		$json = json_decode($data, true);
+		
+	unset($params['file']);
+	
+	if (!empty($params['assign'])) {
+		$smarty->assign($params['assign'], $json);
+		return ''; 
+	}
+	
+	return $json;
+}
+
+
+
+
+# Git Hub recipies - don't run
+
+# To reset expisting repo, just use git push -f
+
+# create a new repository that has the initial commit that you want
+mkdir foo; cd foo; git init; ...; git commit
+
+# set up a remote
+git remote add origin <url-of-remote>
+git branch --set-upstream master origin/master
+
+# push your new history
+git push -f
+
+# delete obsolete remote branches
+git push origin :deprecated-branch

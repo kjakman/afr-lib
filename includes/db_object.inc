@@ -3870,7 +3870,7 @@ function object_media_upload($qqfile, $mediaData, $options) {
   //print_log("New upload: fileArray=".dump($qqfile, true)."options=\n".dump($options, true), 'upload', $log_level_test);
   extract($options);
   
-  require_once("bower/blueimp-file-upload/php/UploadHandler.php");
+  require_once("blueimp/UploadHandler.php");
 
   $target_field = $options['target_field'];
 
