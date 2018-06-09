@@ -40,8 +40,8 @@ $system_log_file = $_SESSION['system_log_file'] = $_SESSION['main_log'] = $main_
 $live = $host_sub == 'www' || $host_sub == '';
 $doc_root = rtrim($_SERVER['DOCUMENT_ROOT'], '/').'/';
 
-$app_root = is_dir("{$doc_root}../afr/") ? "{$doc_root}../afr/" : "{$doc_root}/afr/";
-if(!is_dir($app_root)) die("App root {$app_root} not found");
+//$app_root = is_dir("{$doc_root}../afr/") ? "{$doc_root}../afr/" : "{$doc_root}/afr/";
+//if(!is_dir($app_root)) die("App root {$app_root} not found");
   
 set_include_path(get_include_path().PATH_SEPARATOR."{$doc_root}afr-lib".PATH_SEPARATOR."{$doc_root}afr-lib/include".PATH_SEPARATOR."{$doc_root}afr-lib/includes".PATH_SEPARATOR."{$doc_root}afr-lib/classes".PATH_SEPARATOR."{$doc_root}afr-lib/includes/services".PATH_SEPARATOR."{$doc_root}afr-lib/modules".PATH_SEPARATOR."{$doc_root}afr".PATH_SEPARATOR."{$doc_root}../include");
 
@@ -107,6 +107,7 @@ require_once("phpauth/Auth.php");
 
 /** read config file */
 $_SESSION['config'] = $config = !$_SESSION['config'] || isset($_GET['reload-config']) ? config_load() : $_SESSION['config'];
+if(!$config) die("Failed to read config file");
 
 $_SESSION['log_level'] = $_SESSION['system_log_level'] = env_log_level($deployment);
 
@@ -432,7 +433,8 @@ $app->live = $__LIVE   = $_SESSION['live'];
 $app->test = $__TEST   = $_SESSION['test'];
 $app->dev = $__DEV    = $_SESSION['dev'];
 $app->client_id = $__CLIENT_ID = $_SESSION['client_id'];
-$app->app_root = $__APP_ROOT = $_SESSION['app_root'] = $app_root;
+$app->app_root = $__APP_ROOT = $_SESSION['app_root'] = approot(true);
+$lib->lib_root = $__LIB_ROOT = $_SESSION['lib_root'] = libroot(true);
 $app->doc_root = $__DOC_ROOT = $_SESSION['doc_root'] = $doc_root;
 $app->log_dir = $log_dir;
 $app->site_url = $site_url;

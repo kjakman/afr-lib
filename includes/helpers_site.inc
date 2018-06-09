@@ -1973,14 +1973,13 @@ function smarty_preparse_template($app, $filename, $options = array()) {
                      
   $site_template_file = $approot."pages/$filename";
   $app_template_file = $libroot."pages/$filename"; 
-  
   if(file_exists($site_template_file)) {
     $__LOCAL_TEMPLATE = 1;
     $template_file = $site_template_file;
   } else if(file_exists($app_template_file)) {
     $template_file = $app_template_file;
   } else {
-    //die("$filename not found in $site_template_file or $app_template_file");
+    if(!$_SESSION['live']) die("$filename not found in $site_template_file or $app_template_file");
     return ''; // no template
   }
 

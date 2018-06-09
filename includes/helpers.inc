@@ -4,23 +4,25 @@
 
 /** parse and return main config file */
 function config_load() {
-  $config_file = docroot()."config/main.yml";
-  $config_file2 = docroot()."/../config/main.yml";
-  if(is_file($config_file)) return yaml_parse_file($config_file);
-  if(is_file($config_file2)) return yaml_parse_file($config_file2);
-  return false;
+  $config_file = approot(true)."config/main.yml";  
+  if(!is_file($config_file)) die("Did not find config file {$config_file} app:{$approot}");
+  
+  return yaml_parse_file($config_file);
 }
 
 function get_config($key, $site_id = -1) {
   if($site_id < 0) $site_id = $_SESSION['site_id'];
   $configAr = $_SESSION['config'];
   $password_file = $_SESSION['dev'] ? $configAr['settings']['dev']['password_file'] : $configAr['settings']['live']['password_file'];
-  if($password_file) $password_file = $_SESSION['doc_root'].$password_file;
-  else $password_file = $_SESSION['live'] ? '/web/.priv/.priv.txt' : '/web/.priv/.priv-dev.txt';
+  
+  if(!$password_file) die("get_config: secret file not set");  
+  $password_file = approot(true).$password_file;
+  if(!$password_file) die("get_config: did not find secret file {$password_file}");
+  
   $str = file_get_contents($password_file);
-  if(!$str) die("Failed to read password file: {$password_file}");
+  if(!$str) mydie("Failed to read secret file: {$password_file}");
   $config = json_decode($str);
-  if(!$config) die("Failed to parse password file: {$password_file}");
+  if(!$config) die("Failed to parse secret file: {$password_file}");
   return $site_id ? $config->sites->$site_id->$key : $config->$key;
 }
 
