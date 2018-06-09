@@ -822,7 +822,6 @@ var openPhotoSwipe = function(cid, index, galleryElement, disableAnimation, from
         // `pswp` is the gallery instance object,
         // you should define it by yourself
         // 
-        // return "http://test.vpatina.com/user/17426/vault/1130/title_image/image/big/deathtostock_clementine4.jpg";
         var vpdata = g_pswp.getCurrentData(cid) || {};
         var item = vpdata.item;
         //console.log("sharing using global g_pswp link=" + item.href + " item=",item);
@@ -835,6 +834,7 @@ var openPhotoSwipe = function(cid, index, galleryElement, disableAnimation, from
         var vpdata = g_pswp.getCurrentData(cid) || {};
         var item = vpdata.item;
         var link = item.link;
+        
         var sharer_id = g_sharer_id ? g_sharer_id : 1;
         var tail = "_aid=" + sharer_id;
         link = link.indexOf('?') > -1 ? link + "&" + tail : link + "?" + tail; 
@@ -1282,7 +1282,7 @@ function vp_event(event, curator) {
   var address_formatted = event.address_formatted || event.start_address;
   var address_anchor = '';
   if(address_formatted) {
-    var address_link = "http://maps.google.com/?q=" + encodeURIComponent(address_formatted);
+    var address_link = "https://maps.google.com/?q=" + encodeURIComponent(address_formatted);
     address_anchor = '<a href="' + address_link + '" target="new">' + 'View in Google Maps' + '</a>';
   }
   
@@ -1379,7 +1379,7 @@ function vp_infomap(json) {
   var hasmap = false;
   
   if(address_formatted = curator.address_formatted) {    
-    var address_link = "http://maps.google.com/?q=" + encodeURIComponent(address_formatted);
+    var address_link = "https://maps.google.com/?q=" + encodeURIComponent(address_formatted);
     var address_anchor = '<a href="' + address_link + '" target="new">' + 'View in Google Maps' + '</a>';
     //details = details + ' Address:' + address_anchor + '<br>';
   }
