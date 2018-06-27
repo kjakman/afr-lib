@@ -1203,16 +1203,18 @@ function pre_add_media($obj_type, $data) {
     if(!$file_uploaded) return array($data, array("Could not find $upload_filename in $imagedir"));
   
     print_log("User-file: $user_file Filename=$filename src=$src full=$org_src", 'add-media', LOG_LEVEL_TEST);
-    if($oldMediaObj = find_object('media', array_merge($search, array('user_filename' => $user_file)))) { // found media with same file name, check if the same file    
-      $old_src = clean_path($site_dir.$oldMediaObj->path.($oldMediaObj->resize ? 'org/' : '').$oldMediaObj->filename);
-      $old_file_exist = $old_src && is_file($old_src);
-      print_log("Found existing media object with".dump($search, true)." filename=$old_src exists=$old_file_exists", 'add-media', LOG_LEVEL_TEST);
-  
-      if($file_uploaded && $old_file_exist) {
-        $identical = files_identical($uploaded_file, $old_src);
-        print_log("Found existing media object $old_src identical=$identical", 'add-media', LOG_LEVEL_TEST);
-        $exist_error = $ajax_uploader ? "already uploaded." : "$filename is already in gallery for $where";
-        if($identical) return array($data, array($exist_error));
+    if(0) { /** allow duplicate uploads ? */
+      if($oldMediaObj = find_object('media', array_merge($search, array('user_filename' => $user_file)))) { // found media with same file name, check if the same file    
+        $old_src = clean_path($site_dir.$oldMediaObj->path.($oldMediaObj->resize ? 'org/' : '').$oldMediaObj->filename);
+        $old_file_exist = $old_src && is_file($old_src);
+        print_log("Found existing media object with".dump($search, true)." filename=$old_src exists=$old_file_exists", 'add-media', LOG_LEVEL_TEST);
+    
+        if($file_uploaded && $old_file_exist) {
+          $identical = files_identical($uploaded_file, $old_src);
+          print_log("Found existing media object $old_src identical=$identical", 'add-media', LOG_LEVEL_TEST);
+          $exist_error = $ajax_uploader ? "already uploaded." : "$filename is already in gallery for $where";
+          if($identical) return array($data, array($exist_error));
+        }
       }
     }
   }

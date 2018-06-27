@@ -5,7 +5,7 @@
 sudo mkdir /backup
 sudo mkdir /backup/db
 
-sudo chown -R afr:afr /backup
+sudo chown -R vpatina:vpatina /backup
 
 sudo mkdir /web
 sudo mkdir /web/code
@@ -16,10 +16,10 @@ sudo mkdir /web/templates
 sudo mkdir /web/logs
 sudo mkdir /web/sites
 
-sudo chown -R afr:afr /web
+sudo chown -R vpatina:vpatina /web
 sudo chmod -R 750 /web
 
-sudo chown -R afr:www-data /web/data /web/logs
+sudo chown -R vpatina:www-data /web/data /web/logs
 sudo chmod 770 /web/data
 sudo chmod 770 /web/logs
 
@@ -46,8 +46,8 @@ cd;
 nano .bashrc
 
 # add the below two lines to the end
-# alias ls='ls -l'
-# export PATH=$PATH:/web/code/sh/
+alias ls='ls -l'
+export PATH=$PATH:/web/code/sh/
 
 source .bashrc
 
@@ -63,7 +63,7 @@ sudo ufw allow 'OpenSSH'
 sudo systemctl enable nginx
 sudo systemctl start nginx
 
-sudo apt install -y mariadb-server mariadb-client
+sudo apt -y install mariadb-server mariadb-client
 sudo systemctl enable mariadb.service
 sudo systemctl start nginx.service
 
@@ -73,15 +73,15 @@ sudo systemctl restart mariadb.service
 # below won't work without root user in new versions
 sudo mysql -u root -p
 
-create database afr;
-create database afrdev;
+create database vpatina;
+create database vpatinadev;
 
 # to get hashed password
 select password ('xxx'); 
-grant all on afr.* to afr@localhost identified by password 'hashed password';
-grant all on afrdev.* to afr@localhost identified by password 'hashed password';
-use afr;
-source /backup/db/afr.sql
+grant all on vpatina.* to vpatina@localhost identified by password 'hashed password';
+grant all on vpatinadev.* to vpatina@localhost identified by password 'hashed password';
+use vpatina;
+source /backup/db/vpatina.sql
 
 # PHP 7.2
 
@@ -94,12 +94,14 @@ sudo nano /etc/php/7.2/fpm/php.ini
 sudo systemctl enable php7.2-fpm
 sudo systemctl restart php7.2-fpm
 
-sudo apt -y install php-pear php-dev
-sudo apt -y install php-curl php-xml
+sudo apt -y install php-pear php7.2-dev
+sudo apt -y install php7.2-curl php7.2-xml
 sudo apt -y install zip unzip php7.2-zip
 sudo apt -y install libyaml-dev libz-dev
 sudo apt -y install php-raphf php-propro php7.2-mbstring php7.2-gd
 sudo apt -y install imagemagick php-imagick
+sudo apt -y install php-pear php7.2-dev
+sudo apt -y install pkg-config
 
 # php.ini
 sudo emacs /etc/php/7.2/fpm/php.ini
