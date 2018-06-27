@@ -1113,8 +1113,6 @@ function template_replace_images($site_id, $content) {
         } else {
           $tagObj->$key = $value;
         }
-        // {{"name": "welcome-image", "type":"image", "value": "/assets/images/demo/desktop.png", "resize": 640, "class": "img-responsive animate_fade_in", "style": "opacity: 1; right: 0px;"}}
-        // Tag = {{"class":"img-responsive","alt":"","name":"image-assetsimagesdemobrands8.jpg-940","type":"image"}}          
       }
       if($src) {
         $tagObj->name = "image-".url_safe($src)."-".rand(1,1000);

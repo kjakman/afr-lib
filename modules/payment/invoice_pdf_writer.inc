@@ -351,25 +351,25 @@ function create_pdf_invoice($invObj_or_id) {
   // }
                                
   $price['__line'] = '';
-  $price['Total'] = $currency_symbol." ".number_format($total, 2);
+  $price['Total'] = $currency_symbol.number_format($total, 2);
   foreach($tax_of_which_ar as $tax_rate => $tax_amount)  {
-    if($tax_amount > 0) $price["Of which VAT $tax_rate %"] = $currency_symbol." ".number_format($tax_amount, 2);
+    if($tax_amount > 0) $price["Of which VAT $tax_rate %"] = $currency_symbol.number_format($tax_amount, 2);
   }
 
   //  if($tax > 0 ) {
-//  $price = array('Total excl. VAT' => $currency_symbol." ".number_format($total_excl, 2),
+//  $price = array('Total excl. VAT' => $currency_symbol.number_format($total_excl, 2),
 ////                 'Discount' => print_discount($discount, $currency_symbol),  
-//                 $vat_text => $currency_symbol." ".number_format($tax, 2),
-//                 'Total incl. VAT' => $currency_symbol." ".number_format($total, 2),  
-//                 $paid_text => $currency_symbol." ".number_format($paid, 2),
+//                 $vat_text => $currency_symbol.number_format($tax, 2),
+//                 'Total incl. VAT' => $currency_symbol.number_format($total, 2),  
+//                 $paid_text => $currency_symbol.number_format($paid, 2),
 //                 '__line' => '',
-//                 'Total due' => $currency_symbol." ".number_format($balance, 2) 
+//                 'Total due' => $currency_symbol.number_format($balance, 2) 
 //                 );
 //  } else {
-//  $price = array('Total ' => $currency_symbol." ".number_format($total, 2),
-//                 $paid_text => $currency_symbol." ".number_format($paid, 2),
+//  $price = array('Total ' => $currency_symbol.number_format($total, 2),
+//                 $paid_text => $currency_symbol.number_format($paid, 2),
 //                 '__line' => '',
-//                 'Total due' => $currency_symbol." ".number_format($balance, 2) 
+//                 'Total due' => $currency_symbol.number_format($balance, 2) 
 //                 );
 //  }
 
@@ -412,8 +412,14 @@ function create_pdf_invoice($invObj_or_id) {
   // at present, max is 5: quantity, unit price, discount, tax, total
   // later maybe shipping + handling
 
-  $show_discount = db_getOne("SELECT sum(discount) FROM inv_lineitem WHERE inv_id=$inv_id") > 0;
-  $show_tax = db_getOne("SELECT sum(tax) FROM inv_lineitem WHERE inv_id=$inv_id") > 0;
+  $sum_discount = db_getOne("SELECT sum(discount) FROM inv_lineitem WHERE inv_id=$inv_id");
+  $sum_tax = db_getOne("SELECT sum(tax) FROM inv_lineitem WHERE inv_id=$inv_id");
+  $sum_tax_of_which = db_getOne("SELECT sum(tax_of_which) FROM inv_lineitem WHERE inv_id=$inv_id");
+  
+  $show_discount = abs($sum_discount) > 0;
+  $show_tax = abs($sum_tax) > 0;
+  $show_tax_of_which = abs($sum_tax_of_which) > 0;
+
   $show_tax_of_which = db_getOne("SELECT sum(tax_of_which) FROM inv_lineitem WHERE inv_id=$inv_id") > 0;
   $show_quantity = count(db_getCol("SELECT max(quantity) FROM inv_lineitem WHERE inv_id=$inv_id")) > 1;
   $show_quantity = true;
@@ -532,7 +538,7 @@ function create_pdf_invoice($invObj_or_id) {
 
       if($show_quantity || $show_discount || $show_tax) {
         $pdf->SetX($x);
-        $pdf->Cell($w,6,"$currency_symbol $li_amount",0,0, 'R');
+        $pdf->Cell($w,6,"{$currency_symbol}$li_amount",0,0, 'R');
         $x+=$w;
       }
       
@@ -544,7 +550,7 @@ function create_pdf_invoice($invObj_or_id) {
 
       if($show_tax) {
   		  $pdf->SetX($x);
-  		  $pdf->Cell($w,6,"$currency_symbol $li_tax",0,0, 'R');
+  		  $pdf->Cell($w,6,"{$currency_symbol}$li_tax",0,0, 'R');
         $x+=$w;
       } else if($show_tax_of_which) {
   		  $pdf->SetX($x);
@@ -554,7 +560,7 @@ function create_pdf_invoice($invObj_or_id) {
       }
 
 		  $pdf->SetX($x);
-		  $pdf->Cell($w,6,"$currency_symbol $li_total",0,1, 'R');
+		  $pdf->Cell($w,6,"{$currency_symbol}$li_total",0,1, 'R');
       //$x+=$w;
 
       
@@ -619,7 +625,7 @@ function create_pdf_invoice($invObj_or_id) {
       
       $rcv_currency     = $payment->payment_currency;
       $rcv_amount       = number_format($payment->payment_gross, 2);      
-      $pay_amount_str = ($rcv_currency && $rcv_amount && $rcv_currency != $payment->currency) ? get_currency_symbol($rcv_currency)." $rcv_amount => $currency_symbol $pay_amount" : "$currency_symbol $pay_amount";
+      $pay_amount_str = ($rcv_currency && $rcv_amount && $rcv_currency != $payment->currency) ? get_currency_symbol($rcv_currency)." $rcv_amount => $currency_symbol $pay_amount" : "{$currency_symbol}$pay_amount";
       
       $p_desc = $payment->description;
       if(strlen($p_desc) > $p_desc_max) $p_desc = substr($p_desc, 0, $p_desc_max).'...';
@@ -656,9 +662,9 @@ function create_pdf_invoice($invObj_or_id) {
 
     $pdf->Ln(5);
     $paid_ar['__line'] = '';
-    //$paid_ar['Total'] = $currency_symbol." ".number_format($total, 2);
-    $paid_ar[$paid_text]  = $currency_symbol." ".number_format($paid, 2);
-    $paid_ar['Balance due'] = $currency_symbol." ".number_format($balance, 2); 
+    //$paid_ar['Total'] = $currency_symbol.number_format($total, 2);
+    $paid_ar[$paid_text]  = $currency_symbol.number_format($paid, 2);
+    $paid_ar['Balance due'] = $currency_symbol.number_format($balance, 2); 
 
     $start_x = $max_x - 3*$w;
     foreach($paid_ar as $k => $v) {
