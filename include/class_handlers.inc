@@ -2,7 +2,7 @@
 
 // filters
 // obligatory class filters - returns valid set of a class (nothing to do with logged in user)
-
+// test
 // returns the object status type of the given object type
 /** unsused - automatic comment added on  */
 function object_status_objtype($obj_type) {
