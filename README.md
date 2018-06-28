@@ -1,5 +1,5 @@
 # AFR-lib - Light procedural PHP Framework
-
+Test
 This project was started more than 10 years ago to implement a rental platform for short stay housing
 (Apartments For Rent)
 
