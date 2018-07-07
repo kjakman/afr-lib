@@ -1,0 +1,52 @@
+        
+      {$collection = $scope.collection}
+      {$curator = $scope.curator}
+      {$location = $collection.location}
+      {$locations = $scope.locations}
+
+      {$images = $scope.images}
+        
+<form id="gbe_collection_title_form" class="ajax-submit" data-handler="save-collection">
+    <input hidden="1" name="id" type="hidden" value="{$collection.id}">
+        <input hidden="1" name="obj_id" type="hidden" value="{$collection.id}">
+        <input hidden="1" name="obj_type" type="hidden" value="media_collection">      
+        <input hidden="1" name="type" type="hidden" value="{$collection.type|default:$smarty.const.COLLECTION_TYPE_EXHIBITION}">
+        {if (!$collection.id)}
+        <input hidden="1" name="active" type="hidden" value="0">
+        <input hidden="1" name="user_id" type="hidden" value="{$user.id}">
+        <input hidden="1" name="artist_id" type="hidden" value="{$artist_id}">
+        <input hidden="1" name="curator_id" type="hidden" value="{$curator_id}">        
+        {/if}
+
+        <div class="row form-group">
+        
+          <div class="col-xs-12">
+            <div class="form-group">
+                <input type="radio" name="title_image"> Choose an artwork in exhibition as Title Image for exhibition<br>
+              <select name="title_image" class="form-control">
+                <option value="">Title Image</option>   
+              {foreach from=$images item=image}
+                <option value="{$image.media_id}" {if ($media_collection.title_image == $image.media_id)}SELECTED{/if}>{$image.name}</option>
+              {/foreach}
+              </select>
+
+              <br>
+              <input type="submit" class="btn btn-success" value="Attach" id="save">
+
+            </div> 
+
+            <div class="gap gap-small"></div>
+
+            OR
+
+            <div class="gap gap-small"></div>
+
+            <div class="row form-group">
+              <input type="radio" name= "title_image">Upload/attach image to use as Title image for exhibition<br><br>
+              {"media_collection"|object_uploader:$collection.id:"title_image":["resize" => 1, "cloud" => 1, "view" => 'grid', "handler" => "gbe_title_image_handler"]}
+            </div>
+          </div>
+        </div>
+        
+        <div class="gap gap-small"></div>
+</form>

@@ -1,0 +1,17 @@
+{{"extend": "_user-profile-base.html"}}
+
+{block name=profile}
+  <h1>(Collector)!</h1>
+  <h1 class='black'> {$scope.profile.display_name}</h1>
+
+  {$profile = $scope.profile}
+  {{"include": "_gallery-collector-information.html"}}
+
+  {{"include": "_gallery-contact-information.html"}}
+  
+{/block}
+
+{block name=description}
+  <p>{$scope.profile.description}</p>
+{/block}
+

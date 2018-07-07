@@ -1,0 +1,35 @@
+            <div class="container">
+                <div class="nav">
+                    <ul class="slimmenu" id="slimmenu">
+                        <li><a href="/dashboard/">Dashboard</a></li>
+                        <li><a href="/inbox/">Inbox</a></li>
+                        {if ($user.user_level >= $smarty.const.USER_LEVEL_OWNER)}
+                        <li><a href="/calendar/?reset">Calendar</a></li>
+                        <li><a href="/edit-property/">My Listings</a></li>
+                        {/if}
+                        <li><a href="#">User</a>
+                            <ul>
+                                <li><a href="/profile/">Profile</a></li>
+                                <li><a href="/account/">Account</a></li>
+                            </ul>
+                        </li>
+                        {if ($user.user_level >= $smarty.const.USER_LEVEL_ADMIN)}
+                        <li><a href="#">Accounting</a>
+                            <ul>
+                                <li><a href="/invoices/">Invoices</a></li>
+                                <li><a href="/payments/">Payments</a></li>
+                                <li><a href="/withdrawals/">Withdrawals</a></li>
+                            </ul>
+                        </li>
+                        {/if}
+                        {if ($user.user_level >= $smarty.const.USER_LEVEL_ADMIN)}
+                        <li><a href="#">System</a>
+                            <ul>
+                                <li><a href="/administration/">Objects</a></li>
+                                <li><a href="/edit-site/{$site.id}">Edit Site</a></li>
+                            </ul>
+                        </li>
+                        {/if}
+                    </ul>
+                </div>
+            </div>

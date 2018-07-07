@@ -1,0 +1,12 @@
+{{"extend": "_user-profile-base.html"}}
+
+{block name=profile}
+  {$profile = $scope.profile}
+  {{"include": "_gallery-curator-information.html"}}
+  {{"include": "_gallery-contact-information.html"}}
+  
+{/block}
+
+{block name=description}
+   <p>{$scope.profile.description}</p>
+{/block}

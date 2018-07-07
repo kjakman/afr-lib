@@ -1,0 +1,34 @@
+
+    {$folder = $scope.folder}
+    <div class="profileinfo"> 
+      <div class="gallery-artwork-detail">
+        <article class="row mt40">
+          <section class="col-sm-6 mr20">
+            <img src="{$folder.id|folder_photo:'big'|default:"/traveler/img/800x600.png"}" class=""><br>
+          </section>
+          <aside class="col-sm-5">
+            <h2>{$folder.title}</h2>
+
+            {$profile = $scope.artist}
+            {{"include": "_gallery-artist-information"}}
+            
+            <div class="gap gap-small"></div>
+            <h3>About {$folder.title}</h3>
+            {$folder.description}
+            
+          </aside>
+        </article>
+        {*$folder|dump*}
+        {if ($scope.obj_type && $scope.obj_id)}
+        <article class="row mt40">
+          <div class="gap"></div>
+          <div class="gallery-related" id="collection_artworks">
+           <div class="profileinfo italic mb10">
+            <h1>Artworks in the folder</h1>
+           </div>
+            {$scope.obj_type|object_uploader:$scope.obj_id}
+          </div>
+        </article>
+        {/if}
+      </div>
+    </div>

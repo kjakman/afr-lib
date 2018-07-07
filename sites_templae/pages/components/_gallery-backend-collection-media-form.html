@@ -1,0 +1,19 @@
+        <div class="row form-group">
+          <label for="media-name">Attach existing art or images</label>
+          <div class="col-xs-12">
+            <a href="/backend/artworks?add_to={$collection.id}&amp;_pv=1" class="btn btn-success ajax-loader" data-target="#subview-container"><i class="fa fa-plus-square"></i> Attach Artworks</a>
+            <a href="/backend/media?add_to={$collection.id}&amp;_pv=1"    class="btn btn-success ajax-loader" data-target="#subview-container"><i class="fa fa-plus-square"></i> Attach Images</a>
+          </div>
+        </div>
+
+        <div class="gap gap-small"></div>
+        
+        
+        <div class="row form-group">
+          <label for="media-name">Upload related images</label>
+          {"media_collection"|object_uploader:$collection.id:"map":["resize" => 1, "cloud" => 1, "view" => 'grid']}
+        </div>
+        
+        <div class="gap gap-small"></div>
+        
+        

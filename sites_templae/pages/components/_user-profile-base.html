@@ -1,0 +1,103 @@
+
+{$url = $scope.url|default:$this_url}
+
+{if ($user.user_level >= $smarty.const.USER_LEVEL_ADMIN)}
+          {if ($user.id != $scope.profile.user_id && $scope.auth_login)}
+          <div class="mb20">
+            <form class="ajax-submit" data-handler="backdoor-login">
+              <input type="hidden" name="user_id" value="{$scope.profile.user_id}">
+              <button type="submit" class="btn btn-success"><i class="fa fa-key"></i> Log in as {$scope.profile.user_id|username}</button>
+            </form>
+          </div>
+          {/if}
+          
+          {if ($scope.auth_edit_user && !$scope.backend)}
+          <div class="mb20">
+            <a href="{$smarty.const.PAGE_EDIT_PROFILE|link}{$scope.profile.user_id}/" class="btn btn-success"><i class="fa fa-pencil-square"></i> Edit</a>
+          </div>
+
+          {/if}
+
+{/if}
+
+
+<div class="container">
+  <div class="row">
+    <div class="col-lg-5 col-md-4 col-sm-3">
+      <div id="user" class="mb20">
+        <div>
+          <div class="mb10" id="user-media-container">
+            <div id="slideshow" class="slideshow">
+              <div class="slideshow-preload"></div>
+              <ul class="slideshow-images list">
+                <li class="media-photo media-photo-block active profilephoto">               
+                  <img class="img-responsive" src="{$scope.profile|userphoto:'big'}" alt="" width="" height="">
+                </li>
+              </ul>
+            </div>
+          </div>
+                    
+          {if ($url)}
+            {$url_encoded = $url|urlencode}
+            <a href="#" title="Share on Facebook" class="fb-loader-popup" data-url="http://www.facebook.com/sharer.php?u={$url_encoded}">
+              <span class="fa fa-stack fa-2x">
+                <i class="fa fa-circle-thin fa-stack-2x"></i>
+                <i class="fa fa-facebook fa-stack-1x"></i>
+              </span>
+            </a>
+            <a href="#" title="Share on Twitter" class="fb-loader-popup" data-url="http://twitter.com/share?url={$url_encoded}">
+              <span class="fa fa-stack fa-2x">
+                <i class="fa fa-circle-thin fa-stack-2x"></i>
+                <i class="fa fa-twitter fa-stack-1x"></i>
+              </span>
+            </a>
+            <a href="#" title="Share on Google Plus" class="fb-loader-popup" data-url="https://plus.google.com/share?url={$url_encoded}">
+              <span class="fa fa-stack fa-2x">
+                <i class="fa fa-circle-thin fa-stack-2x"></i>
+                <i class="fa fa-google-plus fa-stack-1x"></i>
+              </span>
+            </a>
+            <a href="#" title="Share on Digg" class="fb-loader-popup" data-url="http://www.digg.com/submit?url={$url_encoded}">
+              <span class="fa fa-stack fa-2x">
+                <i class="fa fa-circle-thin fa-stack-2x"></i>
+                <i class="fa fa-digg fa-stack-1x"></i>
+              </span>
+            </a>
+            <a href="#" title="Share by email" class="fb-loader-popup" data-url="/share/?url={$url_encoded}">
+              <span class="fa fa-stack fa-2x">
+                <i class="fa fa-circle-thin fa-stack-2x"></i>
+                <i class="fa fa-envelope fa-stack-1x"></i>
+              </span>
+            </a>
+          {/if}
+            
+        </div>
+      </div>   
+    </div>
+
+    <div class="col-lg-7 col-md-8 col-sm-9">
+      <div class="row mb20">
+        {block name=profile}{/block}
+      </div>
+    </div>
+    <div class="gap gap-small"></div>
+   <div>    
+    <div class="mt10 row container profileinfo">
+      {block name=description}{/block}    
+    </div>
+
+  
+    {$artist_id = $scope.artist_id}    
+    {$curator_id = $scope.curator_id}
+    {if ($curator_id)}
+      {$curator_name = $profile.display_name}
+    {else if ($artist_id)}
+      {$artist_name = $profile.display_name}
+    {/if}
+    
+    {if ($show_related)}
+      {{"include": "_gallery-related-images.html"}}
+    {/if}
+   </div> 
+  </div>
+</div>

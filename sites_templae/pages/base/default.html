@@ -1,0 +1,27 @@
+  {{"extend": "base/index.html"}}
+  
+  {block name=body}
+      {$edit_menu}
+      <div class="global-wrap">
+        <header id="main-header">    
+        {$nav_class = 'navbar-fixed-top'}
+        {block name=top}<!--$top--> {{"include": "_page-top.html"}}{/block}
+        {block name=nav}<!--$nav-->
+        {if (1 || $user.id)}
+          &nbsp;
+          <div id="site_menu">
+          {{"include": "_site-menu.html"}}
+          </div>
+        {/if}              
+        {/block}
+        </header>
+
+        <section id="content_container">        
+        {{"include": "_page-messages.html"}}
+        {block name=content}<!--$content-->{/block}
+        </section>
+        
+        {block name=footer}<!--$footer-->{{"include": "_page-footer.html"}}{/block}
+     </div>
+  {/block}
+  

@@ -1,0 +1,22 @@
+{$what = 'media'}
+{$plural = 'media'}
+
+{{"extend": "_gallery-backend-list-base.html"}}
+
+{block name=main}   
+{/block}
+
+{block name="fields"}
+  <th data-field="state" data-checkbox="true">Check</th>
+  <!--th data-field="id" data-sortable="true" data-formatter="bstIDFormatter">ID</th-->
+  <th data-field="id" data-formatter="bstMediaFormatter">Image</th>
+  <th data-field="name" data-sortable="true" data-formatter="bstTitleFormatter">Title</th>
+  <th data-field="created" data-sortable="true" data-formatter="bstDateFormatter">Created</th>
+  <th data-field="type" data-sortable="true">Type</th>
+  <th data-field="src" data-sortable="true">File</th>
+  <th data-field="user_id" data-sortable="true" data-formatter="bstArtistFormatter">Owner</th>
+  <th data-field="parent_type" data-sortable="true" data-formatter="bstMediaContextFormatter">Context</th>
+{/block}
+
+{block name="script"}
+{/block}

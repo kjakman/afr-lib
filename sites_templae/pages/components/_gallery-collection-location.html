@@ -1,0 +1,74 @@
+      {$loc = $collection.location_id|get:"location"}
+      {$lat = $loc.location_lat}
+      {$lng = $loc.location_long}
+      <h3>{if ($loc.address_city)}{$loc.address_city}, {/if}{$loc.address_country|get:countries:name}</h3>
+      <h4 class="italic">{$loc.address_street} {$loc.address_number|hide_false} &nbsp;
+        {if ($lat && $lng)}
+          <a href="#" data-toggle="modal" data-target="#mapModal">
+            <i class="fa fa-map-marker"></i> Map
+          </a>
+      
+      <div class="modal fade" tabindex="-1" role="dialog" id="mapModal">
+        <div class="modal-dialog-off">
+          <div class="modal-content-off">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+              <div class="row">
+                <div class="col-sm-5">
+                  <h4 class="modal-title">{$collection.title}</h4>
+                  
+                  {$loc.address_street} {$loc.address_number|hide_false}<br> 
+                  {$loc.address_city}<br>
+                  <br>
+                  {if ($collection.start_date && $collection.end_date)}
+                  {$collection.start_date|daterange:$collection.end_date}<br>
+                  {/if}
+                  
+                  {* if ($collection.event)}
+                    {$event = $collection.event}
+                    {{"include": "_gallery-collection-event.html"}}
+                  {/if *}
+                  
+                  <br>
+                  <a href="https://maps.google.com/?q={$collection.address_formatted|urlencode}" target="map">View in Google Maps</a>
+                </div>
+                <div class="col-sm-7">
+                  <div id="mapCanvas" class="" style="width: 250px; height: 250px" data-lat="{$lat}" data-lng="{$lng}"></div>
+                </div>
+              </div>
+             
+            </div>
+          </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+      </div><!-- /.modal -->
+      <script>
+        {literal}
+        $("#mapModal").on("shown.bs.modal", function () {
+          initModalMap("mapCanvas");
+          //google.maps.event.trigger(map, "resize");
+        });
+        
+        function initModalMap(map_id) {
+          var lat = $("#" + map_id).data('lat'); 
+          var lng = $("#" + map_id).data('lng'); 
+          console.log("initModalMap at " + lat + "/" + lng);
+          var mapOptions = {
+            center: new google.maps.LatLng(lat, lng),
+            zoom: 12,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+          };
+          var map = new google.maps.Map(document.getElementById(map_id),
+            mapOptions);
+          var marker = new google.maps.Marker({
+            position: new google.maps.LatLng(lat, lng)
+          });
+          marker.setMap(map);
+        }      
+        {/literal}
+        
+      </script>
+        {/if}
+      
+      </h4>

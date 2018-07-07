@@ -1,0 +1,9 @@
+                      {$count = $scope.items|@count}
+                      <ul class="photo-grid gallery-list list">
+                        {$index = 0}
+                        {foreach from=$items item=artwork}                          
+                          {{"include": "_gallery-artwork-item.html"}}
+                          {$index = $index + 1}
+                        {/foreach}
+                      </ul>
+

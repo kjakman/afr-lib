@@ -1,0 +1,33 @@
+
+{{"extend": "_gallery-backend-base.html"}}
+
+{block name=main}
+
+
+      <div style="position:relative;top:10px;left:10px">
+        <h3>Default Visibility settings</h3>
+        <p>These will be applied to all new exhibitions and plugins, and can be applied using the "default settings" option</p>
+      </div>
+      
+      <div class="gap gap-small"></div>
+      {$settings = $user_settings}
+      
+      {{"include": "_gallery-backend-settings-buttons.html"}}   
+
+      <form class="ajax-submit" data-handler="save-gallery-settings">
+        <input type="hidden" name="obj_id" value="{$user.profile_id}">
+        <input type="text" class="form-control" name="settings" id="gallery_options" value='{$user_settings_json}'>     
+        <div class="row">
+          <div class="form-group col-xs-12">
+            <input type="submit" id="submit" class="btn btn-success" value="Save">
+          </div>
+        </div>
+      
+      </form>      
+      
+      <input type="hidden" class="form-control" name="quick_info" id="quick_info" value='{$quick_info|json_encode}'>     
+      <input type="hidden" class="form-control" name="full_info" id="full_info" value='{$full_info|json_encode}'>     
+      <input type="hidden" class="form-control" name="popup_buttons" id="popup_buttons" value='{$popup_buttons|json_encode}'>     
+      <input type="hidden" class="form-control" name="popup_tabs" id="popup_tabs" value='{$popup_tabs|json_encode}'>     
+
+{/block}

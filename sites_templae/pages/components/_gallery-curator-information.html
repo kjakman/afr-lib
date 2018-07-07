@@ -1,0 +1,11 @@
+                            <h1 class='black'>
+                            {if ($profile_link)}
+                              {$data = ["site_id" => $site.id, "obj_type" => "user", "obj_id" => $profile.user_id, "obj_subtype" => $smarty.const.USER_ROLE_CURATOR]}
+                              {$json = $data|@json_encode}
+                              <a href="{$profile_link}{$profile.user_id}" class="cms-link gallery-link" data-data='{$json}'>{$profile.display_name}</a><br>
+                            {else}
+                              {$profile.display_name}
+                            {/if}
+                            </h1> 
+
+

@@ -1,0 +1,8 @@
+                      {$count = $items|@count}
+                      <ul class="photo-grid gallery-list list">
+                      {foreach from=$items item=collection}
+                      {{"include": "_gallery-collections-item.html"}}
+                      {/foreach}
+                      </ul>
+                      
+

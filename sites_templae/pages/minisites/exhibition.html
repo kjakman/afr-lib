@@ -1,0 +1,95 @@
+  {{"extend": "minisites/index.html"}}
+  
+  {$collection = $scope.collection}
+
+  {block name=title}
+    {if ($scope.title)} <h2>{$scope.title}</h2>{/if}      
+  {/block}
+  
+  {block name=content}
+  {$artist_id = $collection.artist_id}
+  {$artist_ids = $collection.artist_ids|@json_decode}
+  
+  {* $collection.event|dump *}
+  <div class="row detail-page-row">
+    <div class="col-md-3 col-sm-12 text-left artist-subnav-container">
+      <div class="artist-sub-nav">
+        <h1 class="sub-nav-header artist-sub-nav-header"> 
+          {foreach from=$artist_ids item=$artist_id}
+            {$artist_name = $artist_id|displayname}
+            {* id:{$artist_id}={$artist_name}<br> *}
+            <a href="{$basepath}/artist/{$artist_name|slugify}">{$artist_name}</a> 
+          {/foreach}
+          <br><br>
+          <a href="{$basepath}/{$page}/{$slug}">{$collection.title|default:"Untitled"}</a>
+        </h1>
+          <ul class="hidden-sm-down sub-nav-ul artist-sub-nav-ul">
+            <li><a href="{$basepath}/{$page}/{$slug}/images"       class="">Images</a></li>
+            <li><a href="{$basepath}/{$page}/{$slug}/location"    class="">Location</a></li>
+            <!--li><a href="{$basepath}/{$page}/{$slug}/publications" class="">Publications</a></li-->
+          </ul>
+        </p>
+        <!-- mobile layout -->
+        <div class="hidden-md-up btn-group sub-nav-ul artist-sub-nav-ul mobile-sub-nav-ul">
+          <button type="button" class="btn dropdown-toggle btn-sub-nav-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            About Exhibition
+          </button>
+          <div class="dropdown-menu">
+            <li class="sub-nav-li"><a href="{$basepath}/{$page}/{$slug}/images"       class="dropdown-item">Images</a></li>
+            <li class="sub-nav-li"><a href="{$basepath}/{$page}/{$slug}/location"    class="dropdown-item">Location</a></li>
+            <!--li class="sub-nav-li"><a href="{$basepath}/{$page}/{$slug}/publications" class="dropdown-item">Publications</a></li-->
+          </div>
+        </div>
+      </div>
+      <br>
+      <div class="small-text">
+      {if ($collection.start_date && $collection.end_date)}
+        {{"include": "_gallery-collection-date.html"}}
+      {/if}
+      
+      {if ($collection.event)}
+        {$event = $collection.event}
+        {{"include": "_gallery-collection-event.html"}}
+      {/if}
+      </div>
+    </div>
+    
+    <div class="col-md-8 col-sm-12 detail-text">
+    {if ($subview == 'images')}
+    
+      {{"include": "minisites/_artworks.html"}}
+      
+    {elseif ($subview == 'location')}    
+      <div class="row text-left">
+        <div class="col-md-12">        
+        {$loc = $collection.location_id|get:"location"}
+        {{"include":"_gallery-collection-map.html"}}
+        </div>
+      </div>
+
+    
+    {elseif ($subview == 'publications')}
+      <div class="row text-left">
+        <div class="col-md-12">
+          <h4>Publications</h4>
+          <p>{$collection.publications}</p>
+        </div>
+      </div>
+    
+    {else}
+    
+      
+      <div class="image-container-max-height">
+        <img src="{$collection.id|collection_photo:'medium'}" alt="{$collection.title}" class="img-responsive" /><br />
+      </div>
+      <br />
+      <div style="text-align: justify;">
+       {$collection.description}
+      </div>
+      <p>&nbsp;</p>
+    {/if}
+    </div>
+    
+  </div>  
+
+  {/block}  

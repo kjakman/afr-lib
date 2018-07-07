@@ -1,0 +1,20 @@
+{$artwork = $scope.artwork}
+{$object = $artwork}
+{$what = 'artwork'}
+{$plural = 'artworks'}
+
+{$auth_edit_backend = $scope.auth_edit_artwork}
+
+{{"extend": "_gallery-backend-item-base.html"}}
+
+{block name=main}
+
+  {if ($add)}
+    {{"include": "_gallery-backend-artwork-form.html"}}
+  {elseif ($edit)}
+    {{"include": "_gallery-backend-artwork-tabs.html"}}
+  {else}
+    {{"include": "_gallery-artwork-detail.html"}}
+  {/if}
+  
+{/block}

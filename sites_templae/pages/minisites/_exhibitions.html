@@ -1,0 +1,14 @@
+  <div class="row artists-row mobile-row artists-list-row artists-grid photo-grid">
+    {foreach from=$exhibitions item=exhibition}
+    <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12 text-left artist-grid-col">
+      <div class="artist-thumbnail pull-left">  
+        <a href="{$basepath}/exhibition/{$exhibition.slug}">
+          <img src="{$exhibition|collection_photo:'full'}" alt="{$exhibition.name} Thumbnail">
+        </a>
+      </div>
+      <div class="artist-name">
+        <a href="{$basepath}/exhibition/{$exhibition.slug}">{$exhibition.name}</a>
+      </div>
+    </div>
+    {/foreach}
+  </div>

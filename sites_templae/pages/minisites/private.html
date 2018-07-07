@@ -1,0 +1,25 @@
+  {{"extend": "minisites/index.html"}}
+  
+  {block name=scripts}
+    <script type="text/javascript" src="/afr/js/afr.js?v=14849258939"></script>
+  {/block}
+  
+  {block name=title}
+  <h3>{'login'|translate:'c'}</h3>
+  {/block}
+  
+  {block name=content}
+    {if ($user)}
+    <h4>{'welcome'|translate:'c'} {$user|username}</h4>
+    <a href="{$basepath}?act=logout">{'logout'|translate:'c'}</a><br><br>
+    {else}
+      {{"include": "_user-login-form.html"}}
+      <a href="{$smarty.const.PAGE_PASSWORD|link}{$query_string}">{'Forgot Password'|translate:"t"}?</a>          
+      <div class='gap gap-small'></div>
+      {if ($scope.provider_keys)}
+        {$providers = $scope.provider_keys}
+        {{"include": "_user-login-third-party.html"}}
+      {/if}
+    </div>
+    {/if}
+  {/block}

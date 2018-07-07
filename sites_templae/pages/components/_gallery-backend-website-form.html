@@ -1,0 +1,48 @@
+      <form class="ajax-submit" data-handler="save-minisite" data-success_handler="gbe_website_handler">
+        <input hidden="1" name="id" type="hidden" value="{$scope.obj_id}">
+        <input hidden="1" name="obj_type" type="hidden" value="{$scope.obj_type}">      
+        <input hidden="1" name="next_tab" type="hidden" value="appearance">      
+        <input hidden="1" name="user_id" type="hidden" value="{$user.id}">
+        {if (!$scope.obj_id)}
+        <input hidden="1" name="active" type="hidden" value="0">
+        <input hidden="1" name="user_id" type="hidden" value="{$user.id}">
+        <input hidden="1" name="artist_id" type="hidden" value="{$scope.artist_id}">
+        <input hidden="1" name="gallery_id" type="hidden" value="{$scope.gallery_id}">
+        {/if}
+
+        {if ($scope.gallery_id)}
+          {$default_type = 'gallery'}
+        {else}
+          {$default_type = 'artist'}
+        {/if}
+        <div class="row">
+          <div class="form-group col-sm-4">
+            <label for="website-name">Title *</label>
+            <input type="text" class="form-control" id="website-name" name="name" value="{$minisite.name}" maxlength="128">
+          </div>
+          <div class="form-group col-sm-4">
+            <label for="website-type">Type *</label>
+            <select name="type" id="website-type"  class="form-control auto-select" data-default="{$default_type}" data-value="{$minisite.type}">
+              <option value="artist">Single Artist</option>
+              <option value="gallery">Gallery</option>
+            <select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="form-group col-sm-4">
+            <label for="website-url">URL *</label>
+            <input type="text" class="form-control" id="website-url" name="url" value="{$minisite.url}" maxlength="64">
+          </div>
+          <div class="form-group col-sm-4">
+            <label for="website-domain">Domain</label>
+            <input type="text" class="form-control" id="website-domain" name="domain" value="{$minisite.domain}" maxlength="128">
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="form-group col-xs-12">
+            <input type="submit" class="btn btn-success" value="Save">
+          </div>
+        </div>
+        
+      </form>
