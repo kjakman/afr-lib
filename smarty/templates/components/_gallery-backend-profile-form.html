@@ -1,0 +1,37 @@
+{* automatically generated on 2018-06-26 10:11:28 from /var/www/html/test.vpatina.com/pages/components/_gallery-backend-profile-form.html. DO NOT EDIT *}
+  {$tab1_link = 'backend:subview:id:action:tab'|rroute:['subview' => $page.itemview, 'id' => $scope.obj_id, 'action' => 'add', 'tab' => 'basic']}
+  {$tab2_link = 'backend:subview:id:action:tab'|rroute:['subview' => $page.itemview, 'id' => $scope.obj_id, 'action' => 'add', 'tab' => 'about']}
+  {$tab3_link = 'backend:subview:id:action:tab'|rroute:['subview' => $page.itemview, 'id' => $scope.obj_id, 'action' => 'add', 'tab' => 'artist']}
+  
+  {$tab = $page.tab|default:'basic'}
+  <ul class="nav nav-tabs">
+    <li id= "basic" {if ($tab == 'basic')  }class="active"{/if}><a href="{$tab1_link}?_pv=1" class="ajax-loader" data-target="#subview-container" id="gbe_basic_link">Basic</a></li>
+    <li id= "about" {if ($tab == 'about') }class="active"{/if}><a href="{$tab2_link}?_pv=1" class="ajax-loader" data-target="#subview-container" id="gbe_about_link">About</a></li>
+    <li id= "cv" {if ($tab == 'artist') }class="active"{/if}><a href="{$tab3_link}?_pv=1" class="ajax-loader" data-target="#subview-container" id="gbe_artist_link">CV</a></li>
+  </ul>
+  
+  <div class="tab-content">
+    <div id="tab_content" class="tab-pane fade in active pt20">       
+    {if ($tab == 'basic')}
+      {include file="/var/www/html/test.vpatina.com/smarty/templates/components/_network-form-basic.html" }    
+    {elseif ($tab == 'about')}
+      {include file="/var/www/html/test.vpatina.com/smarty/templates/components/_network-form-about.html" }    
+    {elseif ($tab == 'artist')}
+      {include file="/var/www/html/test.vpatina.com/smarty/templates/components/_network-form-artist.html" }     
+    {else}
+      {"Unknown tab `$tab`"|alert:"error"}
+    {/if}    
+    </div>
+  </div>
+
+<!-- {literal}
+<script type="text/javascript">
+  jQuery(document).ready(function() {
+    jQuery('#about').hide();
+    jQuery('#cv').hide();
+  })
+</script>
+
+{/literal} -->
+
+

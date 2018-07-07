@@ -1,0 +1,25 @@
+{* automatically generated on 2018-07-06 05:01:31 from /var/www/html/test.vpatina.com/pages/components/_gallery-backend-network.html. DO NOT EDIT *}
+{$what = 'artist'}
+{$plural = 'artists'}
+
+{$form = "_gallery-backend-profile.html"}
+{extends file="/var/www/html/test.vpatina.com/smarty/templates/components/_gallery-backend-list-base.html"}
+
+{block name=main}  
+{/block}
+
+{block name="fields"}
+  <!--th data-field="id" data-sortable="true" data-formatter="bstIDFormatter">ID</th-->
+  <th data-field="photo" data-formatter="bstUserPhotoFormatter">Image</th>
+  <th data-field="display_name" data-sortable="true" data-formatter="bstTitleFormatter">Name</th>
+  <th data-field="created" data-sortable="true" data-formatter="bstDateFormatter">Created</th>
+  <th data-field="age" data-sortable="true">Age</th>  
+  <th data-field="city" data-sortable="true">City</th>
+  <th data-field="country" data-sortable="true">Country</th>   <!-- pradeepa -->
+  <th data-field="user_level" data-editable="true" data-editable-type="number" data-sortable="true">Level</th>
+  <th data-field="roles" data-sortable="true">Roles</td>
+  <th data-field="username" data-sortable="true">Username</th>
+{/block}
+
+{block name="script"}
+{/block}

@@ -1,0 +1,34 @@
+{* automatically generated on 2018-07-06 05:01:33 from /var/www/html/test.vpatina.com/pages/components/_user-profile-artist.html. DO NOT EDIT *}
+{extends file="/var/www/html/test.vpatina.com/smarty/templates/components/_user-profile-base.html"}
+
+{block name=profile}
+  {$profile = $scope.profile}
+  {include file="/var/www/html/test.vpatina.com/smarty/templates/components/_gallery-artist-information.html" }
+
+  {include file="/var/www/html/test.vpatina.com/smarty/templates/components/_gallery-contact-information.html" }
+  
+  {$curator_ids = $scope.curator_ids}
+  {if ($curator_ids|@count)}
+    {$profile_link = $smarty.const.PAGE_PROFILE|link}
+  <h3>{if ($curator_ids|@count == 1)}Represented by:{else}Represented by:{/if}</h3>
+    <div class="profileinfo">
+    {foreach from=$curator_ids item=curator_id}
+      {$profile = $curator_id|get_user|obj2array}
+      {$data = ["site_id" => $site.id, "obj_type" => "user", "obj_id" => $profile.user_id, "obj_subtype" => $smarty.const.USER_ROLE_CURATOR]}
+      {$json = $data|@json_encode}
+      <h1><a href="{$profile_link}{$profile.user_id}" class="cms-link gallery-link" data-data='{$json}'>{$profile.display_name}</a></h1>
+      <h4>{[{$profile.city}, {$profile.country|get:countries:name}]|array_filter|join:', '}</h4>
+      {include file="/var/www/html/test.vpatina.com/smarty/templates/components/_gallery-contact-information.html" }
+    {/foreach}
+    </div>
+    {$profile = $scope.profile} {* reset variable if needed later *}    
+  {/if}
+  
+{/block}
+
+{block name=description}
+  <p>{$scope.profile.description}</p>
+{/block}
+
+
+

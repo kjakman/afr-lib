@@ -1,0 +1,32 @@
+{* automatically generated on 2018-07-06 05:00:49 from /var/www/html/test.vpatina.com/pages/components/_gallery-collection-embed-list.html. DO NOT EDIT *}
+        {$rows = []}
+        {$rows[] = ["Author", "Name", "Title", "Type", "Code", "Views", "Actions"]}
+        {foreach from=$scope.plugins item=plugin}
+          {$id = $plugin.id}
+          {$name = $plugin.name|truncate:50:"..."}
+          {$title = $plugin.title|truncate:50:"..."}
+          {$link_options = ["class" => "view-object", "data-obj_type" => "mail_queue", "data-obj_id" => $plugin.id, "data-fields" => ["sent_time", "sender", "recipient", "body"]]}
+          
+          {$view_link = "<a id=\"embed_link-`$id`\" href=\"`$smarty.const.PAGE_PLUGIN|link``$id`\">`$name`</a>"}
+
+          {$edit_link = "<a id=\"embed_link-`$id`\" 
+            class=\"btn btn-success btn-xs\" 
+            href=\"`$smarty.const.PAGE_PLUGIN|link``$id`?edit\"><i class=\"fa fa-pencil\"></i></a>"}
+
+          {$selector = "#plugin-"|cat:$plugin.id}
+          {$delete_link = "<a href=\"#\" class=\"btn btn-danger btn-xs\"
+            id=\"delete-`$id`\" 
+            data-toggle=\"confirmation\" 
+            data-obj_type=\"plugin\" data-obj_id=\"`$id`\" 
+            data-reload_link=\"#embed_link\"
+            data-on-confirm=\"delete_object\" 
+            
+            rel=\"tooltip\" data-placement=\"top\" title=\"Are you sure? \"
+          ><i class=\"fa fa-times\"></i></a>"}
+          {$code = $plugin.shorturl|default:$plugin.url}
+          {$code_str = "&lt;script src='`$code`'&gt;&lt;/script&gt;"}
+          {$row = [$plugin.user_id|username, $view_link, $title, $plugin.type, $code_str, $plugin.count, "`$edit_link` `$delete_link`"]}
+          {$rows[] = $row}
+        {/foreach}
+        {$rows|table:["class" => "table table-bordered table-striped table-booking-history"]}
+

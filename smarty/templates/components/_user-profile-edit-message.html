@@ -1,0 +1,13 @@
+{* automatically generated on 2018-06-22 16:56:44 from /var/www/html/test.vpatina.com/www/afr-lib/pages/components/_user-profile-edit-message.html. DO NOT EDIT *}
+
+                                  
+                                  {if ($scope.id == $user.id)}
+                                  You cannot send a message to yourself
+                                  {else}
+                                  <div class="panel panel-default">
+                                    <div class="panel-body">
+                                    {include file="/var/www/html/test.vpatina.com/smarty/templates/components/_inbox-form.html" }
+                                    </div>
+                                  </div>
+                                  {/if}
+

@@ -1,0 +1,173 @@
+{* automatically generated on 2018-07-06 10:40:49 from /var/www/html/test.vpatina.com/pages/components/_gallery-detail-base.html. DO NOT EDIT *}
+  {$collection = $scope.collection}
+  {$artwork = $scope.artwork}
+  {$plugin = $scope.plugin}
+  
+  {if ($collection)}
+    {$object = $collection}
+    {$what = 'exhibition'}
+  {elseif ($artwork)}
+    {$object = $artwork}
+    {$what = 'artwork'}
+  {elseif ($plugin)}
+    {$object = $plugin}
+    {$what = 'plugin'}
+  {/if}
+  
+  {* $object|dump *}
+  
+  {$artist_id = $scope.artist_id}
+  {$artist = $scope.artist}
+  {$artist_name = $artist.display_name}
+
+  {$curator_id = $scope.curator_id}
+  {$curator = $scope.curator}
+  {$curator_name = $curator.display_name}
+  
+  {$artworks = $scope.artworks}
+
+  {$collection_id = $scope.collection_id}
+  {$collection_type = $collection.type}
+  {if ($collection_type)}
+    {$collection_type_name = $collection_type|get:"media_collection_type":"name"} 
+  {/if}
+    
+  {if ($collection_id)}  
+    {$picture = $collection_id|collection_photo:'big'}
+    {$title = "`$collection.title` by `$curator_name`"}
+  {else}
+    {$picture = $artwork.media_id|photo:"big"}
+    {$title = "`$artwork.name` by `$artist_name`"}
+  {/if}
+  
+  {$parent_type = ""}
+  {$parent_id = 0}
+  {$map_id = 0}
+  {if ($artwork.media_collection_id)}
+    {$parent_type = "media_collection"}
+    {$parent_id = $artwork.media_collection_id}
+    {$map_id = $artwork.map_id}
+  {/if}
+  {$item_data = ["user_id" => $user.id, "site_id" => $site.id, 
+                 "obj_type" => $scope.obj_type, "obj_id" => $scope.obj_id, 
+                 "follow_type" => $scope.follow_type, "follow_id" => $scope.follow_id, 
+                 "parent_type" => $parent_type, "parent_id" => $parent_id]}  
+
+  {$item_data = ["obj_type" => $scope.obj_type, "obj_id" => $scope.obj_id]}  
+  {$item_json = $item_data|@json_encode}
+                          
+  {$fav_class = ($scope.collected) ? "fa-star" : "fa-star-o"}
+  
+                    {block name=top}
+                    {if (!$object.active)}
+                      {"This `$what` has not been published and is not visible to the public."|alert:"warning"}
+                    {/if}
+                    {/block}
+
+                    
+                    <div class="profileinfo"> 
+                      <div class="gallery-artwork-detail">
+                        <article class="row mt20">
+                          <section class="col-sm-6 mr20">
+                            {block name=image}{/block}
+
+                            {$url = $scope.url|default:$this_full_url}
+                              
+                            {if (!$plugin)}
+                            <nav class="actions-buttons mt20 center" data-item='{$item_json}'>
+                          
+                              {* data-parent='{$parent_json}' *}
+                              {if ($scope.follow_type && $scope.follow_id && $scope.follow_type == 'media')} {* todo: allow collection *}
+                                {if ($user.id)}
+                              <a href="#" title="Follow" data-item='{$item_json}' class="favorite-link">
+                                <span class="fa fa-stack fa-2x">
+                                  <i class="fa fa-circle-thin fa-stack-2x"></i>
+                                  <i class="fa {$fav_class} fa-stack-1x"></i>
+                                </span>
+                              </a>
+                                {else} {* not logged in *}
+                                {$login = $smarty.const.PAGE_LOGIN|link}
+                                {$redirect = "`$this_path`?follow_type=`$scope.follow_type`&amp;follow_id=`$scope.follow_id`&amp;follow=1"}
+                                
+                                <a class="popup-text set-target-value rr-link" id="rr-request" href="#login-dialog" 
+                                   data-effect="mfp-3d-unfold" data-panel="#login-container" data-mfp-handler="request_login_handler"
+                                   data-target=".login-redirect" data-value="{$redirect}">
+                                <span class="fa fa-stack fa-2x">
+                                  <i class="fa fa-circle-thin fa-stack-2x"></i>
+                                  <i class="fa fa-star-o fa-stack-1x"></i>
+                                </span>
+                              </a>                                
+                                {/if}
+                              {/if}
+                              {if ($url)}
+                                {$aff_id = $smarty.session.aff_id}
+                                {if ($aff_id)}
+                                  {$url = $url|add_query_var:'_aid':$aff_id}
+                                {/if}
+                              
+                                {$url_encoded = $url|urlencode}
+                                <a href="#" title="Share on Facebook" class="fb-loader-popup" data-url="http://www.facebook.com/sharer.php?u={$url_encoded}">
+                                  <span class="fa fa-stack fa-2x">
+                                    <i class="fa fa-circle-thin fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x"></i>
+                                  </span>
+                                </a>
+                                <a href="#" title="Share on Twitter" class="fb-loader-popup" data-url="http://twitter.com/share?url={$url_encoded}">
+                                  <span class="fa fa-stack fa-2x">
+                                    <i class="fa fa-circle-thin fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x"></i>
+                                  </span>
+                                </a>
+                                <a href="#" title="Share on Google Plus" class="fb-loader-popup" data-url="https://plus.google.com/share?url={$url_encoded}">
+                                  <span class="fa fa-stack fa-2x">
+                                    <i class="fa fa-circle-thin fa-stack-2x"></i>
+                                    <i class="fa fa-google-plus fa-stack-1x"></i>
+                                  </span>
+                                </a>
+                                <a href="#" title="Share on Pinterest" class="fb-loader-popup" data-url='https://pinterest.com/pin/create/button/?url={$url_encoded}&amp;media={$site_url}{$picture}&amp;description={$title}'>
+                                  <span class="fa fa-stack fa-2x">
+                                    <i class="fa fa-circle-thin fa-stack-2x"></i>
+                                    <i class="fa fa-pinterest fa-stack-1x"></i>
+                                  </span>
+                                </a>
+                                <a href="#" title="Share on LinkedIn" class="fb-loader-popup" data-url='https://www.linkedin.com/shareArticle?mini=true&amp;url={$url_encoded}&amp;title={$title}'>
+                                  <span class="fa fa-stack fa-2x">
+                                    <i class="fa fa-circle-thin fa-stack-2x"></i>
+                                    <i class="fa fa-linkedin fa-stack-1x"></i>
+                                  </span>
+                                </a>
+                                <a href="#" title="Share by email" class="fb-loader-popup" data-url="/share/?url={$url_encoded}"                                
+                                    data-template="{$scope.mail_template}" data-controller="{$scope.mail_controller}"
+                                    data-obj_type="{$scope.obj_type}" data-obj_id="{$scope.obj_id}">
+                                  <span class="fa fa-stack fa-2x">
+                                    <i class="fa fa-circle-thin fa-stack-2x"></i>
+                                    <i class="fa fa-envelope fa-stack-1x"></i>
+                                  </span>
+                                </a>
+                              {/if}
+                              
+                            </nav>
+                            {/if}
+                          </section>
+                          <aside class="col-sm-5">
+                          {block name=aside}{/block}
+                          </aside>
+                        </article>
+                        <article class="row mt40">
+                          {block name=below}{/block}
+                          
+                          {* $scope|dump *}
+                          <div class="gap"></div>
+                          {if (!$scope.hide_related)}
+                            {include file="/var/www/html/test.vpatina.com/smarty/templates/components/_gallery-related-images.html" }
+                          {else}
+                            {* <h4><a href="#">Show Related Images</a></h4> *}
+                          {/if}
+                        </article>
+                      </div>
+                    </div>
+
+                    {block name=script}
+                    {/block}
+                    
+

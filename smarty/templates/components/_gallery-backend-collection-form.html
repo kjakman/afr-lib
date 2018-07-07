@@ -1,0 +1,89 @@
+{* automatically generated on 2018-07-06 10:40:49 from /var/www/html/test.vpatina.com/pages/components/_gallery-backend-collection-form.html. DO NOT EDIT *}
+      
+          
+      {$collection = $scope.collection}
+      {$artist_id = $artwork.artist_id|default:$scope.artist_id}
+      {$curator_id = $artwork.curator_id|default:$scope.curator_id}
+
+      <form id="gbe_collection_form" class="ajax-submit" data-handler="save-collection" data-success_handler="gbe_collection_handler">
+        <input hidden="1" name="id" type="hidden" value="{$collection.id}">
+        <input hidden="1" name="obj_id" type="hidden" value="{$collection.id}">
+        <input hidden="1" name="obj_type" type="hidden" value="media_collection">      
+        <input hidden="1" name="type" type="hidden" value="{$collection.type|default:$smarty.const.COLLECTION_TYPE_EXHIBITION}">
+        {if (!$collection.id)}
+        <input hidden="1" name="active" type="hidden" value="0">
+        <input hidden="1" name="user_id" type="hidden" value="{$user.id}">
+        <input hidden="1" name="artist_id" type="hidden" value="{$artist_id}">
+        <input hidden="1" name="curator_id" type="hidden" value="{$curator_id}">        
+        {/if}
+        
+        <input hidden="1" name="next_tab" type="hidden" value="location">      
+        
+        <div class="row">
+          <div class="form-group col-sm-6 col-xs-12">
+            <label for="media-name">Title *</label>
+            <a data-toggle="tooltip" data-placement="right" title="This is title that will appear when the exhibition is explored, shared or followed"> <i class="fa fa-info-circle"></i></a>
+            <input type="text" class="form-control" name="title" value="{$collection.title}" maxlength="100">
+          </div>
+          <div class="form-group col-sm-6 col-xs-12">
+            <label for="artwork-available">Type</label>
+            {"subtype"|object_select:"exhibition_type":["class" => "form-control", "value" => $collection.subtype]}
+          </div>  
+        </div>
+        
+        {$artist_ids_json = $collection.artist_ids|default:'[]'}
+        {$artist_ids = $artist_ids_json|@json_decode}
+        {if (!$artist_ids)}
+         {$artist_ids = [$artist_id]}
+        {/if}
+        
+        <div class="row">
+          <div class="form-group col-xs-12">
+            <label for="media-name">Artist(s)</label>
+            <a data-toggle="tooltip" data-placement="right" title="Type name and select from list using mouse of arrow keys. Or type a new name and press enter to add."> <i class="fa fa-info-circle"></i></a>
+            <input type="hidden" readonly class="form-control" name="artist_ids" id="artist_ids" value="{$artist_ids_json}"><br>
+            <ul id="artistTags">
+            {foreach from=$artist_ids item=$artist_id}
+              <li>{$artist_id|display_name}|{$artist_id}</li>
+            {/foreach}  
+            </ul>      
+            {if ($user.level >= USER_LEVEL_STAFF || $user|has_role:$smarty.const.USER_ROLE_CURATOR)}            
+            <button type="button" class="btn btn-primary btn-sm" id="newArtist" data-toggle="modal" data-target="#artist-form-modal">
+              <i class="fa fa-plus-circle"></i> Create Artist
+            </button>
+            <a data-toggle="tooltip" data-placement="right" title="Only create new artist if the artist doesn’t exist on the system. To find en existing artist type their name into the bar above."> <i class="fa fa-info-circle"></i></a>
+              {$add_artist = 1}
+            {/if}
+          </div>
+  
+          
+          <div class="form-group col-xs-12">
+            <label for="comment">Description of collection</label>
+            <a data-toggle="tooltip" data-placement="right" title="This is the description of your exhibition that will appear when it is embedded, shared or followed"> <i class="fa fa-info-circle"></i></a>
+            <textarea class="summernote form-control special" data-height="200" name="description">{$collection.description}</textarea>
+          </div>
+        </div>
+          
+        <div class="row">
+          <div class="form-group col-xs-12">
+            <input type="submit" id="submit" class="btn btn-success" value="Save">
+          </div>
+        </div>
+            
+      </form>
+      <div class="gap gap-small"></div>
+      {if ($add_artist)}
+        {include file="/var/www/html/test.vpatina.com/smarty/templates/components/_artist-dialog.html" }
+      {/if}
+      
+      
+      <script type="text/javascript">        
+        $('.modal').on('hidden.bs.modal', function(){
+           $(this).find('form')[0].reset();
+           $(this).find('.alert').hide();
+        });       
+        $(document).ready(function() {
+          if($("#artistTags").length) gbe_artists_tagit();          
+        });
+      </script>
+

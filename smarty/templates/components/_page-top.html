@@ -1,0 +1,48 @@
+{* automatically generated on 2018-07-06 05:08:06 from /var/www/html/test.vpatina.com/pages/components/_page-top.html. DO NOT EDIT *}
+
+      <div class="header-top navbar navbar-default {$nav_class}">
+        <div class="container">
+          <!--div class="row"-->
+            <!--div class="col-xs-12"-->
+              
+            <!--/div>
+            <div class="col-sm-3 col-sm-offset-2">
+            </div>
+            <div class="col-sm-4"-->
+
+              <div class="top-user-area clearfix">
+                <div class='pull-left mr20'>
+                  <a class="logo" href="/">
+                  {if ($site.logo_small)}
+                    <img src="{$site.logo_small}" alt="$site.name" title="Image Title" height="48" style="position:relative;top:-5px;"/>
+                    {*$site.name*}
+                  {else}
+                  {$site.name}
+                  {/if}
+                  </a>
+                </div>
+              
+                <ul class="top-user-area-list list list-horizontal list-border">
+                  {if ($user.id)}
+                  <li class="top-user-area-avatar">
+                    <a href="{$smarty.const.PAGE_PROFILE|link}{$user.id}"><img class="origin round" src="{$user|userphoto:'small'}" alt="{$user.display_name}" title="{$user.full_name}" />{$user.display_name}</a>
+                  </li>
+                  <li><a href="{$this_url|replace_query_var:'act':'logout'|remove_query_var:'provider'}">{'Sign Out'|translate}</a></li>
+                  {else}
+                  <li><a class="popup-text" href="#login-dialog" data-effect="mfp-3d-unfold">Log In / Sign Up</a></li>                  
+                  <div id="login-dialog" class="mfp-with-anim mfp-hide mfp-dialog">                      
+                    {include file="/var/www/html/test.vpatina.com/smarty/templates/components/_login-register.html" }
+                  </div>
+                  {/if}
+                  {if (!$admin_template)}
+                  <li><a href="/inbox/" role="button"><i class="fa fa-envelope-o"></i> {$global.message_count|default:"0"}</a></li>
+                  <li><a href="http://www.ta5te.com"  target="_demo" class="btn btn-primary btn-md" role="button">Demo</a></li>
+                  {/if}
+                </ul>
+              </div>
+            <!--/div-->
+          <!--/div-->
+        </div>
+      </div>
+
+
