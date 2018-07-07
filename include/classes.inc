@@ -138,12 +138,12 @@ $__CLASSES = array(
 // gallery    
     'plugin' =>               array(USER_LEVEL_STAFF,  'gallery', '', '', 0, 'name', '', ''),
     'gallery' =>              array(USER_LEVEL_USER,   'gallery', '', '', 0, 'title', 'rank ', ''),
-    'media_collection' =>     array(USER_LEVEL_USER,   'gallery', '', '', 0, 'title', 'rank ', ''),
+    'media_collection' =>     array(USER_LEVEL_USER,   'gallery', '', '', 0, 'title', 'media_collection.rank ', ''),
     'media_collection_type' =>array(USER_LEVEL_USER,   'gallery', '', '', NF_CACHE_ASSOC, 'name', 'name ', ''),
     'media_collection_map' => array(USER_LEVEL_USER,   'gallery', '', '', 0, '', 'rank', ''),
 
 // artwork
-    'artwork' =>                array(USER_LEVEL_OWNER,  'artwork', '', '', NF_LOG, 'title', 'id desc', ''),
+    'artwork' =>                array(USER_LEVEL_OWNER,  'artwork', '', '', NF_LOG, 'title', 'artwork.id desc', ''),
     'artwork_type' =>           array(USER_LEVEL_SYSTEM, 'artwork', '', '', NF_CACHE_ASSOC, 'name', 'id', ''),
     'artwork_status' =>         array(USER_LEVEL_SYSTEM, 'artwork', '', '', NF_CACHE_ASSOC, 'name', 'id', ''),
     
@@ -2675,6 +2675,37 @@ $__CLASS_ATTRIBUTES = array(
   
      ),
   
+  
+  
+  "server" => 
+  array(
+     'id'=>                array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 3),
+     'created'=>           array('Created',           'date',   ATT_DEFAULT_TODAY, AF_HIDE_LIST|AF_READONLY, 6 ),
+     'timestamp'=>         array('Timestamp',         'timestamp',   0, AF_HIDE|AF_READONLY, 14 ),
+     'active'=>            array('Active',            'bool',   1, 0),
+     'production'=>        array('Production Server?', 'bool',   0, 1),
+     'name'=>              array('Name',              'str',   '', AF_OBLIGATORY, 100 ),
+     'description'=>       array('Description',       'text',  '', AF_HIDE_LIST, 255),
+  
+     'hostname'=>          array('Hostname',          'str',  '', AF_OBLIGATORY|AF_READONLY_EDIT, 100 ),
+     'ip'=>                array('IP',                'ip',   '', AF_SEARCHABLE|AF_READONLY|AF_HIDE_ADD, 10 ),
+     'country'=>           array('Country',           'many2one', 0, AF_SEARCHABLE|AF_READONLY|AF_HIDE_ADD, 'countries'),
+  
+     'webroot'=>           array('Web root',           'str',   '/web/sites/', AF_HIDE_LIST, 100),
+     'imageroot'=>         array('Image root',         'str',   '/web/images/', AF_HIDE_LIST, 100),
+     'dataroot'=>          array('Data root',         'str',   '/web/data/', AF_HIDE_LIST, 100),
+     'logdir'=>            array('Log dir',           'str',   '/web/logs/', AF_HIDE_LIST, 100),
+  
+     'apachename'=>        array('Apache name',       'str',   'apache2', AF_HIDE_LIST, 20),
+  
+     'db_type'=>           array('DB name',           'valSelect',   'mysql', 0, $db_type_array),
+     'db_db'=>             array('DB name',           'str',   '', 0, 50),
+     'db_user'=>           array('DB user',           'str',   '', AF_HIDE_LIST, 20),
+     'db_password'=>       array('DB password',       'password',   '', AF_HIDE_LIST, 50),
+     
+  ),
+  
+  
   // per language defaults for site      
   "site_content" => 
   array(
@@ -2694,6 +2725,14 @@ $__CLASS_ATTRIBUTES = array(
      'se_description'=>    array('Search Engine Description', 'text', '__pagename __pathvar __sitename', AF_HIDE_LIST),
      'se_keywords'=>       array('Search Engine Keywords',    'text', '', AF_HIDE_LIST),
   
+     //'site_header'=>           array('Header (HTML)',            'html', '', AF_HIDE_LIST),
+     //'site_footer'=>           array('Footer (HTML)',            'html', '', AF_HIDE_LIST),
+     //'site_extra'=>            array('Extra  (HTML)',            'html', '', AF_HIDE_LIST),
+                                                                                         
+     //'mail_header'=>           array('Header (HTML)',            'html', '', AF_HIDE_LIST),
+     //'mail_footer'=>           array('Footer (HTML)',            'html', '', AF_HIDE_LIST),
+     
+     //'alt_site_id'=>     array('Alternate Site for this language', 'many2one', ATT_DEFAULT_NULL, 0, 'site'),
      'machine_translated'=>    array('Machine Translated on',    'str',  '', AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT, 20),
               
      
@@ -3095,12 +3134,17 @@ $__CLASS_ATTRIBUTES = array(
      'show_plugin'=>       array('Show Plugin',       'bool',   1, 0),
      'show_website'=>      array('Show Website',      'bool',   1, 0),
      'rank'=>              array('Rank',              'int', 0, AF_HIDE_ADD, 3),
+     //'type'=>        array('Type',                'one2one', 0,   AF_HIDE_LIST|AF_OBLIGATORY|AF_CASCADE_DELETE|AF_ONE2ONE_INTEGRATE, 'media_collection_type'),
+
      'type' =>             array('Collection Type',   'many2one', MEDIA_COLLECTION_TYPE_EXHIBITION, AF_SEARCHABLE, 'media_collection_type'), // collection, exhibition
      'subtype' =>          array('Exhibition Subtype', 'many2one', 0, AF_SEARCHABLE, 'exhibition_type'), // art faire, virtual exhibition, etc
      'site_id'=>           array('Site',              'link',   ATT_DEFAULT_SITE_ID, AF_READONLY|AF_HIDE_ADD, 'site'),
      'user_id'=>           array('User',              'link',  ATT_DEFAULT_USER_ID, AF_SEARCHABLE|AF_HIDE_ADD, 'user'),
      'artist_id'=>         array('Artist',            'link',  ATT_DEFAULT_NULL, AF_SEARCHABLE|AF_HIDE_ADD, 'user'),
-     'artist_ids'=>        array('Artists',           'json',  ATT_DEFAULT_NULL, AF_SEARCHABLE|AF_HIDE_ADD),
+   'artist_ids'=>        array('Artists',           'json',  ATT_DEFAULT_NULL, AF_SEARCHABLE|AF_HIDE_ADD, 'user'),
+
+//     'artist_ids'=>        array('Artist name',                'one2bala', 0,   AF_HIDE_LIST|AF_OBLIGATORY|AF_CASCADE_DELETE|AF_ONE2ONE_INTEGRATE, 'user_profile'),
+    
      'curator_id'           =>array('Curator Id'    , 'link', ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY, 'user'),
      'title'=>             array('Title',             'str',   '', AF_OBLIGATORY, 255),
 //     'title_image'=>       array('Title Image',       'media',  ATT_DEFAULT_NULL, 0, 'media'),
@@ -3394,7 +3438,10 @@ $__CLASS_ATTRIBUTES = array(
     'public'=>            array('Public',            'bool',   1, 0),
     'show_website'=>      array('Show Website',      'bool',   1, 0),
     'type'                 =>array('Type'          , 'str', '', AF_SEARCHABLE, 20),
-    'status' =>              array('Status',         'many2one', 0, AF_LOG|AF_SEARCHABLE , 'artwork_status'),
+   // 'type'=>        array('Type',                'one2dci', 0,   AF_HIDE_LIST|AF_ONE2ONE_INTEGRATE|AF_HIDE_ADD, 'artwork_type'),
+
+    'status' =>              array('Status',         'many2one', 0, AF_LOG|AF_SEARCHABLE , 'artwork'),
+    //'status'=>        array('Status',                'one2dci', 0,   AF_HIDE_LIST|AF_ONE2ONE_INTEGRATE|AF_HIDE_ADD, 'artwork_status'),
 
     'title'                 =>array('Title'          , 'str', '', 0, 255),
     'comment'              =>array('Comment'       , 'html', '', 0),
@@ -3758,6 +3805,7 @@ $__CLASS_ATTRIBUTES = array(
      'passport'         => array('Passport'        ,   'media',    '', 0, $passport_media_options),
      'passport_verified'=> array('Passport Verifed',   'str',      '', AF_READONLY, 128),
      'mobile'           => array('Mobile'        ,     'str',      '', 0, 30 ),
+     'address'         => array('Address'      ,      'str',      '', 0, 200 ), // pradeepa
      'address1'         => array('Address'      ,      'str',      '', 0, 200 ),
      'address2'         => array('Address...',         'str',      '', 0, 200 ),
      'city'             => array('City'         ,      'str',      '', 0, 50 ),

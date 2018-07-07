@@ -48,7 +48,7 @@
   $messages = array();
   $errors = array();
 
-  if($obj_type) $filters = get_object_filters($obj_type, $u_level, $u_id); // get forced filters from security model
+  //if($obj_type) $filters = get_object_filters($obj_type, $u_level, $u_id); // get forced filters from security model
 
   $allow_jsonp = array('get-gallery', 'gallery-favorite', 'get-data', 'user-login');
   $jsonp = in_array($oper,$allow_jsonp);
@@ -126,6 +126,7 @@
   unset($_POST['oper']);
   if($_POST) {
     $obj_data = $_POST;
+    //echo "<pre>"; print_r($obj_data);
     if($_GET) {
       foreach($_GET as $k => $v) { // allow sending data with GET as well
         if(in_array($k, array('oper', 'obj_type'))) continue;
@@ -271,12 +272,12 @@
       //if(isset($obj_data['type']) && !$type) json_error("Please select a category."); 
       //if(isset($obj_data['status']) && !$status) json_error("Please select a status."); 
       if(isset($obj_data['artist_ids']) && !count(json_decode($obj_data['artist_ids']))) json_error("Please select at least one artist."); 
+      //echo "<pre>"; print_r($obj_data);
       /**
       if($error = check_required($obj_data, 
           ['title' => "Title", 'primary_year' => "Primary Year", 'technique' => "Technique"])) 
           json_error("Missing: ".implode(', ', $error));
       */  
-      
       if($obj_id) {
         list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
         print_log("save-artwork: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'gallery', LOG_LEVEL_TEST);
@@ -367,7 +368,7 @@
     case 'save-collection':
       $obj_type = 'media_collection';
       extract($obj_data);
-
+//echo "<pre>"; print_r($obj_data);
       $type_name = get_object('media_collection_type', $type, 'name');      
       
       $id = $obj_id;
@@ -1658,40 +1659,145 @@
   
         
       $val = trim($obj_data['search']);
+	if($val)
+		$new_value = explode(' ',$val);
+	else
+		$new_value = [];
       switch($obj_type) {
       case 'minisite':
-        if($val) $search[DB_LOGICAL_OR] = 
+      /*if(count($new_value) >= 1) 
+         foreach($new_value as $key=> $val) {
+            $new_key = DB_LOGICAL_OR . $key;
+            $new_va .= $val . '|';
+         }              
+  $new_va = rtrim($new_va,'|');
+        if($val) $search[DB_LOGICAL_OR] = */
+
+      if(count($new_value) >= 1) 
+         foreach($new_value as $key=> $val) {
+      $key1 = $key + 1;
+            $new_key = DB_LOGICAL_OR . $key1;
+           // $new_va .= $val . '|';
+    $search[$new_key] =
           array('minisite.id' => "*$val*", 
                 'name' => "*$val*", 
                 'domain' => "*$val*", 
-                'url' => "*$val*");              
+                'url' => "*$val*",
+                'type' => "*$val*"); 
+          }             
         break;
       case 'plugin':
-        if($val) $search[DB_LOGICAL_OR] = 
+      /*if(count($new_value) >= 1) 
+         foreach($new_value as $key=> $val) {
+            $new_key = DB_LOGICAL_OR . $key;
+            $new_va .= $val . '|';
+         }              
+  $new_va = rtrim($new_va,'|');*/
+
+  if(count($new_value) >= 1) 
+         foreach($new_value as $key=> $val) {
+      $key1 = $key + 1;
+            $new_key = DB_LOGICAL_OR . $key1;
+           // $new_va .= $val . '|';
+    $search[$new_key] =
+        
           array('plugin.id' => "*$val*", 
                 'title' => "*$val*", 
-                'subtitle' => "*$val*");              
+                'subtitle' => "*$val*",
+                'type' => "*$val*"); 
+           }             
         break;
       case 'media':
-        if($val) $search[DB_LOGICAL_OR] = 
+      if(count($new_value) >= 1) 
+         foreach($new_value as $key=> $val) {
+      $key1 = $key + 1;
+            $new_key = DB_LOGICAL_OR . $key1;
+           // $new_va .= $val . '|';
+    $search[$new_key] =
           array('media.id' => "*$val*", 
                 'name' => "*$val*", 
-                'comment' => "*$val*");              
+                'comment' => "*$val*"); 
+              }
         break;
       case 'media_collection':
-        if($val) $search[DB_LOGICAL_OR] = 
-          array('media_collection.id' => "*$val*", 
-                'title' => "*$val*", 
-                'description' => "*$val*");              
+    $t1 = get_object_table('media_collection');
+    $t2 = get_object_table('user_profile');
+    
+        if(count($new_value) >= 1) 
+	       foreach($new_value as $key=> $val) {
+			$key1 = $key + 1;
+		        $new_key = DB_LOGICAL_OR . $key1;
+		       // $new_va .= $val . '|';
+
+         if($val=='physical'){
+            $val1= 10;
+         }elseif($val=='virtual'){
+            $val1= 20;
+         }elseif($val=='art fair'){
+            $val1= 30;
+         }elseif($val=='selection'){
+            $val1= 40;
+         }else
+		$val1 = $val;
+		$search[$new_key] =
+          array("{$t1}.id" => "*$val*",
+                "{$t1}.title" => "*$val*",
+//                "{$t2}.display_name" => "*$val*",
+		            "{$t1}.created" => "*$val*",
+              "{$t1}.subtype" => "*$val1*",
+                "{$t1}.start_date" => "*$val*",
+                "{$t1}.end_date" => "*$val*",
+                "{$t1}.description" => "*$val*");
+	       }              
+	/*$new_va = rtrim($new_va,'|');
+	$search[DB_LOGICAL_OR] = 
+          array('media_collection.id' => "*$new_va*", 
+                'title' => "*$new_va*", 
+                'description' => "*$new_va*");*/
         break;
+      
       case 'artwork':
-        if($val) $search[DB_LOGICAL_OR] = 
-          array('artwork.id' => "*$val*", 
-                'title' => "*$val*", 
-                'artist_name' => "*$val*",
-                'short_description' => "*$val*",
-                'primary_year' => "*$val*",
-                'technique' => "*$val*");              
+      //echo "<pre>"; print_r($new_value);
+  if(count($new_value) >= 1) 
+
+         foreach($new_value as $key=> $val) {
+	if($key == 1)
+		$key = 2;
+      $key1 = $key + 1;
+            $new_key = DB_LOGICAL_OR . $key1;
+           // $new_va .= $val . '|';
+    
+    $tb1 = get_object_table('artwork');
+    $tb2 = get_object_table('artwork_type');
+      if($val=='available'){
+            $val1= 10;
+         }elseif($val=='reserved'){
+            $val1= 20;
+         }elseif($val=='sold'){
+            $val1= 30;
+         }elseif($val=='inactive'){
+            $val1= 40;
+         }elseif($val=='onloan'){
+            $val1= 50;
+         }else
+		$val1 = $val;
+
+        $search[$new_key] =
+          array("{$tb1}.id" => "*$val*", 
+                "{$tb1}.title" => "*$val*", 
+                "{$tb1}.created" => "*$val*", 
+                "{$tb1}.artist_name" => "*$val*",
+                "{$tb1}.short_description" => "*$val*",
+                "{$tb1}.primary_year" => "*$val*",
+                "{$tb1}.technique" => "*$val*",
+      //          "{$tb2}.name" => "*$val*", 
+                "{$tb1}.price" => "*$val*",
+                "{$tb1}.price_option" => "*$val*",
+                "{$tb1}.status" => "*$val1*"
+                );   
+          }
+        
+
         break;
       case 'gallery':
         if($val) $search[DB_LOGICAL_OR] = 
@@ -1741,31 +1847,52 @@
         else json_error("Missing invoice ID");
         break;
       case 'user':
+      /*if(count($new_value) >= 1) 
+         foreach($new_value as $key=> $val) {
+            $new_key = DB_LOGICAL_OR . $key;
+            $new_va .= $val . '|';
+         }              
+  $new_va = rtrim($new_va,'|');*/
         $tbl1 = get_object_table('user');
         $tbl2 = get_object_table('user_profile');
-        if($val) $search[DB_LOGICAL_OR] = 
+        
+       if(count($new_value) >= 1) 
+         foreach($new_value as $key=> $val) {
+      $key1 = $key + 1;
+            $new_key = DB_LOGICAL_OR . $key1;
+           // $new_va .= $val . '|';
+    $search[$new_key] =
           array("{$tbl2}.first_name" => "*$val*", 
                 "{$tbl2}.last_name" => "*$val*", 
                 "{$tbl2}.display_name" => "*$val*", 
                 "{$tbl2}.email_address" => "*$val*", 
-                "{$tbl1}.id" => "$val*", 
-                "{$tbl1}.username" => "*$val*");              
+                "{$tbl1}.id" => "*$val*", 
+                "{$tbl1}.username" => "*$val*",
+                "{$tbl1}.roles" => "*$val*");   
+            }           
         break;
       default:
         break;
       }
-      
+//	if($search['$or1'][$obj_type.'.id'] == '**')
+//		$search[] = [];
       if($filters = $_GET['filters']) {
         $filters = json_decode($filters, true);
         if(is_array($filters)) {
           foreach($filters as $k => $v) $search[$k] = $v;
         }          
       }
-
+//echo "<pre>";print_R($search);
       if($ids = $obj_data['id']) { // limit to selected IDs
         $search['id'] = $ids;
       }
-      
+
+     if($mode = $obj_data['mode']) {
+	//TODO need to update the softdelete column unsing the ids
+	delete_objects($obj_type,$ids); // need to update the softdelete db_object.inc file
+	unset($search['id']);
+  	 }
+
       print_log("get-rows {$obj_type} GET: ".dump($_GET, true), 'debug', LOG_LEVEL_TEST);
       print_log("get-rows {$obj_type} filters: ".dump($filters, true), 'debug', LOG_LEVEL_TEST);
       print_log("get-rows {$obj_type} search: ".dump($search, true), 'debug', LOG_LEVEL_TEST);
@@ -1773,6 +1900,7 @@
       $key = get_object_key($obj_type);      
       if(!$options['sort']) $options['sort'] = get_object_sort($obj_type) ?: "{$key} desc";
       
+      //echo "<pre>"; print_r($obj_type);
       $objs = find_objects($obj_type, $search, $options);
 
       $count = count($objs);
@@ -3764,6 +3892,23 @@
       echo(json_encode($response));exit;
       break;
 
+    case 'publish-site':
+      $data =  $obj_data;
+      $site_id = $obj_data['site_id'];
+      $siteObj = get_object('site', $site_id);
+      $base_dir = site_cache_dir($siteObj);
+      $cmd = "rm -rf $base_dir"; // delete existing cache for this language
+      exec($cmd);
+      if(!mkdir($base_dir, 0775, true)) die("site_sitemap_html: Couldn't make $base_dir");
+      if(!mkdir($base_dir.'css/font/', 0775, true)) die("site_sitemap_html: Couldn't make $base_dir".'css/font/');
+      if(!mkdir($base_dir.'css/images/', 0775, true)) die("site_sitemap_html: Couldn't make $base_dir".'css/images/');
+      exec("cd $base_dir;cp ../../../.htaccess .;ln -s ../../../user/; cp -ax ../../../build/ .;cp -ax ../../../afr/css/images css;cp -ax ../../../afr/css/font css;");
+      $caption = "Publishing $siteObj->domain";
+      $row = array('path', 'length', 'time', 'status', 'message');
+      $output .= html_table(array($row), array('title' => $caption, 'class' => 'coffee'));
+      echo($output); 
+      die();
+      break;
 
     case 'publish-node':
       $data =  $obj_data;
@@ -4966,16 +5111,20 @@
       $obj_type = 'user';
       $userData = $obj_data;
       extract($userData);
-
-      if($error = check_required($obj_data, array('site_id' => "Site ID", 'aff_id' => "User ID", 'first_name' => "First Name", 'last_name' => "Last Name"))) json_error("Missing: ".implode(', ', $error));
-      $host_user_id = $obj_data['aff_id'];
-        
+  
+      //echo "<pre>"; print_r($userData);
+      if($error = check_required($obj_data, array('site_id' => "Site ID", 'first_name' => "First Name", 'last_name' => "Last Name"))) json_error("Missing: ".implode(', ', $error));
+      $host_user_id = $obj_data['aff_id']?$obj_data['aff_id']:$u->id;
+     
       $ts = time();
       $userData['display_name'] = $name = trim($first_name.(trim($infix) ? " ".trim($infix)." " : " ").$last_name);
       $userData['username'] = $username = slugify($name)."_{$ts}"; /** ensure uniqueness */
       $userData['user_level'] = 1;
       $userData['auto_password'] = 1;
-      $userData['roles'] = USER_ROLE_ARTIST;        
+      $userData['roles'] = USER_ROLE_ARTIST;
+      $userData['phone'] = $phone;
+      $userData['address'] = $address;  //pradeepa     
+      $userData['date_of_birth'] = $date_of_birth;
       $password = "Auto_".random_int(1000,9999);; // generate random password
       
       list($user_id, $errors) = user_register($username, $password, $userData);
@@ -5867,6 +6016,765 @@
     echo $jsonp ? $_GET['jsoncallback'].'('.json_encode($jsonObj).')' : json_encode($jsonObj);exit();
     break;
 
+  case 'load-content':
+    extract($_GET);
+    // if(!$id) json_error("missing id");    
+    if(!$obj_type) json_error("missing object type");    
+    if(!$user_id) json_error("missing user id");
+    if(!$site_id) json_error("missing site id");
+    $siteObj = get_object('site', $site_id);
+    $auth_edit = false;
+    if($id) {
+      $obj = get_object($obj_type, $id);
+      if(!$obj) {
+        $output = "$obj_type $id not found";
+        echo($output);exit;
+      }
+      $owner_id = $obj->user_id;
+      //$auth_edit = gallery_auth_media($obj_type, $obj, $user_id);
+    }
+    switch($obj_type) {
+    case 'media_collection_map':
+    case 'media':
+      $output .= gallery_explore($site_id, $obj_type, $id, $obj_data);
+      break;
+    case 'media_collection':
+      $output .= gallery_explore($site_id, $obj_type, $id, $obj_data);
+      break;
+    case 'gallery':
+      $output .= gallery_explore($site_id, $obj_type, $id, $obj_data);
+      break;
+    case 'folder_list':
+      $output = gallery_folder_list($site_id, $user_id, array());
+      break;
+    case 'trash_list':
+      $output = gallery_folder_list($site_id, $user_id, array('trash' => 1));
+      break;
+    case 'user_profile': 
+      //$output = print_user_profile($siteObj, $obj);
+      $output .= gallery_explore($site_id, $obj_type, $id, $obj_data);
+      //$output = "User Profile {$obj->id}";
+      break;
+    case 'user':
+      $profileObj = find_user_profile($obj);
+      $output = print_user_profile($siteObj, $profileObj);
+      $output .= "id=$id".dump($profileObj, true);
+      break;
+    default:
+      $output = "Unsupported object type $obj_type";
+      break;
+    }
+    echo($output);exit;
+    break;
+    
+  case 'update-tree':
+    extract($_GET);
+    $nodes = $objects = array();
+    $load_url = "/ajax.php?oper=load-content&site_id=$site_id&user_level=$user_level&user_id=$user_id"; //&obj_type=media&id=$obj->id";
+    list($obj_type, $obj_id) = explode('-', $key);
+    if($obj_type && $obj_id) { // object
+      switch($obj_type) {
+      case 'media_collection': // one collection
+        $load_url .= "&obj_type=media_collection_map";
+        $objects = gallery_collection_images($site_id, $obj_id, array('return' => 'object'));
+        foreach($objects as $obj) $nodes[] = (object) array('key' => "media_collection_map-".$obj->map_id, 'title' => $obj->name ?: "(No title)", 'isFolder' => false, 'url' => "$load_url&id=$obj->map_id", 'icon' => '/images/icons-16/palette-paint-brush.png');
+        break;
+      case 'gallery': // one folder
+        $load_url .= "&obj_type=media";
+        $objects = gallery_folder_images($site_id, $obj_id);
+        foreach($objects as $obj) {
+          $nodes[] = (object) array('key' => "media-".$obj->id, 'title' => $obj->name ?: "(No title)", 'isFolder' => false, 'url' => "$load_url&id=$obj->id", 'icon' => '/images/icons-16/document-image.png');
+        }
+        break;
+      case 'user': // assume artist for now, show published projects
+        $objects = gallery_collection_list($site_id, MEDIA_COLLECTION_TYPE_PROJECT, $obj_id, array('return' => 'object')) ?: array();
+        foreach($objects as $obj) $nodes[] = (object) array('key' => "media_collection-".$obj->id, 'title' => $obj->title ?: "(No title)", 'isFolder' => true, 'isLazy' => true, 'expand' => false, 'url' => "$load_url&obj_type=media_collection&id=$obj->id", 'icon' => '/images/icons-16/projection-screen-presentation.png');
+        
+        //if($type == USER_ROLE_ARTIST) {
+        //}
+        break;
+      case 'media':
+        break;      
+      }      
+    } else { // base type = top folders
+      switch($key) {
+      case 'vault':
+        break;
+      case 'exhibited': // = exhibitions
+        $objects = gallery_collection_list($site_id, MEDIA_COLLECTION_TYPE_EXHIBITION, $user_id, array('return' => 'object')) ?: array();
+        foreach($objects as $obj) $nodes[] = (object) array('key' => "media_collection-".$obj->id, 'title' => $obj->title ?: "(No title)", 'isFolder' => true, 'isLazy' => true, 'expand' => false, 'url' => "$load_url&obj_type=media_collection&id=$obj->id", 'icon' => '/images/icons-16/projection-screen-presentation.png');
+        break;
+      case 'art':
+        $objects = gallery_user_folder($site_id, $user_id);
+        foreach($objects as $obj) $nodes[] = (object) array('key' => "gallery-".$obj->id, 'title' => $obj->title ?: "(No title)", 'isFolder' => true, 'isLazy' => true, 'expand' => false, 'url' => "$load_url&obj_type=gallery&id=$obj->id");
+        break;
+      case 'artist':
+        $objects = gallery_artist_list($site_id, array(), array('return' => 'object')) ?: array();
+        foreach($objects as $obj) $nodes[] = (object) array('key' => "user-".$obj->id, 'title' => $obj->display_name ?: "$obj->first_name $obj->last_name", 'url' => "$load_url&obj_type=user_profile&id=$obj->id", 'icon' => '/images/icons-16/user-medium.png');
+        break;
+      case 'curator':
+        $objects = gallery_curator_list($site_id, array(), array('return' => 'object')) ?: array(); 
+        foreach($objects as $obj) $nodes[] = (object) array('key' => "user-".$obj->id, 'title' => $obj->display_name ?: "$obj->first_name $obj->last_name", 'url' => "$load_url&obj_type=user_profile&id=$obj->id", 'icon' => '/images/icons-16/user-black.png');
+        break;
+      case 'published': // = projects
+        $objects = gallery_collection_list($site_id, MEDIA_COLLECTION_TYPE_PROJECT, $user_id, array('return' => 'object')) ?: array();
+        foreach($objects as $obj) $nodes[] = (object) array('key' => "media_collection-".$obj->id, 'title' => $obj->title ?: "(No title)", 'isFolder' => true, 'isLazy' => true, 'expand' => false, 'url' => "$load_url&obj_type=media_collection&id=$obj->id", 'icon' => '/images/icons-16/projection-screen-presentation.png');
+        break;
+      case 'shared': // = projects
+        $shared_user_ids = linked_users($user_id);        
+        $objects = gallery_artist_list($site_id, $shared_user_ids, array('return' => 'object')) ?: array();
+        foreach($objects as $obj) {
+          $artist_id = $obj->user_id;
+          $name = pick_first($obj->display_name, trim("$obj->first_name $obj->last_name"), get_object('user', $artist_id, "username"));
+            $nodes[] = (object) array('key' => "user-".$obj->user_id, 'title' => $name, 'isFolder' => true, 'isLazy' => true, 'expand' => false, 'url' => "$load_url&obj_type=media_collection&artist_id=$artist_id&type=".MEDIA_COLLECTION_TYPE_PROJECT, 'icon' => '/images/icons-16/user-medium.png');
+          //"$load_url&obj_type=user_profile&id=$obj->id"
+        }
+
+        //$objects = gallery_collection_list($site_id, MEDIA_COLLECTION_TYPE_PROJECT, $shared_user_ids, array('return' => 'object')) ?: array();
+        //foreach($objects as $obj) $nodes[] = (object) array('key' => "media_collection-".$obj->id, 'title' => $obj->title ?: "(No title)", 'isFolder' => true, 'isLazy' => true, 'expand' => false, 'url' => "$load_url&obj_type=media_collection&id=$obj->id", 'icon' => 'projection-screen-presentation.png');
+        break;
+      case 'trash':
+        // folders
+        $objects = gallery_folder_list($site_id, $user_id, array('return' => 'object', 'trash' => 1, 'format' => 'json')) ?: array(); 
+        foreach($objects as $obj) $nodes[] = (object) array('key' => "gallery-".$obj->id, 'title' => $obj->title ?: "(No title)", 'isFolder' => true, 'isLazy' => true, 'expand' => false, 'url' => "$load_url&obj_type=gallery&id=$obj->id");
+
+        // collections
+        $objects = gallery_collection_list($site_id, array(MEDIA_COLLECTION_TYPE_PROJECT, MEDIA_COLLECTION_TYPE_EXHIBITION), $user_id, array('search' => array('active' => 0), 'return' => 'object')) ?: array();
+        foreach($objects as $obj) $nodes[] = (object) array('key' => "media_collection-".$obj->id, 'title' => $obj->title ?: "(No title)", 'isFolder' => true, 'isLazy' => true, 'expand' => false, 'url' => "$load_url&obj_type=media_collection&id=$obj->id", 'icon' => '/images/icons-16/projection-screen-presentation.png');
+
+        // images
+        $objects = find_objects('media', array("parent_type" => 'gallery', "user_id" => $user_id, "active" => 0));
+        foreach($objects as $obj) $nodes[] = (object) array('key' => "media-".$obj->id, 'title' => $obj->name ?: "(No title)", 'isFolder' => false, 'isLazy' => false, 'expand' => false, 'url' => "$load_url&obj_type=media&id=$obj->id", 'icon' => '/images/icons-16/document-image.png');
+
+        // images
+        $objects = find_objects('media_collection_map', array("user_id" => $user_id, "active" => 0));
+        foreach($objects as $obj) $nodes[] = (object) array('key' => "media_collection_map-".$obj->id, 'title' => $obj->name ?: "(No title)", 'isFolder' => false, 'isLazy' => false, 'expand' => false, 'url' => "$load_url&obj_type=media_collection_map&id=$obj->id", 'icon' => '/images/icons-16/palette-paint-brush.png');
+
+        break;
+
+      }
+    }
+      
+    $tree_json = json_encode($nodes);
+    echo($tree_json);exit;
+    break;
+    
+  case 'load-tree':
+    $child_nodes = $nodes = array();
+    extract($_GET);
+    $is_staff   = $user_level >= USER_LEVEL_STAFF;
+    $is_admin   = $user_level >= USER_LEVEL_ADMIN;
+    $is_curator = $user_id && user_has_role($user_id, USER_ROLE_CURATOR);
+    $is_artist = $user_id && user_has_role($user_id, USER_ROLE_ARTIST);
+    $debug = " ul=$user_level is_staff=$is_staff is_admin = $is_admin";
+    $debug = '';
+    $nodeAr = array('art' => array('title' => phrase('my_studio', CAPITALIZE), 'url' => "/ajax.php?oper=load-content&site_id=$site_id&user_level=$user_level&user_id=$user_id&obj_type=folder_list", 'hideCheckbox' => true), 
+                    'published' => array('title' => phrase('shared', CAPITALIZE), 'icon' => '/images/icons-16/folder-share.png', 'url' => "/ajax.php?oper=load-content&site_id=$site_id&user_level=$user_level&user_id=$user_id&obj_type=media_collection&type=".MEDIA_COLLECTION_TYPE_PROJECT, 'hideCheckbox' => true), 
+                    'shared' => array('title' => phrase('shared', CAPITALIZE), 'icon' => '/images/icons-16/user-share.png', 'hideCheckbox' => true), 
+                    'artist' => array('title' => phrase('artists', CAPITALIZE), 'icon' => '/images/icons-16/user-medium.png', 'hideCheckbox' => true), 
+                    'curator' => array('title' => phrase('curators', CAPITALIZE), 'icon' => '/images/icons-16/user-business.png','hideCheckbox' => true), 
+                    'exhibited' => array('title' => phrase('my_exhibitions', CAPITALIZE), 'icon' => '/images/icons-16/blue-folder-open-image.png', 'url' => "/ajax.php?oper=load-content&site_id=$site_id&user_level=$user_level&user_id=$user_id&obj_type=media_collection&type=".MEDIA_COLLECTION_TYPE_EXHIBITION, 'hideCheckbox' => true), 
+                    'trash' => array('title' => phrase('archive', CAPITALIZE), 'icon' => '/images/icons-16/paper-bag-recycle.png', 'url' => "/ajax.php?oper=load-content&site_id=$site_id&user_level=$user_level&user_id=$user_id&obj_type=trash_list", 'hideCheckbox' => true)
+                   );
+    if(!$is_curator) {unset($nodeAr['exhibited']);unset($nodeAr['shared']);}
+    if(!$is_artist) {unset($nodeAr['art']);unset($nodeAr['published']);}
+    if(!($is_staff || $is_admin)) {unset($nodeAr['artist']);unset($nodeAr['curator']);}
+    if($is_admin) {unset($nodeAr['shared']);}
+
+    foreach($nodeAr as $k => $ar) {
+      $nodeAr = array_merge($ar, array('key' => $k, 'title' => $ar['title'], 'isFolder' => true, 'isLazy' => true, 'expand' => false));
+      $nodes[] = (object) $nodeAr;
+    }
+
+    $tree_json = json_encode($nodes);
+    echo($tree_json);exit;
+    break;
+
+
+  // obj_type gallery: create new project(s) from folder(s)
+  // obj_type media_collection: create new exhibition(s) from project(s)
+  case 'cms-exhibit':
+    if($error = check_required($_GET, array('site_id', 'user_id', 'obj_type', 'id', 'dest_type'))) json_error("Missing: ".implode(', ', $error));
+    extract($_GET);
+    if(!in_array($obj_type, array('media_collection_map', 'media_collection', 'gallery'))) json_error("Invalid source $obj_type");
+    
+    $siteObj = get_object('site', $site_id);
+    $collection_id = 0;      
+    
+    $srcAr = strpos($id, ',') === false ? array_filter([$id]) : array_filter(array_unique(explode(',', $id)));      
+    if(!count($srcAr)) json_error("Empty source array");
+    print_log("cms-exhibition $obj_type: src_id=$src_id dest_type={$dest_type} srcAr=".dump($srcAr, true), "gallery", LOG_LEVEL_TEST);
+    foreach($srcAr as $id) {            
+      if($obj_type == 'media_collection_map') { // exhibit collection
+        if($dest_type == 'media_collection_map') {
+          $collection_id = $collection_id ?: get_object('media_collection_map', $dest_id, 'media_collection_id'); 
+        } else if($dest_type == 'media_collection') {
+          $collection_id = $dest_id;        
+        } else {
+          json_error("Invalid destination for image");
+        }
+        $result = gallery_exhibit_image($siteObj, $id, $collection_id);
+      } else if($obj_type == 'gallery') { // exhibit folder
+        if(!in_array($dest_type, array('exhibited'))) json_error("Invalid destination $dest_type for folder");
+        $result = gallery_publish_folder($siteObj, $obj_type, $id, array('collection_type' => MEDIA_COLLECTION_TYPE_EXHIBITION));
+      } else { // exhibit collection
+        if(!in_array($dest_type, array('exhibited', 'media_collection'))) json_error("Invalid destination $dest_type for collection");
+        print_log("cms-exhibition: gallery_exhibit_collection {$id} to user {$user_id}", "gallery", LOG_LEVEL_TEST);        
+        $result = gallery_exhibit_collection($siteObj, $id, $user_id);
+      }
+      if($result->error) json_error($result->error);
+    }
+      
+    echo(json_encode($result));exit;
+    //json_message($messages);
+
+    break;
+
+  // new version of collection-new (deprectated)
+  // obj_type gallery: create new project(s) from folder(s)
+  // obj_type media_collection: create new exhibition(s) from project(s)
+  case 'cms-publish':
+    if($error = check_required($_GET, array('site_id', 'user_id', 'obj_type', 'id', 'dest_type'))) json_error("Missing: ".implode(', ', $error));
+    extract($_GET);
+    if($dest_type == 'media_collection_map') {
+      $collection_id = get_object('media_collection_map', $dest_id, 'media_collection_id');
+    } else if($dest_type == 'media_collection') {
+      $collection_id = $dest_id;
+    } else if($dest_type == 'published') { // top level
+      if($obj_type == 'media') json_error("Only folders can be shared at the top level");
+      $collection_id = 0;
+    } else {
+      json_error("Invalid destination $dest_type");
+    }
+    $siteObj = get_object('site', $site_id);
+    if($obj_type == 'media') {
+      $result = gallery_publish_image($siteObj, $id, $collection_id);
+    } else if($obj_type == 'gallery') { 
+      $result = gallery_publish_folder($siteObj, $obj_type, $id);
+    } else if($obj_type == 'media_collection') {
+      $result = gallery_publish_collection($siteObj, $id, $user_id);      
+    } else {
+      json_error("Invalid source $obj_type");
+    }
+    echo(json_encode($result));exit;
+    //json_message($messages);
+
+    break;
+
+  // move image (media_collection_map) from one collection to another
+  case 'cms-change-collection':
+    if($error = check_required($_GET, array('site_id', 'user_id', 'obj_type', 'id', 'dest_type', 'dest_id'))) json_error("Missing: ".implode(', ', $error));
+    extract($_GET);    
+
+    if($dest_type != 'media_collection_map' && $dest_type != 'media_collection') json_error("Invalid target $dest_type"); 
+
+    $obj = get_object($obj_type, $id);
+    $src_collection_id = $obj->media_collection_id;    
+    if(!$obj) json_error("Could not find map");
+    if(!$src_collection_id) json_error("Missing source collection");
+
+    $dst_collection_id = $dest_type == 'media_collection_map' ? get_object($dest_type, $dest_id, 'media_collection_id') : $dest_id;
+    if(!$dst_collection_id) json_error("No destination collection id");
+
+    list($id, $error) = update_object('media_collection_map', array('media_collection_id' => $dst_collection_id), $id); // handlers take care of the rest
+
+    if($id) $result->data = $id;
+    $success = $result->success = $id && !$errors;
+    if($errors) $result->error = $errors;
+    if($success) rank_update('media_collection_map', array('media_collection_id' => $src_collection_id, 'active' => 1)); // update rank of source folder media
+
+    echo(json_encode($result));exit;
+    break;
+    
+  // move image from one folder to another
+  case 'cms-move':
+    if($error = check_required($_GET, array('site_id', 'user_id', 'obj_type', 'id', 'dest_type', 'dest_id'))) json_error("Missing: ".implode(', ', $error));
+    extract($_GET);    
+
+    $obj = get_object($obj_type, $id);
+    if(in_array($dest_type, array('media', 'gallery'))) { // move image to folder
+      $src_folder_id = $obj->parent_id;
+      
+      if(!$obj) json_error("Could not find image");
+      if(!$src_folder_id) json_error("Missing source folder");
+      if($dest_type != 'gallery') json_error("Not a folder image"); // get=".dump($_GET, true)." obj=".dump($obj,true));
+      
+      $srcGalleryObj = get_object('gallery', $src_folder_id);
+      if(!$srcGalleryObj) json_error("Could not find current folder $dest_id");
+  
+      $dst_folder_id = $dest_type == 'media' ? get_object($dest_type, $dest_id, 'parent_id') : $dest_id;
+      if(!$dst_folder_id) json_error("No destination folder id");
+      
+      $dstGalleryObj = get_object('gallery', $dst_folder_id);
+      if(!$dstGalleryObj) json_error("Could not find new folder $dst_folder_id");
+      if(!$srcGalleryObj->path) json_error("Destination folder $dst_folder_id has no path");
+      if(!$dstGalleryObj->path) json_error("Destination folder $dst_folder_id has no path");
+
+      $new_path = str_replace($srcGalleryObj->path, $dstGalleryObj->path, $obj->path);
+      
+      list($id, $errors) = update_object($obj_type, array('path' => $new_path, 'parent_id' => $dst_folder_id), $id); // handlers take care of the rest
+
+      print_log("cms-move: update $obj_type $id path=$new_path id=$id errors:".dump($errors, true), 'media', LOG_LEVEL_TEST);
+
+      $rank_search = array('parent_type' => 'gallery', 'parent_id' => $src_folder_id, 'active' => 1);
+    } elseif(in_array($dest_type, array('media_collection_map', 'media_collection'))) { // move map to collection
+      $src_collection_id = $obj->media_collection_id;
+      $dst_collection_id = $dest_type == 'media_collection' ? $dest_id : $obj->media_collection_id;
+      
+      if(find_object('media_collection_map', array('media_id' => $obj->media_id, 'media_collection_id' => $dst_collection_id))) {
+        $media_name = get_object('media', $obj->media_id, 'name') ?: phrase('this_image', CAPITALIZE);
+        json_error("$media_name is already in this collection.");
+      }
+
+      if(!$obj) json_error("Could not find media map");
+      if(!$src_collection_id) json_error("Missing source collection");
+      if(!$dst_collection_id) json_error("Missing destination collection");
+      list($map_id, $errors) = update_object('media_collection_map', array('media_collection_id' => $dst_collection_id), $id);
+      $rank_search = array('media_collection_id' => $dst_collection_id, 'active' => 1);
+      
+    } else {
+      json_error("Invalid target $dest_type");
+    }
+    if($id) $result->data = $id;
+    $success = $result->success = $id && !$errors;
+    if($errors) $result->error = $errors;
+    if($success) rank_update($obj_type, $rank_search); // update rank of source folder or collection
+
+    echo(json_encode($result));exit;
+    break;
+    
+  // move image from folder to trash
+  case 'cms-recycle':
+    if($error = check_required($_GET, array('site_id', 'user_id', 'obj_type', 'id', 'dest_type'))) json_error("Missing: ".implode(', ', $error));
+    extract($_GET);    
+    list($id, $error) = update_object($obj_type, array('active' => $active), $id);
+    if($id) $result->data = $id;
+    $result->success = $id && !$errors;
+    if($errors) $result->error = $errors;
+    echo(json_encode($result));exit;
+    break;
+    
+  // delete object
+  case 'cms-delete':
+    if($error = check_required($_GET, array('site_id', 'user_id', 'obj_type', 'id'))) json_error("Missing: ".implode(', ', $error));
+    extract($_GET);
+    if($error = check_required($_GET, array('site_id', 'user_id', 'obj_type', 'id'))) json_error("Missing: ".implode(', ', $error));
+    //if(!auth_action($obj_type, 'delete', $id)) json_error("Not authorized to delete $obj_type $id");
+    $obj = get_object($obj_type, $id);
+    if(!gallery_auth_media($obj_type, $obj, $user_id)) json_error("Not authorized to delete $obj_type $id");
+    
+    $allowed_types = array('gallery', 'media', 'media_collection', 'media_collection_map');
+    if(!in_array($obj_type, $allowed_types)) json_error("Deleting $obj_type is not supported");
+    $rank_search = array();
+    switch($obj_type) {
+    case 'media':
+      $rank_search = array('parent_id' => $obj->parent_type, 'parent_id' => $obj->parent_id);
+      break;
+    case 'media_collection_map':
+      $rank_search = array('media_collection_id' => $obj->media_collection_id);
+      break;
+    default:
+      break;
+    }
+
+    list($count, $error) = delete_object($obj_type, $id);
+    $result->count = $count;
+    $result->success = $id && !$error;
+
+    $success = $result->count && !$errors;
+    if($success && $rank_search) rank_update($obj_type, $rank_search); // update rank of source folder media
+
+    if($error) $result->error = $error;
+    echo(json_encode($result));exit;
+    break;
+
+  // http://test.hitabrick.com/serviced-apartment/?location_id_textbox=3371%2021st%20Street%2C%20San%20Francisco%2C%20Californi%C3%AB%2C%20Verenigde%20Staten&loc=%5B%2237.7566%22%2C%22-122.4226%22%5D&bounds=%5B%5B%2237.7565%22%2C%22-122.4227%22%5D%2C%5B%2237.7567%22%2C%22-122.4225%22%5D%5D&ng=1&search=1
+
+
+  case 'new-media-collection':          
+    //$output .= "GET: ".dump($_GET, true);
+    //$output .= "POST: ".dump($_POST, true);
+    $id = $_GET['id'];
+    $site_id = $_GET['site_id'];
+    $siteObj = get_object('site', $site_id);
+    $obj = get_object('media_collection', $id);
+    $collection_type = get_object('media_collection_type', $obj->type, 'name');      
+    $url = gallery_collection_link($siteObj, $id);
+    $link = html_link($url, $obj->title);
+    $output = "Your new $collection_type $link was added.";
+    echo($output);exit();
+    break;
+    
+  case 'new-gallery-folder':          
+    //$output .= "GET: ".dump($_GET, true);
+    //$output .= "POST: ".dump($_POST, true);
+    $id = $_GET['id'];
+    $site_id = $_GET['site_id'];
+    $siteObj = get_object('site', $site_id);
+    $obj = get_object('gallery', $id);
+    //$collection_type = get_object('gallery', $obj->type, 'name');      
+    $url = gallery_folder_link($siteObj, $id);
+    $link = html_link($url, $obj->title);
+    $output = "Your new folder $link was added.";
+    echo($output);exit();
+    break;
+
+  case 'gallery-move':
+    extract($_POST);                        
+    if(!$user_id) json_error("Missing user id");
+    if(!$site_id) json_error("Missing site id");
+
+    if(!$gallery_id) json_error("Missing gallery id");
+    $galleryObj = get_object('gallery', $gallery_id);      
+    if(!$galleryObj) json_error("Gallery $gallery_id not found");
+
+    if(!$media_id) json_error("Missing media id");
+    $media_ids = explode(',', $media_id);
+    $messages = array();
+    $ids = array();
+    foreach($media_ids as $media_id) {
+      $mediaObj = get_object('media', $media_id);
+      if(!$mediaObj) json_error("Media $media_id not found");
+      //json_message("cid=".$gallery_id);
+      
+      $parent_path = $galleryObj->path ?: "/user/$galleryObj->user_id/vault/$gallery_id/";
+      $new_path = clean_path('/'.$parent_path.$mediaObj->parent_field.'/'.$mediaObj->type.'/');
+      
+      $mediaData = array('parent_type' => 'gallery' , 'parent_id' => $gallery_id, 'path' => $new_path);
+      
+      $gallery_title = $galleryObj->title ?: phrase('project', CAPITALIZE);
+      $gallery_url = gallery_folder_link($siteObj, $galleryObj);
+      $gallery_link = html_link($gallery_url, "$gallery_title $gallery_id");
+      $image_title = $mediaObj->name ?: $media_id;
+      //json_message("Updating $media_id with ".dump($mediaData, true));
+      list($id, $errors) = update_object('media', $mediaData, $media_id);
+      if($errors) {
+        json_error($errors);
+      } elseif(!$id) {
+        json_error("Tried to move $image_title to $gallery_title, but no id received");
+      } else {
+        $messages[] = "Image $image_title was moved to $gallery_link.";
+        $ids[] = $id;
+      }
+    }
+    $resultData['id'] = implode(',', $ids);
+    $result['message'] = implode(html_break(), $messages);
+    $result['success'] = 1;
+    $result['data'] = $resultData;                
+    echo(json_encode($result));exit();
+    break;
+    
+  // DEPRECATED
+  // create new collection from folder(s) or collection(s)
+  case 'collection-new':
+    extract($_POST); 
+    if(!$user_id) json_error("Missing user id");
+    if(!$site_id) json_error("Missing site id");
+    $siteObj = get_object('site', $site_id);
+    $obj_type = 'media_collection'; // already in POST, but hey
+     
+    $ids = explode(',', $id);
+    $messages = array();
+    $collection_type_name = get_object('media_collection_type', $type, 'name');
+    $parent_type_name = $obj_type == 'gallery' ? "Folder" : "Project"; 
+    foreach($ids as $source_id) {
+      $obj = get_object($obj_type, $source_id);
+      if(!$obj) json_error("$parent_type_name $source_id not found");
+      $colData = (array) $obj;
+      $colData['type'] = $type;
+      list($id, $errors) = add_object($obj_type, $colData);
+      if($errors) $messages[] = implode(html_break(), $errors);
+      elseif(!$id) json_error("Tried to add $collection_type_name $obj->title, but no id received");
+      else {
+        $collectionObj = get_object($obj_type, $id);
+        $collector_id = $collectionObj->user_id;
+        $collection_id = $collectionObj->id; 
+        $col_url = gallery_collection_link($siteObj, $collectionObj);
+        $collection_link = html_link($col_url, "$collection_type_name $collectionObj->title");
+
+        if($obj_type == 'gallery') {
+          $mediaObjs = gallery_folder_images($siteObj, $source_id);
+        } else {               
+          $mapObjs = gallery_collection_maps($siteObj, $source_id);
+          $mediaObjs = array();
+          foreach($mapObjs as $mapObj) $mediaObjs[] = get_object('media', $mapObj->media_id);  
+          $media_count = count($mediaObjs);
+          $map_count = count($mapObjs);
+          //$messages[] = "Found $map_count maps and $media_count images found for $obj_type $source_id";
+          //json_message($messages);exit;
+        }
+
+        $count = count($mediaObjs);                   
+        foreach($mediaObjs as $mediaObj) {
+          $media_id = $mediaObj->id;
+          
+          $mapData['site_id'] = $site_id;
+          //$mapData['user_id'] = $user_id;
+          $mapData['media_collection_id'] = $collection_id;
+          $mapData['media_id'] = $media_id;
+          $mapData['collection_type'] = $collectionObj->type;
+
+          $mapData['artist_id'] = $artist_id = $mediaObj->artist_id ?: $mediaObj->user_id;
+          if($collectionObj->type == MEDIA_COLLECTION_TYPE_EXHIBITION) {
+            $mapData['curator_id'] = $collectionObj->user_id;
+            $mapData['curator_name'] = user_display_name($collectionObj->user_id);
+          }
+          $mapData['name'] = $mediaObj->name;
+          
+          $mapData['media_id'] = $media_id;
+          $mapData['rank'] = $mediaObj->rank;
+          
+          $mapData['artist_name'] = user_display_name($artist_id);
+          $mapData['original_technique'] = $mediaObj->original_technique;
+          $mapData['original_year'] = $mediaObj->original_year;
+          
+          $image_title = $mediaObj->name ?: $media_id;
+          
+          //$messages[] = dump($mapData, true);
+          list($id, $errors) = add_object('media_collection_map', $mapData);
+          if($errors) $messages[] = implode(html_break(), $errors);
+          elseif(!$id) json_error("Tried to add $image_title to $collection_type_name $collectionObj->title, but no id received");
+          //else $messages[] = "Image $image_title was added to the $collection_type_name $collection_link.";
+        }
+        $messages[] = "Added $collection_link with $count images.";
+        if($type == MEDIA_COLLECTION_TYPE_EXHIBITION && !user_has_role($collector_id, USER_ROLE_CURATOR)) user_add_role($collector_id, USER_ROLE_CURATOR);
+      }  
+    }
+    //$messages[] = "Type=$type collector_id=$collector_id is_curator: ".(user_has_role($collector_id, USER_ROLE_CURATOR) ? 'yes' : 'no');
+    json_message($messages);
+    
+    //json_message(dump($_POST, true));
+    //die();
+    //if(!$user_id) json_error("Missing user id");
+    //if(!$site_id) json_error("Missing site id");
+    break;
+  
+  case 'collection-add':
+    extract($_POST);      
+    //json_error(dump($_POST, true));
+    if(!$user_id) json_error("Missing user id");
+    if(!$site_id) json_error("Missing site id");
+
+    if(!$collection_id) json_error("Missing collection id");
+    $collectionObj = get_object('media_collection', $collection_id);      
+    if(!$collectionObj) json_error("Collection $collection_id not found");
+
+    $collection_url = gallery_collection_link($siteObj, $collectionObj);
+    $collection_type = get_object('media_collection_type', $collectionObj->type, 'name') ?: 'collection';
+    $collection_link = html_link($collection_url, $collectionObj->title);
+
+    if(!$media_id) json_error("Missing media id");
+    $media_ids = explode(',', $media_id);
+    $messages = array();
+    foreach($media_ids as $media_id) {
+      if($obj_type == 'media_collection_map') $media_id = get_object('media_collection_map', $media_id, 'media_id');
+      $mediaObj = get_object('media', $media_id);
+      if(!$mediaObj) json_error("Media $media_id not found");
+      //json_message("cid=".$collection_id);
+      
+      $mapData['site_id'] = $site_id;
+      $mapData['user_id'] = $user_id;
+      $mapData['media_collection_id'] = $collection_id;
+      $mapData['collection_type'] = $collectionObj->type;
+      $mapData['media_id'] = $media_id;
+
+
+      $mapData['artist_id'] = $artist_id = $mediaObj->artist_id ?: $mediaObj->user_id;
+      if($collectionObj->type == MEDIA_COLLECTION_TYPE_EXHIBITION) {
+        $mapData['curator_id'] = $collectionObj->user_id;
+        $mapData['curator_name'] = user_display_name($collectionObj->user_id);
+      }
+      $mapData['artist_name'] = user_display_name($artist_id);
+      $mapData['original_technique'] = $mediaObj->original_technique;
+      $mapData['original_year'] = $mediaObj->original_year;
+
+      $mapData['name'] = $mediaObj->name;
+      
+      $image_title = $mediaObj->name ?: $media_id;
+          
+      
+      //$messages[] = dump($mapData, true);
+      list($id, $errors) = add_object('media_collection_map', $mapData);
+      if($errors) $messages[] = implode(html_break(), $errors);
+      elseif(!$id) json_error("Tried to add $image_title to $collection_type $collectionObj->title, but no id received");
+      else $messages[] = "Image $image_title was added to the $collection_type $collection_link.";
+    }
+    json_message($messages);
+    //if($errors) 
+    //echo($data);exit();
+    break;
+
+  case 'explore-gallery':
+    extract($_GET);
+    if(!$id) {echo("Explore: Missing id");exit;} 
+    switch($obj_type) {
+    case 'media_collection':
+      break;
+    case 'media_collection_map':
+      break;
+    case 'user':
+      break;
+    case 'media':
+      break;
+    default:
+      echo("Explore: Missing or unsupported type $obj_type");exit;
+      break;
+    }
+    $options = array('count' => $count, 'index' => $index, 'nav_source' => $nav_source, 'ref' => $ref);
+    $debug = "app-data-site-id=$site_id<br>";
+    $output = gallery_explore($site_id, $obj_type, $id, $options);
+    //$output .= "Nav source = $nav_source";
+    echo($output);exit;
+    break;
+    
+  /** new generic json to return json data for art (or print using template) */
+  case 'gallery-get-collection':
+    if($error = check_required($_GET, array('site_id', 'obj_type', 'obj_id'))) json_error("Missing: ".implode(', ', $error));
+    extract($_GET);
+    
+    if(!in_array($obj_type, array('media_collection_map', 'media_collection', 'gallery', 'media_collection_map', 'user'))) json_error("Invalid source $obj_type");
+    $objects = array();    
+    $siteObj = get_object('site', $site_id);
+
+    $user_collection_id = $u_id ? gallery_find_user_collection($siteObj, $u_id, array('return' => 'id')) : 0;
+
+    $scope = new stdClass;
+    $scope->obj_type = $obj_type;
+    
+    if($uri = $_GET['url']) $scope->url = this_url($_GET['url']);
+    
+    $debug = "";
+    //echo("rt=$returntype".dump($scope,true));exit;
+
+    print_log("gallery-get-collection: ot: {$obj_type} rt: {$returntype}", 'gallery', LOG_LEVEL_TEST);
+    
+    if(!$returntype) $returntype = 'media_collection';   
+    
+    if(in_array($returntype, array('artist','curator','exhibition','media_collection'))) { /** todo: don't do this for user, media_collection_map */
+      $collection_id = $obj_id;
+      $sort = $collection_id == $user_collection_id ? "id DESC" : "rank";
+      $mapObjs = find_objects('media_collection_map', array('media_collection_id' => $collection_id, 'active' => 1), array('sort' => $sort));
+      $media_ids = array_find_key($mapObjs, 'media_id');
+      $all_collection_ids = find_objects('media_collection_map', array('media_id' => $media_ids), array('fields' => 'distinct media_collection_id'));
+    }
+    switch($returntype) {
+      case 'user':
+        switch($obj_subtype) { /** not needed, since controller already does this, but... */
+        case USER_ROLE_ARTIST:
+          $template = '_user-profile-artist.html';
+          break;
+        case USER_ROLE_CURATOR:
+          $template = '_user-profile-curator.html';
+          break;
+        default:
+          $template = '_user-profile-collector.html';
+          break;
+        }
+        $controller = 'artist_profile';
+        $scope->obj_type = 'user';
+        $scope->obj_id = $obj_id;
+        //echo("subtype=$obj_subtype".dump($scope,true));exit;
+        break;
+        
+      case 'artist':
+        $artist_ids = find_objects('media_collection', array('type' => MEDIA_COLLECTION_TYPE_PROJECT, 'id' => $all_collection_ids), array('fields' => 'distinct user_id'));
+        $objects = find_objects("user_profile", array("user_id" => $artist_ids));
+        $template = '_gallery-artists';
+        $controller = 'gallery_artists';
+        break;
+      case 'curator':
+        $curator_ids = find_objects('media_collection', array('type' => MEDIA_COLLECTION_TYPE_EXHIBITION, 'id' => $all_collection_ids), array('fields' => 'distinct user_id'));
+        $objects = find_objects("user_profile", array("user_id" => $curator_ids));
+        $template = '_gallery-curators';
+        $controller = 'gallery_curators';
+        break;
+      case 'exhibition':
+        $exhibition_ids = find_objects('media_collection', array('type' => MEDIA_COLLECTION_TYPE_EXHIBITION, 'id' => $all_collection_ids),  array('fields' => 'distinct id'));
+        $objects = find_objects("media_collection", array("id" => $exhibition_ids));
+        $template = '_gallery-collections';
+        $controller = 'gallery_collections';
+        break;
+      case 'media_collection': // collection
+        //$objects = gallery_collection_images($site_id, $obj_id, array('return' => 'object'));
+        $objects = $mapObjs;
+        if($obj_id == $user_collection_id) {
+          $template = '_gallery-artworks';
+          $controller = 'gallery_artworks';
+        } else {
+          $template = '_gallery-collections';
+          $controller = 'gallery_collections';
+          $scope->obj_id = $obj_id;
+        }
+        //$scope->obj_type = 'media_collection_map';
+        break;
+      case 'media_collection_map': // image
+        //$objects = $mapObjs;
+        $template = '_gallery-artworks';
+        $controller = 'gallery_artworks';
+        $scope->obj_type = 'media_collection_map';
+        $scope->obj_id = $obj_id;
+        //echo(dump($scope,true));exit;
+        break;
+      default: // error
+        json_error(print_errors("Unsupported type $returntype"));
+        break;
+    }
+    $result->success = 1;
+    $result->message = "Loaded $returntype for $obj_type $id (print=$print)";
+    $result->data  = $objects;
+    
+    print_log("gallery-get-collection: sot: {$scope->obj_type}", 'gallery', LOG_LEVEL_TEST);
+    
+    //$debug = "r=$returntype t=$template c=$controller";
+    if(isset($print)) {
+      $scope->objects = $objects;
+      $pObj = new stdClass;
+      $pObj->template = $template;
+      $pObj->controller = $controller;
+
+      $this_app = clone $app;
+      $this_app->page = $pObj;
+      
+      $output = fetch_template($this_app, array('scope' => $scope));
+      if($debug) $output = $debug.$output;
+      echo($output);exit;
+      
+    } else {
+      echo json_encode($result);exit;
+    }
+    break;
+
+  case 'get-gallery':
+    extract($_GET);
+    $user = [];
+    if(!$site_id) $site_id = 247;
+    if($id && !$obj_id) $obj_id = $id; // legacy - prefer obj_id
+
+    $log_dir = $_SESSION['log_dir'];
+    if(0) { // for testing only
+      $output = json_encode($jsonObj);      
+      header('Content-Type: application/x-javascript; charset=utf-8');
+      echo $jsonp ? $_GET['jsoncallback']."($output)" : $output;exit();
+    }
+
+    $collection_id = $obj_id;   
+    $jsonObj = gallery_get_json($collection_id);
+    $jsonObj->container_id = $target;
+    $jsonObj->plugin_id = $plugin_id;
+  
+    //dump($_GET);
+    //dump($jsonObj);
+    
+    $output = json_encode($jsonObj);
+    
+    $jsonp = $_GET['jsoncallback'];
+    header('Content-Type: application/x-javascript; charset=utf-8');
+    echo $jsonp ? $_GET['jsoncallback']."($output)" : $output;exit();
+    break;
+
+  case 'artist-list':
+    break;
+/** end vpatina */
 
 /** list/edit/view/delete object: generic */
 
@@ -6005,3 +6913,4 @@
   }
   
   exit(); // nothing more to do
+

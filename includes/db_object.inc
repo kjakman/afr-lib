@@ -643,7 +643,7 @@ function classes2db() {
         if($options = $attr[ATT_OPTIONS]) {
           $attrObj->relation_filters = json_encode($options);
         }
-      } elseif(in_array($type, array('msel', 'ssel', 'one2one', 'link'))) {
+      } elseif(in_array($type, array('msel', 'ssel', 'one2one', 'link'))) { 
         $attrObj->relation_class = $attr[ATT_RELATION_TYPE];
       } else if(in_array($type, array('many2one'))) {
         $attrObj->relation_class = $attr[ATT_RELATION_TYPE];
@@ -828,6 +828,7 @@ function get_object_sort_clause($type) {
 
 //function add_object($obj_type, $data, $parent_id=0, $preset_id=0, $parent_type='') {
 function add_object($obj_type, $data, $options = array()) {
+  //echo "<pre>data"; print_r($data);
   //echo("add_object $obj_type").dump($data);die();
   $data = (array) $data;
   $child_array = array(); // array of arrays [$child_type, $child_id]
@@ -836,6 +837,7 @@ function add_object($obj_type, $data, $options = array()) {
   
 	// for new objects, let's first recursively process children, as we don't want to add parent object if there are child errors 
   $fields = get_object_attributes($obj_type, 0);
+//echo "<pre>";print_r($fields);
   foreach($fields as $field => $class) {
     $att_flags = $class[ATT_FLAGS];
     $att_type = $class[ATT_TYPE];
@@ -1311,14 +1313,16 @@ function find_object($obj_type, $search, $field='', $options = array()) {
 //function find_objects($obj_type, $searchArray='', $sort=0, $order=0, $start=0, $limit=0, $selected_fields='') {  
 function find_objects($obj_type, $search=array(), $options = array()) {
   $debug = $options['debug_query'];
-
   if($search && count($search) == 1 && (array_keys($search))[0] == 'id') {
     $tbl = get_object_table($obj_type);
+    //echo "<pre>"; print_r($obj_type);
     $search = ["{$tbl}.id" => (array_values($search))[0]]; // we need tablename.id to avoid ambigiuity
   }
   list($filters, $values) = search2pdo($search);
+//  echo "<pre>"; print_r($filters);
+ // echo "<pre>"; print_r($values);
+
   $options['values'] = $values;
-  
   if($options['debug_query'] || $_SESSION['debug_db']) {
     $stack = caller_stack();
     echo("search $obj_type in $stack: ".dump($search,true));
@@ -1336,7 +1340,8 @@ function find_objects($obj_type, $search=array(), $options = array()) {
 //function get_objects($obj_type, $filters='', $sort=0, $order=0, $start=0, $limit=0, $selected_fields='') {
 // for more than one fields, use array('field1', 'field2')
 function get_objects($obj_type, $filters=array(), $options = array()) {
-  $sort  = $options['sort'] ?: get_object_sort_clause($obj_type);
+  //$sort  = $options['sort'] ?: get_object_sort_clause($obj_type);
+  $sort  = get_object_sort_clause($obj_type);
   $order = $options['order'] ?: 0;
   $start = $options['start'] ?: $options['offset'];
   $limit = $options['limit'] ?: 0;
@@ -1351,15 +1356,15 @@ function get_objects($obj_type, $filters=array(), $options = array()) {
   $debug = $options['debug_query'];
   
   if(!$obj_type) {dump($filters); mydie("get_objects: missing type.");};
+  //echo "<pre>"; print_r($obj_type);
   $query_str = get_object_query($obj_type, '__none', $selected_fields, $options);
-
   /** apply class_filters() */
   if(!is_array($filters) && strlen($filters)) $filters = [$filters];
-  
   // add mandatory class filters
   $class_filters = class_filters($obj_type) ?: [];
-  if($class_filters) $filters = array_merge($class_filters, $filters); 
-  
+  if($class_filters) $filters = array_merge($class_filters, $filters);
+//echo "<pre>";print_R($filters); 
+  //if($filter_str = is_array($filters) ? implode(" AND ", $filters) : $filters) $query_str .= strpos($query_str, ' WHERE ') ? " AND ($filter_str)" : " WHERE $filter_str"; // By Bala
   if($filter_str = is_array($filters) ? implode(" AND ", $filters) : $filters) $query_str .= strpos($query_str, ' WHERE ') ? " AND ($filter_str)" : " WHERE $filter_str";
   
   $having = isset($options['having']) ? $options['having'] : ''; // used in where clause for computed columns, e.g "concat(a,b,c) as foo"
@@ -1379,21 +1384,19 @@ function get_objects($obj_type, $filters=array(), $options = array()) {
       $query_str = $query_str." LIMIT $start, 18446744073709551615";
     }
   }
-
   
+//echo "<pre>";print_R($query_str); //Balaquery
   if($debug) {
     echo($query_str.html_break());
     echo("result=".dump($result, true));
     echo("method=$method<br>");
   }
-    
-  
-  if(!$selected_fields || is_array($selected_fields) /*|| strpos($selected_fields, ',') */) { // 2 or more fields    
+ if(!$selected_fields || is_array($selected_fields) /*|| strpos($selected_fields, ',') */) { // 2 or more fields    
     $result = db_getAll($query_str, $values, $options);
+
     $method = "db_getAll";
   } else {
     $result = db_getCol($query_str, $values, $options); // just one field
-    
     $count = count($result);
     if($options['format'] == "list") return implode(",", $result); // comma separated list
     $method = "db_getCol";
@@ -1408,10 +1411,11 @@ function get_objects($obj_type, $filters=array(), $options = array()) {
 
 function get_object_query($obj_type, $id='__none', $selected_fields='', $options=array()) {
   if($options && !is_array($options)) die("get_object_query: options not array");
-
+//echo "<pre>";print_R($options);
   $ignore_filters = isset($options['ignore_filters']) ? $options['ignore_filters'] : false;
   
   $table = get_object_table($obj_type);
+  //echo "<pre>"; print_r($table);
   if(is_object($obj_type)) {
     dump($obj_type);
     mydie("get_object_query obj_type is object");
@@ -1421,13 +1425,14 @@ function get_object_query($obj_type, $id='__none', $selected_fields='', $options
   $key = $table.".".get_object_key($obj_type);
   $get_relations = $id != '__none';
   $classVars = get_object_attributes($obj_type, 1);
-                     
+  //echo "<pre>"; print_r($classVars);
   $fields = array();
   $tables = array();
   $where = array();
   
+   //echo "<pre>";print_r($options['values']); 
   $tables[] = $table;
-
+  //echo "<pre>"; print_r($table);
   foreach($classVars as $field=>$class) {
     $att_type = $class[ATT_TYPE];
     $att_flags= $class[ATT_FLAGS];
@@ -1450,17 +1455,47 @@ function get_object_query($obj_type, $id='__none', $selected_fields='', $options
     } elseif($att_type == 'crypt' || $att_flags & AF_ENCRYPT) {
       $db_field = "AES_DECRYPT($db_field, '$_SESSION[sqlgarbage]') AS $field";
     }
-    
     $fields[] = $db_field;
     // get one2one fields only for individual records - not list
+//echo "<pre>";print_r($options['values']);echo $obj_type;
     if($att_type == 'one2one' && (($att_flags & AF_ONE2ONE_INTEGRATE) || ($att_flags & AF_OBLIGATORY))) {
       $att_table = get_object_table($class[ATT_RELATION_TYPE]);
       $att_key = get_object_key($class[ATT_RELATION_TYPE]);
       $tables[$att_table] = $att_table;
-      $where[] = "($db_field = $att_table.$att_key)";
-    } else { // just show id as link
+  	if(count(($options['values'])) > 1 && $obj_type == 'artwork'){ 
+	      $where[] = "($db_field = $att_table.$att_key)";
+}
+	else if($obj_type == 'user')
+	      $where[] = "($db_field = $att_table.$att_key)";
+		
+    }elseif($att_type == 'one2dci' && (($att_flags & AF_ONE2ONE_INTEGRATE))) {
+      $att_table = get_object_table($class[ATT_RELATION_TYPE]);
+      $att_key = get_object_key($class[ATT_RELATION_TYPE]);
+      $tables[$att_table] = $att_table;
+        if(count(($options['values'])) > 1 && $obj_type == 'artwork'){
+             $where[] = "($db_field = $att_table.$att_key)"; 
+}
+        else if($obj_type == 'user')
+              $where[] = "($db_field = $att_table.$att_key)";
+
+    }elseif($att_type == 'one2bala') {
+      $att_table = get_object_table($class[ATT_RELATION_TYPE]);
+      $att_key = get_object_key($class[ATT_RELATION_TYPE]);
+      $tables[$att_table] = $att_table;
+      $tables['user'] = 'user';
+	$dbField = json_decode($db_field);
+//	$att_key = 'artist_id'
+//echo $obj_type; echo "<pre>";print_r($options['values']);
+//	if(($options['values'][0]) != '%%') {
+		$where[] = "(user.id = media_collection.artist_id)";
+		$where[] = "(user_profile.user_id = user.id)";
+//	}
+//      $where[] = "($att_table.$att_key = $db_field)";
+
+} else { // just show id as link
     }
   }
+  //echo "<pre>"; print_r($tables);
   
   if($selected_fields) {
     $fields = $selected_fields;  // limit query to one or more fields
@@ -1477,8 +1512,8 @@ function get_object_query($obj_type, $id='__none', $selected_fields='', $options
   if($id != '__none') $where[] = "$key='$id'";
   $where = implode(" AND ", $where);
   if($where) $where = "WHERE $where";
-
   $qs = "SELECT $fields_str FROM $tables $where";
+//echo "<pre>";var_dump($qs);
   
   if($_SESSION['log_db']) {
     print_log(" get: $obj_type", 'set_env', LOG_LEVEL_TEST);
@@ -1487,7 +1522,7 @@ function get_object_query($obj_type, $id='__none', $selected_fields='', $options
 }
 
 
-function delete_object($obj_type, $id, $check_relations=true, $options=false) {
+function delete_object($obj_type, $id, $check_relations=false, $options=false) { //Bala check_relation true
   $dryrun = $options['dryrun'];
   
   $errors = array();
@@ -1716,7 +1751,7 @@ function get_object_value_query($obj_type, $target_fields, $filters="", $sort=""
   if(!is_null($id)) $where[] = "$key='$id'";
   
   if(count($where)) $where_str = "WHERE ".implode(" AND ", $where);
-    
+//   $where_str .= " AND softdelete=0"; //Bala 
   //echo("sort for $obj_type preset to '$sort' - ");
   $sort_clause = $sort ? $sort : get_object_sort_clause($obj_type);
   //echo("now '$sort_clause'<br>");
@@ -3165,9 +3200,10 @@ function object_attribute_validate($field, $att_type, $att_val, $required=false)
       if($error = check_password_strength($att_val)) return $error;
     } elseif($att_type == 'email') {
       if(!is_email($att_val)) return  "$att_val is not a valid email address";
-    } elseif($att_type == 'phone') {
+    } elseif($att_type == 'phone' && !$required) {
       if(!phone_valid_idd($att_val)) return  "$att_val is not a valid phone number (include +country code, exclude leading zero)";
-    } elseif($att_type == 'date') {
+    }
+    elseif($att_type == 'date') {
       if(($att_val == '0000-00-00' || !$att_val) && !$required) return ''; // ok with blank date if not req'd
       if(!is_date(strip_time($att_val)))  return  "$field: $att_val is not a valid date (use: yyyy-mm-dd)";
     } elseif($att_type == 'datetime' && strlen($att_val)==10) {
@@ -3870,7 +3906,12 @@ function object_media_upload($qqfile, $mediaData, $options) {
   //print_log("New upload: fileArray=".dump($qqfile, true)."options=\n".dump($options, true), 'upload', $log_level_test);
   extract($options);
   
-  require_once("blueimp/UploadHandler.php");
+  $uploadlib = 'jquery_fileupload';
+  if($uploadlib == 'jquery_fileupload') { // jquery-file-upload
+    require_once("bower/jquery-file-upload/php/UploadHandler.php");
+  } else {  // valum file uploader (fine uploader)  
+    require_once("jquery/file-uploader-3.3/server/php/qqFileUploader.php");
+  }
 
   $target_field = $options['target_field'];
 
@@ -3935,35 +3976,31 @@ function object_media_upload($qqfile, $mediaData, $options) {
   $upload_dir  = clean_path($_SERVER['DOCUMENT_ROOT'].$upload_path);
   if(!is_dir($upload_dir) && !mkdir($upload_dir, 0777, true)) json_error("Upload file: Could not make $upload_dir");    
   
-  
-  // set options
-
-  $uploaderOptions['upload_dir'] = $upload_dir;
-  $uploaderOptions['upload_url'] = $upload_path;
-  
-  $uploader = new UploadHandler($uploaderOptions, false); // false to not initialize
-  
-  // upload file
-  $result = $uploader->post(false); // don't generate response
-  $result_file = $result['files'][0];
-
-  foreach($qqfile as $k => $v) if(!isset($result[$k])) $result[$k] = $v;
-  $result['size'] = $qq_size = $result_file->size;
-  $result['name'] = $qq_name = $upload_name = $result_file->name;
-  $result['type'] = $qq_mime = $result_file->type;
-  $result['error'] = $qq_error = $error = $result_file->error ?: '';
-  $result['tmp_name'] = $qq_tmp = $result_file->tmp_name;
-  $result['success'] = $qq_size && !$qq_error ? 1 : 0; 
-  if($qq_error) return json_error_object($qq_error);
-  
   //json_error("dir={$upload_dir} lib={$uploadlib}");
-
   
   // now invoke PHP handler to move uploaded file - incl. addition error checking
-  /** Not in use: Valum Fine Uploader 
   if($uploadlib == 'jquery_fileupload') {
+    // set options
+
+    $uploaderOptions['upload_dir'] = $upload_dir;
+    $uploaderOptions['upload_url'] = $upload_path;
     
-  } else {  
+    $uploader = new UploadHandler($uploaderOptions, false); // false to not initialize
+    
+    // upload file
+    $result = $uploader->post(false); // don't generate response
+    $result_file = $result['files'][0];
+
+    foreach($qqfile as $k => $v) if(!isset($result[$k])) $result[$k] = $v;
+    $result['size'] = $qq_size = $result_file->size;
+    $result['name'] = $qq_name = $upload_name = $result_file->name;
+    $result['type'] = $qq_mime = $result_file->type;
+    $result['error'] = $qq_error = $error = $result_file->error ?: '';
+    $result['tmp_name'] = $qq_tmp = $result_file->tmp_name;
+    $result['success'] = $qq_size && !$qq_error ? 1 : 0; 
+    if($qq_error) return json_error_object($qq_error);
+    
+  } else { /** Not in use: Valum Fine Uploader */ 
     $uploader = new qqFileUploader();
   
     $uploader->sizeLimit = $size_limit;
@@ -3977,9 +4014,7 @@ function object_media_upload($qqfile, $mediaData, $options) {
     foreach($qqfile as $k => $v) if(!isset($result[$k])) $result[$k] = $v;
 
   }
-  */
-  
-  
+
   $result['upload_name'] = $upload_name;
   $result['upload_path'] = $upload_path;
   $result['upload_dir'] = $upload_dir;
@@ -4364,21 +4399,22 @@ function search2pdo($array, $level=0) {
       $binding .= "_".$level;
       $binding2 .= "_".$level;
     }
-    
-    $or = strpos($k, '$or') !== false || strpos($k, '$or2') !== false; // the latter allows for more than one, use $or1, $or2
+    //$or = strpos($k, '$or') !== false || strpos($k, '$or2') !== false; // the latter allows for more than one, use $or1, $or2
+    $or = strpos($k, '$or') !== false || strpos($k, '$or2') !== false; //BY Bala
     $and = strpos($k, '$and') !== false; // the latter allows fand mande than one, use $and1, $and2
     
     if($or && is_array($v) && count($v) >= 2) {  // $search['$or'] = array('city_id' => 1000, 'site_id' => 10); 
       list($terms, $subvals) = search2pdo($v, $level + 1);
+	$level = $level + 1; //Bala
       if(count($terms) >= 2) $filter[0] = '('.implode(' OR ', $terms).')';
     } elseif($and && is_array($v) && count($v) >= 2) {      
       list($terms, $subvals) = search2pdo($v, $level + 1);
+	$level = $level + 1; //Bala
       if(count($terms) >= 2) $filter[0] = '('.implode(' AND ', $terms).')';
 
     } elseif(is_array($v) && count($v) > 1) {
       $operator = $v[0];
       $val[0] = $v[1];     
-
       $or = strpos($operator, '$or') !== false;
       $and = strpos($operator, '$and') !== false;
 
@@ -4434,10 +4470,11 @@ function search2pdo($array, $level=0) {
     } else {
       if(is_array($v)) $v = $v[0]; // array with only one element
       $val[0] = $v;
-      
       if(strpos($val[0], '*') !== FALSE) { // allow wild cards (textual begins with, ends with, contains)
-        $filter[0] = "$k LIKE $binding";
-        $val[0] = str_replace('*', '%', $val[0]);
+        $filter[0] = "$k LIKE $binding"; //By Bala
+        //$filter[0] = "$k REGEXP $binding";
+        $val[0] = str_replace('*', '%', $val[0]); //By Bala
+        //$val[0] = str_replace('*', '', $val[0]);
       } elseif($val[0] === ATT_DEFAULT_NULL) {
         $filter[0] = "$k IS NULL";
         $val = array(); // no value
@@ -4452,8 +4489,8 @@ function search2pdo($array, $level=0) {
     if(count($filter)) $filters[] = $filter[0];
     if(count($filter) > 1) $filters[] = $filter[1];
 
-  } 
-  
+  }
+//echo "<pre>";print_R($filters);
   //foreach($values as $k => $v) if(!strlen($v)) $values[$k] = ''; // not null
   return array($filters, $values);
 }
