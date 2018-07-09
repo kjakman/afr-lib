@@ -1,0 +1,41 @@
+{* automatically generated on 2018-07-06 05:01:33 from /var/www/html/test.vpatina.com/pages/components/_gallery-backend-profile-tabs.html. DO NOT EDIT *}
+  {$tab1_link = 'backend:subview:id:action:tab'|rroute:['subview' => $page.itemview, 'id' => $scope.obj_id, 'action' => 'edit', 'tab' => 'basic']}
+  {$tab2_link = 'backend:subview:id:action:tab'|rroute:['subview' => $page.itemview, 'id' => $scope.obj_id, 'action' => 'edit', 'tab' => 'about']}
+  {$tab3_link = 'backend:subview:id:action:tab'|rroute:['subview' => $page.itemview, 'id' => $scope.obj_id, 'action' => 'edit', 'tab' => 'artist']}
+  
+  {$tab4_link = 'backend:subview:id:action:tab'|rroute:['subview' => $page.itemview, 'id' => $scope.obj_id, 'action' => 'edit', 'tab' => 'curator']}
+  {$tab5_link = 'backend:subview:id:action:tab'|rroute:['subview' => $page.itemview, 'id' => $scope.obj_id, 'action' => 'edit', 'tab' => 'collector']}
+  
+  {$tab = $page.tab|default:'basic'}
+  <ul class="nav nav-tabs">
+    <li {if ($tab == 'basic')  }class="active"{/if}><a href="{$tab1_link}?_pv=1" class="ajax-loader" data-target="#subview-container" id="gbe_basic_link">Basic</a></li>
+    <li {if ($tab == 'about') }class="active"{/if}><a href="{$tab2_link}?_pv=1" class="ajax-loader" data-target="#subview-container" id="gbe_about_link">About</a></li>
+    {if ($scope.user|has_role:$smarty.const.USER_ROLE_ARTIST)}
+    <li {if ($tab == 'artist') }class="active"{/if}><a href="{$tab3_link}?_pv=1" class="ajax-loader" data-target="#subview-container" id="gbe_artist_link">CV</a></li>
+    {/if}
+    {if ($scope.user|has_role:$smarty.const.smarty.const.USER_ROLE_CURATOR)}
+    <li {if ($tab == 'curator') }class="active"{/if}><a href="{$tab4_link}?_pv=1" class="ajax-loader" data-target="#subview-container" id="gbe_curator_link">Curator</a></li>
+    {/if}
+    {if ($scope.user|has_role:$smarty.const.smarty.const.smarty.const.USER_ROLE_COLLECTOR)}
+    <li {if ($tab == 'collector') }class="active"{/if}><a href="{$tab5_link}?_pv=1" class="ajax-loader" data-target="#subview-container" id="gbe_collector_link">Collector</a></li>
+    {/if}
+  </ul>
+  
+  <div class="tab-content">
+    <div id="tab_content" class="tab-pane fade in active pt20">       
+    {if ($tab == 'basic')}
+      {include file="/var/www/html/test.vpatina.com/smarty/templates/components/_user-profile-edit-settings.html" }    
+    {elseif ($tab == 'about')}
+      {include file="/var/www/html/test.vpatina.com/smarty/templates/components/_user-profile-edit-overview.html" }    
+    {elseif ($tab == 'artist')} 
+      {include file="/var/www/html/test.vpatina.com/smarty/templates/components/_user-profile-edit-artist.html" }    
+    {elseif ($tab == 'curator')}
+      {include file="/var/www/html/test.vpatina.com/smarty/templates/components/_user-profile-edit-gallery.html" }    
+    {elseif ($tab == 'collector')}
+      {include file="/var/www/html/test.vpatina.com/smarty/templates/components/_user-profile-edit-collector.html" }    
+    {else}
+      {"Unknown tab `$tab`"|alert:"error"}
+    {/if}    
+    </div>
+  </div>
+

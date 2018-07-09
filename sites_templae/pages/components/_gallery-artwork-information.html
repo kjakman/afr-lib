@@ -1,0 +1,31 @@
+                            
+                            <h3 class="relative">
+                              {if ($artwork.available)}                            
+                              <span class="dot_outside mt6 {if ($artwork.available==1)}green{else}red{/if}">&#x25cf;</span>
+                              {/if}
+                              {$artwork.title}, <span>{$artwork.primary_year}</span>                            
+                            </h3> 
+                            
+                            <p class='italic'>
+                              {$artwork.technique}<br>
+                              {if ($artwork.height > 0 && $artwork.width > 0)}
+                              {$artwork.height} x {$artwork.width} cm <br>
+                              {/if}
+  
+                              {$count = $artwork.count}
+                              {if ($count == 1)}
+                              Unique
+                              {elseif ($count > 0)}
+                              Edition of {$count}
+                              {/if}
+                            </p>                             
+                            <h4>
+                              {if ($artwork.available)}
+                                {if ($artwork.price > 0)}
+                                {$artwork.currency|currency} {$artwork.price|price}   
+                                {else if ($artwork.available > 0)}
+                                Price on inquiry
+                                {/if}
+                              {/if}
+                            </h4>
+

@@ -1,0 +1,18 @@
+                    {*$scope|dump*}
+                    {$id = $scope.obj_id}
+                    {if ($id)}
+                      <div class="container">
+                      {{"include": "_gallery-collection-detail.html"}}                      
+                      </div>
+                    {else}
+                      {$items = $scope.items}
+                      {{"include": "_gallery-collection-items.html"}}
+                    {/if}
+
+                    <script>
+                    var id = '{$app.routing.params.item}';
+                    $(document).ready(function() {
+                      console.log("Calling gallery init from _gallery_collections.html id=" + id);
+                      gallery_init(id);
+                    });
+                    </script>

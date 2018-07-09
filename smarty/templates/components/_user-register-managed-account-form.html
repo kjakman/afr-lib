@@ -1,0 +1,40 @@
+{* automatically generated on 2018-06-28 06:52:01 from /var/www/html/test.vpatina.com/www/afr-lib/pages/components/_user-register-managed-account-form.html. DO NOT EDIT *}
+          <form class="ajax-submit signup-form" method="get" data-handler="user-register">
+
+            <div class="row">          
+              <div class="form-group form-group-icon-left col-sm-6"><i class="fa fa-user input-icon"></i>
+                <label>First Name</label>
+                <input name="first_name" class="form-control" placeholder="e.g. John" type="text" />
+              </div>
+              <div class="form-group form-group-icon-left col-sm-6"><i class="fa fa-user input-icon"></i>
+                <label>Last Name</label>
+                <input name="last_name" class="form-control" placeholder="e.g. Doe" type="text" />
+              </div>
+            </div>
+            <div class="row">                        
+              <div class="form-group form-group-icon-left col-sm-6"><i class="fa fa-envelope input-icon"></i>
+                <label>Username or Login Email</label>
+                <input name="username" class="form-control" placeholder="e.g. johndoe@gmail.com" type="text" />
+              </div>
+              <div class="form-group form-group-icon-left col-sm-6"><i class="fa fa-envelope input-icon"></i>
+                <label>Correspondence Email (if different)</label>
+                <input name="email_address" class="form-control" placeholder="e.g. peter@gmail.com" type="text" />
+              </div>
+            </div>
+            <div class="row">                        
+              <div class="form-group form-group-icon-left col-sm-6"><i class="fa fa-lock input-icon"></i>
+                <label>Password</label>
+                <input name="password1" class="form-control" type="password" placeholder="my secret password" />
+              </div>
+              <div class="form-group form-group-icon-left col-sm-6"><i class="fa fa-lock input-icon"></i>
+                <label>Repeat Password</label>
+                <input name="password2" class="form-control" type="password" placeholder="my secret password" />
+              </div>
+            </div>
+              
+            <input class="btn btn-primary" type="submit" value="Create Account" />
+            <div class='gap gap-small'></div>                      
+            <input name="site_id" type="hidden" value="{$site.id}" />
+            <input name="parent_user_id" type="hidden" value="{$user.id}" />
+          </form>
+

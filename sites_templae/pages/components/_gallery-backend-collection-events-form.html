@@ -1,0 +1,34 @@
+
+        {$events = $scope.events}
+        {$curator = $scope.curator}
+        {$location = $collection.location}
+        {$locations = $scope.locations}
+        
+        <div class="row">
+          <div class="form-group col-xs-12">
+            <label>Associated Event(s)</label>        
+            <a data-toggle="tooltip" title="If there is an opening, book signing, performance, or other event connected to the exhibition, add it here so collectors can add it to their diaries."> <i class="fa fa-info-circle"></i></a>
+            
+            {$rows = []}
+            {$rows[] = ["Name", "Start", "End", "Location", "Actions"]}
+            {foreach from=$events item=event key=val}
+              {$rows[] = [$event.title, $event.start_time, $event.end_time, "{$event.address_street} {$event.address_number}",
+              "<button id='sel_del'><i class='glyphicon glyphicon-trash'></i></button>"]}
+            {/foreach}                                            
+    
+            {$rows|table:["class" => "table table-bordered table-striped table-booking-history"]}
+            
+          </div>
+        </div>
+
+        
+        <div class="row">
+          <div class="form-group col-xs-12">
+            <button type="button" class="btn btn-success" data-toggle="modal" data-target="#gbe_event_dialog"><i class="fa fa-plus-circle"></i> Create Event</button>
+          </div>
+        </div>
+        
+        {{"include": "_gallery-backend-collection-event-dialog.html"}}   
+
+                               
+        

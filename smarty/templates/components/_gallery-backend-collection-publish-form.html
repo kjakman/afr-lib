@@ -1,0 +1,116 @@
+{* automatically generated on 2018-07-06 10:40:49 from /var/www/html/test.vpatina.com/pages/components/_gallery-backend-collection-publish-form.html. DO NOT EDIT *}
+
+      {$collection = $scope.collection}
+      {$artist_id = $collection.artist_id|default:$scope.artist_id}
+      {$gallery_id = $collection.gallery_id|default:$scope.gallery_id}
+      
+      {if ($collection.active)}
+        {"This exhibtion has been published"|alert:'success'}
+      {else}
+        {$collapse = 'collapse'}
+      {/if}
+      
+      <a href="#preview"> <i class="fa fa-arrow-circle-down"></i> Scroll down for preview.</a>
+      <div class="gap gap-small"></div>
+      
+      
+      <form class="ajax-submit" data-handler="save-collection" data-reload_link="#gbe_publish_link">
+        <input hidden="1" name="id" type="hidden" value="{$collection.id}">
+        <input hidden="1" name="obj_id" type="hidden" value="{$collection.id}">
+        <input hidden="1" name="obj_type" type="hidden" value="media_collection">      
+        <input hidden="1" name="user_id" type="hidden" value="{$user.id}">
+        <input hidden="1" name="artist_id" type="hidden" value="{$artist_id}">
+        <input hidden="1" name="gallery_id" type="hidden" value="{$scope.gallery_id}">
+                
+        <!-- <div class="row form-group">
+          <label for="media-name">Title Image</label>
+          <a data-toggle="tooltip" data-placement="right" title="This is main image that will appear when the exhibition is explored, shared or followed. By default, it is the first image of the media attached to the collection, but you can also upload another one here."> <i class="fa fa-info-circle"></i></a>
+          {"media_collection"|object_uploader:$collection.id:"title_image":["resize" => 1, "cloud" => 1, "view" => 'grid', "handler" => "gbe_title_image_handler"]}
+        </div>   -->     
+      
+        <div class="gap gap-small"></div>
+
+        <div class="row" id="visibility-settings">
+          <div class="form-group col-xs-12">
+            <label>Visibility Settings</label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="form-group col-sm-3 col-xs-3">
+            <div class="checkbox">
+              <label>
+                <input name='active' value='0' type='hidden'>
+                <input name="active" value="1" type="checkbox" {if ($collection.active)}checked{/if} class="bootstrap-toggle" id="gbe_collection_active">
+                Published
+              </label>
+            </div>
+          </div>
+          <div class="form-group col-sm-9 col-xs-9">
+          Hidden exhibitions can only be seen by you, they don't appear on your website, plugins or to your followers, or even to people with a private link online.
+          </div>          
+        </div>
+        
+        <div class="row gbe-visibility-row {$collapse}">
+          <div class="form-group col-sm-3 col-xs-3">
+            <div class="checkbox gbe-visibility-checkbox">
+              <label>
+                <input name='public' value='0' type='hidden'>
+                <input name="public" value="1"  type="checkbox" {if ($collection.public)}checked{/if} class="bootstrap-toggle gbe-visibility-checkbox">
+                Public
+              </label>
+            </div>
+          </div>
+          <div class="form-group col-sm-9 col-xs-9">
+          Turn off to disable this Exhibition being shared with a public link, or found through browsing. When off, you can still share using a private link.
+          </div>          
+        </div>
+        
+       <div class="row gbe-visibility-row {$collapse}">
+          <div class="form-group col-sm-3 col-xs-3">
+            <div class="checkbox gbe-visibility-checkbox">
+              <label>
+                <input name='show_plugin' value='0' type='hidden'>
+                <input name="show_plugin" value="1"  type="checkbox" {if ($collection.show_plugin)}checked{/if} class="bootstrap-toggle gbe-visibility-checkbox">
+                Plugins
+              </label>
+            </div>
+          </div>
+          <div class="form-group col-sm-9 col-xs-9">
+          Turn off to disable plugins that feature this exhibition.
+          </div>          
+        </div>
+        
+        <div class="row gbe-visibility-row {$collapse}">
+          <div class="form-group col-sm-3 col-xs-3">
+            <div class="checkbox gbe-visibility-checkbox">
+              <label>
+                <input name='show_website' value='0' type='hidden'>
+                <input name="show_website" value="1"  type="checkbox" {if ($collection.show_website)}checked{/if} class="bootstrap-toggle gbe-visibility-checkbox">
+                Website
+              </label>
+            </div>
+          </div>
+          <div class="form-group col-sm-9 col-xs-9">
+          Turn off to hide this exhibition in your website built with the vPatina website builder.
+          </div>          
+        </div>
+        
+        <div class="row">
+          <div class="form-group col-xs-12">
+            <input type="submit" id="submit" class="btn btn-success" value="Save">
+          </div>
+        </div>
+                
+      </form>      
+        
+      
+        <div class="gap gap-small"></div>
+        <div class="row" id="preview">
+          <div class="form-group col-xs-12">
+            <label>Preview</label>
+
+            {include file="/var/www/html/test.vpatina.com/smarty/templates/components/_gallery-collection-detail.html" }
+            
+          </div>
+        </div>      

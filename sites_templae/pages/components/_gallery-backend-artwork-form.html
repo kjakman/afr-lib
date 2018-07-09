@@ -1,0 +1,95 @@
+
+      {$artwork = $scope.artwork}
+      {$artist_id = $artwork.artist_id|default:$scope.artist_id}
+      {$curator_id = $artwork.curator_id|default:$scope.curator_id}
+      
+      <form class="ajax-submit" data-handler="save-artwork" data-success_handler="gbe_artwork_handler">
+        <input hidden="1" name="id" type="hidden" value="{$artwork.id}">
+        <input hidden="1" name="obj_id" type="hidden" value="{$artwork.id}">
+        <input hidden="1" name="obj_type" type="hidden" value="artwork">      
+        <input hidden="1" name="next_tab" type="hidden" value="image">      
+        <input hidden="1" name="site_id" type="hidden" value="{$site.id}">      
+        {if (!$artwork.id)}
+        <input hidden="1" name="user_id" type="hidden" value="{$user.id}">
+        <input hidden="1" name="artist_id" type="hidden" value="{$artist_id}">
+        <input hidden="1" name="curator_id" type="hidden" value="{$curator_id}">
+        {/if}
+        {* if (!$artwork.id)}<input hidden="1" name="active" type="hidden" value="0">{/if*}
+        {$artist_ids_json = $artwork.artist_ids}
+        {$artist_ids = $artist_ids_json|@json_decode}
+        {if (!$artist_ids)}
+         {$artist_ids = [$artist_id]}
+        {/if}
+        <div class="row">
+          <div class="form-group col-xs-12">
+            <label for="media-name">Artist(s)</label>
+            <a data-toggle="tooltip" data-placement="right" title="Type name and select from list using mouse of arrow keys. Or type a new name and press enter to add."> <i class="fa fa-info-circle"></i></a>
+            <input type="hidden" readonly class="form-control" name="artist_ids" id="artist_ids" value="{$artist_ids_json}"><br>
+            <ul id="artistTags">
+            {foreach from=$artist_ids item=$artist_id}
+              <li>{$artist_id|display_name}|{$artist_id}</li>
+            {/foreach}  
+            </ul>
+            {if ($user.level >= USER_LEVEL_STAFF || $user|has_role:$smarty.const.USER_ROLE_CURATOR)}
+            <button type="button" class="btn btn-primary btn-sm" id="newArtist" data-toggle="modal" data-target="#artist-form-modal">
+              <i class="fa fa-plus-circle"></i> Create Artist
+            </button>  
+            <a data-toggle="tooltip" data-placement="right" title="Only create new artist if the artist doesn’t exist on the system. To find en existing artist type their name into the bar above."> <i class="fa fa-info-circle"></i></a>
+              {$add_artist = 1}
+            {/if}
+          </div>
+        </div>
+
+
+
+        <div class="form-group col-sm-6">
+          <label for="artwork-title">Title *</label>
+          <input type="text" class="form-control" name="title" value="{$artwork.title}" maxlength="255" required>
+        </div>
+        <div class="form-group col-sm-6">
+          <label for="artwork-technique">Technique *</label>
+          <input type="text" class="form-control" name="technique" value="{$artwork.technique}" maxlength="255" required>
+        </div>
+        
+        
+        <div class="row">
+          <div class="form-group col-sm-4">
+            <label for="artwork-available">Status</label>
+            {"status"|object_select:"artwork_status":["class" => "form-control", "value" => $artwork.status]}
+          </div>
+            
+        </div>
+                
+        {if ($artwork.id)}
+          {$save_text = 'Save'}
+        {else}
+          {$save_text = 'Save and Add Image'}
+        {/if}
+        <input type="submit" class="btn btn-success" value="{$save_text}">
+            
+      </form>
+      <div class="gap gap-small"></div>
+
+      {if ($add_artist)}
+        {{"include":"_artist-dialog.html"}}
+      {/if}
+      
+      <script>
+      $(function() {
+        console.log( "ready!" );
+        awb_set_type($("#type").val());
+        if($("#artistTags").length) gbe_artists_tagit();          
+      });
+      $(document).on("change",'#type',function() {
+        var val = $(this).val();
+        awb_set_type(val);
+      });
+      function awb_set_type(val) {
+        $(".type-10, type-11, .type-20, .type-21, type-22, .type-30, .type-40, .type-50, .type-60").hide();
+        console.log("showing type " + val);
+        if(val) {
+          $(".type-" + val).show();  
+        }
+      }
+      </script>
+      

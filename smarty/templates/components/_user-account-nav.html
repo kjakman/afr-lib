@@ -1,0 +1,21 @@
+{* automatically generated on 2018-06-28 06:52:01 from /var/www/html/test.vpatina.com/www/afr-lib/pages/components/_user-account-nav.html. DO NOT EDIT *}
+                                
+                        {$p = "`$smarty.const.PAGE_ACCOUNT|link``$scope.user_id`"}
+                        <ul class="list user-profile-nav">
+                          {if ($scope.auth_edit_account)}
+                          <li class="class-filter active"><a href="{$p}/notifications" id="account_notifications_link"><i class="fa fa-bell"></i>Notifications</a></li>
+                            {if ($site.property_site && $user.user_level >= $smarty.const.USER_LEVEL_OWNER)}
+                            <li class="class-filter"><a href="{$p}/payout" id="account_payout_link"><i class="fa fa-bank"></i>Payout Preferences</a></li>
+                            <!--li><a href="{$p}/transactions" id="account_transactions_link"><i class="fa fa-bank"></i>Transactions Hisotry</a></li-->
+                            <!--li><a href="{$p}/privacy" id="account_privacy_link"><i class="fa fa-key"></i>Privacy</a></li>
+                            -->
+                            {/if}
+                          <li class="class-filter"><a href="{$p}/password" id="account_password_link"><i class="fa fa-key"></i>Password</a></li>
+                          
+                          {if ($user.user_level >= $smarty.const.USER_LEVEL_ADMIN)}
+                          <li class="class-filter"><a href="{$p}/linking" id="account_linking"><i class="fa fa-chain"></i>Link Account</a></li>
+                          <li class="class-filter"><a href="{$p}/security" id="account_security_link"><i class="fa fa-lock"></i>Security</a></li>
+                          {/if}
+                          {/if}
+                        </ul>
+

@@ -1,0 +1,55 @@
+{* automatically generated on 2018-07-06 10:40:49 from /var/www/html/test.vpatina.com/pages/components/_gallery-backend-settings-buttons.html. DO NOT EDIT *}
+      <div class="row">
+        <div class="form-group col-sm-4 col-xs-12 gbe-settings" id="gbe_settings_quick" data-key="title" data-settings='{$settings_quick|json_encode}' data-target="#quick_info">
+          <label>Quick Glance Info</label>
+          {foreach from=$settings_quick key=key item=value}
+          <div class="checkbox">
+            <label>
+              <input name="{$key}" value="1" type="checkbox" {if (!$settings || $key|in_array:$settings->title)}checked{/if} class="bootstrap-toggle" id="gbe_collection_active">
+              {$value}
+            </label>
+          </div>
+          {/foreach}
+        </div>
+
+        <div class="form-group col-sm-4 col-xs-12 gbe-settings" id="gbe_settings_full" data-key="full" data-settings='{$settings_full|json_encode}' data-target="#full_info">          
+          <label>Full Info</label>
+          {foreach from=$settings_full key=key item=value}
+          <div class="checkbox">
+            <label>
+              <input name="{$key}" value="1" type="checkbox" {if (!$settings || $key|in_array:$settings->full)}checked{/if} class="bootstrap-toggle" id="gbe_collection_active">
+              {$value}
+            </label>
+          </div>
+          {/foreach}
+        </div>          
+
+        <div class="form-group col-sm-4 col-xs-12">
+          <label>Popup Buttons</label>
+          <div class="gbe-settings" id="gbe_settings_buttons" data-key="buttons" data-settings='{$settings_buttons|json_encode}' data-target="#popup_buttons">
+          {foreach from=$settings_buttons key=key item=value}
+            <div class="checkbox">
+              <label>
+                <input name="{$key}" value="1" type="checkbox" {if (!$settings || $key|in_array:$settings->buttons)}checked{/if} class="bootstrap-toggle" id="gbe_collection_active">
+                {$value}
+              </label>
+            </div>
+          {/foreach}
+          </div>
+          
+          <div class="gap gap-small"></div>
+
+          <label>Popup Tabs</label>            
+          <div class="gbe-settings" id="gbe_settings_tabs" data-key="tabs" data-settings='{$settings_tabs|json_encode}' data-target="#popup_tabs">            
+          {foreach from=$settings_tabs key=key item=value}
+            <div class="checkbox">
+              <label>
+                <input name="{$key}" value="1" type="checkbox" {if (!$settings || $key|in_array:$settings->tabs)}checked{/if} class="bootstrap-toggle" id="gbe_collection_active">
+                {$value}
+              </label>
+            </div>
+          {/foreach}          
+          </div>
+        </div>          
+      </div>
+

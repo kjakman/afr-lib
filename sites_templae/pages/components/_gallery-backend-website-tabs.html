@@ -1,0 +1,29 @@
+  {$tab1_link = 'backend:subview:id:action:tab'|rroute:['subview' => $page.itemview, 'id' => $scope.obj_id, 'action' => 'edit', 'tab' => 'basic']}
+  {$tab2_link = 'backend:subview:id:action:tab'|rroute:['subview' => $page.itemview, 'id' => $scope.obj_id, 'action' => 'edit', 'tab' => 'appearance']}
+  {$tab3_link = 'backend:subview:id:action:tab'|rroute:['subview' => $page.itemview, 'id' => $scope.obj_id, 'action' => 'edit', 'tab' => 'layout']}
+  {$tab4_link = 'backend:subview:id:action:tab'|rroute:['subview' => $page.itemview, 'id' => $scope.obj_id, 'action' => 'edit', 'tab' => 'settings']}
+  {$tab = $page.tab|default:'basic'}
+  <ul class="nav nav-tabs">
+    <li {if ($tab == 'basic')  }class="active"{/if}><a href="{$tab1_link}?_pv=1" class="ajax-loader" data-target="#subview-container" id="gbe_basic_link">Basic</a></li>
+    <li {if ($tab == 'appearance') }class="active"{/if}><a href="{$tab2_link}?_pv=1" class="ajax-loader" data-target="#subview-container" id="gbe_publish_link">Appearance</a></li>
+    <li {if ($tab == 'layout') }class="active"{/if}><a href="{$tab3_link}?_pv=1" class="ajax-loader" data-target="#subview-container" id="gbe_publish_link">Layout</a></li>
+    <li {if ($tab == 'settings')}class="active"{/if}><a href="{$tab4_link}?_pv=1" class="ajax-loader" data-target="#subview-container" id="gbe_settings_link">Settings</a></li>
+  </ul>
+  
+  <div class="tab-content">
+    <div id="tab_content" class="tab-pane fade in active pt20">       
+    {if ($tab == 'basic')}
+      {{"include": "_gallery-backend-website-form.html"}}    
+    {elseif ($tab == 'appearance')}
+      {{"include": "_gallery-backend-website-appearance-form.html"}}    
+    {elseif ($tab == 'layout')}
+      {{"include": "_gallery-backend-website-layout-form.html"}}    
+    {elseif ($tab == 'settings')}
+      {{"include": "_gallery-backend-website-settings-form.html"}}    
+    {else}
+      {"Unknown tab `$tab`"|alert:"error"}
+    {/if}    
+    </div>
+
+
+  </div>                                                        

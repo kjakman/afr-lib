@@ -1,0 +1,24 @@
+{$minisite = $scope.minisite}
+{$object = $minisite}
+{$what = 'website'}
+{$plural = 'websites'}
+
+{$auth_edit_backend = $scope.auth_edit_minisite}
+
+{{"extend": "_gallery-backend-item-base.html"}}
+
+{block name=main}
+    
+  {if ($add)}
+    {{"include": "_gallery-backend-website-form.html"}}      
+  {elseif ($edit)}
+    {{"include": "_gallery-backend-website-tabs.html"}}
+  {else}
+     <iframe id="minisite_preview" class="" width="100%" height="1200px" 
+        style="overflow:auto;background-color:#fff" scrolling="yes" src="{$scope.url}"></iframe>
+              
+
+    Iframe {$scope.url}
+  {/if}
+  
+{/block}

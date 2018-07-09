@@ -1,0 +1,24 @@
+{* automatically generated on 2018-07-04 12:49:33 from /var/www/html/test.vpatina.com/pages/components/_gallery-backend-medium.html. DO NOT EDIT *}
+{$artwork = $scope.media}
+{$object = $artwork}
+{$what = 'media'}
+{$plural = 'media'}
+
+{$auth_edit_backend = $scope.auth_edit_media}
+
+{extends file="/var/www/html/test.vpatina.com/smarty/templates/components/_gallery-backend-item-base.html"}
+
+{block name=main}
+
+  {if ($scope.obj_id)}
+    {if ($add)}
+      {include file="/var/www/html/test.vpatina.com/smarty/templates/components/_gallery-backend-media-form.html" }
+    {elseif ($edit)}
+      {include file="/var/www/html/test.vpatina.com/smarty/templates/components/_gallery-backend-media-form.html" }
+    {else}
+      {include file="/var/www/html/test.vpatina.com/smarty/templates/components/_gallery-media-detail.html" }
+    {/if}  
+  {/if}
+
+  
+{/block}

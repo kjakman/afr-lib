@@ -1,0 +1,11 @@
+{* automatically generated on 2018-07-06 10:40:49 from /var/www/html/test.vpatina.com/pages/components/_gallery-artwork-items.html. DO NOT EDIT *}
+                      {$count = $scope.items|@count}
+                      <ul class="photo-grid gallery-list list">
+                        {$index = 0}
+                        {foreach from=$items item=artwork}                          
+                          {include file="/var/www/html/test.vpatina.com/smarty/templates/components/_gallery-artwork-item.html" }
+                          {$index = $index + 1}
+                        {/foreach}
+                      </ul>
+
+

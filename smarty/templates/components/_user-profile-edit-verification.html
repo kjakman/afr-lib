@@ -1,0 +1,69 @@
+{* automatically generated on 2018-06-22 16:56:44 from /var/www/html/test.vpatina.com/www/afr-lib/pages/components/_user-profile-edit-verification.html. DO NOT EDIT *}
+                      <h4>Verification</h4>
+                      <div class="form-group">
+                        <label>Email: {$scope.profile.email_address}</label>
+                        {if $scope.profile.email_address}
+                          {$type = 'email'}
+                          {if $scope.profile.email_address == $scope.profile.email_verified}
+                          <i class="fa fa-check fa-2x text-success"></i> Verified
+                          {else}                          
+                          <a href="#" class="btn btn-success verify-link" data-site_id="{$site.id}" data-user_id="{$user.id}" data-profile_id="{$user.profile_id}" data-type="{$type}" data-target="{$scope.profile.email_address}">
+                            <i class="fa fa-envelope-o"></i> Verify {$type}
+                          </a>
+                          <div class="user-verification-form hide">
+                          {include file="/var/www/html/test.vpatina.com/smarty/templates/components/_user-profile-verification-form.html" }
+                          </div>
+                          {/if}
+                        {else}
+                          No email address entered. Click <a href="#email_address">here</a>.
+                        {/if}
+                      </div>
+                      <div class="form-group">
+                        <label>Phone Number: {$scope.profile.phone}</label>
+                        {if $scope.profile.phone}
+                          {$type = 'phone'}
+                          {if $scope.profile.phone == $scope.profile.phone_verified}
+                          <i class="fa fa-check fa-2x text-success"></i> Verified
+                          {else}
+                          <a href="" class="btn btn-success verify-link" data-site_id="{$site.id}" data-user_id="{$user.id}" data-profile_id="{$user.profile_id}" data-type="{$type}" data-target="{$scope.profile.phone}">
+                            <i class="fa fa-phone"></i> Verify {$type}
+                          </a>
+                          <div class="user-verification-form hide">
+                          {include file="/var/www/html/test.vpatina.com/smarty/templates/components/_user-profile-verification-form.html" }
+                          </div>
+                          
+                          {/if}
+                        {else}
+                          No phone number entered. Click <a href="#phone">here</a>.
+                        {/if}
+                      </div>
+
+                      {* $scope.provider_keys|dump *}
+                      
+                      {$providers = $scope.provider_keys}
+                      {foreach $providers item=provider_id}
+                        {$provider_name = $provider_id|get:"provider":"name"}
+                        {$provider_key = $provider_name|lower}
+                        {$social_key = ($provider_key == 'google') ? "google-plus" : $provider_key}
+                      <div class="form-group">
+                        <label>{$provider_name}</label>
+                        {$profile = $scope.provider_profiles.$provider_id}
+                        {if ($profile)} 
+                        <i class="fa fa-check fa-2x text-success"></i> Verified
+                          {if ($profile.url_profile)}
+                          <a href="{$profile.url_profile}" target="social">View Profile</a>
+                          {/if}
+                        {else}
+                        <a href="?provider_id={$provider_id}" class="btn btn-social btn-{$social_key}" data-site_id="{$site.id}" data-user_id="{$user.id}" data-profile_id="{$user.profile_id}" data-type="social" data-target="{$provider_key}">
+                          <i class="fa fa-{$provider_key}"></i> Verify
+                        </a>                        
+                        {/if}
+                      </div> 
+                      {/foreach}
+                      
+                      <div class="gap gap-small"></div>
+                      <h4>Passport or ID</h4>
+                      {$scope.passport_uploader}
+                
+
+

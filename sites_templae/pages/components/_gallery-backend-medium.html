@@ -1,0 +1,23 @@
+{$artwork = $scope.media}
+{$object = $artwork}
+{$what = 'media'}
+{$plural = 'media'}
+
+{$auth_edit_backend = $scope.auth_edit_media}
+
+{{"extend": "_gallery-backend-item-base.html"}}
+
+{block name=main}
+
+  {if ($scope.obj_id)}
+    {if ($add)}
+      {{"include": "_gallery-backend-media-form.html"}}
+    {elseif ($edit)}
+      {{"include": "_gallery-backend-media-form.html"}}
+    {else}
+      {{"include": "_gallery-media-detail.html"}}
+    {/if}  
+  {/if}
+
+  
+{/block}

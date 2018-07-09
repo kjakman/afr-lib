@@ -1,0 +1,19 @@
+{$profile = $scope.profile}
+{$object = $profile}
+{$what = 'profile'}
+
+{$auth_edit_backend = $scope.auth_edit_profile}
+
+{{"extend": "_gallery-backend-item-base.html"}}
+
+{block name=main}
+
+  {if ($add)}
+    {{"include": "_network-form-basic.html"}}											
+  {elseif ($edit)}
+    {{"include": "_gallery-backend-profile-tabs.html"}}
+  {else}
+    {{"include": "_user-profile-artist.html"}}
+  {/if}
+  
+{/block}

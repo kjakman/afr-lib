@@ -1,0 +1,28 @@
+{* automatically generated on 2018-07-06 05:01:33 from /var/www/html/test.vpatina.com/www/afr-lib/pages/components/_user-profile-edit-artist.html. DO NOT EDIT *}
+                  {$profile = $scope.profile}
+                    
+                    <form id="user_artist_form" class="ajax-submit autosave"  data-handler="save" data-toggle="validator">
+                      <input type="hidden" name="obj_type" value="user_profile" />
+                      <input type="hidden" name="id"  value="{$scope.profile.profile_id}" />
+                      <input type="hidden" name="user_id" value="{$scope.profile.user_id}" />
+                      <input type="hidden" name="site_id" value="{$site.id}" />
+                      <input type="hidden" name="description" value="{$scope.profile.description}" />
+                                  
+                    <div class="form-group form-group-icon-left">
+                      <label>Solo Shows</label>
+                      <textarea name="gallery_solo_shows" class="summernote form-control" placeholder="List of solo shows">{$scope.profile.gallery_solo_shows}</textarea>
+                    </div>
+
+                    <div class="form-group form-group-icon-left">
+                      <label>Group Shows</label>
+                      <textarea name="gallery_group_shows" class="summernote form-control" placeholder="List of group shows">{$scope.profile.gallery_group_shows}</textarea>
+                    </div>
+
+                    <div class="form-group form-group-icon-left">
+                      <label>Press</label>
+                      <textarea name="press" class="summernote form-control" placeholder="List of press mentions">{$scope.profile.press}</textarea>
+                    </div>
+
+                    <input type="submit" class="btn btn-primary" value="Save">
+                    <div class="gap gap-small"></div>
+

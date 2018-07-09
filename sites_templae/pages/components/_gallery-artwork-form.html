@@ -1,0 +1,87 @@
+
+      <h2>Edit artwork</h2>
+      {$media = $scope.artwork}
+      <div class="row">
+        <div class="col-xs-4">
+          <img src="{$media.media_id|photo}">
+        </div>
+        <div class="col-xs-8">
+        <p>
+        Add information to the artwork such as technique, size, availability and the price of the original. </p> 
+        <!-- To release High Definition digital editions to collectors, set a price for the digital edition above 0.00.
+        If the digital edition price is set to 0.00, the High Definition digital edition is restricted (not released to collectors).
+        </p><!-- Call to Action Section -->
+        <p>To protect the rights of artists, distribution of images, "digital editions" are governed by the 
+        <a href="/terms-and-conditions/">Terms and Conditions</a> and the <a href="/digital-collector-license/">Digital Collector License.</a> 
+        <!--and the <a href="/fee-payment-schedule/">Fee &amp; Payment Schedule</a>.--> 
+        Artists can choose to release High Definition digital editions, which are a maximum of 1920 x 1080 pixels. Medium Definition digital editions are a maximum of  640 x 640 pixels.</p>
+
+        </div>
+      </div>
+      <div class="gap gap-small"></div>
+      
+      <p><b>Please note fields marked with an * are mandatory</b></p>
+      <form class="ajax-submit" data-handler="save" data-reload_link="#btnReload">
+        <input hidden="1" name="id" type="hidden" value="{$media.media_id|default:$media.id}">
+        <input hidden="1" name="obj_type" type="hidden" value="media">      
+                
+        <div class="form-group col-sm-4">
+          <label for="media-name">Title *</label>
+          <input type="text" class="form-control" name="name" value="{$media.name}" maxlength="255">
+        </div>
+        <div class="form-group col-sm-4">
+          <label for="media-original_technique">Technique *</label>
+          <input type="text" class="form-control" name="original_technique" value="{$media.original_technique}" maxlength="255">
+        </div>
+        <div class="form-group col-sm-4">
+          <label for="media-digital_price">Price of digital edition</label>
+          <a data-toggle="tooltip" title="Please leave this as Zero. This is a feature that is still in development"> <i class="fa fa-info-circle"></i></a>
+          <input type="text" class="form-control" name="digital_price" value="{$media.digital_price}" maxlength="10">
+        </div>
+        
+        <div class="form-group col-sm-4">
+          <label for="media-original_height">Height of original (cm)</label>
+          <input type="text" class="form-control" name="original_height" value="{$media.original_height}" maxlength="4">
+        </div>
+        <div class="form-group col-sm-4">
+          <label for="media-original_width">Width of original (cm)</label>
+          <input type="text" class="form-control" name="original_width" value="{$media.original_width}" maxlength="4">
+        </div>
+        <div class="form-group col-sm-4">
+          <label for="media-original_year">Year of creation</label>
+          <input type="text" class="form-control" name="original_year" value="{$media.original_year}" maxlength="4">
+        </div>
+        
+        <div class="form-group col-sm-4">
+          <label for="media-original_count">Number in series</label>
+           <a data-toggle="tooltip" title="Set the number in series to 1 if there in only one original, and to 0 if there is no limit on prints/ copies"> <i class="fa fa-info-circle"></i></a>
+          <input type="text" class="form-control" name="original_count" value="{$media.original_count}" maxlength="4">
+        </div>
+        <div class="form-group col-sm-4">
+          <label for="media-original_price">Currency of original work</label>
+          {"original_currency"|object_select:"currency":["class" => "form-control", "value" => $media.original_currency, "search" => ["accepted" => 1]]}                
+      </div>
+        <div class="form-group col-sm-4">
+          <label for="media-original_price">Price of original work</label>
+          <a data-toggle="tooltip" title="If you want to have the price on inquiry, set the price to zero and 'Available for sale' to 'Yes'. Price will be hidden if 'Available for sale' is set to 'Hide'"> <i class="fa fa-info-circle"></i></a>
+          <input type="text" class="form-control" name="original_price" value="{$media.original_price}" maxlength="10">
+        </div>
+        <div class="form-group col-sm-4">
+          <label for="media-original_available">Available for sale?</label>
+          <a data-toggle="tooltip" title="'No' will show red dot, 'Yes' shows green dot, 'Hide' hides the dot and the price."> <i class="fa fa-info-circle"></i></a>
+          {$yes_no = [0 => "Hide", -1 => "No", 1 => "Yes"]}
+          {html_options name="original_available" class="form-control" options=$yes_no selected=$media.original_available}                                            
+          <!--input name="original_available" value="1" class="form-control" type="checkbox" checked="{if ($media.original_available)}checked{/if}"-->
+        </div>
+        <br>
+        <div class="row">
+          <div class="form-group col-sm-12">
+            <label for="comment">Description of artwork</label>
+            <textarea class="summernote form-control special" data-height="500" name="comment">{$media.comment}</textarea>
+          </div>
+        </div>
+        <input type="submit" class="btn btn-success" value="Save">
+            
+      </form>
+      <div class="gap gap-small"></div>
+

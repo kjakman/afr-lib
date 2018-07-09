@@ -1,0 +1,21 @@
+{* automatically generated on 2018-07-06 05:08:06 from /var/www/html/test.vpatina.com/www/afr-lib/pages/components/_user-login-third-party.html. DO NOT EDIT *}
+{$providers = $global.provider_keys}
+{if ($providers && $providers|@count)}
+  <ul class="third-party-list {$list_class|default:'list-inline'}">
+  {foreach $providers as $provider}
+    {$name = $provider|get:"provider":"name"}
+    {$key = $name|lower}
+    {$social_key = ($key == 'google') ? "google-plus" : $key}
+    {$query = ['provider' => $key]}
+    {$path = ($smarty.get.ref) ? $smarty.get.ref : $this_path}
+    <li>
+      <a href="{$path|strip_query}?{$query|query:$smarty.get.ref}" class="btn btn-social btn-{$social_key} tpl-link">
+        <i class="fa fa-{$key}"></i> {$name}
+      </a>
+    </li>
+  {/foreach}
+  </ul>
+{/if}
+
+
+

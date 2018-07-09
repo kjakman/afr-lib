@@ -1,0 +1,36 @@
+
+
+<!-- Gallery Backend Event Dialog -->
+<div class="modal modal-admin fade" id="gbe_event_dialog" data-backdrop="static" data-keyboard="false" 
+     tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+     
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <b class="overlay-title">{$event.title|default:"New Event"}</b>
+      </div>
+       
+      <form name="booking-form" class="cal-form ajax-submit" id="event_dialog_form" 
+        data-handler="save-event" data-reload_link="#gbe_events_link">
+        <input type="hidden" name="parent_type" value="media_collection">
+        <input type="hidden" name="parent_id" value="{$collection.id}">
+        <input type="hidden" name="user_id" value="{$curator.user_id}">
+        <div class="modal-body">
+          {{"include": "_gallery-backend-collection-event-form.html"}}
+        </div>
+        <div class="modal-footer">
+          <div class="row">
+            <div class="col-xs-12">
+              <button type="button" class="btn btn-danger" id="cd-cancel" data-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-success" id="cd-save">Save</button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- /.modal -->
+
+     

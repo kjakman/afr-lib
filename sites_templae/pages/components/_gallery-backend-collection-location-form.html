@@ -1,0 +1,89 @@
+
+        <!--h4>Exhibition dates
+          <a data-toggle="tooltip" title="Optionally add an address and dates if this is a physical exhibition."> <i class="fa fa-info-circle"></i></a>
+        </h4-->
+
+
+      {$curator = $scope.curator}
+      {$location = $collection.location}
+      {$locations = $scope.locations}
+        
+      <form class="ajax-submit" data-handler="save-collection" data-success_handler="gbe_collection_handler">
+        <input hidden="1" name="id" type="hidden" value="{$collection.id}">
+        <input hidden="1" name="obj_id" type="hidden" value="{$collection.id}">
+        <input hidden="1" name="obj_type" type="hidden" value="media_collection">      
+        <input hidden="1" name="next_tab" type="hidden" value="events">      
+        <input hidden="1" name="type" type="hidden" value="{$collection.type|default:$smarty.const.COLLECTION_TYPE_EXHIBITION}">
+        {*
+        <input hidden="1" name="location_id" type="hidden" value="{$collection.location_id}">
+        <input hidden="1" name="event_id" type="hidden" value="{$collection.event_id}">
+        <input hidden="1" name="address_formatted" type="hidden" value="{$collection.address_formatted}">
+        *}
+        
+        {if ($curator.location_id)}
+        {else}
+          {$profile_link  = 'edit-profile:id'|rroute:['id' => $curator.user_id]}
+          <div class="alert alert-warning" role="alert"><a href="#" class="close" data-dismiss="alert">×</a><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span> 
+            You do not have an address set in your profile. Please add an address <a href="{$profile_link}">here</a>.
+          </div>          
+        {/if}
+
+        {*
+        {$locations|dump}
+        loc = {$collection.location_id}
+        *}
+        <div class="row input-daterange">
+          <div class="col-sm-4  col-xs-6 relative ">
+            <label for="start_date">Start Date</label>
+            <div class="input-group">
+              <input type="text" value="{$collection.start_date}" class="form-control" name="start_date" placeholder="Start Date">
+              <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+            </div>
+          </div>
+          <div class="form-group col-sm-4 col-xs-6 relative">
+            <label for="end_date">End Date</label>
+            <div class="input-group">
+              <input type="text" value="{$collection.end_date}" class="form-control" name="end_date" placeholder="End Date">
+              <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+            </div>
+          </div>
+          <div class="form-group col-sm-4">
+            <label for="location_id">Location</label>
+            <select class="form-control auto-select" id="gbe_loc_id" name="location_id" required
+                    data-value="{$collection.location_id}" data-default="{$curator.location_id}" required>
+              {foreach from=$locations item=loc key=val}
+                <option value="{$val}">{$loc}</option>
+              {/foreach}                                            
+            </select>
+          </div>
+        </div>
+
+        <div class="col-xs-12 {if ($collection.location_id || $locations|@count > 1)}collapse{/if}" id="gbe_location">
+          <label for="exhibition-address">{'location'|translate:'c'}</label>
+          <div class="input-group">
+            <span class="input-group-addon"><i class="fa fa-map-marker"></i></span>
+            <input name="exhibition-address" id="exhibition-address" class="form-control geocomplete" placeholder="123 Main street, New York" 
+                   type="text" />
+            {{"include": "_geocomplete-fields.html"}}                          
+          </div>
+        </div>
+        
+        <!--h4>Exhibition address
+          <a data-toggle="tooltip" title="Optionally add an address and dates if this is a physical exhibition."> <i class="fa fa-info-circle"></i></a>
+        </h4-->
+        
+        <div class="row input-daterange">
+        </div>
+        
+        <div class="gap gap-small"></div>
+
+
+        <div class="row">
+          <div class="form-group col-xs-12">
+            <input type="submit" id="submit" class="btn btn-success" value="Save">
+          </div>
+        </div>
+      </form>
+      <div class="gap gap-small"></div>
+            
+        

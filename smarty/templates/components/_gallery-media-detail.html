@@ -1,0 +1,36 @@
+{* automatically generated on 2018-07-04 12:49:33 from /var/www/html/test.vpatina.com/pages/components/_gallery-media-detail.html. DO NOT EDIT *}
+{extends file="/var/www/html/test.vpatina.com/smarty/templates/components/_gallery-detail-base.html"}
+
+{$media = $scope.media}
+
+{block name=image}
+            
+  {* $scope|dump *}
+  <img src="{$media.id|photo:"big"}" class=""><br>
+{/block}
+
+
+{block name=aside}
+    
+  {$profile = $scope.owner}
+  {$profile_link = $smarty.const.PAGE_PROFILE|link}
+  {include file="/var/www/html/test.vpatina.com/smarty/templates/components/_gallery-artist-information.html" }
+  
+  {include file="/var/www/html/test.vpatina.com/smarty/templates/components/_gallery-media-information.html" }
+  
+  <br>
+  
+  <h4>Context</h4>
+  {$media.parent_type|gallery_link:$media.parent_id}  
+  
+{/block}
+
+{block name=below}
+                        
+  <p>{$media.comment}<br>
+   {$media.short_description}<br>
+  </p>
+
+{/block}
+
+

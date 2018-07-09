@@ -1,0 +1,276 @@
+{$ms = $scope.msObj}
+{$minisite = $ms.url}
+{$basepath = $scope.basepath}
+{$minisite_name = $ms.name}
+{$version = $app.version}
+{$page = $scope.page}
+{$type = $scope.minisite_type}
+
+{$slug = $scope.slug}
+{$subview = $scope.subview}
+{$debug = 0}
+
+{$artworks = $scope.artworks}
+{$exhibitions = $scope.exhibitions}
+
+{$vp = '//test.vpatina.com'}
+{$cachebust = "?ts`$smarty.now`"}
+{$title = "STIGTER<br>VAN DOESBURG"}
+{if ($ms.logo)}
+  {$logo = "`$vp`/img/minisites/{$minisite}/{$ms.logo}"}
+{/if}
+
+{$user_id = $scope.user_id}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>{$app.page.se_title} - {$minisite_name}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="application-name" content="{$minisite_name}" />
+    <meta name="msapplication-TileColor" content="#fafafa" />
+    <meta name="msapplication-TileImage" content="/styles/img/windows8_tile.png" />
+    <meta name="keywords" content="{$app.page.se_keywords}" />
+    <meta name="description" content="{$app.page.se_description}" />
+  
+    <!-- vpatina/pages/minisite -->
+    
+
+    {foreach from = $app.header.meta item=meta}
+      {$meta|meta_tag}
+    {/foreach}
+    
+    {foreach from = $app.header.link item=link}
+      {$link|header_link}
+    {/foreach}
+    {$version = $app.version}
+    
+    <!-- link -->
+    <link rel="shortcut icon" type="image/x-icon" href="{$vp}/img/favicon/favicon.ico" />
+    <link rel="shortcut icon" sizes="192x192" href="{$vp}/img/favicon/favicon-96x96.png">
+    <link rel="apple-touch-icon" href="{$vp}/img/favicon/apple-touch-icon.png">
+    <link rel="mask-icon" href="{$vp}/img/favicon/apple-touch-icon.svg" color="black">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+
+    <link rel="stylesheet" type="text/css" media="all" href="/css/minisites/minisite.css{$cachebust}" />
+    <link rel="stylesheet" type="text/css" media="all" href="/afr/css/afr_base.css{$cachebust}" />
+    <link rel="stylesheet" type="text/css" media="all" href="/afr/css/gallery/afr_gallery.css{$cachebust}" />
+    
+    <link rel="stylesheet" type="text/css" media="all" href="/afr/js/vp/photoswipe.css?v=4.1.1-1.0.5" / >
+    <link rel="stylesheet" type="text/css" media="all" href="/afr/js/vp/default-skin/default-skin.css{$cachebust}" / >
+    <link rel="stylesheet" type="text/css" media="all" href="/afr/js/vp/vp.min.css{$cachebust}" / >
+    <!--link rel="StyleSheet" href="/css/site.css?ver=0223141201" type="text/css" media="screen"/-->
+    {if ($user)}
+    <link rel="stylesheet" type="text/css" media="all" href="/afr/css/afr_cms.css{$cachebust}" />
+    <link rel="StyleSheet" href="/afr/bower/fancybox/source/jquery.fancybox.css" type="text/css" media="screen"/>
+    <link rel="StyleSheet" href="/afr/bower/summernote/dist/summernote.css" type="text/css" media="screen"/>    
+    {/if}
+    <link rel="StyleSheet" href="/afr/bower/intl-tel-input/build/css/intlTelInput.css?v=11.0.14" type="text/css" media="screen"/>
+    
+    {$styles = $app.header.styles|array_unique}
+    {foreach from = $styles item=style}
+      {$style|style_tag}
+    {/foreach}
+    
+    
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDqzndmgSgkwaD6AEATZOkeEWUo4foizEo&amp;libraries=places&amp;language=en"></script>  
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+  
+  </head>
+  <body id="" class="{$page}">
+  
+
+    {if ($app.test || $app.dev)}
+    <div class="abs_top_left">
+      <span class="hidden-sm-up visible">XS</span>
+      <span class="hidden-xs-down hidden-md-up visible">SM</span>
+      <span class="hidden-sm-down hidden-lg-up visible">MD</span>
+      <span class="hidden-md-down hidden-xl-up visible">LG</span>
+      <span class="hidden-lg-down visible">XL</span>
+    </div>
+    {/if}
+    </div>
+    {$edit_menu}
+    {if ($debug)}{{"include": "minisites/_debug.html"}}{/if}
+    <div class="container">
+      <div class="row header" id="header">
+        <div class="col-md-3 col-sm-2 col-xs-2 text-left">
+          <nav class="navbar navbar-light navbar-site navbar-desktop hidden-sm-down" id="navbarSite">
+              {if ($type == "artist")}
+                {{"include": "minisites/_menu-artist.html"}}
+              {else}
+                {{"include": "minisites/_menu.html"}}
+              {/if}
+          </nav>
+          <nav class="hidden-md-up navbar navbar-fixed-top-off navbar-site navbar-mobile navbar-mobile-site" role="navigation">
+            <div class="navbar-header">
+              <button class="navbar-toggler pull-left" id="mobileSiteNavBtn" type="button" data-toggle="collapse" data-target="#mobileSiteCollapsingNav">
+                &#9776;
+              </button>
+              <!--a class="navbar-brand nav-logo site-logo hidden-sm-up" href="{$basepath}">{$title}1</a-->
+            </div>
+            <div class="collapse navbar-toggleable-sm nav-links text-left" id="mobileSiteCollapsingNav">
+              {if ($type == "artist")}
+                {{"include": "minisites/_menu-artist.html"}}
+              {else}
+                {{"include": "minisites/_menu.html"}}
+              {/if}
+            </div>
+          </nav>          
+        </div>
+        <div class="col-md-8 col-sm-10 col-xs-10 text-center pt20">
+          <a class="minisite-logo" href="{$basepath|default:'/'}">
+          {if ($logo)}<img src="{$logo}">{else}<h1>{$minisite_name}</h1>{/if}
+          </a>
+        </div>        
+      </div>
+      
+      <div class="row" id="title">
+        <div class="col-md-3 col-sm-2 col-xs-2 text-left">
+        </div>
+        <div class="col-md-8 col-sm-10 col-xs-10 text-center pt20">
+          {block name=title}{/block}
+          {if ($scope.header_text)}
+          <div>{$scope.header_text}</div>
+          {/if}
+        </div>
+      </div>
+      <hr>
+      
+      <!-- content -->
+      {block name=content}{/block}    
+  
+      <br />
+  
+      <div class="row footer" id="footer">
+        <div class="col-md-3 col-sm-6 col-xs-6">
+          <a href="{$basepath}/contact#opening-hours">Opening hours</a> <br />
+          <!--a href="{$basepath}/about">About The Gallery</a><br /-->
+          <p></p>
+        </div>
+        <div class="col-md-3 col-sm-6 col-xs-6">
+          <!--a href="{$basepath}/submissions">Submissions</a><br />
+          <a href="{$basepath}/legal">Terms &amp; Conditions</a><br /-->
+          <p></p>
+        </div>
+        <div class="col-md-3 col-sm-6 col-xs-12 footer-follow-col" style="padding-right:0px;">
+          {$social_links = $ms.social|@json_decode|obj2array}
+          {if ($social_links|@count > 0)}
+            <strong>FOLLOW US</strong><br />
+            {if ($social_links.twitter)}
+            <a class="footer-social-icon" href="{$social_links.twitter}"><img src="{$vp}/img/footer/footer-tw@2x.png" /></a>
+            {/if}
+            {if ($social_links.facebook)}
+            <a class="footer-social-icon" href="{$social_links.facebook}"><img src="{$vp}/img/footer/footer-fb@2x.png" /></a>
+            {/if}
+            {if ($social_links.instagram)}
+            <a class="footer-social-icon" href="{$social_links.instagram}" target="_blank"><img src="{$vp}/img/footer/footer-in@2x.png" /></a>
+            {/if}
+          {/if}
+          <!--a class="footer-social-icon" href="#"><img src="{$vp}/img/footer/footer-mail@2x.png" /></a>   
+          <a class="footer-social-icon" href="http://pinterest.com/source/thisurl.com/"><img src="{$vp}/img/footer/footer-pin@2x.png" /></a>
+          <a class="footer-social-icon" href="https://www.artsy.net/galleryname-gallery/"><img src="{$vp}/img/footer/footer-ar@2x.png" /></a-->
+          <br />
+          <p></p>
+        </div>
+      
+        <div class="col-md-3 col-sm-6 col-xs-12 footer-share-col">
+          <span class="footer-header-share"><strong>SHARE</strong></span>
+          <div class="addthis_inline_share_toolbox"></div>
+        </div>
+        <div class="col-md-9 col-sm-12 col-xs-12 text-left copyright">
+          Copyright &copy; 2017 {$minisite_name}; All rights reserved.
+        </div>
+        <div class="col-md-3 col-sm-12 col-xs-12 text-left caravan">
+          <a href="https://www.vpatina.com" target="_blank">fueled by <span class="interactive">vPatina</span></a>
+        </div>      
+      </div><!-- footer -->
+
+    </div><!-- container -->       
+    
+    <div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="pswp__bg"></div>                                 
+      <div class="pswp__scroll-wrap">
+        <div class="pswp__container">
+          <div class="pswp__item"></div>
+          <div class="pswp__item"></div>
+          <div class="pswp__item"></div>
+        </div>
+        <div class="pswp__ui pswp__ui--hidden">
+          <div class="pswp__top-bar">
+            <div class="pswp__counter"></div>
+            <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+            <button class="pswp__button pswp__button--share" title="Share"></button>
+            <button class="pswp__button pswp__button--like vp__favorite-link pswp__element--disabled" title="Like" id="likeBtn"></button>
+            <button class="pswp__button pswp__button--user pswp__element--disabled" title="User" id="userBtn"></button>
+            <button class="pswp__button pswp__button--chat pswp__element--disabled" title="Chat" id="chatBtn"></button>
+            <button class="pswp__button pswp__button--contact pswp__element--disabled" title="Contact" id="contactBtn"></button>
+            <button class="pswp__button pswp__button--calendar pswp__element--disabled" title="Calendar" id="calendarBtn"></button>
+            <button class="pswp__button pswp__button--map" title="Map" id="mapBtn"></button>
+            <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+            <button class="pswp__button pswp__button--info" title="Info" id="vp__infoBtn"></button>
+            <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+            <div class="pswp__preloader">
+              <div class="pswp__preloader__icn">
+                <div class="pswp__preloader__cut">
+                <div class="pswp__preloader__donut"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap" id="vp__share-modal">
+            <div id="vp__share-modal-content" class="vp__share-modal-content arrow-box"></div> 
+          </div>    
+          <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)"></button>    
+          <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button>    
+          <div class="pswp__caption">
+            <div class="pswp__caption__center"></div>
+          </div>    
+        </div>    
+      </div>    
+    </div>  
+    <div id="vp__my_modal" class="w3-modal my-modal-off" style="position:absolute;width:100%;height:100%;left:0;top:0;background:rgba(0,0,0,0.6);display:none">
+      <div class="w3-modal-content vp__my-modal-content w3-animate-opacity" style="background-color: #fff;color:#000">
+        <span onclick="document.getElementById('vp__my_modal').style.display='none'" style="padding-top: 0px !important;padding-bottom: 6px !important" class="w3-button w3-xlarge w3-display-topright">&times;</span>
+        <div id="vp__my-modal-content" class="w3-container-off">
+        </div>
+      </div>
+    </div>
+    
+    <!-- jQuery first, then Tether, then Bootstrap JS. -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+
+    <script type="text/javascript" src="https://use.fontawesome.com/a22cbf3bb2.js"></script>
+    
+    {block name=scripts}{/block}    
+
+    <script type="text/javascript" src="/afr/js/afr_gmap.js?v={$version}"></script>
+    <script type="text/javascript" src="/afr/js/afr.js?v={$version}"></script>    
+    <script type="text/javascript" src="/afr/js/afr_cms.js?v={$version}"></script>
+    <script type="text/javascript" src="/afr/bower/fancybox/source/jquery.fancybox.pack.js"></script>
+    <script type="text/javascript" src="/afr/bower/summernote/dist/summernote.min.js"></script>
+    <script type="text/javascript" src="/afr/bower/intl-tel-input/build/js/intlTelInput.min.js?v=11.0.14"></script>
+
+<!-- Enable bootstrap 4 theme -->
+    <script>window.__theme = 'bs4';</script>
+    
+    <script src="//assets.pinterest.com/js/pinit.js"></script>
+    <script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-578fa1a85551d382"></script>
+    <script src="/js/minisite.js{$cachebust}"></script>
+    <script src="/afr/js/vp/vp.js{$cachebust}"></script>
+           
+    <script type="text/javascript">         
+      $(document).ready(function(){   
+        var artists = [];            
+        var data = '{$scope.data|@json_encode|replace:"'":"&quot;"}';
+        g_local_data = JSON.parse(data);
+        vp_search();
+      });
+    </script>   
+    
+  </body>                    

@@ -1,0 +1,43 @@
+  {{"extend": "base/sidebar.html"}}
+  
+  {block name=subview_top}
+  {/block}
+  
+  {block name=subview_title}
+    {'gallery backend'|translate:'c'}
+  {/block}
+  
+  {block name=subview_left_top}
+ {/block}
+
+  {block name=subview_aside}
+    <div class="user-profile-avatar text-center">
+        <img id="user_profile_photo" src="{$user|userphoto}" alt="{$user|display_name}" title="AMaze" />
+        <h5>{$user|display_name}</h5>
+        <p>Member Since {$user.created|date}</p>
+    </div>
+  {/block}
+
+  {block name=subview_left_bottom}
+  {/block}
+  
+  {block name=subview_nav}
+    {{"include": "_gallery-backend-nav.html"}}
+    <script>
+    var g_artists = {$scope.artists};
+    var g_selections = [];
+    var g_user_ids = {$scope.user_ids};
+    var g_site_id = "{$site.id}";
+    var g_user_id = "{$user.id}";
+    
+    </script>
+  {/block}
+  
+  {block name=subview_container}
+    {{ "subviews":["artworks", "artwork", "exhibition", "exhibitions", "plugin", "plugins", "media", "vault", "network", "website"],"prefix": "_gallery-backend-" }}
+  {/block}
+  
+  {block name=subview_bottom}
+  {/block}
+
+  
