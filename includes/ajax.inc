@@ -1,4 +1,5 @@
 <?php
+//echo "<pre>"; print_r($_REQUEST);
   //header('Content-type:application/json;charset=utf-8');
   include_once('set_env.inc');
   $timer['set_env'] = microtime(true);
@@ -12,6 +13,19 @@
   //echo("App Lang1: {$_SESSION['language']}<br>");
 
   //echo("App Lang1: {$__LANG}<br>");
+
+  if($_REQUEST['type'] == 'artwork') {
+      
+      //echo "<pre>"; print_r($obj_data);
+      $obj_type= $_REQUEST['type'];
+      $obj_id= $_REQUEST['id'];
+      $obj_col= $_REQUEST['col'];
+      $data= $_REQUEST['data'];
+      $obj_data= array('obj_type'=>$obj_type,'obj_id'=>$obj_id,$obj_col=>$data);
+      //echo "<pre>"; print_r($obj_data);
+      $result= update_object($obj_type, $obj_data, $obj_id);
+      die("success");
+}
     
 
   //if($_SESSION['dev'] && $_GET['debug'] == 'cre8ive') $inputVars = $_GET; // allow using GET by setting debug=cre8ive
@@ -126,7 +140,6 @@
   unset($_POST['oper']);
   if($_POST) {
     $obj_data = $_POST;
-    //echo "<pre>"; print_r($obj_data);
     if($_GET) {
       foreach($_GET as $k => $v) { // allow sending data with GET as well
         if(in_array($k, array('oper', 'obj_type'))) continue;
@@ -268,6 +281,7 @@
 
     case 'save-artwork':
       extract($obj_data);
+
       print_log("save-artwork: type: {$obj_type} id: {$obj_id} data:".dump($obj_data,true), 'gallery', LOG_LEVEL_TEST);
       //if(isset($obj_data['type']) && !$type) json_error("Please select a category."); 
       //if(isset($obj_data['status']) && !$status) json_error("Please select a status."); 
@@ -368,7 +382,7 @@
     case 'save-collection':
       $obj_type = 'media_collection';
       extract($obj_data);
-//echo "<pre>"; print_r($obj_data);
+
       $type_name = get_object('media_collection_type', $type, 'name');      
       
       $id = $obj_id;
@@ -1659,10 +1673,7 @@
   
         
       $val = trim($obj_data['search']);
-	if($val)
-		$new_value = explode(' ',$val);
-	else
-		$new_value = [];
+	$new_value = explode(' ',$val);
       switch($obj_type) {
       case 'minisite':
       /*if(count($new_value) >= 1) 
@@ -1742,7 +1753,7 @@
 		$search[$new_key] =
           array("{$t1}.id" => "*$val*",
                 "{$t1}.title" => "*$val*",
-//                "{$t2}.display_name" => "*$val*",
+                "{$t2}.display_name" => "*$val*",
 		            "{$t1}.created" => "*$val*",
               "{$t1}.subtype" => "*$val1*",
                 "{$t1}.start_date" => "*$val*",
@@ -1757,9 +1768,7 @@
         break;
       
       case 'artwork':
-      //echo "<pre>"; print_r($new_value);
   if(count($new_value) >= 1) 
-
          foreach($new_value as $key=> $val) {
 	if($key == 1)
 		$key = 2;
@@ -1775,13 +1784,12 @@
             $val1= 20;
          }elseif($val=='sold'){
             $val1= 30;
-         }elseif($val=='inactive'){
+         }elseif($val=='in active'){
             $val1= 40;
-         }elseif($val=='onloan'){
+         }else{
             $val1= 50;
-         }else
-		$val1 = $val;
-
+         }
+		
         $search[$new_key] =
           array("{$tb1}.id" => "*$val*", 
                 "{$tb1}.title" => "*$val*", 
@@ -1790,13 +1798,12 @@
                 "{$tb1}.short_description" => "*$val*",
                 "{$tb1}.primary_year" => "*$val*",
                 "{$tb1}.technique" => "*$val*",
-      //          "{$tb2}.name" => "*$val*", 
+                "{$tb2}.name" => "*$val*", 
                 "{$tb1}.price" => "*$val*",
                 "{$tb1}.price_option" => "*$val*",
                 "{$tb1}.status" => "*$val1*"
                 );   
           }
-        
 
         break;
       case 'gallery':
@@ -1874,15 +1881,12 @@
       default:
         break;
       }
-//	if($search['$or1'][$obj_type.'.id'] == '**')
-//		$search[] = [];
       if($filters = $_GET['filters']) {
         $filters = json_decode($filters, true);
         if(is_array($filters)) {
           foreach($filters as $k => $v) $search[$k] = $v;
         }          
       }
-//echo "<pre>";print_R($search);
       if($ids = $obj_data['id']) { // limit to selected IDs
         $search['id'] = $ids;
       }
@@ -1892,6 +1896,13 @@
 	delete_objects($obj_type,$ids); // need to update the softdelete db_object.inc file
 	unset($search['id']);
   	 }
+
+    if($_REQUEST['mode']=='edit') {
+     //echo "<pre>";die("in");
+  
+    update_object($obj_type, $obj_data, $obj_id);
+  
+     }
 
       print_log("get-rows {$obj_type} GET: ".dump($_GET, true), 'debug', LOG_LEVEL_TEST);
       print_log("get-rows {$obj_type} filters: ".dump($filters, true), 'debug', LOG_LEVEL_TEST);
@@ -5112,7 +5123,7 @@
       $userData = $obj_data;
       extract($userData);
   
-      //echo "<pre>"; print_r($userData);
+
       if($error = check_required($obj_data, array('site_id' => "Site ID", 'first_name' => "First Name", 'last_name' => "Last Name"))) json_error("Missing: ".implode(', ', $error));
       $host_user_id = $obj_data['aff_id']?$obj_data['aff_id']:$u->id;
      
@@ -5122,9 +5133,7 @@
       $userData['user_level'] = 1;
       $userData['auto_password'] = 1;
       $userData['roles'] = USER_ROLE_ARTIST;
-      $userData['phone'] = $phone;
-      $userData['address'] = $address;  //pradeepa     
-      $userData['date_of_birth'] = $date_of_birth;
+      $userData['phone'] = $phone;        
       $password = "Auto_".random_int(1000,9999);; // generate random password
       
       list($user_id, $errors) = user_register($username, $password, $userData);

@@ -60,6 +60,17 @@ function gbe_artwork_handler(params, data) {
   }
 }
 
+function gbe_network_handler(params, data) { //pradeepa
+  console.log("gbe_network_handler. data", data);
+  console.log("gbe_network_handler. next="+ data.next_tab + " data:", data);
+  if(data.id) {    
+    var tab = data.next_tab || 'about';
+    var href = '/backend/profile/' + data.id + '/edit/' + tab;
+    var $link = $("#submit");
+    soft_load($link, "#subview-container", href);
+  }
+}
+
 function gbe_artists_tagit() {
   console.log("gbe_artists_tagit");
   $("#artistTags").tagit({
@@ -252,6 +263,104 @@ $(document).on("click", "#sel_show", function() {
   $("#table").bootstrapTable('refresh', {query: {id: g_selections}, pageSize: 100});  
 });
 
+$(document).on("click", "#sel_del", function() { //Bala
+  console.log("sel Del ids=", g_selections);
+    $('#table').bootstrapTable('remove', {
+                field: 'id',
+                //~ values: g_selections
+            });
+  $("#table").bootstrapTable('refresh', {query: {id: g_selections, mode: 'del'}, pageSize: 100});
+   $("#selection").hide();
+});
+
+$(document).on("click", ".edit", function() { 
+  $(this).prop('contenteditable', true);
+  var id = $(this).data('value');
+  var obj_type= "artwork";
+  var obj_data = $(this).text();
+  var col = $(this).data('col');
+  //console.log($(this).data('value'));
+  //console.log(obj_data);
+});
+
+
+
+$(document).on("focusout", ".edit", function() { 
+  $(this).prop('contenteditable', false);
+  //console.log($(this).data('value'));
+  var id = $(this).data('value');
+  var col = $(this).data('col');
+  var data = $(this).text();
+  //console.log(obj_data);
+
+  $.ajax({ url: "/ajax.php?obj_type=" + obj_type,
+   type: "POST",
+    data: {
+      type : "artwork",
+      col: col,
+      data : data,
+      id : id,
+      oper : "edit",
+    }
+
+
+});    
+
+});    
+
+$(document).on("click", ".editdd", function() { 
+  // $(this).prop('disabled', true);
+  var id = $(this).data('value');
+  var obj_type= "artwork";
+  var obj_data = $(this).text();
+  var col = $(this).data('col');
+  //console.log($(this).data('value'));
+  //console.log(obj_data);
+   if(col=='price_option'){
+      
+      //$('#select').show();
+      $(this).append('<select id= "select"><option>Show price</option><option>Hide price</option><option>Price on enquiry</option></select>');
+      $('#select').show();
+      $('#editdd').hide();
+      var value = $('#select option:selected').text();
+      if(value=='Hide price'){
+        nvalue=0;
+      }else if(value=='Show price'){
+        nvalue=1;
+      }else if(value=='Price on enquiry'){
+        nvalue=-1;
+      }
+    }
+
+console.log(nvalue);
+      
+});
+
+
+
+$(document).on("focusout", ".editdd", function() { 
+  $(this).prop('contenteditable', false);
+  //console.log($(this).data('value'));
+  var id = $(this).data('value');
+  var col = $(this).data('col');
+  var data = $(this).text();
+  //console.log(obj_data);
+
+  $.ajax({ url: "/ajax.php?obj_type=" + obj_type,
+   type: "POST",
+    data: {
+      type : "artwork",
+      col: col,
+      data : data,
+      id : id,
+      oper : "edit",
+    }
+
+
+});    
+
+});    
+
 $(document).on("change", "#gbe_collection_active", function() {
   var checked = $(this).prop('checked');
   $cbs = $('.gbe-visibility-row');
@@ -400,7 +509,19 @@ function bstArtistFormatter(value, row, index) {
   if(!value) return '';
   return g_artists[value];
 }
- 
+
+function bstArtistsFormatter(value, row, index) {
+  if(!value) return '';
+  var val = JSON.parse(value);
+  var new_val = [];
+  for(var i=0; i<val.length; i++){
+     new_val += g_artists[val[i]] + ",";
+  }
+    return new_val.slice(0, -1);
+    
+  
+}
+
 function gbe_confirm_callback() {
   console.log("Confirmed...");
 }
@@ -408,7 +529,7 @@ function gbe_confirm_callback() {
 function gallery_backend_ready() {
   console.log("gallery_backend_ready v2.1 ARE YOU SURE");
 
-  //$('form').areYouSure( {'silent':true} );
+  $('form').areYouSure( {'silent':true} );
   
   //$('form').trigger('reinitialize.areYouSure');
   
@@ -496,6 +617,40 @@ function gallery_backend_ready() {
     
   }  
 }
+
+
+// Neelamegam_clone
+
+
+$(document).on("click", ".clone", function() { 
+ 
+ var row_id = $(this).attr('id');
+
+  $.ajax({ 
+  url: "/clone.php",
+   type: "POST",
+    data: {
+      row_id : row_id,
+    },
+    success: function( result ) {
+      alert(result);
+
+   
+            // console.log("OK, data:", result);
+            response( function( item ) {
+              var name = (item.title);
+              alert(name);
+              return {
+                label: name, // + ", " + item.city,
+                value: name 
+                //value: (item.display_name ? item.display_name : (item.first_name + ' ' + item.last_name)) 
+              }
+            });
+           
+        }
+});    
+
+});  
 
 
 /**

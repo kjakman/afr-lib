@@ -3141,9 +3141,9 @@ $__CLASS_ATTRIBUTES = array(
      'site_id'=>           array('Site',              'link',   ATT_DEFAULT_SITE_ID, AF_READONLY|AF_HIDE_ADD, 'site'),
      'user_id'=>           array('User',              'link',  ATT_DEFAULT_USER_ID, AF_SEARCHABLE|AF_HIDE_ADD, 'user'),
      'artist_id'=>         array('Artist',            'link',  ATT_DEFAULT_NULL, AF_SEARCHABLE|AF_HIDE_ADD, 'user'),
-   //'artist_ids'=>        array('Artists',           'json',  ATT_DEFAULT_NULL, AF_SEARCHABLE|AF_HIDE_ADD, 'user'),
+   'artist_ids'=>        array('Artists',           'json',  ATT_DEFAULT_NULL, AF_SEARCHABLE|AF_HIDE_ADD, 'user'),
 
-     'artist_ids'=>        array('Artist name',                'one2bala', 0,   AF_HIDE_LIST|AF_OBLIGATORY|AF_CASCADE_DELETE|AF_ONE2ONE_INTEGRATE, 'user_profile'),
+//     'artist_ids'=>        array('Artist name',                'one2bala', 0,   AF_HIDE_LIST|AF_OBLIGATORY|AF_CASCADE_DELETE|AF_ONE2ONE_INTEGRATE, 'user_profile'),
     
      'curator_id'           =>array('Curator Id'    , 'link', ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY, 'user'),
      'title'=>             array('Title',             'str',   '', AF_OBLIGATORY, 255),
@@ -3437,8 +3437,8 @@ $__CLASS_ATTRIBUTES = array(
     'active'               =>array('Active'        , 'bool', 1, 0, 1),
     'public'=>            array('Public',            'bool',   1, 0),
     'show_website'=>      array('Show Website',      'bool',   1, 0),
-    //'type'                 =>array('Type'          , 'str', '', AF_SEARCHABLE, 20),
-   'type'=>        array('Type',                'one2dci', 0,   AF_HIDE_LIST|AF_ONE2ONE_INTEGRATE|AF_HIDE_ADD, 'artwork_type'),
+    'type'                 =>array('Type'          , 'str', '', AF_SEARCHABLE, 20),
+   //'type'=>        array('Type',                'one2dci', 0,   AF_HIDE_LIST|AF_ONE2ONE_INTEGRATE|AF_HIDE_ADD, 'artwork_type'),
 
     'status' =>              array('Status',         'many2one', 0, AF_LOG|AF_SEARCHABLE , 'artwork'),
     //'status'=>        array('Status',                'one2dci', 0,   AF_HIDE_LIST|AF_ONE2ONE_INTEGRATE|AF_HIDE_ADD, 'artwork_status'),

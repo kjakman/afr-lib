@@ -4276,11 +4276,13 @@ function controller_gallery_backend($app, $options = []) {
       $filter_json = count($filters) ? json_encode($filters) : '';
       $scope->list_url = "/ajax.php?oper=get-rows&obj_type=gallery".($filter_json ? "&filters=".urlencode($filter_json) : '');
       break;
+
     case "network":
       $scope->section = 'network';
       $app->page->itemview = 'profile';
       $app->page->listview = 'network';
-
+	$scope->obj_type = $obj_type = "artist"; //Bala
+      
       $filters = ['active' => 1, 'user.site_id' => $app->site->id];
       if($u_level < USER_LEVEL_ADMIN) $filters['user_id'] = $user_ids;
       $filter_json = count($filters) ? json_encode($filters) : '';
@@ -4291,7 +4293,7 @@ function controller_gallery_backend($app, $options = []) {
       break;
      case "profile":
       $scope->section = 'network';
-      $scope->obj_type = $obj_type = "user";
+      $scope->obj_type = $obj_type = "artist";
       if(!$add) {   
         if(!$id) return controller_error($app, "Missing ID");
         if($_GET['profile_id']) $id = $scope->id = $scope->obj_id = get_object('user_profile', $id, 'user_id');
@@ -4328,6 +4330,7 @@ function controller_gallery_backend($app, $options = []) {
       if($u_level < USER_LEVEL_ADMIN) $filters['user_id'] = $app->user_id;
       $filter_json = count($filters) ? json_encode($filters) : '';
       $scope->list_url = "/ajax.php?oper=get-rows&obj_type=media_collection&amp;sort=id%20desc&amp;".($filter_json ? "&filters=".urlencode($filter_json) : '');
+      
       break;
       
     case "exhibition":
@@ -4357,7 +4360,7 @@ function controller_gallery_backend($app, $options = []) {
         $locations[0] = "Another location...";          
         $scope->locations = $locations;
         
-        $scope->events = $events = find_objects('event', ['active' => 1, 'parent_type' => 'media_collection', 'parent_id' => $id]);
+        $scope->events = $events = find_objects('event', ['active' => 1, 'parent_type' => 'media_collection', 'parent_id' => $id]); //pradeepa
         
         $collection = get_object('media_collection', $id);
         $collection_id = $collection->id;
@@ -4913,11 +4916,12 @@ function controller_gallery_collections($app, $options = []) {
 }
 
 function controller_test($app, $options = []) {
-  if($app->user_level < USER_LEVEL_ADMIN) return scope_error($app, "Test page", '404');
   $scope = $app->page->scope;
   $scope->debug = 'some debug message';  
   $scope->error = 'some random error';  
   $scope->message = ['message1', 'message2'];  
+  //$scope->redirect = 'http://www.google.com';
+  //$scope->template = 'test2';
   return;
 }
 

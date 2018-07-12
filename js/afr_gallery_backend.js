@@ -264,6 +264,7 @@ $(document).on("click", "#sel_show", function() {
 });
 
 $(document).on("click", "#sel_del", function() {
+  console.log("in");
   console.log("sel Del ids=", g_selections);
     $('#table').bootstrapTable('remove', {
                 field: 'id',
@@ -272,6 +273,13 @@ $(document).on("click", "#sel_del", function() {
   $("#table").bootstrapTable('refresh', {query: {id: g_selections, mode: 'del'}, pageSize: 10});
    $("#selection").hide();
 });
+
+
+$(document).on("click", ".edit", function() {
+  console.log("clicked");
+  $(this).prop('contenteditable', true);
+});
+
 
 
 
@@ -436,6 +444,7 @@ function bstArtistsFormatter(value, row, index) {
   
 }
 
+
 function gbe_confirm_callback() {
   console.log("Confirmed...");
 }
@@ -531,7 +540,6 @@ function gallery_backend_ready() {
     
   }  
 }
-
 
 /**
 $(document).ready(function() {  

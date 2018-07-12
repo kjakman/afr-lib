@@ -813,7 +813,7 @@ function send_campaign($campaignObj_or_id, $options = array()) {
 }
 
 /** new function using SwiftMailer */
-function send_mail($siteObj_or_id, $subject, $body, $recipient, $options = array()) {
+function send_mail($siteObj_or_id, $subject, $body, $recipient, $options = array()) { 
   global $__SITE;
   global $__USER;
   $errors = [];  

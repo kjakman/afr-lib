@@ -643,7 +643,7 @@ function classes2db() {
         if($options = $attr[ATT_OPTIONS]) {
           $attrObj->relation_filters = json_encode($options);
         }
-      } elseif(in_array($type, array('msel', 'ssel', 'one2one', 'link'))) { 
+      } elseif(in_array($type, array('msel', 'ssel', 'one2one', 'link'))) {
         $attrObj->relation_class = $attr[ATT_RELATION_TYPE];
       } else if(in_array($type, array('many2one'))) {
         $attrObj->relation_class = $attr[ATT_RELATION_TYPE];
@@ -828,7 +828,6 @@ function get_object_sort_clause($type) {
 
 //function add_object($obj_type, $data, $parent_id=0, $preset_id=0, $parent_type='') {
 function add_object($obj_type, $data, $options = array()) {
-  //echo "<pre>data"; print_r($data);
   //echo("add_object $obj_type").dump($data);die();
   $data = (array) $data;
   $child_array = array(); // array of arrays [$child_type, $child_id]
@@ -1319,8 +1318,6 @@ function find_objects($obj_type, $search=array(), $options = array()) {
     $search = ["{$tbl}.id" => (array_values($search))[0]]; // we need tablename.id to avoid ambigiuity
   }
   list($filters, $values) = search2pdo($search);
-//  echo "<pre>"; print_r($filters);
- // echo "<pre>"; print_r($values);
 
   $options['values'] = $values;
   if($options['debug_query'] || $_SESSION['debug_db']) {
@@ -1393,10 +1390,10 @@ function get_objects($obj_type, $filters=array(), $options = array()) {
   }
  if(!$selected_fields || is_array($selected_fields) /*|| strpos($selected_fields, ',') */) { // 2 or more fields    
     $result = db_getAll($query_str, $values, $options);
-
     $method = "db_getAll";
   } else {
     $result = db_getCol($query_str, $values, $options); // just one field
+    
     $count = count($result);
     if($options['format'] == "list") return implode(",", $result); // comma separated list
     $method = "db_getCol";
@@ -1468,12 +1465,12 @@ function get_object_query($obj_type, $id='__none', $selected_fields='', $options
 	else if($obj_type == 'user')
 	      $where[] = "($db_field = $att_table.$att_key)";
 		
-    }elseif($att_type == 'one2dci' && (($att_flags & AF_ONE2ONE_INTEGRATE))) {
+    }elseif($att_type == 'one2dci' && (($att_flags & AF_ONE2ONE_INTEGRATE) || ($att_flags & AF_OBLIGATORY))) {
       $att_table = get_object_table($class[ATT_RELATION_TYPE]);
       $att_key = get_object_key($class[ATT_RELATION_TYPE]);
       $tables[$att_table] = $att_table;
         if(count(($options['values'])) > 1 && $obj_type == 'artwork'){
-             $where[] = "($db_field = $att_table.$att_key)"; 
+              $where[] = "($db_field = $att_table.$att_key)";
 }
         else if($obj_type == 'user')
               $where[] = "($db_field = $att_table.$att_key)";
@@ -1485,7 +1482,8 @@ function get_object_query($obj_type, $id='__none', $selected_fields='', $options
       $tables['user'] = 'user';
 	$dbField = json_decode($db_field);
 //	$att_key = 'artist_id'
-//echo $obj_type; echo "<pre>";print_r($options['values']);
+//echo $obj_type; 
+//echo "<pre>";print_r($options['values']);
 //	if(($options['values'][0]) != '%%') {
 		$where[] = "(user.id = media_collection.artist_id)";
 		$where[] = "(user_profile.user_id = user.id)";

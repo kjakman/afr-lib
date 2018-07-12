@@ -1,7 +1,7 @@
 
           {$profile = $scope.profile}
-          <form id="user_profile_form" class="ajax-submit" data-handler="save" data-toggle="validator" data-reload_link="#user-verification-link" >
-            <input type="hidden" name="obj_type"value="user_profile" />
+          <form id="user_profile_form" class="ajax-submit" data-handler="save" data-toggle="validator" data-reload_link="#user-verification-link">
+            <input type="hidden" name="obj_type" value="user_profile" />
             <input type="hidden" name="id"  value="{$scope.user.profile_id}" />
             <input type="hidden" name="user_id" value="{$scope.user.user_id}" />
             <input type="hidden" name="site_id" value="{$site.id}" />
@@ -38,6 +38,17 @@
                 </div>         
               </div>      
             </div>
+
+            <div class="row mt20">
+            <div class="col-sm-6">
+            <label>Date of birth</label>
+            <div class="input-group">
+              <input type="text" id="date_of_birth" value="{$scope.profile.date_of_birth}" class="form-control datepicker" name="date_of_birth" placeholder="Date of birth">
+              <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+            </div>
+            <!--div class="help-block with-errors">Whole Number</div-->                          
+          </div>
+          </div>
             
             <div class="row mt20">
               <div class="col-sm-6">
