@@ -308,58 +308,73 @@ $(document).on("focusout", ".edit", function() {
 
 });    
 
-$(document).on("click", ".editdd", function() { 
-  // $(this).prop('disabled', true);
+$(document).on("click", "#phide", function() { 
+   $('.phide'+id).show();
   var id = $(this).data('value');
   var obj_type= "artwork";
   var obj_data = $(this).text();
   var col = $(this).data('col');
+// alert(col);
   //console.log($(this).data('value'));
   //console.log(obj_data);
    if(col=='price_option'){
       
-      //$('#select').show();
-      $(this).append('<select id= "select"><option>Show price</option><option>Hide price</option><option>Price on enquiry</option></select>');
-      $('#select').show();
-      $('#editdd').hide();
-      var value = $('#select option:selected').text();
-      if(value=='Hide price'){
-        nvalue=0;
-      }else if(value=='Show price'){
-        nvalue=1;
-      }else if(value=='Price on enquiry'){
-        nvalue=-1;
-      }
-    }
+      $('.phide'+id).hide();
 
-console.log(nvalue);
+      // alert(JSON.stringify($('#phide').find('.shows')));
+       // $("#select").css("display", "block");
+      //$('#select').remove();      
+      $('#shows'+id).append('<select id= "select" class="select'+id+'"><option id= "option" value="1">Show price</option><option  id= "option" value="0">Hide price</option><option  id= "option" value="-1">Price on enquiry</option></select>');
+     
+    }
       
+});
+
+$(document).on("change", "#select", function() {
+ 
+  var value1 = $(this).parent().prop('id');
+  value1 = value1.replace('shows','');
+  var value = $('#shows'+value1+' #select').val();
+  var id = $('#phide').data('value');
+  var obj_type= "artwork";
+  var col = $('#phide').data('col');
+    $('.select'+value1).show(value);
+  $.ajax({ url: "/ajax.php?obj_type=" + obj_type,
+      type: "POST",
+      data: {
+      type : "artwork",
+      col: col,
+      data : value,
+      id : value1,
+      oper : "edit",
+    }
+  });    
 });
 
 
 
-$(document).on("focusout", ".editdd", function() { 
-  $(this).prop('contenteditable', false);
-  //console.log($(this).data('value'));
-  var id = $(this).data('value');
-  var col = $(this).data('col');
-  var data = $(this).text();
-  //console.log(obj_data);
+// $(document).on("focusout", ".editdd", function() { 
+//   $(this).prop('contenteditable', false);
+//   //console.log($(this).data('value'));
+//   var id = $(this).data('value');
+//   var col = $(this).data('col');
+//   var data = $(this).text();
+//   //console.log(obj_data);
 
-  $.ajax({ url: "/ajax.php?obj_type=" + obj_type,
-   type: "POST",
-    data: {
-      type : "artwork",
-      col: col,
-      data : data,
-      id : id,
-      oper : "edit",
-    }
+//   $.ajax({ url: "/ajax.php?obj_type=" + obj_type,
+//    type: "POST",
+//     data: {
+//       type : "artwork",
+//       col: col,
+//       data : data,
+//       id : id,
+//       oper : "edit",
+//     }
 
 
-});    
+// });    
 
-});    
+// });    
 
 $(document).on("change", "#gbe_collection_active", function() {
   var checked = $(this).prop('checked');
