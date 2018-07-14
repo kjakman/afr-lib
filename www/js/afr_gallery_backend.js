@@ -275,24 +275,20 @@ $(document).on("click", "#sel_del", function() { //Bala
 
 $(document).on("click", ".edit", function() { 
   $(this).prop('contenteditable', true);
+  $(this).css('display', 'inline-block');
+  $(this).css('width', '100%');
   var id = $(this).data('value');
   var obj_type= "artwork";
   var obj_data = $(this).text();
   var col = $(this).data('col');
-  //console.log($(this).data('value'));
-  //console.log(obj_data);
 });
-
-
 
 $(document).on("focusout", ".edit", function() { 
   $(this).prop('contenteditable', false);
-  //console.log($(this).data('value'));
   var id = $(this).data('value');
   var col = $(this).data('col');
   var data = $(this).text();
-  //console.log(obj_data);
-
+  
   $.ajax({ url: "/ajax.php?obj_type=" + obj_type,
    type: "POST",
     data: {
@@ -302,8 +298,7 @@ $(document).on("focusout", ".edit", function() {
       id : id,
       oper : "edit",
     }
-
-
+  }
 });    
 
 });    
@@ -314,67 +309,102 @@ $(document).on("click", "#phide", function() {
   var obj_type= "artwork";
   var obj_data = $(this).text();
   var col = $(this).data('col');
-// alert(col);
-  //console.log($(this).data('value'));
-  //console.log(obj_data);
-   if(col=='price_option'){
-      
+  //alert(col);
+   if(col=='price_option'){ 
       $('.phide'+id).hide();
-
-      // alert(JSON.stringify($('#phide').find('.shows')));
-       // $("#select").css("display", "block");
-      //$('#select').remove();      
+      $('#shows'+id).show();
+      $('#select').remove();      
       $('#shows'+id).append('<select id= "select" class="select'+id+'"><option id= "option" value="1">Show price</option><option  id= "option" value="0">Hide price</option><option  id= "option" value="-1">Price on enquiry</option></select>');
-     
+      $(document).on("click", "#select", function() {
+            var value1 = $(this).parent().prop('id');
+            value1 = value1.replace('shows','');
+            var value = $('#shows'+value1+' #select').val();
+            var obj_type= "artwork";
+            var col = $('#phide').data('col');
+            $('.select'+value1).show(value);
+              $.ajax({ url: "/ajax.php?obj_type=" + obj_type,
+                  type: "POST",
+                  data: {
+                  type : "artwork",
+                  col: col,
+                  data : value,
+                  id : value1,
+                  oper : "edit",
+                 },
+                  success:function(response_data_json) {
+                    var value2='Hide Price';
+                     $('#shows'+value1).hide();
+                     if(value==0)       
+                       value2="Hide Price";
+                    if(value==1)       
+                       value2="Show Price";
+                    if(value==-1)       
+                      value2="Price on enquiry";
+                      $('.phide'+value1).text(value2);
+                    $('.phide'+value1).show();
+
+                  }
+              });    
+      });
     }
-      
+    
 });
 
-$(document).on("change", "#select", function() {
- 
-  var value1 = $(this).parent().prop('id');
-  value1 = value1.replace('shows','');
-  var value = $('#shows'+value1+' #select').val();
-  var id = $('#phide').data('value');
+$(document).on("click", "#status", function() { 
+   $('.status'+id).show();
+  var id = $(this).data('value');
   var obj_type= "artwork";
-  var col = $('#phide').data('col');
-    $('.select'+value1).show(value);
-  $.ajax({ url: "/ajax.php?obj_type=" + obj_type,
-      type: "POST",
-      data: {
-      type : "artwork",
-      col: col,
-      data : value,
-      id : value1,
-      oper : "edit",
-    }
-  });    
+  var obj_data = $(this).text();
+  var col = $(this).data('col');
+
+    if(col=='status'){ 
+      $('.status'+id).hide();
+      $('#cstatus'+id).show();
+      $('#select1').remove();      
+      $('#cstatus'+id).append('<select id= "select1" class="select1'+id+'"><option id= "option" value="10">Available</option><option  id= "option" value="20">Reserved</option><option  id= "option" value="30">Sold</option><option  id= "option" value="40">Inactive</option><option  id= "option" value="50">On loan, etc.</option></select>');
+
+      $(document).on("click", "#select1", function() {
+            var value1 = $(this).parent().prop('id');
+            value1 = value1.replace('cstatus','');
+            var value = $('#cstatus'+value1+' #select1').val();
+            var obj_type= "artwork";
+            var col = $('#status').data('col');
+            $('.select1'+value1).show(value);
+              $.ajax({ url: "/ajax.php?obj_type=" + obj_type,
+                  type: "POST",
+                  data: {
+                  type : "artwork",
+                  col: col,
+                  data : value,
+                  id : value1,
+                  oper : "edit",
+                 },
+                  success:function(response_data_json) {
+                    var value2='Available';
+                     $('#cstatus'+value1).hide();
+                     if(value==10)       
+                       value2="Available";
+                     if(value==20)       
+                       value2="Reserved";
+                     if(value==30)       
+                      value2="Sold";
+                     if(value==40)       
+                      value2="Inactive";
+                     if(value==50)       
+                      value2="On loan, etc.";
+                      $('.status'+value1).text(value2);
+                    $('.status'+value1).show();
+
+                  }
+              });    
+      });
+    }            
 });
 
 
 
-// $(document).on("focusout", ".editdd", function() { 
-//   $(this).prop('contenteditable', false);
-//   //console.log($(this).data('value'));
-//   var id = $(this).data('value');
-//   var col = $(this).data('col');
-//   var data = $(this).text();
-//   //console.log(obj_data);
-
-//   $.ajax({ url: "/ajax.php?obj_type=" + obj_type,
-//    type: "POST",
-//     data: {
-//       type : "artwork",
-//       col: col,
-//       data : data,
-//       id : id,
-//       oper : "edit",
-//     }
 
 
-// });    
-
-// });    
 
 $(document).on("change", "#gbe_collection_active", function() {
   var checked = $(this).prop('checked');
@@ -489,16 +519,16 @@ function bstArtworkTypeFormatter(value, row, index) {
     default: return '';
   }      
 }
-function bstArtworkStatusFormatter(value, row, index) {
-  switch(parseInt(row.status)) {           
-    case 10: return 'Available';
-    case 20: return 'Reserved';
-    case 30: return 'Sold';
-    case 40: return 'Inactive';
-    case 50: return 'On loan, etc.';
-    default: return '';
-  }      
-}
+// function bstArtworkStatusFormatter(value, row, index) {
+//   switch(parseInt(row.status)) {           
+//     case 10: return 'Available';
+//     case 20: return 'Reserved';
+//     case 30: return 'Sold';
+//     case 40: return 'Inactive';
+//     case 50: return 'On loan, etc.';
+//     default: return '';
+//   }      
+// }
 
 function bstCollectionSubtypeFormatter(value, row, index) {
   switch(parseInt(row.subtype)) {           

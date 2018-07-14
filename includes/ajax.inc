@@ -22,9 +22,9 @@
       $obj_col= $_REQUEST['col'];
       $data= $_REQUEST['data'];
       $obj_data= array('obj_type'=>$obj_type,'obj_id'=>$obj_id,$obj_col=>$data);
-      echo "<pre>"; print_r($obj_data);
+      //echo "<pre>"; print_r($obj_data);
       $result= update_object($obj_type, $obj_data, $obj_id);
-      die(success);
+      die("success");
 }
     
 
