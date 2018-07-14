@@ -298,7 +298,7 @@ $(document).on("focusout", ".edit", function() {
       id : id,
       oper : "edit",
     }
-  }
+  
 });    
 
 });    
