@@ -1802,7 +1802,7 @@
                 "{$tb1}.price" => "*$val*",
                 "{$tb1}.price_option" => "*$val*",
                 "{$tb1}.status" => "*$val1*"
-                );   
+                );  
           }
 
         break;
@@ -1898,8 +1898,7 @@
   	 }
 
     if($_REQUEST['mode']=='edit') {
-     //echo "<pre>";die("in");
-  
+    
     update_object($obj_type, $obj_data, $obj_id);
   
      }
@@ -1912,6 +1911,9 @@
       if(!$options['sort']) $options['sort'] = get_object_sort($obj_type) ?: "{$key} desc";
       
       //echo "<pre>"; print_r($obj_type);
+
+      $_SESSION['search'] = $search; 
+
       $objs = find_objects($obj_type, $search, $options);
 
       $count = count($objs);

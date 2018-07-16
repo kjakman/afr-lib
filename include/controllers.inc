@@ -4143,6 +4143,8 @@ function controller_gallery_backend($app, $options = []) {
       }
       $filter_json = count($filters) ? json_encode($filters) : '';
       $scope->list_url = "/ajax.php?oper=get-rows&obj_type=artwork".($filter_json ? "&filters=".urlencode($filter_json) : '');
+      $list = $scope->list_url;
+      //echo "<pre>"; print_r($list);
       break;
     case "plugin":
       $scope->section = 'plugin';

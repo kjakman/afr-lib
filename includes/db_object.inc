@@ -1320,6 +1320,7 @@ function find_objects($obj_type, $search=array(), $options = array()) {
   list($filters, $values) = search2pdo($search);
 
   $options['values'] = $values;
+  
   if($options['debug_query'] || $_SESSION['debug_db']) {
     $stack = caller_stack();
     echo("search $obj_type in $stack: ".dump($search,true));

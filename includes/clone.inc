@@ -1,21 +1,36 @@
 <?php
-echo "<pre>"; print_r($_REQUEST['row_id']);
+
   //header('Content-type:application/json;charset=utf-8');
 
  $id = $_REQUEST['row_id'];
+ $obj_id= $_REQUEST['id'];
+ $value2= $_REQUEST['value2'];
+ $value3= $_REQUEST['obj_id'];
 
- $name = db_getAll("select * from artwork where id='$id'");
 
-print_r($name->title);
- if($name !== '')
+
+ $obj_datas = db_getAll("select * from artwork where id='$id'");
+
+foreach($obj_datas as $obj_data)
  {
+ $obj_id='';
+$obj_data->title = $obj_data->title.'_'.$value2;
+$obj_data->id='';
+$value2=$value2+1;
 
- $title=$name->title;
+$clone_data =array("obj_data" => $obj_data,"obj_id" => $obj_id,
+                "values" => $value2);
 
- $qs = "INSERT INTO artwork (title) VALUES ($title)";
-        //echo($add."<br>".$qs."<br>");
-        db_query($qs);
+echo json_encode($clone_data);
+	exit();                
+	break;
 
  }
- 
- return $name;
+
+
+
+
+
+
+		
+	

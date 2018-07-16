@@ -288,7 +288,17 @@ $(document).on("focusout", ".edit", function() {
   var id = $(this).data('value');
   var col = $(this).data('col');
   var data = $(this).text();
-  
+
+  if(col=="price" && data==""){
+    $(this).text("0.00");
+  }
+  if(col=="primary_year" && data.length!=4){
+    alert(col);
+    alert(data.length);
+    alert("Year is not proper. Please check");
+    return false;
+  }
+ 
   $.ajax({ url: "/ajax.php?obj_type=" + obj_type,
    type: "POST",
     data: {
@@ -308,6 +318,7 @@ $(document).on("click", "#phide", function() {
   var id = $(this).data('value');
   var obj_type= "artwork";
   var obj_data = $(this).text();
+  // alert(obj_data);
   var col = $(this).data('col');
   //alert(col);
    if(col=='price_option'){ 
@@ -601,10 +612,12 @@ function gallery_backend_ready() {
       if(g_selections.length) {
         var rows = data.rows;
         $.each(rows, function(k, v) {
+
            console.log("id=" + v.id);
            if($.inArray(v.id, g_selections) > -1) $table.bootstrapTable('check', k);
         });
       }
+
       console.log("load sel=" + g_selections.length + " data=", data);      
     });  
     
@@ -670,33 +683,30 @@ function gallery_backend_ready() {
 $(document).on("click", ".clone", function() { 
  
  var row_id = $(this).attr('id');
-
+  var obj_type= "artwork_clone";
+ var value1 = $(this).children().prop('id');
+ var value2 = $(this).children().val();
+ value1 = value1.replace('clone_hidden','');
+ // alert(value2);
   $.ajax({ 
   url: "/clone.php",
    type: "POST",
+    datatype:"json",
     data: {
+      type : obj_type,
       row_id : row_id,
+      value1 : value1,
+      value2 : value2,
     },
-    success: function( result ) {
-      alert(result);
-
-   
+    success: function(result) {
             // console.log("OK, data:", result);
-            response( function( item ) {
-              var name = (item.title);
-              alert(name);
-              return {
-                label: name, // + ", " + item.city,
-                value: name 
-                //value: (item.display_name ? item.display_name : (item.first_name + ' ' + item.last_name)) 
-              }
-            });
-           
+           alert(result);
+               // alert(v.values);
+               // alert(v['values']);
         }
 });    
 
 });  
-
 
 /**
 $(document).ready(function() {  
@@ -714,6 +724,9 @@ $(document).ready(function() {
           $target.html(v);
         }
       }
+    });
+    $.each(totals, function(k, v) {
+      
     });
   });
 });
