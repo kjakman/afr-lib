@@ -1,9 +1,0 @@
-                      
-                      {$data = ["site_id" => $site.id, "obj_type" => "user", "obj_id" => $curator.user_id, "obj_subtype" => $smarty.const.USER_ROLE_CURATOR]}
-                      {$json = $data|@json_encode}
-                      {$link = $smarty.const.PAGE_GALLERY|link:"user":$smarty.const.USER_ROLE_CURATOR}
-                      <li class="photo-grid-container gallery-list-item">
-                        <a href="{$link}{$curator|display_name|slugify}~{$curator.user_id}" class="cms-link gallery-link" data-data='{$json}'><img src="{$curator.user_id|userphoto:'big'}"></a>
-                        <div class="photo-grid-title artinfo"><a href="{$link}{$curator|display_name|slugify}~{$user.id}" class="cms-link gallery-link" data-data='{$json}'> <h2>{$curator.display_name}</h2> <h3>{$curator.city}, {$curator.country|get:countries:name} </h3></a></div>
-                      </li>
-                      

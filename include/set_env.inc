@@ -78,7 +78,7 @@ if($local) {
   $test = $_SESSION['test'] = 1;
 } else {
   $_SESSION['dev'] = $dev = $host_sub == 'dev' ? 1 : 0;
-  $_SESSION['test'] = $test = $host_sub == 'test' ? 1 : 0;
+  $_SESSION['test'] = $test = $host_sub == 'test' || $host_sub == 'vpatina' ? 1 : 0;
   $_SESSION['staging'] = $staging = $host_sub == 'staging' ? 1 : 0;
   $_SESSION['beta'] = $beta = $host_sub == 'beta' ? 1 : 0;
 }
@@ -145,14 +145,13 @@ $minisite = null;
 
 
 
-if($site_id = $config['site_id']) { /** single tenant */
+if($site_id = $_SESSION['site_id'] = $config['site_id']) { /** single tenant */
   //die("site_id=$site_id");
 } else { /** multi tenant */
   $site_id = $_SESSION['site_id'] = env_site_id($site_domain); /** inline switch */
 }
 
 print_log("Set-env: uri={$uri} site_id={$site_id} domain: {$domain}", 'minisite', LOG_LEVEL_ALWAYS);
-
 
 /** this allows for vpatina.com/kerrygroneng or treat www.kerrygroneng.com as vpatina */
 if($msObj = env_minisite($site_domain, $uri)) {

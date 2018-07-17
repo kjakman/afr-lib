@@ -14,6 +14,7 @@
 
   //echo("App Lang1: {$__LANG}<br>");
 
+  /**
   if($_REQUEST['type'] == 'artwork') {
       
       //echo "<pre>"; print_r($obj_data);
@@ -26,7 +27,7 @@
       $result= update_object($obj_type, $obj_data, $obj_id);
       die("success");
 }
-    
+    */
 
   //if($_SESSION['dev'] && $_GET['debug'] == 'cre8ive') $inputVars = $_GET; // allow using GET by setting debug=cre8ive
   //else $inputVars = $_GET;
@@ -1751,11 +1752,12 @@
          }else
 		$val1 = $val;
 		$search[$new_key] =
-          array("{$t1}.id" => "*$val*",
+          array(
+                "{$t1}.id" => "*$val*",
                 "{$t1}.title" => "*$val*",
-                "{$t2}.display_name" => "*$val*",
+                //"{$t2}.display_name" => "*$val*",
 		            "{$t1}.created" => "*$val*",
-              "{$t1}.subtype" => "*$val1*",
+                "{$t1}.subtype" => "*$val1*",
                 "{$t1}.start_date" => "*$val*",
                 "{$t1}.end_date" => "*$val*",
                 "{$t1}.description" => "*$val*");
@@ -1798,7 +1800,7 @@
                 "{$tb1}.short_description" => "*$val*",
                 "{$tb1}.primary_year" => "*$val*",
                 "{$tb1}.technique" => "*$val*",
-                "{$tb2}.name" => "*$val*", 
+                //"{$tb2}.name" => "*$val*", 
                 "{$tb1}.price" => "*$val*",
                 "{$tb1}.price_option" => "*$val*",
                 "{$tb1}.status" => "*$val1*"
@@ -1869,10 +1871,11 @@
             $new_key = DB_LOGICAL_OR . $key1;
            // $new_va .= $val . '|';
     $search[$new_key] =
-          array("{$tbl2}.first_name" => "*$val*", 
-                "{$tbl2}.last_name" => "*$val*", 
-                "{$tbl2}.display_name" => "*$val*", 
-                "{$tbl2}.email_address" => "*$val*", 
+          array(
+                //"{$tbl2}.first_name" => "*$val*", 
+                //"{$tbl2}.last_name" => "*$val*", 
+                //"{$tbl2}.display_name" => "*$val*", 
+                //"{$tbl2}.email_address" => "*$val*", 
                 "{$tbl1}.id" => "*$val*", 
                 "{$tbl1}.username" => "*$val*",
                 "{$tbl1}.roles" => "*$val*");   
