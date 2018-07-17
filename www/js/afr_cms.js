@@ -3401,7 +3401,6 @@ function find_objects(obj_type, search, sort, fields, limit, offset, handler) {
   if(offset) ajax_url += '&offset=' + offset;
   if(handler) ajax_url += '&handler=' + handler;
 
-  alert(ajax_url);
   $dialog.load(ajax_url, data, function (responseText) {
     alert(dump(responseText));
     //.ckeditor();

@@ -1912,7 +1912,7 @@
       
       //echo "<pre>"; print_r($obj_type);
 
-      $_SESSION['search'] = $search; 
+      //$_SESSION['search'] = $search; 
 
       $objs = find_objects($obj_type, $search, $options);
 

@@ -680,33 +680,44 @@ function gallery_backend_ready() {
 // Neelamegam_clone
 
 
-$(document).on("click", ".clone", function() { 
+$(document).on("click", ".clone", function() {  
  
  var row_id = $(this).attr('id');
-  var obj_type= "artwork_clone";
+ row_id = row_id.replace('clone','');
+  var obj_type= "artwork";
  var value1 = $(this).children().prop('id');
- var value2 = $(this).children().val();
  value1 = value1.replace('clone_hidden','');
- // alert(value2);
-  $.ajax({ 
+ var value2 = $(this).children().val();
+ 
+
+ $.ajax({ 
   url: "/clone.php",
    type: "POST",
     datatype:"json",
     data: {
-      type : obj_type,
-      row_id : row_id,
-      value1 : value1,
-      value2 : value2,
-    },
-    success: function(result) {
-            // console.log("OK, data:", result);
-           alert(result);
-               // alert(v.values);
-               // alert(v['values']);
-        }
-});    
+        type : obj_type,
+        row_id : row_id,
+        value1 : value1,
+        value2 : value2,
+       },
+        success: function( result ) {
+            
+           var data = JSON.parse(result);
 
-});  
+          $.each(data, function(index, el) { 
+            if(index=="values")
+            {
+            $('#clone_hidden'+row_id).val(el);
+             var valuehidden=el;
+            }
+alert(valuehidden);
+            });
+        }
+      }); 
+  
+}); 
+
+
 
 /**
 $(document).ready(function() {  
