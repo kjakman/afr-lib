@@ -1,4 +1,5 @@
 <?php
+session_start();
 //echo "<pre>"; print_r($_REQUEST);
   //header('Content-type:application/json;charset=utf-8');
   include_once('set_env.inc');
@@ -17,7 +18,7 @@
   /**
   if($_REQUEST['type'] == 'artwork') {
       
-      //echo "<pre>"; print_r($obj_data);
+      echo "<pre>"; print_r($_REQUEST['col']);
       $obj_type= $_REQUEST['type'];
       $obj_id= $_REQUEST['id'];
       $obj_col= $_REQUEST['col'];
@@ -1804,9 +1805,8 @@
                 "{$tb1}.price" => "*$val*",
                 "{$tb1}.price_option" => "*$val*",
                 "{$tb1}.status" => "*$val1*"
-                );  
+                ); 
           }
-
         break;
       case 'gallery':
         if($val) $search[DB_LOGICAL_OR] = 
@@ -1900,29 +1900,19 @@
 	unset($search['id']);
   	 }
 
-    if($_REQUEST['mode']=='edit') {
-    
-    update_object($obj_type, $obj_data, $obj_id);
-  
-     }
-
       print_log("get-rows {$obj_type} GET: ".dump($_GET, true), 'debug', LOG_LEVEL_TEST);
       print_log("get-rows {$obj_type} filters: ".dump($filters, true), 'debug', LOG_LEVEL_TEST);
       print_log("get-rows {$obj_type} search: ".dump($search, true), 'debug', LOG_LEVEL_TEST);
       
       $key = get_object_key($obj_type);      
       if(!$options['sort']) $options['sort'] = get_object_sort($obj_type) ?: "{$key} desc";
-      
-      //echo "<pre>"; print_r($obj_type);
-
-      //$_SESSION['search'] = $search; 
+      //$_SESSION['search']= $search;
 
       $objs = find_objects($obj_type, $search, $options);
-
+      
       $count = count($objs);
       print_log("get-rows $obj_type val=$val count=$count", 'debug', LOG_LEVEL_TEST);
       //print_log("First:".dump($objs[0], true), 'debug', LOG_LEVEL_TEST);
-      
       $extra_count = 0;
       /** post processing - expensive */
       switch($obj_type) {

@@ -303,6 +303,7 @@ function gallery_find_user_collection($siteObj_or_id, $userObj_or_id, $options='
   $siteObj = any2obj('site', $siteObj_or_id);
   $site_id = $siteObj->id;
   $userObj = any2obj('user', $userObj_or_id);
+  print_log("gallery_find_user_collection user={$userObj->id}", 'gallery', LOG_LEVEL_ALWAYS);
   if(!$userObj) {
     print_log("Could not find user for obj/id:".dump($userObj_or_id, true), 'gallery', LOG_LEVEL_ALWAYS);
     print_log("Stack: ".caller_stack(), 'gallery', LOG_LEVEL_ALWAYS);

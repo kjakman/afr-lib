@@ -299,7 +299,7 @@ $(document).on("focusout", ".edit", function() {
     return false;
   }
  
-  $.ajax({ url: "/ajax.php?obj_type=" + obj_type,
+  $.ajax({ url: "/dynamic-edit.php?obj_type=" + obj_type,
    type: "POST",
     data: {
       type : "artwork",
@@ -333,7 +333,7 @@ $(document).on("click", "#phide", function() {
             var obj_type= "artwork";
             var col = $('#phide').data('col');
             $('.select'+value1).show(value);
-              $.ajax({ url: "/ajax.php?obj_type=" + obj_type,
+              $.ajax({ url: "/dynamic-edit.php?obj_type=" + obj_type,
                   type: "POST",
                   data: {
                   type : "artwork",
@@ -381,7 +381,7 @@ $(document).on("click", "#status", function() {
             var obj_type= "artwork";
             var col = $('#status').data('col');
             $('.select1'+value1).show(value);
-              $.ajax({ url: "/ajax.php?obj_type=" + obj_type,
+              $.ajax({ url: "/dynamic-edit.php?obj_type=" + obj_type,
                   type: "POST",
                   data: {
                   type : "artwork",
@@ -411,11 +411,6 @@ $(document).on("click", "#status", function() {
       });
     }            
 });
-
-
-
-
-
 
 $(document).on("change", "#gbe_collection_active", function() {
   var checked = $(this).prop('checked');
@@ -678,44 +673,44 @@ function gallery_backend_ready() {
 
 
 // Neelamegam_clone
+// From list-base.html to clone.php
 
-
-$(document).on("click", ".clone", function() {  
- 
- var row_id = $(this).attr('id');
- row_id = row_id.replace('clone','');
-  var obj_type= "artwork";
- var value1 = $(this).children().prop('id');
- value1 = value1.replace('clone_hidden','');
- var value2 = $(this).children().val();
- 
-
- $.ajax({ 
-  url: "/clone.php",
-   type: "POST",
-    datatype:"json",
-    data: {
-        type : obj_type,
-        row_id : row_id,
-        value1 : value1,
-        value2 : value2,
-       },
+$(document).on("click", ".clone_modal", function() {  
+  var row_id = $(this).attr('id');
+  row_id = row_id.replace('clone_modal','');
+  $('.modal-body').html('<p style="text-align:center;">Are you sure want to clone the Data</p><div style="margin-left: 200px;"><a type="button" class="clone btn btn-success" id="clone'+row_id + '" class="clone" style="margin-right: 25px;">Clone<input type="hidden" value="1" id="clone_hidden'+row_id +'" class="clone_hidden"/></a><button type="button" class="btn btn-danger" data-dismiss="modal" style="margin-right: 25px;">No</button></div>');
+    $(document).on("click", ".clone", function() {  
+      var row_id = $(this).attr('id');
+      row_id = row_id.replace('clone','');
+      var obj_type= "artwork";
+      var cloneval= "clone_id";
+      var col= 1;
+      var value1 = $(this).children().prop('id');
+      value1 = value1.replace('clone_hidden','');
+      var value2 = $(this).children().val();
+      $.ajax({ 
+        url: "/clone.php",
+        type: "POST",
+        datatype:"json",
+        data: {
+          type : obj_type,
+          row_id : row_id,
+          col : col,
+          value1 : value1,
+          value2 : value2,
+          cloneval : cloneval,
+        },
         success: function( result ) {
-            
-           var data = JSON.parse(result);
-
+          var data = JSON.parse(result);
           $.each(data, function(index, el) { 
-            if(index=="values")
-            {
-            $('#clone_hidden'+row_id).val(el);
-             var valuehidden=el;
+            if(index=="values"){
+              $('#clone_hidden'+row_id).val(el);
             }
-alert(valuehidden);
-            });
-        }
+          }); 
+          }
       }); 
-  
-}); 
+    });
+  });
 
 
 
