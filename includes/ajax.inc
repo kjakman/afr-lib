@@ -18,7 +18,7 @@ session_start();
   /**
   if($_REQUEST['type'] == 'artwork') {
       
-      echo "<pre>"; print_r($_REQUEST['col']);
+      //echo "<pre>"; print_r($obj_data);
       $obj_type= $_REQUEST['type'];
       $obj_id= $_REQUEST['id'];
       $obj_col= $_REQUEST['col'];
@@ -151,6 +151,14 @@ session_start();
   } else {
     $obj_data = $_GET;
   }
+  $searchObj_data=$obj_data;
+  $_SESSION['searchObjtype']=$searchObj_data['obj_type'];
+  $_SESSION['searchFilters']=$searchObj_data['filters'];
+  $_SESSION['searchSearch']=$searchObj_data['search'];
+  $_SESSION['searchOrder']=$searchObj_data['order'];
+  $_SESSION['searchOffset']=$searchObj_data['offset'];
+  $_SESSION['searchLimit']=$searchObj_data['limit'];
+  
 
   $options =  $_GET['options'] ? json_decode(htmlspecialchars_decode($_GET['options']), true) : array();
   $errors = $messages = array();
@@ -1675,6 +1683,9 @@ session_start();
   
         
       $val = trim($obj_data['search']);
+//search_bar image-form
+      $_SESSION['search'] = $val;
+
 	$new_value = explode(' ',$val);
       switch($obj_type) {
       case 'minisite':

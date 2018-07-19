@@ -1318,6 +1318,7 @@ function find_objects($obj_type, $search=array(), $options = array()) {
   }
   list($filters, $values) = search2pdo($search);
   $options['values'] = $values;
+  
   if($options['debug_query'] || $_SESSION['debug_db']) {
     $stack = caller_stack();
     echo("search $obj_type in $stack: ".dump($search,true));
@@ -1329,7 +1330,6 @@ function find_objects($obj_type, $search=array(), $options = array()) {
     print_log("values: ".dump($values,true), 'debug', LOG_LEVEL_TEST);    
   }
   return get_objects($obj_type, $filters, $options);
-
 }                                      
 
 
@@ -1359,6 +1359,7 @@ function get_objects($obj_type, $filters=array(), $options = array()) {
   // add mandatory class filters
   $class_filters = class_filters($obj_type) ?: [];
   if($class_filters) $filters = array_merge($class_filters, $filters); 
+  
   if($filter_str = is_array($filters) ? implode(" AND ", $filters) : $filters) $query_str .= strpos($query_str, ' WHERE ') ? " AND ($filter_str)" : " WHERE $filter_str";
   
   $having = isset($options['having']) ? $options['having'] : ''; // used in where clause for computed columns, e.g "concat(a,b,c) as foo"
