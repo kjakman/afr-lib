@@ -1,5 +1,4 @@
 <?php
-session_start();
 //echo "<pre>"; print_r($_REQUEST);
   //header('Content-type:application/json;charset=utf-8');
   include_once('set_env.inc');
@@ -151,14 +150,6 @@ session_start();
   } else {
     $obj_data = $_GET;
   }
-  $searchObj_data=$obj_data;
-  $_SESSION['searchObjtype']=$searchObj_data['obj_type'];
-  $_SESSION['searchFilters']=$searchObj_data['filters'];
-  $_SESSION['searchSearch']=$searchObj_data['search'];
-  $_SESSION['searchOrder']=$searchObj_data['order'];
-  $_SESSION['searchOffset']=$searchObj_data['offset'];
-  $_SESSION['searchLimit']=$searchObj_data['limit'];
-  
 
   $options =  $_GET['options'] ? json_decode(htmlspecialchars_decode($_GET['options']), true) : array();
   $errors = $messages = array();
@@ -296,7 +287,7 @@ session_start();
       //if(isset($obj_data['type']) && !$type) json_error("Please select a category."); 
       //if(isset($obj_data['status']) && !$status) json_error("Please select a status."); 
       if(isset($obj_data['artist_ids']) && !count(json_decode($obj_data['artist_ids']))) json_error("Please select at least one artist."); 
-      //echo "<pre>"; print_r($obj_data);
+      //echo "<pre>"; print_r($id);
       /**
       if($error = check_required($obj_data, 
           ['title' => "Title", 'primary_year' => "Primary Year", 'technique' => "Technique"])) 
@@ -320,6 +311,20 @@ session_start();
       $result->message = "OK. Saved artwork \"{$obj->title}\"";
       
       echo(json_encode($result));exit;      
+      break;
+      
+      case 'save-minisite':
+      extract($obj_data);
+      //echo "<pre>"; print_r($obj_data);
+      
+      if($obj_id) {
+        list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
+        echo "updated";
+      } else {
+        list($id, $errors) = add_object($obj_type, $obj_data);
+        echo "added";
+      }       
+  
       break;
       
     case 'save-event':
@@ -1683,9 +1688,6 @@ session_start();
   
         
       $val = trim($obj_data['search']);
-//search_bar image-form
-      $_SESSION['search'] = $val;
-
 	$new_value = explode(' ',$val);
       switch($obj_type) {
       case 'minisite':
@@ -1816,8 +1818,9 @@ session_start();
                 "{$tb1}.price" => "*$val*",
                 "{$tb1}.price_option" => "*$val*",
                 "{$tb1}.status" => "*$val1*"
-                ); 
+                );  
           }
+
         break;
       case 'gallery':
         if($val) $search[DB_LOGICAL_OR] = 
@@ -1911,19 +1914,29 @@ session_start();
 	unset($search['id']);
   	 }
 
+    if($_REQUEST['mode']=='edit') {
+    
+    update_object($obj_type, $obj_data, $obj_id);
+  
+     }
+
       print_log("get-rows {$obj_type} GET: ".dump($_GET, true), 'debug', LOG_LEVEL_TEST);
       print_log("get-rows {$obj_type} filters: ".dump($filters, true), 'debug', LOG_LEVEL_TEST);
       print_log("get-rows {$obj_type} search: ".dump($search, true), 'debug', LOG_LEVEL_TEST);
       
       $key = get_object_key($obj_type);      
       if(!$options['sort']) $options['sort'] = get_object_sort($obj_type) ?: "{$key} desc";
-      //$_SESSION['search']= $search;
+      
+      //echo "<pre>"; print_r($obj_type);
+
+      //$_SESSION['search'] = $search; 
 
       $objs = find_objects($obj_type, $search, $options);
-      
+
       $count = count($objs);
       print_log("get-rows $obj_type val=$val count=$count", 'debug', LOG_LEVEL_TEST);
       //print_log("First:".dump($objs[0], true), 'debug', LOG_LEVEL_TEST);
+      
       $extra_count = 0;
       /** post processing - expensive */
       switch($obj_type) {
