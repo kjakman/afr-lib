@@ -151,17 +151,6 @@
     $obj_data = $_GET;
   }
 
-  $searchObj_data=$obj_data;
-  $_SESSION['searchObjtype']=$searchObj_data['obj_type'];
-  $filter_search =  json_encode($searchObj_data['filters']);
-  $filter_url=urlencode($filter_search);
-  $_SESSION['searchFilters']=$filter_url;
-  $_SESSION['searchSearch']=$searchObj_data['search'];
-  $_SESSION['searchOrder']=$searchObj_data['order'];
-  $_SESSION['searchOffset']=$searchObj_data['offset'];
-  $_SESSION['searchLimit']=$searchObj_data['limit'];
-  $_SESSION['searches']=$searchObj_data['_'];
-
   $options =  $_GET['options'] ? json_decode(htmlspecialchars_decode($_GET['options']), true) : array();
   $errors = $messages = array();
 

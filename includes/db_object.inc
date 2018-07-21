@@ -829,7 +829,7 @@ function get_object_sort_clause($type) {
 //function add_object($obj_type, $data, $parent_id=0, $preset_id=0, $parent_type='') {
 function add_object($obj_type, $data, $options = array()) {
   //echo("add_object $obj_type").dump($data);die();
-  //echo "<pre>"; print_r($options);
+  //echo "<pre>"; print_r($data);
   $data = (array) $data;
   $child_array = array(); // array of arrays [$child_type, $child_id]
   $errors = $child_errors = array();
@@ -1749,7 +1749,7 @@ function save_object_query($obj_type, $data, $options = array()) {
   
   $id = isset($options['id']) ? $options['id'] : 0; // insert or update
   $preset_id = isset($options['preset_id']) ? $options['preset_id'] : 0; // for inserts: not using db_sequence but preset ID
-  //echo "<pre>"; print_r($preset_id);
+//echo "save object<pre>"; print_r($preset_id);
   $parent_id = $options['parent_id'] ?: 0;
   $parent_type = $options['parent_type'] ?: '';
   $ids = array();
@@ -2039,9 +2039,11 @@ function save_object_query($obj_type, $data, $options = array()) {
   } else { // insert query
     $action = 'insert';
     if($preset_id) {
+    //echo "if <pre>"; print_r($preset_id);
       $id = $preset_id;
     } else {
       $id = nextId($table);
+      echo "else id <pre>"; print_r($id);
       if(!$id) return array(0, array("No ID sequence for $obj_type and no preset id"));
     }
   }
