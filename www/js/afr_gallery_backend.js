@@ -60,6 +60,16 @@ function gbe_artwork_handler(params, data) {
   }
 }
 
+function gbe_artwork_handler(params, data) {
+  console.log("gbe_artwork_handler. params:", params);
+  console.log("gbe_artwork_handler. next="+ data.next_tab + " data:", data);
+  if(data.id) {    
+    var tab = data.next_tab || 'details';
+    var href = '/backend/artwork/' + data.id + '/edit/' + tab;
+    var $link = $("#back");
+    soft_load($link, "#search-container", href);
+  }
+}
 
 function gbe_network_handler(params, data) { //pradeepa
   console.log("gbe_network_handler. data", data);
@@ -67,6 +77,17 @@ function gbe_network_handler(params, data) { //pradeepa
   if(data.id) {    
     var tab = data.next_tab || 'about';
     var href = '/backend/profile/' + data.id + '/edit/' + tab;
+    var $link = $("#submit");
+    soft_load($link, "#subview-container", href);
+  }
+}
+
+function gbe_website_handler(params, data) { //pradeepa
+  console.log("gbe_website_handler. data", data);
+  console.log("gbe_website_handler. next="+ data.next_tab + " data:", data);
+  if(data.id) {    
+    var tab = data.next_tab || 'appearance';
+    var href = '/backend/website/' + data.id + '/edit/' + tab;
     var $link = $("#submit");
     soft_load($link, "#subview-container", href);
   }
@@ -259,19 +280,6 @@ $(document).on("click", "#sel_add", function() {
   }
 });
 
-$(document).on("click", "#sel_add", function() {
-  $link = $(this);
-  console.log("sel add ids=", g_selections);
-  var collection_id = $link.data('target_id');
-  if(collection_id && g_selections.length) {
-    var href = '/backend/exhibition/' + collection_id + '/edit/media?' + add_what + '=' + g_selections.join();
-    var $link = $("#submit");
-    console.log("Calling soft-load: href=" + href);
-    soft_load($link, "#subview-container", href);
-  } else {
-  }
-});
-
 $(document).on("click", "#sel_show", function() {
   console.log("sel show ids=", g_selections);
   $("#table").bootstrapTable('refresh', {query: {id: g_selections}, pageSize: 100});  
@@ -283,9 +291,11 @@ $(document).on("click", "#sel_del", function() { //Bala
                 field: 'id',
                 //~ values: g_selections
             });
-  $("#table").bootstrapTable('refresh', {query: {id: g_selections, mode: 'del'}, pageSize: 100});
+  $("#table").bootstrapTable('refresh', {query: {id: g_selections, mode: 'del'}, pageSize: 10});
    $("#selection").hide();
 });
+
+//dynamic table edit on artwork module 
 
 $(document).on("click", ".edit", function() { 
   $(this).prop('contenteditable', true);
@@ -323,7 +333,7 @@ $(document).on("focusout", ".edit", function() {
       oper : "edit",
     }
   
-});    
+  });    
 
 });    
 
@@ -332,15 +342,13 @@ $(document).on("click", "#phide", function() {
   var id = $(this).data('value');
   var obj_type= "artwork";
   var obj_data = $(this).text();
-  // alert(obj_data);
   var col = $(this).data('col');
-  //alert(col);
    if(col=='price_option'){ 
       $('.phide'+id).hide();
       $('#shows'+id).show();
       $('#select').remove();      
-      $('#shows'+id).append('<select id= "select" class="select'+id+'"><option id= "option" value="1">Show price</option><option  id= "option" value="0">Hide price</option><option  id= "option" value="-1">Price on enquiry</option></select>');
-      $(document).on("click", "#select", function() {
+      $('#shows'+id).append('<select id= "select" class="select'+id+'"><option>Select</option><option id= "option" value="1">Show price</option><option  id= "option" value="0">Hide price</option><option  id= "option" value="-1">Price on enquiry</option></select>');
+      $(document).on("change", "#select", function() {
             var value1 = $(this).parent().prop('id');
             value1 = value1.replace('shows','');
             var value = $('#shows'+value1+' #select').val();
@@ -376,7 +384,7 @@ $(document).on("click", "#phide", function() {
 });
 
 $(document).on("click", "#status", function() { 
-   $('.status'+id).show();
+  $('.status'+id).show();
   var id = $(this).data('value');
   var obj_type= "artwork";
   var obj_data = $(this).text();
@@ -386,9 +394,9 @@ $(document).on("click", "#status", function() {
       $('.status'+id).hide();
       $('#cstatus'+id).show();
       $('#select1').remove();      
-      $('#cstatus'+id).append('<select id= "select1" class="select1'+id+'"><option id= "option" value="10">Available</option><option  id= "option" value="20">Reserved</option><option  id= "option" value="30">Sold</option><option  id= "option" value="40">Inactive</option><option  id= "option" value="50">On loan, etc.</option></select>');
+      $('#cstatus'+id).append('<select id= "select1" class="select1'+id+'"><option>Select</option><option id= "option" value="10">Available</option><option  id= "option" value="20">Reserved</option><option  id= "option" value="30">Sold</option><option  id= "option" value="40">Inactive</option><option  id= "option" value="50">On loan, etc.</option></select>');
 
-      $(document).on("click", "#select1", function() {
+      $(document).on("change", "#select1", function() {
             var value1 = $(this).parent().prop('id');
             value1 = value1.replace('cstatus','');
             var value = $('#cstatus'+value1+' #select1').val();
@@ -458,7 +466,7 @@ $(document).on("click", $("#sel_show"), function() {
 $(document).on('click', 'a', function(e) {
   $link = $(this);
   var href = $link.attr('href');
-  alert(href);
+  
   if($link.hasClass('ajax-loader') || $link.hasClass('subview-nav-link')) {
     console.log("click on A ajax-loader or subview-nav-link, delegate");
     return;
@@ -523,22 +531,22 @@ function responseHandler(res) {
   });
   return res;
 }
-function bstArtworkTypeFormatter(value, row, index) {
-  switch(parseInt(row.type)) {
-    case 10: return 'Photography';
-    case 11: return 'Print';
-    case 20: return 'Painting';
-    case 21: return 'Drawing';
-    case 22: return 'Mixed Media on paper/canvas';
-    case 30: return 'Sculpture';
-    case 40: return 'Cast (Bronze, etc)';
-    case 50: return 'Film & Video';
-    case 60: return 'Installation';
-    case 70: return 'Performance';
-    case 99: return 'Other';
-    default: return '';
-  }      
-}
+// function bstArtworkTypeFormatter(value, row, index) {
+//   switch(parseInt(row.type)) {
+//     case 10: return 'Photography';
+//     case 11: return 'Print';
+//     case 20: return 'Painting';
+//     case 21: return 'Drawing';
+//     case 22: return 'Mixed Media on paper/canvas';
+//     case 30: return 'Sculpture';
+//     case 40: return 'Cast (Bronze, etc)';
+//     case 50: return 'Film & Video';
+//     case 60: return 'Installation';
+//     case 70: return 'Performance';
+//     case 99: return 'Other';
+//     default: return '';
+//   }      
+// }
 // function bstArtworkStatusFormatter(value, row, index) {
 //   switch(parseInt(row.status)) {           
 //     case 10: return 'Available';

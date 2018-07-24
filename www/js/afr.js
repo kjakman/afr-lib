@@ -7051,6 +7051,7 @@ function ajaxSubmit(params) {
 
       
       var result = parse_json(responseText);
+      //console.log("result val",result);
       if(!result) {
         result = {'success':0, 'error':'invalid result: ' + responseText};
         console.log("res=", responseText);

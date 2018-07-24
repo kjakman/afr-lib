@@ -151,17 +151,6 @@
     $obj_data = $_GET;
   }
 
-  $searchObj_data=$obj_data;
-  $_SESSION['searchObjtype']=$searchObj_data['obj_type'];
-  $filter_search =  json_encode($searchObj_data['filters']);
-  $filter_url=urlencode($filter_search);
-  $_SESSION['searchFilters']=$filter_url;
-  $_SESSION['searchSearch']=$searchObj_data['search'];
-  $_SESSION['searchOrder']=$searchObj_data['order'];
-  $_SESSION['searchOffset']=$searchObj_data['offset'];
-  $_SESSION['searchLimit']=$searchObj_data['limit'];
-  $_SESSION['searches']=$searchObj_data['_'];
-
   $options =  $_GET['options'] ? json_decode(htmlspecialchars_decode($_GET['options']), true) : array();
   $errors = $messages = array();
 
@@ -327,11 +316,6 @@
       case 'save-minisite':
       extract($obj_data);
 
-      print_log("save-minisite: type: {$obj_type} id: {$obj_id} data:".dump($obj_data,true), 'gallery', LOG_LEVEL_TEST);
-      //if(isset($obj_data['type']) && !$type) json_error("Please select a category."); 
-      //if(isset($obj_data['status']) && !$status) json_error("Please select a status."); 
-      if(isset($obj_data['artist_ids']) && !count(json_decode($obj_data['artist_ids']))) json_error("Please select at least one artist."); 
-      //echo "<pre>"; print_r($id);
       /**
       if($error = check_required($obj_data, 
           ['name' => "name", 'type' => "type", 'domain' => "domain"])) 
@@ -339,10 +323,10 @@
       */  
       if($obj_id) {
         list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
-        echo "updated";
+        print_log("save-ministe: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
       } else {
         list($id, $errors) = add_object($obj_type, $obj_data);
-        echo "added";
+        print_log("save-minisite: added: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
       }              
           
       if($errors) json_error($errors);

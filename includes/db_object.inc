@@ -858,7 +858,7 @@ function add_object($obj_type, $data, $options = array()) {
   }
   
   if($child_errors) return array(0, $child_errors, $messages);
-echo "<pre>"; print_r($options);
+//echo "<pre>"; print_r($options);
   list($id, $errors, $messages) = save_object_query($obj_type, $data, $options);
   
   if($id && count($child_array)) { // success, update children to point to parent
@@ -1749,7 +1749,7 @@ function save_object_query($obj_type, $data, $options = array()) {
   
   $id = isset($options['id']) ? $options['id'] : 0; // insert or update
   $preset_id = isset($options['preset_id']) ? $options['preset_id'] : 0; // for inserts: not using db_sequence but preset ID
-//echo "save object<pre>"; print_r($preset_id);
+  //echo "<pre>"; print_r($preset_id);
   $parent_id = $options['parent_id'] ?: 0;
   $parent_type = $options['parent_type'] ?: '';
   $ids = array();
@@ -2039,11 +2039,9 @@ function save_object_query($obj_type, $data, $options = array()) {
   } else { // insert query
     $action = 'insert';
     if($preset_id) {
-    //echo "if <pre>"; print_r($preset_id);
       $id = $preset_id;
     } else {
       $id = nextId($table);
-      echo "else id <pre>"; print_r($id);
       if(!$id) return array(0, array("No ID sequence for $obj_type and no preset id"));
     }
   }
