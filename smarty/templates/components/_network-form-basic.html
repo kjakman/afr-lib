@@ -95,7 +95,7 @@
                   <span class="input-group-addon"><i class="fa fa-map-marker"></i></span>
                   <input name="address" id="address" class="form-control geocomplete" placeholder="123 Main street, New York" 
                          type="text" value="{$profile.address}"/>
-                  {include file="/var/www/html/test.vpatina.com/smarty/templates/components/_geocomplete-fields.html" }                          
+                         {{"include": "_geocomplete-fields.html"}}                     
                 </div>
               </div>
             </div>                             
@@ -128,7 +128,7 @@
                   <label>Country</label>
                   <select name="country" data-value="{$profile.country}" class="form-control auto-select" autofocus="autofocus" autocorrect="off" autocomplete="off">
                     <option value=""></option>
-                    {include file="/var/www/html/test.vpatina.com/smarty/templates/components/_countries.html" }
+                    {{"include": "_countries.html"}}
                   </select>
                 </div>
                 
