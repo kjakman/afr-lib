@@ -97,7 +97,7 @@ function gbe_artists_tagit() {
   console.log("gbe_artists_tagit");
   $("#artistTags").tagit({
     allowSpaces: true,
-    placeholderText: "Type name",
+    placeholderText: "Type artist name",
     allowDuplicates: false,
     //singleField: true,
     //singleFieldNode: $("#artist_ids"),
