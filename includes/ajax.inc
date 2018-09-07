@@ -1923,9 +1923,10 @@
       }
 
      if($mode = $obj_data['mode']) {
-	//TODO need to update the softdelete column unsing the ids
-	delete_objects($obj_type,$ids); // need to update the softdelete db_object.inc file
-	unset($search['id']);
+    	//TODO need to update the softdelete column using the ids
+      
+    	delete_objects($obj_type,$ids); // need to update the softdelete db_object.inc file
+    	unset($search['id']);
   	 }
 
     if($_REQUEST['mode']=='edit') {

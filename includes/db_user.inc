@@ -918,7 +918,6 @@ function user_artist_list($userObj_or_id, $options = array()) {
       if($edit == 'edit') $artist_ids[] = $mapObj->host_user_id;
     }
   }
-  
   return $artist_ids;
 }
 

@@ -285,7 +285,7 @@ $(document).on("click", "#sel_show", function() {
   $("#table").bootstrapTable('refresh', {query: {id: g_selections}, pageSize: 100});  
 });
 
-$(document).on("click", "#sel_del", function() { //Bala
+$(document).on("click", "#sel_del_success", function() { //Bala
   console.log("sel Del ids=", g_selections);
     $('#table').bootstrapTable('remove', {
                 field: 'id',
@@ -294,6 +294,7 @@ $(document).on("click", "#sel_del", function() { //Bala
   $("#table").bootstrapTable('refresh', {query: {id: g_selections, mode: 'del'}, pageSize: 10});
    $("#selection").hide();
 });
+
 
 //dynamic table edit on artwork module 
 
