@@ -315,30 +315,26 @@
 
       case 'save-minisite':
       extract($obj_data);
+      $user = $user_id;
+      $val = $tags;
+      $host_user_id = explode('|',$val);
+      
+      $data = db_getAll("select * from user_map where host_user_id='$host_user_id[1]'");
 
-      /**
-      if($error = check_required($obj_data, 
-          ['name' => "name", 'type' => "type", 'domain' => "domain"])) 
-          json_error("Missing: ".implode(', ', $error));
-      */  
-      if($obj_id) {
-        list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
-        print_log("save-ministe: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
-      } else {
-        list($id, $errors) = add_object($obj_type, $obj_data);
-        print_log("save-minisite: added: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
-      }              
+      if($data){
+        foreach($data as $datas){
+          $datas->user_id = $user;
+          $result= update_object('user_map', $datas, $datas->id);
+          $media = db_getAll("select * from media_collection where artist_ids='$user'");
+          echo <pre>; print_r($media);
           
-      if($errors) json_error($errors);
+        }
+
+      }else{
+
+      }
       
-      $obj = get_object($obj_type, $id);
-      $obj->next_tab = $obj_data['next_tab'];
-      
-      $result->success = 1;
-      $result->data = $obj;
-      $result->message = "OK. Saved save-minisite \"{$obj->title}\"";
-      
-      echo(json_encode($result));exit;      
+
       break;
       
     case 'save-event':

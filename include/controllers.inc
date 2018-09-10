@@ -113,10 +113,9 @@ function controller_minisite($app, $options = []) {
       foreach($artist_ids as $artist_id) {
         $uObj = get_user($artist_id);    
         
-        /** For an artist to show on Artists page, an active collection needs to exist of type exhibition with artist_id and no start date */
         $colSearch = ['user_id' => $user_id, 'artist_id' => $uObj->id, 'active' => 1, 'type' => COLLECTION_TYPE_EXHIBITION, 'start_date' => ''];
         $collectionObj = find_object('media_collection', $colSearch);
-        //dump($collectionObj->id);
+        //dump($user_id);
         print_log("artist {$uObj->display_name} ({$artist_id}) id={$collectionObj->id} type={$collectionObj->type} title={$collectionObj->title}", 'debug', LOG_LEVEL_TEST);
         
         if(!$collectionObj) {

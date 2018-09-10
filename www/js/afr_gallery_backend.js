@@ -435,6 +435,11 @@ $(document).on("click", "#status", function() {
     }            
 });
 
+$(document).on("click", "#url", function() {
+  var id = $(this).data('value');
+
+});
+
 $(document).on("change", "#gbe_collection_active", function() {
   var checked = $(this).prop('checked');
   $cbs = $('.gbe-visibility-row');
@@ -734,7 +739,6 @@ $(document).on("click", ".clone_modal", function() {
       }); 
     });
   });
-
 
 
 /**
