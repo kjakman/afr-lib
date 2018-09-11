@@ -313,42 +313,32 @@
       echo(json_encode($result));exit;      
       break;
 
-    case 'save-minisite':
+      case 'save-minisite':
       extract($obj_data);
       $user = $user_id;
-      $host_id = explode('|',$tags);
+      $val = $tags;
+      $host_id = explode('|',$val);
       
       $data = db_getAll("select * from user_map where host_user_id='$host_id[1]'");
 
       if($data){
         foreach($data as $datas){
           $datas->user_id = $user;
-          $update_data= update_object('user_map', $datas, $datas->id);
+          $result= update_object('user_map', $datas, $datas->id);
           $media = db_getAll("select * from media_collection where artist_id='$host_id[1]' AND active= '1' AND type='120' AND start_date=''");
-          if($media){
-            foreach($media as $medias){
-              $medias->user_id= $user;
-              $result= update_object('media_collection', $medias, $medias->id);
-            }  
-          }
-          else{
-            json_error("No medias found");
-          }
+          foreach($media as $medias){
+            $medias->user_id= $user;
+            echo "<pre>"; print_r($medias->user_id);
+            print_r($medias->id);
+            $result= update_object('media_collection', $medias, $medias->id);
+          }  
         }
 
-      }
-      else{
-        $permdata =['vault' => 'edit', 'profile' => 'edit', 'account' => 'edit', 'login' => 'full'];
-        $permJson = json_encode($permData);
-        $data = ["host_user_id" => $host_id[1], "user_id" => $user_id, "site_id" => $site_id, "permissions" => $permJson];
-        $add_data = add_object('user_map', $data);
-      }
+      }else{
 
-      $result->success = 1;
-      $result->data = $result;
-      $result->message = "OK. Artist Viewed on homepage ;
-      echo(json_encode($result));
-      exit;
+      }
+      
+
       break;
       
     case 'save-event':
