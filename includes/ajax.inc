@@ -1,5 +1,4 @@
 <?php
-//echo "<pre>"; print_r($_REQUEST);
   //header('Content-type:application/json;charset=utf-8');
   include_once('set_env.inc');
   $timer['set_env'] = microtime(true);
@@ -14,20 +13,18 @@
 
   //echo("App Lang1: {$__LANG}<br>");
 
-  /**
+  
   if($_REQUEST['type'] == 'artwork') {
       
-      //echo "<pre>"; print_r($obj_data);
       $obj_type= $_REQUEST['type'];
       $obj_id= $_REQUEST['id'];
       $obj_col= $_REQUEST['col'];
       $data= $_REQUEST['data'];
       $obj_data= array('obj_type'=>$obj_type,'obj_id'=>$obj_id,$obj_col=>$data);
-      //echo "<pre>"; print_r($obj_data);
       $result= update_object($obj_type, $obj_data, $obj_id);
       die("success");
 }
-    */
+    
 
   //if($_SESSION['dev'] && $_GET['debug'] == 'cre8ive') $inputVars = $_GET; // allow using GET by setting debug=cre8ive
   //else $inputVars = $_GET;
@@ -313,12 +310,13 @@
       echo(json_encode($result));exit;      
       break;
 
-    case 'save-minisite':
+      case 'save-minisite':
       extract($obj_data);
       $user = $user_id;
-      $host_id = explode('|',$tags);
+      $val = $tags;
+      $host_user_id = explode('|',$val);
       
-      $data = db_getAll("select * from user_map where host_user_id='$host_id[1]'");
+      $data = db_getAll("select * from user_map where host_user_id='$host_user_id[1]'");
 
       if($data){
         foreach($data as $datas){
@@ -328,7 +326,8 @@
           if($media){
             foreach($media as $medias){
               $medias->user_id= $user;
-              $result= update_object('media_collection', $medias, $medias->id);
+              $output= update_object('media_collection', $medias, $medias->id);
+              $result->message = "Artist will be displayed";
             }  
           }
           else{
@@ -338,19 +337,12 @@
 
       }
       else{
-        $permdata =['vault' => 'edit', 'profile' => 'edit', 'account' => 'edit', 'login' => 'full'];
-        $permJson = json_encode($permData);
-        $data = ["host_user_id" => $host_id[1], "user_id" => $user_id, "site_id" => $site_id, "permissions" => $permJson];
-        $add_data = add_object('user_map', $data);
+        json_error("No artist found"); 
       }
-
-      $result->success = 1;
-      $result->data = $result;
-      $result->message = "OK. Artist Viewed on homepage ;
-      echo(json_encode($result));
+      $result->message = "Artist will be displayed";
       exit;
       break;
-      
+
     case 'save-event':
       $obj_type = 'event';
       print_log("save-event: data:".dump($obj_data,true), 'collection', LOG_LEVEL_TEST);

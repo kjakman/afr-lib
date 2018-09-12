@@ -324,7 +324,7 @@ $(document).on("focusout", ".edit", function() {
     return false;
   }
  
-  $.ajax({ url: "/dynamic-edit.php?obj_type=" + obj_type,
+  $.ajax({ url: "/ajax.php?obj_type=" + obj_type,
    type: "POST",
     data: {
       type : "artwork",
@@ -356,7 +356,7 @@ $(document).on("click", "#phide", function() {
             var obj_type= "artwork";
             var col = $('#phide').data('col');
             $('.select'+value1).show(value);
-              $.ajax({ url: "/dynamic-edit.php?obj_type=" + obj_type,
+              $.ajax({ url: "/ajax.php?obj_type=" + obj_type,
                   type: "POST",
                   data: {
                   type : "artwork",
@@ -404,7 +404,7 @@ $(document).on("click", "#status", function() {
             var obj_type= "artwork";
             var col = $('#status').data('col');
             $('.select1'+value1).show(value);
-              $.ajax({ url: "/dynamic-edit.php?obj_type=" + obj_type,
+              $.ajax({ url: "/ajax.php?obj_type=" + obj_type,
                   type: "POST",
                   data: {
                   type : "artwork",
