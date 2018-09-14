@@ -4207,6 +4207,9 @@ function controller_gallery_backend($app, $options = []) {
       if(!$add) {      
         if(!$id) return controller_error($app, "Missing ID");
         $scope->minisite = $obj = get_object($obj_type, $id);
+        //$colSearch = ['user_id' => $app->user_id, 'active' => 1, 'type' => COLLECTION_TYPE_EXHIBITION, 'start_date' => ''];
+        //$scope->viewartist = find_object('media_collection', $colSearch);
+        //$scope->viewartist = $viewartist = find_objects('media_collection', ['active' => 1, 'type' => '120', 'start_date' => '']);
         $scope->auth_edit_minisite = $u_level >= USER_LEVEL_STAFF || auth_object('minisite', $obj);
       }
       $sub = $app->host_sub;
