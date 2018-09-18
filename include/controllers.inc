@@ -4204,13 +4204,29 @@ function controller_gallery_backend($app, $options = []) {
     case "website":
       $scope->section = 'website';
       $scope->obj_type = $obj_type = "minisite";
+
       if(!$add) {      
         if(!$id) return controller_error($app, "Missing ID");
         $scope->minisite = $obj = get_object($obj_type, $id);
-        //$colSearch = ['user_id' => $app->user_id, 'active' => 1, 'type' => COLLECTION_TYPE_EXHIBITION, 'start_date' => ''];
-        //$scope->viewartist = find_object('media_collection', $colSearch);
-        //$scope->viewartist = $viewartist = find_objects('media_collection', ['active' => 1, 'type' => '120', 'start_date' => '']);
-        $scope->auth_edit_minisite = $u_level >= USER_LEVEL_STAFF || auth_object('minisite', $obj);
+        $scope->artist_ids = $artist_ids = user_artist_list($obj->user_id) ?: [];
+        foreach($artist_ids as $artist_id) {
+          $uObj = get_user($artist_id);
+
+          $colSearch = ['user_id' => $obj->user_id, artist_id=> $uObj->id, 'active' => 1, 'type' => COLLECTION_TYPE_EXHIBITION, 'start_date' => ''];
+          $collectionobj = find_object('media_collection', $colSearch);
+          $artist_id = $collectionobj->artist_id;
+          
+          if(!$collectionobj) {
+            //echo("{$uObj->display_name} has no projects<br>");  
+            continue;
+          }
+          
+          $scope->viewartist[]=$viewartist[] = get_user($artist_id);
+
+          $scope->auth_edit_minisite = $u_level >= USER_LEVEL_STAFF || auth_object('minisite', $obj);
+
+        }
+        
       }
       $sub = $app->host_sub;
       $app->page->itemview = 'website';
