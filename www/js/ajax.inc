@@ -1,5 +1,4 @@
 <?php
-//echo "<pre>"; print_r($_REQUEST);
   //header('Content-type:application/json;charset=utf-8');
   include_once('set_env.inc');
   $timer['set_env'] = microtime(true);
@@ -14,8 +13,9 @@
 
   //echo("App Lang1: {$__LANG}<br>");
 
- 
+  
   if($_REQUEST['type'] == 'artwork') {
+      
       $obj_type= $_REQUEST['type'];
       $obj_id= $_REQUEST['id'];
       $obj_col= $_REQUEST['col'];
@@ -23,8 +23,8 @@
       $obj_data= array('obj_type'=>$obj_type,'obj_id'=>$obj_id,$obj_col=>$data);
       $result= update_object($obj_type, $obj_data, $obj_id);
       die("success");
-  }
-  
+}
+    
 
   //if($_SESSION['dev'] && $_GET['debug'] == 'cre8ive') $inputVars = $_GET; // allow using GET by setting debug=cre8ive
   //else $inputVars = $_GET;
@@ -312,34 +312,6 @@
 
       case 'save-minisite':
       extract($obj_data);
-
-      /**
-      if($error = check_required($obj_data, 
-          ['name' => "name", 'type' => "type", 'domain' => "domain"])) 
-          json_error("Missing: ".implode(', ', $error));
-      */  
-      if($obj_id) {
-        list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
-        print_log("save-ministe: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
-      } else {
-        list($id, $errors) = add_object($obj_type, $obj_data);
-        print_log("save-minisite: added: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
-      }              
-          
-      if($errors) json_error($errors);
-      
-      $obj = get_object($obj_type, $id);
-      $obj->next_tab = $obj_data['next_tab'];
-      
-      $result->success = 1;
-      $result->data = $obj;
-      $result->message = "OK. Saved save-minisite \"{$obj->title}\"";
-      
-      echo(json_encode($result));exit;      
-      break;
-
-      case 'save-minisite-page':
-      extract($obj_data);
       $user = $user_id;
       $val = $tags;
       $host_user_id = explode('|',$val);
@@ -370,7 +342,7 @@
       $result->message = "Artist will be displayed";
       exit;
       break;
-      
+
     case 'save-event':
       $obj_type = 'event';
       print_log("save-event: data:".dump($obj_data,true), 'collection', LOG_LEVEL_TEST);

@@ -295,6 +295,21 @@ $(document).on("click", "#sel_del_success", function() { //Bala
    $("#selection").hide();
 });
 
+$(document).on("click", '#soft_delete', function(){
+  var id = $(this).data('value');
+  var obj_type = "media_collection";
+  $.ajax({ url: "/ajax.php?obj_type=" + obj_type,
+   type: "POST",
+    data: {
+      obj_type : "media_collection",
+      id : id,
+      data : id,
+      oper : "del",
+    }
+  
+  });       
+});
+
 
 //dynamic table edit on artwork module 
 
