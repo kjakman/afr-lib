@@ -1,5 +1,4 @@
 <?php
-//echo "<pre>"; print_r($_REQUEST);
   //header('Content-type:application/json;charset=utf-8');
   include_once('set_env.inc');
   $timer['set_env'] = microtime(true);
@@ -349,17 +348,18 @@
       if($data){
         foreach($data as $datas){
           $datas->user_id = $user;
+          $datas->permission ='{"vault":"edit","profile":"edit","account":"edit","login":"full","site_display":"yes"}';
           $update_data= update_object('user_map', $datas, $datas->id);
           $media = db_getAll("select * from media_collection where artist_id='$host_id[1]' AND active= '1' AND type='120' AND start_date=''");
           if($media){
             foreach($media as $medias){
               $medias->user_id= $user;
               $output= update_object('media_collection', $medias, $medias->id);
-              $result->message = "Artist will be displayed";
             }  
           }
           else{
-            json_error("No medias found");
+            $result->message = "Artist will be displayed";
+            echo(json_encode($result));
           }
         }
 
@@ -368,6 +368,7 @@
         json_error("No artist found"); 
       }
       $result->message = "Artist will be displayed";
+      echo(json_encode($result));
       exit;
       break;
       
@@ -5181,6 +5182,25 @@
       $result->success = 1;
       echo json_encode($result);exit();
       break;
+
+    case 'soft-delete':
+      $val = trim($obj_data['val']);
+      if($val){
+        $data = db_getAll("select * from user_map where host_user_id='$val'");
+        //$query_str = "UPDATE user_map SET soft_delete='1' WHERE host_user_id='$val'";
+        if($data){
+          foreach($data as $datas){
+            $soft_delete = 1;
+            $datas->soft_delete = $soft_delete;
+            $output= update_object('user_map', $datas, $datas->id);
+            print_r($output->soft_delete);
+            
+          }  
+        }
+      }
+      exit;
+      break;
+
     case 'add-artist':
       
       $obj_type = 'user';

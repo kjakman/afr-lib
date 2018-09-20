@@ -295,19 +295,17 @@ $(document).on("click", "#sel_del_success", function() { //Bala
    $("#selection").hide();
 });
 
-$(document).on("click", '#soft_delete', function(){
+$(document).on("click", '#web_delete', function(){
   var id = $(this).data('value');
-  var obj_type = "media_collection";
-  $.ajax({ url: "/ajax.php?obj_type=" + obj_type,
-   type: "POST",
+  var obj_type = "minisite";
+  $.ajax({
+    url: "/ajax.php",
+    dataType: "json",
     data: {
-      obj_type : "media_collection",
-      id : id,
-      data : id,
-      oper : "del",
-    }
-  
-  });       
+      oper: "soft-delete",
+      val: id
+    },  
+  });     
 });
 
 
