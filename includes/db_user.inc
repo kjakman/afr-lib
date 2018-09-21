@@ -921,6 +921,29 @@ function user_artist_list($userObj_or_id, $options = array()) {
   return $artist_ids;
 }
 
+// return list of artist with soft delete to display in website
+function user_artist_list_display($userObj_or_id, $options = array()) {
+  if(!$userObj_or_id) return [];
+  $userObj = any2obj('user', $userObj_or_id);
+  $artist_ids = [];
+  //if($userObj->user_level >= USER_LEVEL_CURATOR || !user_has_role($userObj, USER_ROLE_CURATOR)) return [];
+  
+  if($userObj->user_level >= USER_LEVEL_ARTIST || user_has_role($userObj, USER_ROLE_ARTIST)) $artist_ids[] = $userObj->id; // this user is a artist
+
+  if($mapObjs = find_objects('user_map', ['user_id' => $userObj->id, 'verified' => 1, 'active' => 1, 'soft_delete' => 0])) {
+    //dump($mapObjs);
+    $artist_ids = array();
+    foreach($mapObjs as $mapObj) {
+      
+      $perms = json_decode($mapObj->permissions);
+      $edit = $perms ? $perms->vault : '';
+      if($edit == 'edit') $artist_ids[] = $mapObj->host_user_id;
+    }
+  }
+  //dump($artist_ids);
+  return $artist_ids;
+}
+
 function fix_profile_location($app, $options) {
   $limit = $options['limit'];
   $client_id = $app->client_id;

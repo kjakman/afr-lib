@@ -1786,6 +1786,7 @@ $__CLASS_ATTRIBUTES = array(
      'id'=>            array('ID',             'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 11),
      'created'=>       array('Created',        'datetime',  ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY),
      'active'=>        array('Active',         'bool',  1, 0),
+     'soft_delete'=>   array('soft_delete',    'bool',  1, 0),
      'verified'=>      array('Verified',       'bool',  0, 0),
      'site_id'=>       array('Site ID',        'link',  0, AF_OBLIGATORY, 'site'),
      'user_id'=>       array('User',           'link',  0, AF_OBLIGATORY, 'user'),

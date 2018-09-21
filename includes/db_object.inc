@@ -1782,6 +1782,7 @@ function save_object_query($obj_type, $data, $options = array()) {
   }
 
   $fields = get_object_attributes($obj_type, 0);
+      
   $obj_keys = array_keys($fields);
   
 
@@ -2012,6 +2013,7 @@ function save_object_query($obj_type, $data, $options = array()) {
     }
 
     $binding = ":".underscore2camel($field); // last to avoid conflicts with reserved variables
+    
     if($id) {
       $terms[] = "`$field` = $binding";
     } else {
@@ -2083,6 +2085,8 @@ function save_object_query($obj_type, $data, $options = array()) {
     $query_str = "UPDATE $table
                   SET $terms_string
                   WHERE ".(count($ids) ? "`$key` IN ($id_list)" : "`$key`=$id_term");
+
+
   }
 
   foreach($values as $k => $v) if(!strlen($v)) $values[$k] = ''; // not null

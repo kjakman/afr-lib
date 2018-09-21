@@ -106,7 +106,7 @@ function controller_minisite($app, $options = []) {
     
     if($page == 'artists' || $page == 'artist') {
       /** Artists - only do when needed */  
-      $scope->artist_ids = $artist_ids = user_artist_list($user_id) ?: [];
+      $scope->artist_ids = $artist_ids = user_artist_list_display($user_id) ?: [];
       //dump($artist_ids);
       //die("artist: slug=$slug");
 
@@ -4208,7 +4208,7 @@ function controller_gallery_backend($app, $options = []) {
       if(!$add) {      
         if(!$id) return controller_error($app, "Missing ID");
         $scope->minisite = $obj = get_object($obj_type, $id);
-        $scope->artist_ids = $artist_ids = user_artist_list($obj->user_id) ?: [];
+        $scope->artist_ids = $artist_ids = user_artist_list_display($obj->user_id) ?: [];
         foreach($artist_ids as $artist_id) {
           $uObj = get_user($artist_id);
 

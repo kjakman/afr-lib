@@ -343,14 +343,15 @@
       $val = $tags;
       $host_user_id = explode('|',$val);
       
-      $data = db_getAll("select * from user_map where host_user_id='$host_user_id[1]'");
-
+      $data = db_getAll("select * from user_map where host_user_id='$host_user_id[1]' AND soft_delete= '1'");
+      
       if($data){
         foreach($data as $datas){
           $datas->user_id = $user;
-          $datas->permission ='{"vault":"edit","profile":"edit","account":"edit","login":"full","site_display":"yes"}';
+          $datas->soft_delete = 0;
           $update_data= update_object('user_map', $datas, $datas->id);
-          $media = db_getAll("select * from media_collection where artist_id='$host_id[1]' AND active= '1' AND type='120' AND start_date=''");
+          $media = db_getAll("select * from media_collection where artist_id='$host_user_id[1]' AND active= '1' AND type='120' AND start_date=''");
+
           if($media){
             foreach($media as $medias){
               $medias->user_id= $user;
@@ -358,16 +359,15 @@
             }  
           }
           else{
-            $result->message = "Artist will be displayed";
-            echo(json_encode($result));
+            json_error("No medias to display");
           }
         }
 
       }
       else{
-        json_error("No artist found"); 
+        json_error("No medias to display"); 
       }
-      $result->message = "Artist will be displayed";
+      $result->message = "Artist will be displayed in website";
       echo(json_encode($result));
       exit;
       break;
@@ -5187,14 +5187,11 @@
       $val = trim($obj_data['val']);
       if($val){
         $data = db_getAll("select * from user_map where host_user_id='$val'");
-        //$query_str = "UPDATE user_map SET soft_delete='1' WHERE host_user_id='$val'";
         if($data){
           foreach($data as $datas){
             $soft_delete = 1;
             $datas->soft_delete = $soft_delete;
             $output= update_object('user_map', $datas, $datas->id);
-            print_r($output->soft_delete);
-            
           }  
         }
       }

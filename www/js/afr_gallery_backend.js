@@ -304,7 +304,10 @@ $(document).on("click", '#web_delete', function(){
     data: {
       oper: "soft-delete",
       val: id
-    },  
+    }, 
+    success:function(response_data_json) {
+      $( "#gbe_basic_link" ).trigger( "click" );
+    } 
   });     
 });
 
