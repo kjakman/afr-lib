@@ -38,6 +38,8 @@ function route($app) {
   $router->map( 'GET', '/backend/[a:subview]', 'gallery_backend', 'backend:subview');
   $router->map( 'GET', '/backend/[a:subview]/[a:action]', 'gallery_backend', 'backend:subview:action');
 
+  $router->map( 'GET', '/backend/profile/[i:id]/edit', 'gallery_backend', 'backend:edit-profile:id');
+  
   $router->map( 'GET', '/exhibitions', 'gallery_collections', 'exhibitions');
   $router->map( 'GET', '/exhibition/([n:name]~)?[i:id]', 'gallery_collections', 'exhibition:id');
   $router->map( 'GET', '/exhibition/([n:name]~)?[i:id]/[i:item]', 'gallery_collections', 'exhibition:id:item');
