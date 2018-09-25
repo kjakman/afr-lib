@@ -311,12 +311,8 @@
 
       case 'save-minisite':
       extract($obj_data);
-
-      /**
-      if($error = check_required($obj_data, 
-          ['name' => "name", 'type' => "type", 'domain' => "domain"])) 
-          json_error("Missing: ".implode(', ', $error));
-      */  
+      echo "<pre>";
+        print_r($obj_type);
       if($obj_id) {
         list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
         print_log("save-ministe: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
