@@ -86,7 +86,7 @@ function gbe_website_handler(params, data) { //pradeepa
   console.log("gbe_website_handler. data", data);
   console.log("gbe_website_handler. next="+ data.next_tab + " data:", data);
   if(data.id) {    
-    var tab = data.next_tab || 'appearance';
+    var tab = data.next_tab || 'exhibition';
     var href = '/backend/website/' + data.id + '/edit/' + tab;
     var $link = $("#submit");
     soft_load($link, "#subview-container", href);
@@ -295,7 +295,7 @@ $(document).on("click", "#sel_del_success", function() { //Bala
    $("#selection").hide();
 });
 
-$(document).on("click", '#web_delete', function(){
+$(document).on("click", '#soft_delete', function(){
   var id = $(this).data('value');
   var obj_type = "minisite";
   $.ajax({
@@ -305,12 +305,15 @@ $(document).on("click", '#web_delete', function(){
       oper: "soft-delete",
       val: id
     }, 
-    success:function(response_data_json) {
-      $( "#gbe_basic_link" ).trigger( "click" );
-    } 
+    
   });     
 });
 
+$(document).on("click",'#show_web',function() {
+   setTimeout(function() { 
+    $("#gbe_pages_link").trigger('click');
+  }, 1000);
+});
 
 //dynamic table edit on artwork module 
 

@@ -311,8 +311,6 @@
 
       case 'save-minisite':
       extract($obj_data);
-      echo "<pre>";
-        print_r($obj_type);
       if($obj_id) {
         list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
         print_log("save-ministe: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
@@ -5191,6 +5189,8 @@
           }  
         }
       }
+      $result->message = "Artist will be removed from website";
+      echo(json_encode($result));
       exit;
       break;
 
