@@ -153,6 +153,9 @@ function controller_minisite($app, $options = []) {
       $today = today();
       
       /** Exhibitions - only do when needed  */
+      $qs = find_objects('minisite', ['user_id' => $user_id]);
+      //dump($qs);
+      //dump($qs->exhibition_type);
       $search = ['user_id' => $user_id, 'type' => COLLECTION_TYPE_EXHIBITION, 'active' => 1];
       switch($when) {
         case 'past':
@@ -236,6 +239,7 @@ function controller_minisite($app, $options = []) {
         $exhibitions[$exhibitionObj->slug] = $exhibitionObj;
         $exhibition_ids[] = $exhibitionObj->id;
       }
+
       $scope->exhibitions = $exhibitions;  
     }
          
@@ -273,6 +277,7 @@ function controller_minisite($app, $options = []) {
     case 'exhibition':
       if(!$slug) return scope_error($app, "Missing slug", '404');
       $collectionObj = $obj_id ? get_object('media_collection', $obj_id) : $exhibitions[$slug];
+      //dump($exhibitions[$slug]);
       if(!$collectionObj) {
         print_log("no $slug in ".dump($exhibitions,true), 'minisite', LOG_LEVEL_TEST);
         return scope_error($app, "Exhibition {$slug} not found", '404');
@@ -298,7 +303,6 @@ function controller_minisite($app, $options = []) {
         if(!$eventObj) die("event $event_id not found");
         $scope->collection->event = $eventObj;
       }      
-
       $search = ['media_collection_id' => $collection_id, 'active' => 1];
       $scope->artworks = $mapObjs = find_objects('media_collection_map', $search, ['sort' => 'rank']);
       break;

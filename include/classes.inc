@@ -2769,6 +2769,7 @@ $__CLASS_ATTRIBUTES = array(
      'font'=>               array('Font',               'str',  '', 0, 64 ),
      'css'=>                array('Css',                'str',  '', 0, 64 ),
      'location_id'=>        array('Location',           'link',   0, AF_HIDE_ADD, 'location'),
+     'exhibition_type' =>   array('Exhibition type',    'str',  '', 0, 64),
    ),
  
   "site" => 

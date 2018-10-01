@@ -311,6 +311,10 @@
 
       case 'save-minisite':
       extract($obj_data);
+
+      $exhibition_type = implode(',', $exhibition_type);
+      $obj_data['exhibition_type'] = $exhibition_type;
+      
       if($obj_id) {
         list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
         print_log("save-ministe: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
@@ -326,7 +330,7 @@
       
       $result->success = 1;
       $result->data = $obj;
-      $result->message = "OK. Saved save-minisite \"{$obj->title}\"";
+      $result->message = "OK. Minisite Saved";
       
       echo(json_encode($result));exit;      
       break;
