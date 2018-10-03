@@ -2769,7 +2769,10 @@ $__CLASS_ATTRIBUTES = array(
      'font'=>               array('Font',               'str',  '', 0, 64 ),
      'css'=>                array('Css',                'str',  '', 0, 64 ),
      'location_id'=>        array('Location',           'link',   0, AF_HIDE_ADD, 'location'),
+     'type_filter'  =>      array('Active?',            'bool',     1,  AF_HIDE_ADD, 0),
      'exhibition_type' =>   array('Exhibition type',    'str',  '', 0, 64),
+     'date_filter'  =>      array('Active?',            'bool',     1,  AF_HIDE_ADD, 0),
+     'exhibition_date' =>   array('Exhibition date',    'str',  '', 0, 64),
    ),
  
   "site" => 

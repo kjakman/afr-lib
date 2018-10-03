@@ -60,17 +60,6 @@ function gbe_artwork_handler(params, data) {
   }
 }
 
-function gbe_artwork_handler(params, data) {
-  console.log("gbe_artwork_handler. params:", params);
-  console.log("gbe_artwork_handler. next="+ data.next_tab + " data:", data);
-  if(data.id) {    
-    var tab = data.next_tab || 'details';
-    var href = '/backend/artwork/' + data.id + '/edit/' + tab;
-    var $link = $("#back");
-    soft_load($link, "#search-container", href);
-  }
-}
-
 function gbe_network_handler(params, data) { //pradeepa
   console.log("gbe_network_handler. data", data);
   console.log("gbe_network_handler. next="+ data.next_tab + " data:", data);
