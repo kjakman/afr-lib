@@ -52,6 +52,7 @@ $__CLASSES = array(
     'site_content' =>         array(USER_LEVEL_STAFF,  'site', '', '', 0, 'title', '', ''),
 
     'minisite' =>             array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'name', '', ''),
+    'minisite_page' =>        array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'page_type', '', ''), 
     
     /** get rid of the next 4 - CMS no longer in use */
     'site_page' =>            array(USER_LEVEL_STAFF,  'site', '', '', 0, '', 'parent_id, rank, id', ''),
@@ -2769,10 +2770,26 @@ $__CLASS_ATTRIBUTES = array(
      'font'=>               array('Font',               'str',  '', 0, 64 ),
      'css'=>                array('Css',                'str',  '', 0, 64 ),
      'location_id'=>        array('Location',           'link',   0, AF_HIDE_ADD, 'location'),
-     'type_filter'  =>      array('Active?',            'bool',     1,  AF_HIDE_ADD, 0),
+     /*'type_filter'  =>      array('Active?',            'bool',     1,  AF_HIDE_ADD, 0),
      'exhibition_type' =>   array('Exhibition type',    'str',  '', 0, 64),
      'date_filter'  =>      array('Active?',            'bool',     1,  AF_HIDE_ADD, 0),
-     'exhibition_date' =>   array('Exhibition date',    'str',  '', 0, 64),
+     'exhibition_date' =>   array('Exhibition date',    'str',  '', 0, 64),*/
+   ),
+
+  "minisite_page" => 
+  array(
+     'id'=>                 array('ID',                 'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 3),
+     'created'=>            array('Created',            'datetime', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT),
+     'modified'=>           array('Modified',          'timestamp', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT, 14 ),
+     'site_id'=>            array('Site',               'link',  0, AF_SEARCHABLE|AF_HIDE, 'site'),
+     'client_id'=>          array('Client',             'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
+     'user_id' =>           array('User ID',           'link', ATT_DEFAULT_USER_ID, 0, 'user'),
+     'page_type'=>          array('Page Type',          'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
+     'menu_title'=>         array('Menu Title',         'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
+     'page_title'=>         array('Page Title',         'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
+     'show_gallery'  =>     array('Active?',            'bool',     1,  AF_HIDE_ADD, 0),
+     'show_artfair'  =>     array('Active?',            'bool',     1,  AF_HIDE_ADD, 0),
+     'show_others'  =>      array('Active?',            'bool',     1,  AF_HIDE_ADD, 0),    
    ),
  
   "site" => 

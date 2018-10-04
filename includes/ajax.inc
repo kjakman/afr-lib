@@ -312,11 +312,11 @@
       case 'save-minisite':
       extract($obj_data);
       //print_r($obj_data);
-      $exhibition_type = implode(',', $exhibition_type);
+      /*$exhibition_type = implode(',', $exhibition_type);
       $obj_data['exhibition_type'] = $exhibition_type;
 
       $exhibition_date = implode(',', $exhibition_date);
-      $obj_data['exhibition_date'] = $exhibition_date;
+      $obj_data['exhibition_date'] = $exhibition_date;*/
       
       if($obj_id) {
         list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);

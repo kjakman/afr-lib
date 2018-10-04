@@ -304,6 +304,19 @@ $(document).on("click",'#show_web',function() {
   }, 1000);
 });
 
+$(document).on('click', '#getpagelist', function(){
+  var type = $(this).data('value');
+  if(type == 'artist'){
+    $("#gbe_artist_link").show();
+    $("#gbe_artist_link").trigger('click');
+  }
+  if(type == 'exhibition'){
+    $("#gbe_exhibition_link").show();
+    $("#gbe_exhibition_link").trigger('click');
+  }
+});
+
+
 //dynamic table edit on artwork module 
 
 $(document).on("click", ".edit", function() { 
