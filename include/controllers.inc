@@ -152,13 +152,12 @@ function controller_minisite($app, $options = []) {
       
       $today = today();
       
-      /** Exhibitions - only do when needed  
+      /** Exhibitions - only do when needed  */
       $colSearch = ['user_id' => $user_id];
       $mObj = find_object('minisite', $colSearch);
       $scope->date_filter = $mObj->date_filter;
-      $subtype = explode(',', $mObj->exhibition_type); */
+      $subtype = explode(',', $mObj->exhibition_type);
 
-      /* Filter exhibition by date scope in minisite
       $date =  explode(',', $mObj->exhibition_date);
       $past = array_search('10',$date,true);
       $scope->past = $date[$past];
@@ -167,7 +166,7 @@ function controller_minisite($app, $options = []) {
       $scope->current = $date[$current];
 
       $future = array_search('30',$date,true);
-      $scope->future = $date[$future]; */
+      $scope->future = $date[$future];
   
       //$search = ['user_id' => $user_id, 'type' => COLLECTION_TYPE_EXHIBITION, 'active' => 1];
       switch($when) {
@@ -190,10 +189,10 @@ function controller_minisite($app, $options = []) {
           break;
       }
       /** Filter by gallery, Art, Other events */
-      
+      if($mObj->type_filter)
       $exhibitionObjs = db_getAll("SELECT * FROM media_collection WHERE user_id='$user_id' AND active= '1' AND type='120' AND subtype IN ($mObj->exhibition_type)") ?: [];  
-      
-      //$exhibitionObjs = find_objects('media_collection', $search, ['sort' => 'start_date desc']) ?: [];
+      else
+      $exhibitionObjs = find_objects('media_collection', $search, ['sort' => 'start_date desc']) ?: [];
       $count  = count($exhibitionObjs);
 
       /** Homepage, use current exhibition */
@@ -4242,13 +4241,7 @@ function controller_gallery_backend($app, $options = []) {
           }
           
           $scope->viewartist[]=$viewartist[] = get_user($artist_id);
-        }  
-          /* To display pages in list*/
-          $getlist = ['user_id' => $obj->user_id]; 
-          $scope->pagelist = $pagelist = find_objects('minisite_page', $getlist);
-          //dump($getlist);
 
-          /* Filter Exhibition by type - gallery, artfair, others
           $colSearch = ['user_id' => $obj->user_id, 'active' => 1,];
           $scope->minisiteobj = $minisiteobj = find_object('minisite', $colSearch);
           $type =  explode(',' , $minisiteobj->exhibition_type);
@@ -4259,11 +4252,8 @@ function controller_gallery_backend($app, $options = []) {
           $scope->artfair = $type[$artfair];
 
           $others = array_search('30',$type,true);
-          $scope->others = $type[$others];*/
+          $scope->others = $type[$others];
 
-          
-
-          /* Filter exhibition by date scope in backend
           $date =  explode(',', $minisiteobj->exhibition_date);
           $past = array_search('10',$date,true);
           $scope->past = $date[$past];
@@ -4272,10 +4262,12 @@ function controller_gallery_backend($app, $options = []) {
           $scope->current = $date[$current];
 
           $future = array_search('30',$date,true);
-          $scope->future = $date[$future]; */
-          
+          $scope->future = $date[$future];
+          //dump($future);
 
           $scope->auth_edit_minisite = $u_level >= USER_LEVEL_STAFF || auth_object('minisite', $obj);
+
+        }
         
       }
       $sub = $app->host_sub;

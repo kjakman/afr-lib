@@ -1,0 +1,85 @@
+  {$gallery = $scope.gallery}
+  {$artfair = $scope.artfair}
+  {$others = $scope.others}
+  {$past = $scope.past}
+  {$current = $scope.current}
+  {$future = $scope.future}
+  
+  
+      <form class="ajax-submit" data-handler="save-minisite">
+        <input hidden="1" name="id" type="hidden" value="{$minisite.id|default:$id}">
+        <input hidden="1" name="obj_id" type="hidden" value="{$minisite.id|default:$id}">
+        <input hidden="1" name="obj_type" type="hidden" value="{$scope.obj_type}">  
+        <input hidden="1" name="page_id" type="hidden" value="{$minisite_page.id|default:$id}">
+        <input hidden="1" name="next_tab" type="hidden" value="styling">    
+                
+        <div>
+          <div class="form-group">
+            <div class="row">
+            <div class="form-group col-sm-8">
+              <label for="menu-title">Menu Title</label>
+              <input type="text" class="form-control" maxlength="255" value="Exhibitions">
+            </div>
+            <div class="form-group col-sm-8">
+              <label for="page-title">Page Title</label>
+              <input type="text" class="form-control" maxlength="255" value="Exhibitions">
+            </div>
+          </div>  
+        </div>
+      </div>
+        <!-- <div class="form-group col-sm-12">
+          <label for="Dates">Filter Exhibitions by Dates</label>
+          <div class="row">
+            <table>
+                <tr>
+                  <td><input type="checkbox" {if ($past == '10')}checked{/if} class="form-control" name="exhibition_date[]" value="10" style= "width:20px"></td>
+                  <td style= "width:200px">Previous Exhibitions</td>
+                  <td><input type="checkbox" {if ($current == '20')}checked{/if} class="form-control" name="exhibition_date[]" value="20" style= "width:20px"></td>
+                  <td style= "width:200px">Current Exhibitions</td>
+                  <td><input type="checkbox" {if ($future == '30')}checked{/if} class="form-control" name="exhibition_date[]" value="30" style= "width:20px"></td>
+                  <td style= "width:200px">Future Exhibitions</td>
+                </tr>
+            </table>
+          </div>
+        </div> -->
+
+        <div class="form-group col-sm-12">
+          <label for="type">Filter Exhibitions by type</label>
+          <div class="row">
+            <table>
+                <tr>
+                  <td><input type="checkbox" {if ($gallery == '10')}checked{/if} class="form-control" name="exhibition_type[]" value="10" style= "width:20px"></td>
+                  <td style= "width:200px">Gallery Exhibitions</td>
+                  <td><input type="checkbox" {if ($artfair == '20')}checked{/if} class="form-control" name="exhibition_type[]" value="20" style= "width:20px" ></td>
+                  <td style= "width:200px">Art Fairs</td>
+                  <td><input type="checkbox" {if ($others == '30')}checked{/if} class="form-control" name="exhibition_type[]" value="30" style= "width:20px" ></td>
+                  <td style= "width:200px">Other Events</td>
+                </tr>
+            </table>
+
+          </div>
+        </div>
+
+       <!--  <div class="form-group col-sm-12">
+          <label for="Fonts">Add Filters for Page(Optional)</label>
+          <div class="row">
+            <table>
+                <tr>
+                  <td style= "width:200px">Previous/ Current/ Future</td>
+                  <td style= "width:200px">
+                    <input name='date_filter' value='0' type='hidden'> 
+                    <input type="checkbox" {if ($minisite.date_filter)}checked{/if} class="bootstrap-toggle" value="1" name="date_filter" id="gbe_collection_active">
+                  </td>
+                  <td style= "width:200px">Gallery/ Fair/ Other</td>
+                  <td style= "width:200px">
+                    <input name='type_filter' value='0' type='hidden'> 
+                    <input type="checkbox" {if ($minisite.type_filter)}checked{/if} class="bootstrap-toggle" value="1" name="type_filter" id="gbe_collection_active">
+                  </td>                 
+                </tr>
+            </table>
+            
+          </div>
+        </div> -->
+        <input type="submit" class="btn btn-success" value="Save">
+      </form>  
+
