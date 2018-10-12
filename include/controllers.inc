@@ -145,7 +145,7 @@ function controller_minisite($app, $options = []) {
      
     }
     
-    if($page == 'exhibitions' || $page == 'exhibition' || $page == 'home') {
+    if($page == 'exhibitions' || $page == 'exhibition' || $page == 'home' ) {
       if($page == 'home') {
         $when = 'current'; // for
       } else if($page == 'exhibitions') {
@@ -155,6 +155,7 @@ function controller_minisite($app, $options = []) {
       }
       
       $today = today();
+      //dump($today);
       
       /** Exhibitions - only do when needed  */
 
@@ -174,60 +175,66 @@ function controller_minisite($app, $options = []) {
       //$search = ['user_id' => $user_id, 'type' => COLLECTION_TYPE_EXHIBITION, 'active' => 1];
       switch($when) {
         case 'past':
-          $search['end_date'] = ['<', $today];
+          $exhibitionObjs = db_getAll("SELECT * FROM media_collection WHERE user_id='$user_id' AND active= '1' AND type='120'  AND end_date < '$today' AND subtype IN ('$gallery', '$artfair', '$others') ORDER BY start_date DESC") ?: [];
+
+          //$search['end_date'] = ['<', $today];
           break;
         case 'current':
-          $search['start_date'] = ['<=', $today];
-          $search['end_date'] = ['>=', $today];
-                      
+          $exhibitionObjs = db_getAll("SELECT * FROM media_collection WHERE user_id='$user_id' AND active= '1' AND type='120' AND start_date<= '$today' AND end_date>= '$today' AND subtype IN ('$gallery', '$artfair', '$others') ORDER BY start_date DESC") ?: [];
+
+          //$search['start_date'] = ['<=', $today];
+          //$search['end_date'] = ['>=', $today];      
           break;
         case 'future':
-          $search['start_date'] = ['>', $today];
+          $exhibitionObjs = db_getAll("SELECT * FROM media_collection WHERE user_id='$user_id' AND active= '1' AND type='120' AND start_date> '$today' AND subtype IN ('$gallery', '$artfair', '$others') ORDER BY start_date DESC") ?: [];
+
+          //$search['start_date'] = ['>', $today];
           break;
         case 'currentandfuture':
-          $search['end_date'] = ['>=', $today];
+          $exhibitionObjs = db_getAll("SELECT * FROM media_collection WHERE user_id='$user_id' AND active= '1' AND type='120' AND end_date>= '$today' AND subtype IN ('$gallery', '$artfair', '$others') ORDER BY start_date DESC") ?: [];
+
+          //$search['end_date'] = ['>=', $today];
           break;
         case 'all':
+          $exhibitionObjs = db_getAll("SELECT * FROM media_collection WHERE user_id='$user_id' AND active= '1' AND type='120' AND subtype IN ('$gallery', '$artfair', '$others') ORDER BY start_date DESC") ?: [];
+
+          break;
         default: // all or single
           break;
       }
+
       /** Filter by gallery, Art, Other events */
       
       $exhibitionObjs = db_getAll("SELECT * FROM media_collection WHERE user_id='$user_id' AND active= '1' AND type='120' AND subtype IN ('$gallery', '$artfair', '$others') ORDER BY start_date DESC") ?: [];  
     
       //$exhibitionObjs = find_objects('media_collection', $search, ['sort' => 'start_date desc']) ?: [];
-      //dump($exhibitionObjs);
-      $count  = count($exhibitionObjs);
-      
 
       /** Homepage, use current exhibition */
+
       if($page == 'home') {
         print_log("Home page", 'minisite', LOG_LEVEL_TEST);
         
         $tpl = $page = 'exhibition';
+
+        $exhibitionObjs = db_getAll("SELECT * FROM media_collection WHERE user_id='$user_id' AND active= '1' AND type='120' AND start_date<= '$today' AND end_date>= '$today' AND subtype IN ('$gallery', '$artfair', '$others') ORDER BY start_date DESC") ?: [];
+        $count  = count($exhibitionObjs);
+
         if($count) {
-          //dump($count);
           $title = 'Current Exhibition';
         } else { // no current exhibition
           
           // try future
-          unset($search['start_date']);
-          unset($search['end_date']);
-          $search['start_date'] = ['>=', $today];
-
-          $exhibitionObjs = db_getAll("SELECT * FROM media_collection WHERE user_id='$user_id' AND active= '1' AND type='120' AND subtype IN ('$gallery', '$artfair', '$others') ORDER BY start_date") ?: [];
-
+          
+          $exhibitionObjs = db_getAll("SELECT * FROM media_collection WHERE user_id='$user_id' AND active= '1' AND type='120' AND start_date> '$today' AND subtype IN ('$gallery', '$artfair', '$others') ORDER BY start_date DESC") ?: [];
+         
           //$exhibitionObjs = find_objects('media_collection', $search, ['sort' => 'start_date', 'limit' => 1]) ?: [];
           if($count  = count($exhibitionObjs)) {
             $title = 'Next Exhibition';
           } else {          
             // try past
-            unset($search['start_date']);
-            unset($search['end_date']);
-            $search['end_date'] = ['<', $today];
 
-            $exhibitionObjs = db_getAll("SELECT * FROM media_collection WHERE user_id='$user_id' AND active= '1' AND type='120' AND subtype IN ('$gallery', '$artfair', '$others') ORDER BY start_date DESC") ?: [];
-
+            $exhibitionObjs = db_getAll("SELECT * FROM media_collection WHERE user_id='$user_id' AND active= '1' AND type='120' AND end_date < '$today' AND subtype IN ('$gallery', '$artfair', '$others') ORDER BY start_date DESC limit 1") ?: [];
+            
             //$exhibitionObjs = find_objects('media_collection', $search, ['sort' => 'start_date desc', 'limit' => 1]) ?: [];            
             $count  = count($exhibitionObjs);
             if($count) {
@@ -238,8 +245,10 @@ function controller_minisite($app, $options = []) {
           }
           $exhibitionObj = $exhibitionObjs[0];
         }
+
         $exhibitionObj = $exhibitionObjs[0];
         $slug = slugify($exhibitionObj->title); 
+        //dump($exhibitionObj);
         //dump($slug);       
         
       } else {
@@ -268,7 +277,45 @@ function controller_minisite($app, $options = []) {
         $exhibition_ids[] = $exhibitionObj->id;
       }
 
-      $scope->exhibitions = $exhibitions;  
+      $scope->exhibitions = $exhibitions; 
+
+      if($mObj->show_recent == '1')
+        $exhibitionhome = db_getAll("SELECT * FROM media_collection WHERE user_id='$user_id' AND active= '1' AND type='120' AND subtype IN ('$gallery', '$artfair', '$others') ORDER BY start_date DESC") ?: [];
+      else
+        $exhibitionhome = db_getAll("SELECT * FROM media_collection WHERE user_id='$user_id' AND active= '1' AND type='120' AND subtype IN ('$gallery', '$artfair', '$others') ORDER BY start_date ASC") ?: [];
+
+        foreach($exhibitionhome as $exhibitionObj) {
+          $current = "";
+
+          if($exhibitionObj->start_date && $exhibitionObj->end_date) {
+            if($exhibitionObj->start_date <= $today && $exhibitionObj->end_date >= $today){
+              $current = "current";
+              $exhibitionObj->current = $current; 
+              $exhibitionObj->slug = slugify($exhibitionObj->title);
+            }
+            elseif($exhibitionObj->end_date < $today){
+              $current = "past";
+              $exhibitionObj->current = $current; 
+              $exhibitionObj->slug = slugify($exhibitionObj->title);
+              $exhibitionObj->past_exists = "1";
+            }
+            elseif($exhibitionObj->start_date > $today){
+              $current = "future";
+              $exhibitionObj->current = $current; 
+              $exhibitionObj->slug = slugify($exhibitionObj->title);
+              $exhibitionObj->future_exists = "1";
+            } 
+
+            $filter_exhibitions[] = $exhibitionObj;
+          }
+        }
+        $scope->filter_exhibitions = $filter_exhibitions;
+
+        /* To view latest exhibition */
+        $latestexhibition = db_getAll("SELECT * FROM media_collection WHERE user_id='$user_id' AND active= '1' AND type='120' AND subtype IN ('$gallery', '$artfair', '$others') ORDER BY start_date DESC limit 1") ?: [];
+        
+        $scope->latest_exhibitions = $latestexhibition;
+    
     }
          
     break;
@@ -302,17 +349,19 @@ function controller_minisite($app, $options = []) {
       break;
     case 'artists':
       break;
+    
     case 'exhibition':
       if(!$slug) return scope_error($app, "Missing slug", '404');
       $collectionObj = $obj_id ? get_object('media_collection', $obj_id) : $exhibitions[$slug];
-    //dump($collectionObj);
+      //dump($obj_id);
+      //dump($slug);
       if(!$collectionObj) {
         print_log("no $slug in ".dump($exhibitions,true), 'minisite', LOG_LEVEL_TEST);
         return scope_error($app, "Exhibition {$slug} not found", '404');
       }
       
       $artist_names = collection_artist_list($collectionObj);
-      
+      //dump($artist_names);
       
       $se_title = "{$collectionObj->title}, {$artist_names}";
       $se_description = $collectionObj->description;
@@ -320,6 +369,7 @@ function controller_minisite($app, $options = []) {
       
       
       $scope->collection = $collectionObj;
+      //dump($scope->collection);
       $scope->collection_id = $collection_id = $collectionObj->id;
       if($loc_id = $collectionObj->location_id) {
         $locObj = get_object('location', $loc_id);
@@ -342,6 +392,7 @@ function controller_minisite($app, $options = []) {
     case 'contact':
       $scope->receiver_name = $display_name;
       $scope->receiver_email = $user->email_address;
+      $scope->cObj = $cObj = find_object('minisite', ['user_id' => $user_id, 'active' => 1]);
       
       break;
     case 'about':
