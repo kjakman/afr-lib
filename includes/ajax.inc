@@ -311,7 +311,6 @@
 
       case 'save-minisite':
       extract($obj_data);
-      //print_r($obj_data);
       
       if($obj_id) {
         list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
@@ -367,7 +366,7 @@
       echo(json_encode($result));
       exit;
       break;
-      
+
     case 'save-event':
       $obj_type = 'event';
       print_log("save-event: data:".dump($obj_data,true), 'collection', LOG_LEVEL_TEST);
@@ -5193,6 +5192,21 @@
       }
       $result->message = "Artist will be removed from website";
       echo(json_encode($result));
+      exit;
+      break;
+
+    case 'event-delete':
+
+      $id = trim($obj_data['val']);
+      $obj_type = 'event';
+
+      if($id){
+        list($delete_count, $errors) = delete_object($obj_type, $id);
+        if($errors) write_file($log_file, "Delete errors:".dump($errors, true), 'a'); // "\n------------\n\n"
+      }
+
+      $result->message = "Event Deleted";
+      echo json_encode($result);
       exit;
       break;
 

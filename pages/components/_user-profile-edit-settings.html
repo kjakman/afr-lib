@@ -40,15 +40,22 @@
             </div>
 
             <div class="row mt20">
-            <div class="col-sm-6">
-            <label>Date of birth</label>
-            <div class="input-group">
-              <input type="text" id="date_of_birth" value="{$scope.profile.date_of_birth}" class="form-control datepicker" name="date_of_birth" placeholder="Date of birth">
-              <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+              <div class="col-sm-6">
+              <label>Date of birth</label>
+              <div class="input-group">
+                <input type="text" id="date_of_birth" value="{$scope.profile.date_of_birth}" class="form-control datepicker" name="date_of_birth" placeholder="Date of birth">
+                <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+              </div>
+              <!--div class="help-block with-errors">Whole Number</div-->                          
+              </div>
+              <div class="col-sm-6">
+              <label>Gallery Name</label>
+              <div class="input-group">
+                <span class="input-group-addon"><i class="fa fa-user"></i></span>
+                <input name="gallery_name" id="gallery_name" class="form-control" value="{$scope.profile.gallery_name}" type="text" />
+              </div>
+              </div>
             </div>
-            <!--div class="help-block with-errors">Whole Number</div-->                          
-          </div>
-          </div>
             
             <div class="row mt20">
               <div class="col-sm-6">
@@ -98,9 +105,151 @@
                   {{"include": "_geocomplete-fields.html"}}                          
                 </div>
               </div>
-            </div>                             
+            </div> 
 
+            <div class="row mb20">
+              <div class="col-sm-12">
+                <label for="Time">Opening Times</label>
+                <table cellspacing="20">
+                  <tr style="height: 15px;"/> 
+                  <tr>
+                    <td style= "width:200px">
+                      <label for="Monday">Monday</label>
+                    </td>
+                    <td style= "width:200px">
+                      <div class="input-group" style= "width:150px">
+                        <input type="text" name="mon_start_time" class="form-control input-small timepicker" value="{$scope.profile.mon_start_time}" data-time-format="H:i">
+                        <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+                      </div>
+                    </td>
+                    <td >
+                      <div class="input-group" style= "width:150px">
+                        <input type="text" name="mon_end_time" class="form-control input-small timepicker" value="{$scope.profile.mon_end_time}" data-time-format="H:i" >
+                        <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr style="height: 15px;"/>
+                  <tr>
+                    <td style= "width:200px">
+                      <label for="Tuesday">Tuesday</label>
+                    </td>
+                    <td >
+                      <div class="input-group" style= "width:150px">
+                        <input type="text" name="tues_start_time" class="form-control input-small timepicker" value="{$scope.profile.tues_start_time}" data-time-format="H:i">
+                        <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+                      </div>
+                    </td>
+                    <td style= "width:200px">
+                      <div class="input-group" style= "width:150px">
+                       <input type="text" name="tues_end_time" class="form-control input-small timepicker" value="{$scope.profile.tues_end_time}" data-time-format="H:i">
+                       <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr style="height: 15px;"/>
+                  <tr>
+                    <td style= "width:200px">
+                      <label for="Wednesday">Wednesday</label>
+                    </td>
+                    <td >
+                      <div class="input-group" style= "width:150px">
+                        <input type="text" name="wed_start_time" class="form-control input-small timepicker" value="{$scope.profile.wed_start_time}" data-time-format="H:i" >
+                        <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+                      </div>
+                    </td>
+                    <td style= "width:200px">
+                      <div class="input-group" style= "width:150px">
+                       <input type="text" name="wed_end_time" class="form-control input-small timepicker" value="{$scope.profile.wed_end_time}" data-time-format="H:i" >
+                       <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr style="height: 15px;"/>
+                  <tr>
+                    <td >
+                      <label for="Thursday">Thursday</label>
+                    </td>
+                    <td style= "width:200px">
+                      <div class="input-group" style= "width:150px">
+                        <input type="text" name="thur_start_time" class="form-control input-small timepicker" value="{$scope.profile.thur_start_time}" data-time-format="H:i" >
+                        <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+                      </div>
+                    </td>
+                    <td >
+                      <div class="input-group" style= "width:150px">
+                        <input type="text" name="thur_end_time" class="form-control input-small timepicker" value="{$scope.profile.thur_end_time}" data-time-format="H:i" >
+                        <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr style="height: 15px;"/>
+                  <tr>
+                    <td >
+                      <label for="Friday">Friday</label>
+                    </td>
+                    <td style= "width:200px">
+                      <div class="input-group" style= "width:150px">
+                        <input type="text" name="fri_start_time" class="form-control input-small timepicker" value="{$scope.profile.fri_start_time}" data-time-format="H:i">
+                        <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+                      </div>
+                    </td>
+                    <td >
+                      <div class="input-group" style= "width:150px">
+                       <input type="text" name="fri_end_time" class="form-control input-small timepicker" value="{$scope.profile.fri_end_time}" data-time-format="H:i">
+                       <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr style="height: 15px;"/>
+                  <tr style="height: 15px;"/>
+                </table>           
+              </div> 
+            </div> 
+
+            <div class="row mb20">
+              <div class="col-sm-12">
+                <label for="title">Social Media Profiles</label>
+                <table cellspacing="20"> 
+                  <tr style="height: 15px;"/>
+                  <tr>
+                    <td style= "width:200px">
+                      <label for="Instagram">Instagram</label>
+                    </td>
+                    <td style= "width:500px">
+                      <div class="input-group" style= "width:300px">
+                        <input name="instagram" id="instagram" class="form-control" value="{$scope.profile.instagram}" type="text" /> 
+                      </div>
+                    </td>
+                  </tr>
+                  <tr style="height: 15px;"/>
+                  <tr>
+                    <td style= "width:200px">
+                      <label for="Facebook">Facebook</label>
+                    </td>
+                    <td style= "width:500px">
+                      <div class="input-group" style= "width:300px">
+                        <input name="facebook" id="facebook" class="form-control" value="{$scope.profile.facebook}" type="text" />
+                      </div>
+                    </td>
+                  </tr>
+                  <tr style="height: 15px;"/>
+                  <tr>
+                    <td style= "width:200px">
+                      <label for="Twitter">Twitter</label>
+                    </td>
+                    <td style= "width:500px">
+                      <div class="input-group" style= "width:300px">
+                        <input name="twitter" id="twitter" class="form-control" value="{$scope.profile.twitter}" type="text" />
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+                                   
             <input type="submit" class="btn btn-success" value="Save">
+            
           </form>
              
                 {*

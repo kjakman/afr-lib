@@ -298,6 +298,22 @@ $(document).on("click", '#soft_delete', function(){
   });     
 });
 
+$(document).on("click", '#event_delete', function(){
+  var id = $(this).data('value');
+  $.ajax({
+    url: "/ajax.php",
+    dataType: "json",
+    data: {
+      oper: "event-delete",
+      val: id
+    },
+    success:function(response_data_json) {
+      $("#gbe_events_link").trigger('click');
+    } 
+    
+  });     
+});
+
 $(document).on("click",'#show_web',function() {
    setTimeout(function() { 
     $("#gbe_pages_link").trigger('click');
