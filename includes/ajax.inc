@@ -306,7 +306,97 @@
       $result->data = $obj;
       $result->message = "OK. Saved artwork \"{$obj->title}\"";
       
-      echo(json_encode($result));exit;      
+      echo(json_encode($result));
+      exit;      
+      break;
+
+      case 'save-profile':
+      extract($obj_data);
+      //echo "<pre>";
+        //print_r($obj_data);
+      $opening_times = $obj_data[opening_time];
+      $closing_times = $obj_data[closing_time];
+      $holiday = $obj_data[holiday];
+      $obj_type = 'user_profile';
+      $user_id = $obj_data[user_id];
+
+      $today = today();     
+      $dateOfBirth = $obj_data[date_of_birth];      
+      $diff = date_diff(date_create($dateOfBirth), date_create($today));
+      $age = $diff->format("%y");
+      if($age > 18){ 
+        $data = db_getAll("select * from user_profile where user_id='$user_id'");
+        foreach($data as $datas){
+          $id = $datas->id;        
+          if($id) {
+            list($id, $errors) = update_object($obj_type, $obj_data, $id);       
+          } else {
+            list($id, $errors) = add_object($obj_type, $obj_data);
+          } 
+        }
+      }else{
+        json_error("Age should be greater than 18");
+      }
+
+      if($errors) json_error($errors);
+
+      $times_type = 'opening_hours';
+      $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+      
+      $data = db_getAll("select * from opening_hours where user_id='$user_id'");
+     
+      if($data) {
+        foreach($data as $datas){
+          for($i=0; $i<=6; $i++){
+            if($datas->day == $days[$i]){
+              $times_id = $datas->id;
+              $times_data->opening_time = $opening_times[$i];
+              $times_data->closing_time = $closing_times[$i];
+              if(!$holiday[$i])
+                $holiday[$i] = '0';
+              $times_data->holiday = $holiday[$i];
+                if( $times_data->holiday == '1'){
+                  $times_data->opening_time = '00:00';
+                  $times_data->closing_time = '00:00';
+                }
+                
+              $times_data->opening_time = $start = "{$times_data->opening_time}:00";
+              $times_data->closing_time  = $end = "{$times_data->closing_time}:00";
+              /*if(($end <= $start) && (($start != '00:00') && ($end != '00:00')) && (($start != '0:00') && ($end != '0:00')))  
+                json_error("End time must be after start time");
+              echo "<pre>";
+                print_r($datas->day);
+                print_r($times_data->holiday);*/
+              list($id, $errors) = update_object($times_type, $times_data, $times_id);
+            }
+          }
+        }
+      }else{
+        for($i=0; $i<=6; $i++){
+          $times_data->user_id = $user_id;
+          $times_data->day = $days[$i]; 
+          $times_data->opening_time = $opening_times[$i];
+          $times_data->closing_time = $closing_times[$i];
+
+          $times_data->opening_time = $start = "{$times_data->opening_time}";
+          $times_data->closing_time  = $end = "{$times_data->closing_time}";
+          if($start >= $end) json_error("End time must be after start time");
+
+          list($id, $errors) = add_object($times_type, $times_data);  
+        }
+      }
+
+      if($errors) json_error($errors);
+
+      $obj = get_object($obj_type, $id);
+      $obj->next_tab = $obj_data['next_tab'];
+      
+      $result->success = 1;
+      $result->data = $obj;
+      $result->message = "OK. Saved profile";
+
+      echo(json_encode($result));
+      exit;      
       break;
 
       case 'save-minisite':
@@ -5215,7 +5305,6 @@
       $obj_type = 'user';
       $userData = $obj_data;
       extract($userData);
-  
 
       if($error = check_required($obj_data, array('site_id' => "Site ID", 'first_name' => "First Name", 'last_name' => "Last Name"))) json_error("Missing: ".implode(', ', $error));
       $host_user_id = $obj_data['aff_id']?$obj_data['aff_id']:$u->id;
@@ -5245,6 +5334,47 @@
                   'user_id' => $host_user_id, 
                   'permissions' => $perms];
       list($id, $errors) = add_object('user_map', $mapData);
+      if($errors) json_error($errors);
+
+      $times_type = 'opening_hours';
+      $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+      $opening_times = $obj_data[opening_time];
+      $closing_times = $obj_data[closing_time];
+      
+      $data = db_getAll("select * from opening_hours where user_id='$user_id'");
+      
+      if($data) {
+        foreach($data as $datas){
+          
+          for($i=0; $i<=6; $i++){
+            if($datas->day == $days[$i]){
+              $times_id = $datas->id;
+              $times_data->opening_time = $opening_times[$i];
+              $times_data->closing_time = $closing_times[$i];
+
+              $times_data->opening_time = $start = "{$times_data->opening_time}";
+              $times_data->closing_time  = $end = "{$times_data->closing_time}";
+              if($start >= $end) json_error("End time must be after start time");
+
+              list($id, $errors) = update_object($times_type, $times_data, $times_id);
+            }
+          }
+        }
+      }else{
+        for($i=0; $i<=6; $i++){
+          $times_data->user_id = $user_id;
+          $times_data->day = $days[$i]; 
+          $times_data->opening_time = $opening_times[$i];
+          $times_data->closing_time = $closing_times[$i];
+
+          $times_data->opening_time = $start = "{$times_data->opening_time}";
+          $times_data->closing_time  = $end = "{$times_data->closing_time}";
+          if($start >= $end) json_error("End time must be after start time");
+
+          list($id, $errors) = add_object($times_type, $times_data);  
+        }
+      }
+      
       if($errors) json_error($errors);
       
       $result->data = get_user($user_id);

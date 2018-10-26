@@ -52,6 +52,7 @@ $__CLASSES = array(
     'site_content' =>         array(USER_LEVEL_STAFF,  'site', '', '', 0, 'title', '', ''),
 
     'minisite' =>             array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'name', '', ''),
+    'minisite_pages' =>       array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'page_name', '', ''),
     'minisite_layout' =>      array(USER_LEVEL_SYSTEM, 'site', '', '', NF_CACHE_ASSOC, 'name', 'id', ''),
     'minisite_home_page' =>   array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'id', '', ''),
     'minisite_artist_page' =>   array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'id', '', ''),
@@ -86,6 +87,7 @@ $__CLASSES = array(
     'user_map' =>             array(USER_LEVEL_SYSTEM, 'user', '', '', 0, '', '', ''),
     'auth_log' =>             array(USER_LEVEL_SYSTEM, 'user', '', '', NF_NO_DELETE, 'display_name', '', ''),
     'user_profile' =>         array(USER_LEVEL_STAFF,  'user', '', '', 0, 'display_name', '', ''),
+    'opening_hours' =>        array(USER_LEVEL_STAFF,  'user', '', '', 0, '', '', ''),
     'provider_profile' =>     array(USER_LEVEL_STAFF,  'user', '', '', 0, 'display_name', '', ''),
     // 'password_reset' =>       array(USER_LEVEL_SYSTEM, 'user', '', '', NF_NO_ACTIONS, '', '', ''),
     'wishlist' =>             array(USER_LEVEL_SYSTEM, 'user', '', '', 0, '', '', ''),
@@ -2763,7 +2765,7 @@ $__CLASS_ATTRIBUTES = array(
      'email_address'=>      array('Email',              'email',  '', AF_SEARCHABLE|AF_HIDE_LIST, 128),
      'languages'=>          array('Languages',    	    'json', 'en', AF_OBLIGATORY, 'language', array('active' => 1)),
      'default_language'=>   array('Language',    		    'valSelect', 'en', AF_OBLIGATORY|AF_SEARCHABLE, $langArray),
-     'social' =>            array('Social',             'json', '', 0),
+     //'social' =>            array('Social',             'json', '', 0),
      'data' =>              array('Data',               'json', '', 0),
      'template' =>          array('Template',           'str', '', 128),
      'logo'   =>            array('Logo',               'image',   '', AF_HIDE_LIST, 128),
@@ -2776,7 +2778,24 @@ $__CLASS_ATTRIBUTES = array(
      'font'=>               array('Font',               'str',  '', 0, 64 ),
      'css'=>                array('Css',                'str',  '', 0, 64 ),
      'location_id'=>        array('Location',           'link',   0, AF_HIDE_ADD, 'location'),
-     'footer'=>             array('Footer',          'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
+     'footer'=>             array('Footer',             'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
+     'show_title'  =>       array('Show title',         'bool',     1,  AF_HIDE_ADD, 0),
+     'show_subtitle'  =>    array('Show subtitle',      'bool',     1,  AF_HIDE_ADD, 0),
+     'show_timing'  =>      array('Show timing',        'bool',     1,  AF_HIDE_ADD, 0),
+     'show_social'  =>      array('Show social',        'bool',     1,  AF_HIDE_ADD, 0),
+   ),
+
+    "minisite_pages" => 
+   array(
+      'id'=>                 array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 8),
+      'created'=>            array('Created',            'datetime', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT),
+      'timestamp'=>          array('Timestamp',          'timestamp', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT, 14 ),
+      'active'  =>           array('Active?',            'bool',     1,  AF_HIDE_ADD, 0),
+      'site_id'=>            array('Site',               'link',  0, AF_SEARCHABLE|AF_HIDE, 'site'),
+      'client_id'=>          array('Client',                'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
+      'user_id' =>           array('User ID',            'link', ATT_DEFAULT_USER_ID, 0, 'user'),
+      'type'=>               array('Type',               'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 32 ),
+      'page_name'=>          array('Page Name',              'str',   '', 1, 32 ),
    ),
 
    "minisite_layout" => 
@@ -3920,25 +3939,21 @@ $__CLASS_ATTRIBUTES = array(
      'press'      => array('Press'  ,      'html',     '', 0),
 
      'data'=>        array('Data',           'json',  '', AF_SEARCHABLE|AF_HIDE_ADD),
+     'facebook'=>      array('Facebook',          'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 64 ),
+     'instagram'=>     array('Instagram',          'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 64 ),
+     'twitter'=>       array('Twitter',          'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 64 ),
+  ),
 
-     'mon_start_time' =>      array('Monday Start',   'time', '', AF_OBLIGATORY|AF_SEARCHABLE|AF_LOG, 'mon_end_time'), // options = dependent field
-     'mon_end_time' =>        array('Monday End',     'time', '', AF_OBLIGATORY|AF_SEARCHABLE|AF_LOG),
-     
-     'tues_start_time' =>     array('Tuesday Start', 'time', '', AF_OBLIGATORY|AF_SEARCHABLE|AF_LOG, 'tues_end_time'), // options = dependent field
-     'tues_end_time' =>       array('Tuesday End',   'time', '', AF_OBLIGATORY|AF_SEARCHABLE|AF_LOG),
-     
-     'wed_start_time' =>      array('Wednesday Start',   'time', '', AF_OBLIGATORY|AF_SEARCHABLE|AF_LOG, 'wed_end_time'), // options = dependent field
-     'wed_end_time' =>        array('Wednesday End',     'time', '', AF_OBLIGATORY|AF_SEARCHABLE|AF_LOG),
-     
-     'thur_start_time' =>     array('Thursday Start',  'time', '', AF_OBLIGATORY|AF_SEARCHABLE|AF_LOG, 'thur_end_time'), // options = dependent field
-     'thur_end_time' =>       array('Thursday End',    'time', '', AF_OBLIGATORY|AF_SEARCHABLE|AF_LOG),
-     
-     'fri_start_time' =>      array('Friday Start',    'time', '', AF_OBLIGATORY|AF_SEARCHABLE|AF_LOG, 'fri_end_time'), // options = dependent field
-     'fri_end_time' =>        array('Friday End',      'time', '', AF_OBLIGATORY|AF_SEARCHABLE|AF_LOG),
-     
-     'instagram'     => array('Instagram'  ,     'str',      '', 0, 50 ),
-     'facebook'     => array('Facebook'  ,     'str',      '', 0, 50 ),
-     'twitter'     => array('Twitter'  ,     'str',      '', 0, 50 ),
+   "opening_hours" => 
+  array(
+    'id'=>                array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 4),
+    'created'=>           array('Created',           'datetime', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT),
+    'timestamp'=>         array('Timestamp',         'timestamp', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT, 14 ),
+    'user_id'=>           array('User',              'link', 0, AF_OBLIGATORY, 'user_profile'),
+    'day'=>               array('Day'  ,     'str',      '', 0, 128 ),
+    'opening_time' =>     array('Opening Time',   'time', '', AF_OBLIGATORY|AF_SEARCHABLE|AF_LOG, 'opening_time'), // options = dependent field
+    'closing_time' =>      array('Closing Time',   'time', '', AF_OBLIGATORY|AF_SEARCHABLE|AF_LOG, 'closing_time'), // options = dependent field
+    'holiday'  =>       array('Holiday',            'bool',     1,  AF_HIDE_ADD, 0),
   ),
 
   "pet_profile" => 

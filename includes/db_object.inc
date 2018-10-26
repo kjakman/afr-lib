@@ -829,13 +829,14 @@ function get_object_sort_clause($type) {
 //function add_object($obj_type, $data, $parent_id=0, $preset_id=0, $parent_type='') {
 function add_object($obj_type, $data, $options = array()) {
   //echo("add_object $obj_type").dump($data);die();
-  //echo "<pre>"; print_r($data);
+  
   $data = (array) $data;
   $child_array = array(); // array of arrays [$child_type, $child_id]
   $errors = $child_errors = array();
   $messages = array();
   
 	// for new objects, let's first recursively process children, as we don't want to add parent object if there are child errors 
+
   $fields = get_object_attributes($obj_type, 0);
   foreach($fields as $field => $class) {
     $att_flags = $class[ATT_FLAGS];
@@ -858,7 +859,7 @@ function add_object($obj_type, $data, $options = array()) {
   }
   
   if($child_errors) return array(0, $child_errors, $messages);
-//echo "<pre>"; print_r($options);
+  //echo "<pre>"; print_r($options);
   list($id, $errors, $messages) = save_object_query($obj_type, $data, $options);
   
   if($id && count($child_array)) { // success, update children to point to parent
@@ -876,7 +877,7 @@ function add_object($obj_type, $data, $options = array()) {
 
 // update one object
 function update_object($obj_type, $data, $id, $options = array()) {
-  
+
   if(!$id) mydie ("update_object $obj_type: missing id");
 
   $options['id'] = $id;
@@ -2001,6 +2002,7 @@ function save_object_query($obj_type, $data, $options = array()) {
     
     
     if(is_object($att_val)) {dump($att_val);mydie("$field is object");}
+    //print_r($att_val);
     if(is_array($att_val)) {dump($att_val);mydie("{$obj_type}:{$field} is array val=".dump($att_val,true));}
     //if(!is_string($att_val)) {dump($att_val);die("$field is not string att_val='$att_val'");}
     if($att_val=='' && $att_default === ATT_DEFAULT_NULL) { // value is blank and default is null

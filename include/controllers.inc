@@ -28,8 +28,7 @@ function controller_minisite($app, $options = []) {
   $scope->basepath = $msObj->internal ? "/{$minisite}" : '';    
   $scope->minisite_name = $msObj->name;
   $scope->minisite_type = $type = $msObj->type;
-  //dump($scope->minisite_type);
-
+  
   $user_id = $msObj->user_id;
   if(!$user_id) die("Minisite: missing user");
   
@@ -54,16 +53,19 @@ function controller_minisite($app, $options = []) {
   $title = '';
   
   if(count($parts) > 3) return controller_error($app, "{$path} not found");
-    
+   
   if($page == 'home') { /** for now, use first exhibition */
     $gallery = '0';
     $artfair = '0';
     $others = '0';
+
+    $scope->mObj = $mObj = find_object('minisite', ['user_id' => $user_id, 'active' => 1]);
     $scope->homeObj = $homeObj = find_object('minisite_home_page', ['user_id' => $user_id, 'active' => 1]);
     $scope->artist_Objs = $artist_Obj = find_object('minisite_artist_page', ['user_id' => $user_id, 'active' => 1]);
     $scope->exhibition_Obj = $exhibitionpage = find_object('minisite_exhibition_page', ['user_id' => $user_id, 'active' => 1]);
 
-    $scope->mObj = $mObj = find_object('minisite', ['user_id' => $user_id, 'active' => 1]);
+    $scope->timings = $timings = find_objects('opening_hours', ['user_id' => $user_id], ['sort' => 'id asc']);
+    $scope->profileObj = $profileObj = find_objects('user_profile', ['user_id' => $user_id]);
 
     if($homeObj->show_gallery)
       $gallery = '10';
@@ -248,6 +250,7 @@ function controller_minisite($app, $options = []) {
       $scope->artist_Objs = $artist_Obj = find_object('minisite_artist_page', ['user_id' => $user_id, 'active' => 1]);
       $scope->exhibition_Obj = $exhibitionpage = find_object('minisite_exhibition_page', ['user_id' => $user_id, 'active' => 1]);
       $scope->mObj = $mObj = find_object('minisite', ['user_id' => $user_id, 'active' => 1]);
+      $scope->timings = $timings = find_objects('opening_hours', ['user_id' => $user_id], ['sort' => 'id asc']);
     }
     
     if($page == 'exhibitions' || $page == 'exhibition' ) {
@@ -269,6 +272,7 @@ function controller_minisite($app, $options = []) {
       $scope->exhibition_Obj = $exhibitionpage = find_object('minisite_exhibition_page', ['user_id' => $user_id, 'active' => 1]);
       $scope->artist_Objs = $artist_Obj = find_object('minisite_artist_page', ['user_id' => $user_id, 'active' => 1]);
       $scope->mObj = $mObj = find_object('minisite', ['user_id' => $user_id, 'active' => 1]);
+      $scope->timings = $timings = find_objects('opening_hours', ['user_id' => $user_id], ['sort' => 'id asc']);
 
       if($exhibitionpage->show_gallery)
         $gallery = '10';
@@ -408,6 +412,7 @@ function controller_minisite($app, $options = []) {
       $scope->exhibition_Obj = $exhibitionpage = find_object('minisite_exhibition_page', ['user_id' => $user_id, 'active' => 1]);
       $scope->artist_Objs = $artist_Obj = find_object('minisite_artist_page', ['user_id' => $user_id, 'active' => 1]);
       $scope->contact_Obj = $contactObj = find_object('minisite_home_page', ['user_id' => $user_id, 'active' => 1]);
+      $scope->timings = $timings = find_objects('opening_hours', ['user_id' => $user_id], ['sort' => 'id asc']);
       
       break;
     case 'about':
@@ -4320,17 +4325,28 @@ function controller_gallery_backend($app, $options = []) {
           }
           $scope->viewartist[]=$viewartist[] = get_user($artist_id);
         }
-
-          
-          $colSearch = ['user_id' => $obj->user_id, 'active' => 1,];
-          $scope->minisiteobj = $minisiteobj = find_object('minisite', $colSearch);
-          $colSearch = ['user_id' => $obj->user_id, 'active' => 1,];
-          $scope->mhome = $mhome = find_object('minisite_home_page', $colSearch);
-          $scope->martist = $martist = find_object('minisite_artist_page', $colSearch);
-          $scope->mExhibition = $mExhibition = find_object('minisite_exhibition_page', $colSearch);
              
           $scope->auth_edit_minisite = $u_level >= USER_LEVEL_STAFF || auth_object('minisite', $obj);   
       }
+
+      $colSearch = ['user_id' => $obj->user_id, 'active' => 1];
+      $scope->minisiteobj = $minisiteobj = find_object('minisite', $colSearch);
+      
+      $scope->mhome = $mhome = find_object('minisite_home_page', $colSearch);
+      $scope->martist = $martist = find_object('minisite_artist_page', $colSearch);
+      $scope->mExhibition = $mExhibition = find_object('minisite_exhibition_page', $colSearch);
+     
+      $scope->pagelist = $pagelist = find_objects('minisite_pages', $colSearch);
+      
+      $scope->userprofile = $userprofile = get_user($obj->user_id);
+
+      $profileSearch = ['user_id' => $obj->user_id];
+      $scope->baseprofile = $profile = find_objects('user_profile', $profileSearch);
+      
+      $time = db_getAll("select * from opening_hours where user_id='$obj->user_id'");
+      
+      $scope->timing = $time;
+      //dump($time);
 
       $sub = $app->host_sub;
       $app->page->itemview = 'website';
@@ -4403,7 +4419,7 @@ function controller_gallery_backend($app, $options = []) {
       $scope->section = 'network';
       $app->page->itemview = 'profile';
       $app->page->listview = 'network';
-	$scope->obj_type = $obj_type = "artist"; //Bala
+	    $scope->obj_type = $obj_type = "artist"; //Bala
       
       $filters = ['active' => 1, 'user.site_id' => $app->site->id];
       if($u_level < USER_LEVEL_ADMIN) $filters['user_id'] = $user_ids;
@@ -4413,7 +4429,7 @@ function controller_gallery_backend($app, $options = []) {
     case "settings":
       $scope->section = 'settings';
       break;
-     case "profile":
+    case "profile":
       $scope->section = 'network';
       $scope->obj_type = $obj_type = "artist";
       if(!$add) {   
@@ -4423,6 +4439,7 @@ function controller_gallery_backend($app, $options = []) {
         controller_artist_profile($app);
         $profile = $scope->profile;
       }
+
       $app->page->subtemplate = $sub = '_gallery-backend-profile.html'; // $edit ? '_gallery-backend-artwork-form.html' : '_gallery-artwork-detail.html';
       $scope->profile_template = $utpl = "_{$scope->template}";
       print_log("type={$obj_type} id={$obj_id} title={$profile->display_name} edit={$edit} auth={$auth_edit} sub={$sub} usertpl={$utpl}".dump($scope,true), 'backend', LOG_LEVEL_TEST);
@@ -4440,6 +4457,9 @@ function controller_gallery_backend($app, $options = []) {
         unset($scope->template);
       }
       */
+
+      $data = db_getAll("select * from opening_hours where user_id='$id'");
+      $scope->timing = $data;
       break;
       
     case "exhibitions":
