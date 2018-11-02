@@ -875,6 +875,13 @@ function add_object($obj_type, $data, $options = array()) {
   return array($id, $errors, $messages);
 }
 
+// get obj_id from page_id
+function getobj_id($obj_type, $user_id, $page_id){
+  $data = find_object($obj_type, ['user_id' => $user_id, 'page_id' =>$page_id , 'active' => 1]);
+  $obj_id = $data->id;
+  return $obj_id;
+}
+
 // update one object
 function update_object($obj_type, $data, $id, $options = array()) {
 
@@ -1952,12 +1959,11 @@ function save_object_query($obj_type, $data, $options = array()) {
 
     } elseif($att_type == 'time') { // store hh:mm
       $len = strlen($att_val);
-      //echo("att_type = time, att_val = $att_val len=$len<br>");
+        //echo("att_type = time, att_val = $att_val len=$len<br>");
       if($len == 19) $att_val = strip_date_sec($att_val); // convert 0000-00-00 hh:mm:ss to hh:mm
       elseif($len == 16) $att_val = strip_date($att_val); // convert 0000-00-00 hh:mm to hh:mm
       else if(is_time($att_val)) $att_val = strip_sec($att_val); // convert hh:mm:ss to hh:mm
       else if(is_datetime($att_val)) $att_val = strip_date_sec($att_val); // convert valid yyyy-mm-dd hh:mm:ss to hh:mm 
-
     } elseif($att_type == 'crypt' || $att_flags & AF_ENCRYPT) {
       $att_val = "AES_ENCRYPT('$att_val', '$_SESSION[sqlgarbage]')";
       $escape = false;

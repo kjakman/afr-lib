@@ -52,6 +52,7 @@ $__CLASSES = array(
     'site_content' =>         array(USER_LEVEL_STAFF,  'site', '', '', 0, 'title', '', ''),
 
     'minisite' =>             array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'name', '', ''),
+    'minisite_page_type' =>   array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'name', '', ''),
     'minisite_pages' =>       array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'page_name', '', ''),
     'minisite_layout' =>      array(USER_LEVEL_SYSTEM, 'site', '', '', NF_CACHE_ASSOC, 'name', 'id', ''),
     'minisite_home_page' =>   array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'id', '', ''),
@@ -2785,6 +2786,12 @@ $__CLASS_ATTRIBUTES = array(
      'show_social'  =>      array('Show social',        'bool',     1,  AF_HIDE_ADD, 0),
    ),
 
+   "minisite_page_type" => 
+   array(
+      'id'=>            array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 4),
+      'name'=>          array('Name',              'str',   '', 1, 32 ),
+   ),
+
     "minisite_pages" => 
    array(
       'id'=>                 array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 8),
@@ -2794,7 +2801,7 @@ $__CLASS_ATTRIBUTES = array(
       'site_id'=>            array('Site',               'link',  0, AF_SEARCHABLE|AF_HIDE, 'site'),
       'client_id'=>          array('Client',                'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
       'user_id' =>           array('User ID',            'link', ATT_DEFAULT_USER_ID, 0, 'user'),
-      'type'=>               array('Type',               'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 32 ),
+      'type' =>              array('Type',         'many2one', 0, AF_LOG|AF_SEARCHABLE , 'minisite_page_type'),
       'page_name'=>          array('Page Name',              'str',   '', 1, 32 ),
    ),
 
@@ -2835,6 +2842,7 @@ $__CLASS_ATTRIBUTES = array(
       'site_id'=>            array('Site',               'link',  0, AF_SEARCHABLE|AF_HIDE, 'site'),
       'client_id'=>          array('Client',                'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
       'user_id' =>           array('User ID',            'link', ATT_DEFAULT_USER_ID, 0, 'user'),
+      'page_id' =>           array('Page',               'link', 0, AF_HIDE_EDIT|AF_HIDE_ADD, 'minisite_pages'),
       'active'  =>           array('Active?',            'bool',     1,  AF_HIDE_ADD, 0),
       'menu_title'=>         array('Artist Menu Title',  'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
       'page_title'=>         array('Artist Page Title',  'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
@@ -2849,6 +2857,7 @@ $__CLASS_ATTRIBUTES = array(
       'site_id'=>            array('Site',               'link',  0, AF_SEARCHABLE|AF_HIDE, 'site'),
       'client_id'=>          array('Client',                'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
       'user_id' =>           array('User ID',            'link', ATT_DEFAULT_USER_ID, 0, 'user'),
+      'page_id' =>           array('Page',               'link', 0, AF_HIDE_EDIT|AF_HIDE_ADD, 'minisite_pages'),
       'active'  =>           array('Active?',            'bool',     1,  AF_HIDE_ADD, 0),
       'menu_title'=>  array('Exhibition Menu Title',  'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
       'page_title'=>  array('Exhibition Page Title',  'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
@@ -3951,8 +3960,8 @@ $__CLASS_ATTRIBUTES = array(
     'timestamp'=>         array('Timestamp',         'timestamp', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT, 14 ),
     'user_id'=>           array('User',              'link', 0, AF_OBLIGATORY, 'user_profile'),
     'day'=>               array('Day'  ,     'str',      '', 0, 128 ),
-    'opening_time' =>     array('Opening Time',   'time', '', AF_OBLIGATORY|AF_SEARCHABLE|AF_LOG, 'opening_time'), // options = dependent field
-    'closing_time' =>      array('Closing Time',   'time', '', AF_OBLIGATORY|AF_SEARCHABLE|AF_LOG, 'closing_time'), // options = dependent field
+    'opening_time' =>     array('Opening Time',   'datetime', '', ATT_DEFAULT_NULL), 
+    'closing_time' =>      array('Closing Time',   'datetime', '', ATT_DEFAULT_NULL), 
     'holiday'  =>       array('Holiday',            'bool',     1,  AF_HIDE_ADD, 0),
   ),
 

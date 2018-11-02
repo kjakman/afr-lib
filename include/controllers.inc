@@ -2,7 +2,6 @@
 
 function controller_mytest($app, $options = []) {
   $scope = $app->page->scope;
-
   $scope->template = 'test-page.html';
   $scope->foo = "bar";
   return;
@@ -4329,15 +4328,19 @@ function controller_gallery_backend($app, $options = []) {
           $scope->auth_edit_minisite = $u_level >= USER_LEVEL_STAFF || auth_object('minisite', $obj);   
       }
 
+      $page_id = $_GET['page_id'];
+      $scope->page_id = $page_id;
+      //dump($scope->page_id);
+
       $colSearch = ['user_id' => $obj->user_id, 'active' => 1];
       $scope->minisiteobj = $minisiteobj = find_object('minisite', $colSearch);
-      
-      $scope->mhome = $mhome = find_object('minisite_home_page', $colSearch);
-      $scope->martist = $martist = find_object('minisite_artist_page', $colSearch);
-      $scope->mExhibition = $mExhibition = find_object('minisite_exhibition_page', $colSearch);
-     
       $scope->pagelist = $pagelist = find_objects('minisite_pages', $colSearch);
-      
+
+      $col = ['user_id' => $obj->user_id, 'page_id' => $page_id,'active' => 1];
+      $scope->mhome = $mhome = find_object('minisite_home_page', $col);
+      $scope->martist = $martist = find_object('minisite_artist_page', $col);
+      $scope->mExhibition = $mExhibition = find_object('minisite_exhibition_page', $col);
+     
       $scope->userprofile = $userprofile = get_user($obj->user_id);
 
       $profileSearch = ['user_id' => $obj->user_id];
@@ -4356,7 +4359,8 @@ function controller_gallery_backend($app, $options = []) {
       } else {
         $scope->url = $url = "https://{$_SERVER['SERVER_NAME']}/{$obj->url}"; 
       }
-      $scope->title = "URL: <a href='{$url}' target='website'>{$url}</a>"; 
+      $scope->title = "URL: <a href='{$url}' target='website'>{$url}</a>";
+
       break;
     case "websites":
       $scope->section = 'website';

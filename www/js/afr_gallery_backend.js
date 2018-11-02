@@ -284,6 +284,7 @@ $(document).on("click", "#sel_del_success", function() { //Bala
    $("#selection").hide();
 });
 
+//Delete artist in minisite
 $(document).on("click", '#soft_delete', function(){
   var id = $(this).data('value');
   var obj_type = "minisite";
@@ -291,12 +292,29 @@ $(document).on("click", '#soft_delete', function(){
     url: "/ajax.php",
     dataType: "json",
     data: {
-      oper: "soft-delete",
+      oper: "artist-delete",
       val: id
     }, 
     
   });     
 });
+
+//Delete minisite pages
+$(document).on("click", '#page_delete', function(){
+  var id = $(this).data('value');
+  var obj_type = "minisite_pages";
+  $.ajax({
+    url: "/ajax.php",
+    dataType: "json",
+    data: {
+      oper: "page-delete",
+      val: id
+    }, 
+    
+  });     
+});
+
+//Delete events
 
 $(document).on("click", '#event_delete', function(){
   var id = $(this).data('value');
@@ -316,7 +334,7 @@ $(document).on("click", '#event_delete', function(){
 
 $(document).on("click",'#show_web',function() {
    setTimeout(function() { 
-    $("#gbe_pages_link").trigger('click');
+    $("#gbe_artist_link").trigger('click');
   }, 1000);
 });
 

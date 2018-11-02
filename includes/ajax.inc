@@ -312,8 +312,7 @@
 
       case 'save-profile':
       extract($obj_data);
-      //echo "<pre>";
-        //print_r($obj_data);
+      
       $opening_times = $obj_data[opening_time];
       $closing_times = $obj_data[closing_time];
       $holiday = $obj_data[holiday];
@@ -343,11 +342,12 @@
       $times_type = 'opening_hours';
       $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
       
-      $data = db_getAll("select * from opening_hours where user_id='$user_id'");
-     
-      if($data) {
-        foreach($data as $datas){
-          for($i=0; $i<=6; $i++){
+      for($i=0; $i<=6; $i++){
+        $data = db_getAll("select * from opening_hours where user_id='$user_id' AND day= '$days[$i]'");
+      
+        if($data) {
+          foreach($data as $datas){
+            
             if($datas->day == $days[$i]){
               $times_id = $datas->id;
               $times_data->opening_time = $opening_times[$i];
@@ -355,37 +355,58 @@
               if(!$holiday[$i])
                 $holiday[$i] = '0';
               $times_data->holiday = $holiday[$i];
-                if( $times_data->holiday == '1'){
-                  $times_data->opening_time = '00:00';
-                  $times_data->closing_time = '00:00';
-                }
+              
+              if( $times_data->holiday == '1'){
+                $times_data->opening_time = '00:00';
+                $times_data->closing_time = '00:00';
+              }
                 
               $times_data->opening_time = $start = "{$times_data->opening_time}:00";
               $times_data->closing_time  = $end = "{$times_data->closing_time}:00";
-              /*if(($end <= $start) && (($start != '00:00') && ($end != '00:00')) && (($start != '0:00') && ($end != '0:00')))  
-                json_error("End time must be after start time");
-              echo "<pre>";
-                print_r($datas->day);
-                print_r($times_data->holiday);*/
-              list($id, $errors) = update_object($times_type, $times_data, $times_id);
-            }
+
+              if(($start == '00:00:00') && ($end == '00:00:00') ){
+                list($id, $errors) = update_object($times_type, $times_data, $times_id);
+              }else{
+                if($start >= $end) 
+                  json_error("End time must be after start time");
+                else 
+                  list($id, $errors) = update_object($times_type, $times_data, $times_id);
+              }                   
+            }         
           }
-        }
-      }else{
-        for($i=0; $i<=6; $i++){
+
+        }else{
           $times_data->user_id = $user_id;
           $times_data->day = $days[$i]; 
           $times_data->opening_time = $opening_times[$i];
           $times_data->closing_time = $closing_times[$i];
 
-          $times_data->opening_time = $start = "{$times_data->opening_time}";
-          $times_data->closing_time  = $end = "{$times_data->closing_time}";
-          if($start >= $end) json_error("End time must be after start time");
+          if(!$holiday[$i])
+            $holiday[$i] = '0';
+          $times_data->holiday = $holiday[$i];
+          
+          if( $times_data->holiday == '1'){
+            $times_data->opening_time = '00:00';
+            $times_data->closing_time = '00:00';
+          }
 
-          list($id, $errors) = add_object($times_type, $times_data);  
+          $times_data->opening_time = $start = "{$times_data->opening_time}:00";
+          $times_data->closing_time  = $end = "{$times_data->closing_time}:00";
+          
+          if(($start == '00:00:00') && ($end == '00:00:00') ){
+            list($id, $errors) = add_object($times_type, $times_data); 
+          }else{
+            if($start >= $end){
+                print_r($times_data->day);
+                print_r($start);
+                print_r($end);
+              json_error("End time must be after start time");
+            }
+            else 
+              list($id, $errors) = add_object($times_type, $times_data);  
+          }
         }
       }
-
       if($errors) json_error($errors);
 
       $obj = get_object($obj_type, $id);
@@ -401,9 +422,15 @@
 
       case 'save-minisite':
       extract($obj_data);
-      
+      $obj_type = $obj_data[obj_type];
+      $page_id = $obj_data[page_id];
+      $page_id = $obj_data[page_id];
+
+      $obj_id = getobj_id($obj_type, $user_id, $page_id);
+
       if($obj_id) {
         list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
+        //echo "updated";
         print_log("save-ministe: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
       } else {
         list($id, $errors) = add_object($obj_type, $obj_data);
@@ -412,8 +439,8 @@
           
       if($errors) json_error($errors);
       
-      $obj = get_object($obj_type, $id);
-      $obj->next_tab = $obj_data['next_tab'];
+      //obj = get_object($obj_type, $id);
+      //$obj->next_tab = $obj_data['next_tab'];
       
       $result->success = 1;
       $result->data = $obj;
@@ -422,46 +449,96 @@
       echo(json_encode($result));exit;      
       break;
 
-      case 'save-minisite-page':
-      extract($obj_data);
-      $user = $user_id;
-      $val = $tags;
-      $host_user_id = explode('|',$val);
-      
-      $data = db_getAll("select * from user_map where host_user_id='$host_user_id[1]' AND soft_delete= '1'");
-      
-      if($data){
-        foreach($data as $datas){
-          $datas->user_id = $user;
-          $datas->soft_delete = 0;
-          $update_data= update_object('user_map', $datas, $datas->id);
-          $media = db_getAll("select * from media_collection where artist_id='$host_user_id[1]' AND active= '1' AND type='120' AND start_date=''");
+      case 'save-minisite-artist':
+        extract($obj_data);
+        $user = $user_id;
+        $val = $tags;
+        $host_user_id = explode('|',$val);
+        
+        $data = db_getAll("select * from user_map where host_user_id='$host_user_id[1]' AND soft_delete= '1'");
+        
+        if($data){
+          foreach($data as $datas){
+            $datas->user_id = $user;
+            $datas->soft_delete = 0;
+            $update_data= update_object('user_map', $datas, $datas->id);
+            $media = db_getAll("select * from media_collection where artist_id='$host_user_id[1]' AND active= '1' AND type='120' AND start_date=''");
 
-          if($media){
-            foreach($media as $medias){
-              $medias->user_id= $user;
-              $output= update_object('media_collection', $medias, $medias->id);
-            }  
+            if($media){
+              foreach($media as $medias){
+                $medias->user_id= $user;
+                $output= update_object('media_collection', $medias, $medias->id);
+              }  
+            }
+            else{
+              json_error("No medias to display");
+            }
           }
-          else{
-            json_error("No medias to display");
-          }
+
         }
-
-      }
-      else{
-        json_error("No medias to display"); 
-      }
-      $result->message = "Artist will be displayed in website";
-      echo(json_encode($result));
-      exit;
+        else{
+          json_error("No medias to display"); 
+        }
+        $result->message = "Artist will be displayed in website";
+        echo(json_encode($result));
+        exit;
       break;
+
+    case 'save-minisite-page':
+      extract($obj_data);
+      $obj_type = "minisite_pages";
+      $user_id = $obj_data[user_id];
+      $site_id = $obj_data[site_id];
+
+      $artist = find_objects('minisite_pages', ['user_id' => $user_id, 'type' =>20 , 'active' => 1]);
+      $count = count($artist);
+
+      $exhibition = find_objects('minisite_pages', ['user_id' => $user_id, 'type' =>30 , 'active' => 1]);
+      $count1 = count($exhibition);
+
+      if($obj_data[type] == 10) json_error("Home page cannot be added");
+      if($obj_data[type] == 20) $obj_data[page_name] = 'artist'.$count;
+      if($obj_data[type] == 30) $obj_data[page_name] = 'exhibition'.$count1;
+
+      if($obj_id){
+        list($id, $errors) = add_object($obj_type, $obj_data);
+        print_log("save-minisite: added: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
+      }        
+          
+      if($errors) json_error($errors); 
+
+      $data = find_objects('minisite_pages', ['user_id' => $user_id, 'page_name' =>$obj_data[page_name] , 'active' => 1]);
+
+      foreach($data as $datas){
+        $obj_data1[site_id] = $site_id;
+        $obj_data1[user_id] = $user_id;
+        $obj_data1[page_id] = $datas->id;
+        $obj_data1[menu_title] = $datas->page_name;
+        $obj_data1[page_title] = $datas->page_name;
+    
+        if($datas->type == 20){
+          $sub_type = "minisite_artist_page";  
+          list($id, $errors) = add_object($sub_type, $obj_data1);
+          if($errors) json_error($errors); 
+        }else{
+          $sub_type = "minisite_exhibition_page";  
+          list($id, $errors) = add_object($sub_type, $obj_data1);
+          if($errors) json_error($errors); 
+        }
+      }      
+      
+      $result->success = 1;
+      $result->message = "OK. Minisite Pages Saved";       
+      echo(json_encode($result));
+      exit;      
+    break;
 
     case 'save-event':
       $obj_type = 'event';
       print_log("save-event: data:".dump($obj_data,true), 'collection', LOG_LEVEL_TEST);
-      
+
       extract($obj_data);
+     
       if($error = check_required($obj_data, 
           ['parent_type' => "Parent Type", 'parent_id' => "parent_id", 'title' => "Title", 'event_date' => "Date", 'event_start_time' => "Start Time", 'event_end_time' => "End Time"]
         )) json_error("Missing: ".implode(', ', $error));
@@ -471,10 +548,10 @@
       $sql_date = date2sql($obj_data['event_date']);
       if(!is_date($sql_date)) json_error("{$obj_data['event_date']} is not a valid date");
       if($sql_date < today()) json_error("Date cannot be in the past.");
-      
+
       $obj_data['start_time'] = $start = "{$sql_date} {$obj_data['event_start_time']}:00";
       $obj_data['end_time']  = $end = "{$sql_date} {$obj_data['event_end_time']}:00";
-
+      
       $lat = $obj_data['location_lat'];
       $lng = $obj_data['location_long'];
 
@@ -514,11 +591,7 @@
         list($loc_id, $loc_errors) = update_object('location', $locData, $loc_id);
       }
 
-      $obj = get_object($obj_type, $id);
-      $obj->next_tab = $obj_data['next_tab'];
-      
       $result->success = 1;
-      $result->data = $obj;
       $result->message = "OK. Saved event \"{$obj->title}\"";
       
       echo(json_encode($result));exit;      
@@ -5268,7 +5341,7 @@
       echo json_encode($result);exit();
       break;
 
-    case 'soft-delete':
+    case 'artist-delete':
       $val = trim($obj_data['val']);
       if($val){
         $data = db_getAll("select * from user_map where host_user_id='$val'");
@@ -5296,9 +5369,61 @@
       }
 
       $result->message = "Event Deleted";
-      echo json_encode($result);
+      echo (json_encode($result));
       exit;
       break;
+
+    case 'page-delete':
+
+      $id = trim($obj_data['val']);
+      $obj_type = 'minisite_pages';
+      
+      if($id){
+        list($delete_count, $errors) = delete_object($obj_type, $id);
+        $exhibition = find_objects('minisite_exhibition_page', array('page_id' => $id, 'active' => 1));
+        $artist = find_objects('minisite_artist_page', array('page_id' => $id, 'active' => 1));
+        if($exhibition){
+          foreach($exhibition as $exhibitions){
+            $obj_type1 = minisite_exhibition_page;
+            $obj_id = $exhibitions->id;
+            list($delete_exhibition, $errors) = delete_object($obj_type1, $obj_id);
+          }
+        }else{
+          foreach($artist as $artists){
+            $obj_type1 = minisite_artist_page;
+            $obj_id = $artists->id;
+            list($delete_artist, $errors) = delete_object($obj_type1, $obj_id);
+          }
+        }
+      }
+      if($errors) json_error($errors);
+
+      $result->message = "Pages Deleted";
+      echo (json_encode($result));
+      exit;
+      break;
+
+    /*case 'find-page':
+      //$page_id = $_GET['page_id'];
+      //echo "<pre>";
+        //print_r($page_id);
+      $page_id = trim($obj_data['page_id']);
+      $user_id = trim($obj_data['user_id']);
+      $scope->page_id= $page_id;
+      if($page_id){
+        $search = ['active' => 1, 'user_id' => $user_id, 'id' => $page_id];
+        $data = find_object('minisite_pages', $search);
+      }
+      $obj = get_object(minisite_pages, $page_id);
+      if($data->type == '10') $obj->next_tab = 'home';
+      if($data->type == '20') $obj->next_tab = 'artist';
+      if($data->type == '30') $obj->next_tab = 'exhibition';
+      
+      $result->success = 1;
+      $result->data = $obj;
+      echo (json_encode($data));
+      exit;
+      break;*/
 
     case 'add-artist':
       

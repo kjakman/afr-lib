@@ -116,30 +116,37 @@
               {if ($timing.day == 'monday')}
                 {$mon_start_time = $timing.opening_time}
                 {$mon_end_time = $timing.closing_time}
+                {$mon_holiday = $timing.holiday}
               {/if}
               {if ($timing.day == 'tuesday')}
                 {$tue_start_time = $timing.opening_time}
                 {$tue_end_time = $timing.closing_time}
+                {$tue_holiday = $timing.holiday}
               {/if}
               {if ($timing.day == 'wednesday')}
                 {$wed_start_time = $timing.opening_time}
                 {$wed_end_time = $timing.closing_time}
+                {$wed_holiday = $timing.holiday}
               {/if}
               {if ($timing.day == 'thursday')}
                 {$thur_start_time = $timing.opening_time}
                 {$thur_end_time = $timing.closing_time}
+                {$thur_holiday = $timing.holiday}
               {/if}
               {if ($timing.day == 'friday')}
                 {$fri_start_time = $timing.opening_time}
                 {$fri_end_time = $timing.closing_time}
+                {$fri_holiday = $timing.holiday}
               {/if}
               {if ($timing.day == 'saturday')}
                 {$sat_start_time = $timing.opening_time}
                 {$sat_end_time = $timing.closing_time}
+                {$sat_holiday = $timing.holiday}
               {/if}
               {if ($timing.day == 'sunday')}
                 {$sun_start_time = $timing.opening_time}
                 {$sun_end_time = $timing.closing_time}
+                {$sun_holiday = $timing.holiday}
               {/if}
             {/foreach}
 
@@ -163,7 +170,11 @@
                           <input type="text" name="closing_time[]" class="form-control input-small timepicker" value="{$mon_end_time|date_format:'H:i'}" data-time-format="H:i" >
                           <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
                         </div>
-                      </td>                   
+                      </td> 
+                      <td>
+                        <input type="checkbox" {if ($mon_holiday == '1')}checked{/if} class="form-control" name="holiday[0]" value="1" style= "width:20px">
+                      </td> 
+                      <td style= "width:200px">Holiday</td>                   
                   </tr>
                   <tr style="height: 15px;"/>
                   <tr>
@@ -181,7 +192,11 @@
                          <input type="text" name="closing_time[]" class="form-control input-small timepicker" value="{$tue_end_time|date_format:'H:i'}" data-time-format="H:i">
                          <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
                         </div>
-                      </td>   
+                      </td>  
+                      <td>
+                        <input type="checkbox" {if ($tue_holiday == '1')}checked{/if} class="form-control" name="holiday[1]" value="1" style= "width:20px">
+                      </td> 
+                      <td style= "width:200px">Holiday</td>  
                   </tr>
                   <tr style="height: 15px;"/>
                   <tr>
@@ -199,7 +214,11 @@
                          <input type="text" name="closing_time[]" class="form-control input-small timepicker" value="{$wed_end_time|date_format:'H:i'}" data-time-format="H:i" >
                          <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
                         </div>
-                      </td>                      
+                      </td>  
+                      <td>
+                        <input type="checkbox" {if ($wed_holiday == '1')}checked{/if} class="form-control" name="holiday[2]" value="1" style= "width:20px">
+                      </td> 
+                      <td style= "width:200px">Holiday</td>                     
                   </tr>
                   <tr style="height: 15px;"/>
                   <tr>
@@ -217,7 +236,11 @@
                           <input type="text" name="closing_time[]" class="form-control input-small timepicker" value="{$thur_end_time|date_format:'H:i'}" data-time-format="H:i" >
                           <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
                         </div>
-                      </td>                      
+                      </td> 
+                      <td>
+                        <input type="checkbox" {if ($thur_holiday == '1')}checked{/if} class="form-control" name="holiday[3]" value="1" style= "width:20px">
+                      </td> 
+                      <td style= "width:200px">Holiday</td>                      
                   </tr>
                   <tr style="height: 15px;"/>
                   <tr>
@@ -236,6 +259,10 @@
                          <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
                         </div>
                       </td>                        
+                      <td>
+                        <input type="checkbox" {if ($fri_holiday == '1')}checked{/if} class="form-control" name="holiday[4]" value="1" style= "width:20px">
+                      </td> 
+                      <td style= "width:200px">Holiday</td> 
                   </tr>
                   <tr style="height: 15px;"/>
                   <tr>
@@ -253,7 +280,11 @@
                          <input type="text" name="closing_time[]" class="form-control input-small timepicker" value="{$sat_end_time|date_format:'H:i'}" data-time-format="H:i">
                          <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
                         </div>
-                      </td>                        
+                      </td> 
+                      <td>
+                        <input type="checkbox" {if ($sat_holiday == '1')}checked{/if} class="form-control" name="holiday[5]" value="1" style= "width:20px">
+                      </td> 
+                      <td style= "width:200px">Holiday</td>                        
                   </tr>
                   <tr style="height: 15px;"/>
                   <tr>
@@ -271,7 +302,11 @@
                          <input type="text" name="closing_time[]" class="form-control input-small timepicker" value="{$sun_end_time|date_format:'H:i'}" data-time-format="H:i">
                          <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
                         </div>
-                      </td>                        
+                      </td> 
+                      <td>
+                        <input type="checkbox" {if ($sun_holiday == '1')}checked{/if} class="form-control" name="holiday[6]" value="1" style= "width:20px">
+                      </td> 
+                      <td style= "width:200px">Holiday</td>                        
                   </tr>
                   <tr style="height: 15px;"/>
                   <tr style="height: 15px;"/>
