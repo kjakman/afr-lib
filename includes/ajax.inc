@@ -276,6 +276,34 @@
       echo(json_encode($result));exit;      
       break;
 
+    case 'clone-artwork':
+      extract($obj_data);
+      if(!$obj_id) json_error("Missing artwork ID");
+      $title = trim($title);
+      if(!$title) json_error("Please enter a title");
+      
+      print_log("clone-artwork: type: {$obj_type} id: {$obj_id} data:".dump($obj_data,true), 'gallery', LOG_LEVEL_TEST);
+      
+      $artworkObj = get_object('artwork', $obj_id);
+      if(!$artworkObj) json_error("Artwork {$obj_id} not found");
+      
+      $data = (array) $artworkObj;
+      $data['title'] = $title;
+      $unset = ['id', 'created', 'modified','title_image','title_image_json','related_media_json'];
+      foreach($unset as $fld) unset($data[$fld]);
+
+      list($id, $errors) = add_object('artwork', $data);
+      if($errors) json_error($errors);
+      
+      $result->success = 1;
+      $result->id = $id;
+      $result->data = get_object('artwork', $id);
+      $result->message = "OK. Cloned artwork \"{$artworkObj->title}\"";
+
+      echo(json_encode($result));
+      exit;      
+      break;
+      
     case 'save-artwork':
       extract($obj_data);
 

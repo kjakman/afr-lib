@@ -741,10 +741,13 @@ function gallery_backend_ready() {
   }  
 }
 
+$(document).on("click", ".clone_modal_icon", function() {  
+  $("#clone_dialog_form input[name=obj_id]").val($(this).attr('id'));
+});
 
 // Neelamegam_clone
 // From list-base.html to clone.php
-
+/**
 $(document).on("click", ".clone_modal", function() {  
   var row_id = $(this).attr('id');
   row_id = row_id.replace('clone_modal','');
@@ -781,6 +784,7 @@ $(document).on("click", ".clone_modal", function() {
       }); 
     });
   });
+*/
 
 
 /**
