@@ -172,13 +172,14 @@ function property_gallery_count($aptObj_or_id) {
 /** unsused - automatic comment added on  */
 function property_types() {
   global $pTypeArray;
+  if(!is_class("property_type")) return [];
   if(is_array($pTypeArray)) return array_values($pTypeArray);  
   return find_objects('property_type', array(), array('field' => 'name'));  
 }
 
 function is_property_type($obj_type) {
   if($obj_type == 'property') return true; // do we want this ?
-
+  if(!is_class("property_type")) return false;
   global $pTypeArray;
   if(is_array($pTypeArray)) return in_array($obj_type, $pTypeArray); // Array lookup
   return find_object('property_type', array('name' => $obj_type)) ? true : false; // DB lookup  

@@ -1466,8 +1466,8 @@
         if($obj->status == INV_STATUS_OPEN) {
           $inv_data['status'] = INV_STATUS_SENT;
           $inv_data['locked'] = 1;
-          $inv_data['duedate'] = sql_add_days(today(), 30); // due in 30 days unless otherwise set		
-          $inv_data['invoice_date'] = now(); 		
+          $inv_data['duedate'] = sql_add_days(today(), 30); // due in 30 days unless otherwise set
+          $inv_data['invoice_date'] = now(); 
           list($inv_id, $inv_errors) = update_object('invoice', $inv_data, $obj_id);
           if($inv_errors) json_error($inv_errors);
         }
@@ -1891,278 +1891,31 @@
   
         
       $val = trim($obj_data['search']);
-	$new_value = explode(' ',$val);
-      switch($obj_type) {
-      case 'minisite':
-      /*if(count($new_value) >= 1) 
-         foreach($new_value as $key=> $val) {
-            $new_key = DB_LOGICAL_OR . $key;
-            $new_va .= $val . '|';
-         }              
-  $new_va = rtrim($new_va,'|');
-        if($val) $search[DB_LOGICAL_OR] = */
-
-      if(count($new_value) >= 1) 
-         foreach($new_value as $key=> $val) {
-      $key1 = $key + 1;
-            $new_key = DB_LOGICAL_OR . $key1;
-           // $new_va .= $val . '|';
-    $search[$new_key] =
-          array('minisite.id' => "*$val*", 
-                'name' => "*$val*", 
-                'domain' => "*$val*", 
-                'url' => "*$val*",
-                'type' => "*$val*"); 
-          }             
-        break;
-      case 'plugin':
-      /*if(count($new_value) >= 1) 
-         foreach($new_value as $key=> $val) {
-            $new_key = DB_LOGICAL_OR . $key;
-            $new_va .= $val . '|';
-         }              
-  $new_va = rtrim($new_va,'|');*/
-
-  if(count($new_value) >= 1) 
-         foreach($new_value as $key=> $val) {
-      $key1 = $key + 1;
-            $new_key = DB_LOGICAL_OR . $key1;
-           // $new_va .= $val . '|';
-    $search[$new_key] =
-        
-          array('plugin.id' => "*$val*", 
-                'title' => "*$val*", 
-                'subtitle' => "*$val*",
-                'type' => "*$val*"); 
-           }             
-        break;
-      case 'media':
-      if(count($new_value) >= 1) 
-         foreach($new_value as $key=> $val) {
-      $key1 = $key + 1;
-            $new_key = DB_LOGICAL_OR . $key1;
-           // $new_va .= $val . '|';
-    $search[$new_key] =
-          array('media.id' => "*$val*", 
-                'name' => "*$val*", 
-                'comment' => "*$val*"); 
-              }
-        break;
-      case 'media_collection':
-    $t1 = get_object_table('media_collection');
-    $t2 = get_object_table('user_profile');
-    
-        if(count($new_value) >= 1) 
-	       foreach($new_value as $key=> $val) {
-			$key1 = $key + 1;
-		        $new_key = DB_LOGICAL_OR . $key1;
-		       // $new_va .= $val . '|';
-
-         if($val=='physical'){
-            $val1= 10;
-         }elseif($val=='virtual'){
-            $val1= 20;
-         }elseif($val=='art fair'){
-            $val1= 30;
-         }elseif($val=='selection'){
-            $val1= 40;
-         }else
-		$val1 = $val;
-		$search[$new_key] =
-          array(
-                "{$t1}.id" => "*$val*",
-                "{$t1}.title" => "*$val*",
-                //"{$t2}.display_name" => "*$val*",
-		            "{$t1}.created" => "*$val*",
-                "{$t1}.subtype" => "*$val1*",
-                "{$t1}.start_date" => "*$val*",
-                "{$t1}.end_date" => "*$val*",
-                "{$t1}.description" => "*$val*");
-	       }              
-	/*$new_va = rtrim($new_va,'|');
-	$search[DB_LOGICAL_OR] = 
-          array('media_collection.id' => "*$new_va*", 
-                'title' => "*$new_va*", 
-                'description' => "*$new_va*");*/
-        break;
       
-      case 'artwork':
-  if(count($new_value) >= 1) 
-         foreach($new_value as $key=> $val) {
-	if($key == 1)
-		$key = 2;
-      $key1 = $key + 1;
-            $new_key = DB_LOGICAL_OR . $key1;
-           // $new_va .= $val . '|';
-    
-    $tb1 = get_object_table('artwork');
-    $tb2 = get_object_table('artwork_type');
-      if($val=='available'){
-            $val1= 10;
-         }elseif($val=='reserved'){
-            $val1= 20;
-         }elseif($val=='sold'){
-            $val1= 30;
-         }elseif($val=='in active'){
-            $val1= 40;
-         }else{
-            $val1= 50;
-         }
-		
-        $search[$new_key] =
-          array("{$tb1}.id" => "*$val*", 
-                "{$tb1}.title" => "*$val*", 
-                "{$tb1}.created" => "*$val*", 
-                "{$tb1}.artist_name" => "*$val*",
-                "{$tb1}.short_description" => "*$val*",
-                "{$tb1}.primary_year" => "*$val*",
-                "{$tb1}.technique" => "*$val*",
-                //"{$tb2}.name" => "*$val*", 
-                "{$tb1}.price" => "*$val*",
-                "{$tb1}.price_option" => "*$val*",
-                "{$tb1}.status" => "*$val1*"
-                );  
-          }
-
-        break;
-      case 'gallery':
-        if($val) $search[DB_LOGICAL_OR] = 
-          array('gallery.id' => "*$val*", 
-                'title' => "*$val*", 
-                'description' => "*$val*");              
-        break;
-      case 'dictionary':
-        if($val) $search[DB_LOGICAL_OR] = 
-          array('term' => "*$val*", 
-                'phrase' => "*$val*");              
-        break;
-        break;
-      case 'payment':
-        if($val) $search[DB_LOGICAL_OR] = 
-          array('payment.id' => "*$val*", 
-                'res_id' => "*$val*", 
-                'inv_id' => "*$val*", 
-                'description' => "*$val*");              
-        break;
-      case 'reservation':
-        if($val) $search[DB_LOGICAL_OR] = 
-          array('reservation.res_id' => "*$val*", 
-                'first_name' => "*$val*", 
-                'last_name' => "*$val*", 
-                'city_name' => "*$val*", 
-                'apartment_name' => "*$val*");              
-        break;
-      case 'shortstay':
-        if($val) $search[DB_LOGICAL_OR] = 
-          array('name' => "*$val*", 
-                'address_city' => "*$val*", 
-                'city_name' => "*$val*", 
-                'address_street' => "*$val*");
-        break;
-      case 'invoice':
-        if($val) $search[DB_LOGICAL_OR] = 
-          array('first_name' => "*$val*", 
-                'last_name' => "*$val*", 
-                'invoice.id' => "*$val*", 
-                'parent_id' => "*$val*", 
-                'invoice_id' => "*$val*", 
-                'concerning' => "*$val*");              
-        break;
-      case 'inv_lineitem':
-        if($val) $search['inv_id'] = $val;
-        else json_error("Missing invoice ID");
-        break;
-      case 'user':
-      /*if(count($new_value) >= 1) 
-         foreach($new_value as $key=> $val) {
-            $new_key = DB_LOGICAL_OR . $key;
-            $new_va .= $val . '|';
-         }              
-  $new_va = rtrim($new_va,'|');*/
-        $tbl1 = get_object_table('user');
-        $tbl2 = get_object_table('user_profile');
-        
-       if(count($new_value) >= 1) 
-         foreach($new_value as $key=> $val) {
-      $key1 = $key + 1;
-            $new_key = DB_LOGICAL_OR . $key1;
-           // $new_va .= $val . '|';
-    $search[$new_key] =
-          array(
-                //"{$tbl2}.first_name" => "*$val*", 
-                //"{$tbl2}.last_name" => "*$val*", 
-                //"{$tbl2}.display_name" => "*$val*", 
-                //"{$tbl2}.email_address" => "*$val*", 
-                "{$tbl1}.id" => "*$val*", 
-                "{$tbl1}.username" => "*$val*",
-                "{$tbl1}.roles" => "*$val*");   
-            }           
-        break;
-      default:
-        break;
-      }
-      if($filters = $_GET['filters']) {
-        $filters = json_decode($filters, true);
-        if(is_array($filters)) {
-          foreach($filters as $k => $v) $search[$k] = $v;
-        }          
-      }
-      if($ids = $obj_data['id']) { // limit to selected IDs
-        $search['id'] = $ids;
-      }
-
-     if($mode = $obj_data['mode']) {
-    	//TODO need to update the softdelete column using the ids
       
-    	delete_objects($obj_type,$ids); // need to update the softdelete db_object.inc file
-    	unset($search['id']);
-  	 }
-
-    if($_REQUEST['mode']=='edit') {
-    
-    update_object($obj_type, $obj_data, $obj_id);
-  
-     }
-
-      print_log("get-rows {$obj_type} GET: ".dump($_GET, true), 'debug', LOG_LEVEL_TEST);
-      print_log("get-rows {$obj_type} filters: ".dump($filters, true), 'debug', LOG_LEVEL_TEST);
-      print_log("get-rows {$obj_type} search: ".dump($search, true), 'debug', LOG_LEVEL_TEST);
+      $search_options = $options;
+      if($_GET['filters']) $search_options['filters'] = $_GET['filters'];
+      if($obj_data['id']) $search_options['id'] = $obj_data['id'];
       
-      $key = get_object_key($obj_type);      
-      if(!$options['sort']) $options['sort'] = get_object_sort($obj_type) ?: "{$key} desc";
-      
-      //echo "<pre>"; print_r($obj_type);
-
-      //$_SESSION['search'] = $search; 
-
-      $objs = find_objects($obj_type, $search, $options);
-
-      $count = count($objs);
-      print_log("get-rows $obj_type val=$val count=$count", 'debug', LOG_LEVEL_TEST);
-      //print_log("First:".dump($objs[0], true), 'debug', LOG_LEVEL_TEST);
-      
-      $extra_count = 0;
-      /** post processing - expensive */
-      switch($obj_type) {
-      case 'user':
-        foreach($objs as &$obj) {
-          $obj->rentals = count_objects('property', array('host_id' => $obj->id));
-          $obj->listed_rentals = count_objects('property', array('host_id' => $obj->id, 'active' => 1));
+      $vals = explode(' ', $val);
+      $objs = [];
+      if(count($vals) > 1) {
+        $search_options['associative'] = 1; /** return assoc. array */
+        $assocArrays = [];
+        foreach($vals as $v) {          
+          $assocArrays[] = object_site_search($obj_type, $search, $v, $search_options);
         }
-        break;
-      case 'gallery': /** look for media in this folder */
-        $folder_id = $search['parent_id'] ?: 0;
-        $mediaObjs = find_objects('media', ['active' => 1, 'parent_type' => 'gallery', 'parent_id' => $folder_id, 'parent_field' => 'media']);
-        $extra_count = count($mediaObjs);
-        foreach($mediaObjs as $mediaObj) {
-          $objs[] = ['obj_type' => 'media', 'id' => $mediaObj->id, 'created' => $mediaObj->created, 'type' => $mediaObj->type, 'filename' => $mediaObj->src,
-          'title' => $mediaObj->name, 'user_id' => $mediaObj->user_id, 'path' => $mediaObj->path, 'src' => $mediaObj->src];
-        }
-        break;
-      default:
-        break;
+        
+        $objs = [];
+        $result = call_user_func_array('array_intersect_key', $assocArrays);
+        foreach($result as $id => $obj) $objs[] = $obj;
+
+      } else {        
+        $objs = object_site_search($obj_type, $search, $val, $search_options);
       }
-  
+      
+      
+      
       if($obj_data['return'] == 'rows') { // return array, not object (required when using javascript URL instead of data-url, for some reason */
         echo(json_encode($objs));exit;
       }
@@ -2193,7 +1946,7 @@
       echo(json_encode($response, JSON_PRETTY_PRINT));exit;
       
       break;
-      
+     
     case 'list':
       if($u_level < USER_LEVEL_STAFF) json_error("list is disabled for non-admins");
       
@@ -3896,7 +3649,7 @@
       if(!is_email($email)) json_error("$email is not a valid email address");
 
 
-      // create email body and send it	
+      // create email body and send it
       //list($subject, $body, $from, $to, $replyto) = mail_template("contact_form", $obj_type, $personObj, 'accounts', 0, $personObj->language, $changes);
       $subject = "$siteObj->name Contact Form: $name";
       $body = html_p("You have received a new message from your website's contact form.");
@@ -3905,7 +3658,7 @@
       $body .= html_b(phrase('email', CAPITALIZE)).": $email".html_break();
       $body .= html_b(phrase('message', CAPITALIZE)).": $message".html_break();
       $from = "noreply@".$siteObj->domain;
-      $reply_to = $email;	
+      $reply_to = $email;
       
       $site_email = site_email($siteObj);
       if(!$site_email) json_error("Oops. This site does not have an email address configured.");
@@ -5126,7 +4879,7 @@
       $result->message = "Yes!".dump($priceObj,true);
       $result->message = '';
       $result->data = $priceObj;
-      echo json_encode($result);exit();				        
+      echo json_encode($result);exit();        
       break;      
       
 
@@ -5932,7 +5685,7 @@
       // $result['error'] = $upload_dir;
 
       echo json_encode($result);
-      exit();				
+      exit();
       break;
 
     // below 2 should return json array with image info:

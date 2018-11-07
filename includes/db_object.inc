@@ -4471,6 +4471,162 @@ function search2pdo($array, $level=0) {
   return array($filters, $values);
 }
 
+
+function object_site_search($obj_type, $search, $val, $options = []) {      
+  switch($obj_type) {
+    case 'minisite':
+      if($val) $search[DB_LOGICAL_OR] = 
+        array('minisite.id' => "*$val*", 
+              'name' => "*$val*", 
+              'domain' => "*$val*", 
+              'url' => "*$val*");              
+      break;
+    case 'plugin':
+      if($val) $search[DB_LOGICAL_OR] = 
+        array('plugin.id' => "*$val*", 
+              'title' => "*$val*", 
+              'subtitle' => "*$val*");              
+      break;
+    case 'media':
+      if($val) $search[DB_LOGICAL_OR] = 
+        array('media.id' => "*$val*", 
+              'name' => "*$val*", 
+              'comment' => "*$val*");              
+      break;
+    case 'media_collection':
+      if($val) $search[DB_LOGICAL_OR] = 
+        array('media_collection.id' => "*$val*", 
+              'title' => "*$val*", 
+              'description' => "*$val*");              
+      break;
+    case 'artwork':
+      if($val) $search[DB_LOGICAL_OR] = 
+        array('artwork.id' => "*$val*", 
+              'title' => "*$val*", 
+              'artist_name' => "*$val*",
+              'short_description' => "*$val*",
+              'primary_year' => "*$val*",
+              'technique' => "*$val*");              
+      break;
+    case 'gallery':
+      if($val) $search[DB_LOGICAL_OR] = 
+        array('gallery.id' => "*$val*", 
+              'title' => "*$val*", 
+              'description' => "*$val*");              
+      break;
+    case 'dictionary':
+      if($val) $search[DB_LOGICAL_OR] = 
+        array('term' => "*$val*", 
+              'phrase' => "*$val*");              
+      break;
+      break;
+    case 'payment':
+      if($val) $search[DB_LOGICAL_OR] = 
+        array('payment.id' => "*$val*", 
+              'res_id' => "*$val*", 
+              'inv_id' => "*$val*", 
+              'description' => "*$val*");              
+      break;
+    case 'reservation':
+      if($val) $search[DB_LOGICAL_OR] = 
+        array('reservation.res_id' => "*$val*", 
+              'first_name' => "*$val*", 
+              'last_name' => "*$val*", 
+              'city_name' => "*$val*", 
+              'apartment_name' => "*$val*");              
+      break;
+    case 'shortstay':
+      if($val) $search[DB_LOGICAL_OR] = 
+        array('name' => "*$val*", 
+              'address_city' => "*$val*", 
+              'city_name' => "*$val*", 
+              'address_street' => "*$val*");
+      break;
+    case 'invoice':
+      if($val) $search[DB_LOGICAL_OR] = 
+        array('first_name' => "*$val*", 
+              'last_name' => "*$val*", 
+              'invoice.id' => "*$val*", 
+              'parent_id' => "*$val*", 
+              'invoice_id' => "*$val*", 
+              'concerning' => "*$val*");              
+      break;
+    case 'inv_lineitem':
+      if($val) $search['inv_id'] = $val;
+      else json_error("Missing invoice ID");
+      break;
+    case 'user':
+      $tbl1 = get_object_table('user');
+      $tbl2 = get_object_table('user_profile');
+      if($val) $search[DB_LOGICAL_OR] = 
+        array("{$tbl2}.first_name" => "*$val*", 
+              "{$tbl2}.last_name" => "*$val*", 
+              "{$tbl2}.display_name" => "*$val*", 
+              "{$tbl2}.email_address" => "*$val*", 
+              "{$tbl1}.id" => "$val*", 
+              "{$tbl1}.username" => "*$val*");              
+      break;
+    default:
+      break;
+  }
+  
+  if($filters = $options['filters']) {
+    $filters = json_decode($filters, true);
+    if(is_array($filters)) {
+      foreach($filters as $k => $v) $search[$k] = $v;
+    }          
+  }
+
+  if($ids = $options['id']) { // limit to selected IDs
+    $search['id'] = $ids;
+  }
+  
+  print_log("get-rows {$obj_type} GET: ".dump($_GET, true), 'debug', LOG_LEVEL_TEST);
+  print_log("get-rows {$obj_type} filters: ".dump($filters, true), 'debug', LOG_LEVEL_TEST);
+  print_log("get-rows {$obj_type} search: ".dump($search, true), 'debug', LOG_LEVEL_TEST);
+  
+  $key = get_object_key($obj_type);      
+  if(!$options['sort']) $options['sort'] = get_object_sort($obj_type) ?: "{$key} desc";
+  
+  $objs = find_objects($obj_type, $search, $options);
+
+  $count = count($objs);
+  print_log("get-rows $obj_type val=$val count=$count", 'debug', LOG_LEVEL_TEST);
+  //print_log("First:".dump($objs[0], true), 'debug', LOG_LEVEL_TEST);
+  
+  $extra_count = 0;
+  /** post processing - expensive */
+  switch($obj_type) {
+  case 'user':
+    foreach($objs as &$obj) {
+      $obj->rentals = count_objects('property', array('host_id' => $obj->id));
+      $obj->listed_rentals = count_objects('property', array('host_id' => $obj->id, 'active' => 1));
+    }
+    break;
+  case 'gallery': /** look for media in this folder */
+    $folder_id = $search['parent_id'] ?: 0;
+    $mediaObjs = find_objects('media', ['active' => 1, 'parent_type' => 'gallery', 'parent_id' => $folder_id, 'parent_field' => 'media']);
+    $extra_count = count($mediaObjs);
+    foreach($mediaObjs as $mediaObj) {
+      $objs[] = ['obj_type' => 'media', 'id' => $mediaObj->id, 'created' => $mediaObj->created, 'type' => $mediaObj->type, 'filename' => $mediaObj->src,
+      'title' => $mediaObj->name, 'user_id' => $mediaObj->user_id, 'path' => $mediaObj->path, 'src' => $mediaObj->src];
+    }
+    break;
+  default:
+    break;
+  }
+  
+  $result = [];
+  if(!$options['associative']) return $objs;
+  
+  foreach($objs as $obj) {
+    $id = get_object_id($obj_type, $obj);
+    $result[$id] = $obj;
+  }
+  return $result;
+}
+      
+
 /**
 
 class db
