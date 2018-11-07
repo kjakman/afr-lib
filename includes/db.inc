@@ -17,6 +17,8 @@ try {
   $db = new PDO("mysql:host={$db_host};dbname={$db_db};charset=utf8", $db_user, $db_password);
   $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
   $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+  $db->setAttribute("dbname", $db_db);
+
 }
 catch(PDOException $e) {     
   echo $e->getMessage();

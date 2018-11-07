@@ -7,18 +7,19 @@ $__CLASSES = array(
 //                                    0           1     2    3     4      5       6        7            8
 
 // security - used by php auth
-    'phpauth_config' =>                array(USER_LEVEL_SYSTEM, 'phpauth_config',   '', 'id', 0, 'setting', '', ''),
-    'phpauth_attempts' =>              array(USER_LEVEL_SYSTEM, 'phpauth_attempts', '', 'id', 0, 'ip', '', ''),
-    'phpauth_requests' =>              array(USER_LEVEL_SYSTEM, 'phpauth_requests', '', 'id', 0, 'rkey', '', ''),
-    'phpauth_sessions' =>              array(USER_LEVEL_SYSTEM, 'phpauth_sessions', '', 'id', 0, 'ip', '', ''),
+    'phpauth_config' =>                array(USER_LEVEL_SYSTEM, 'external', 'config', 'id', 0, 'setting', '', ''),
+    'phpauth_attempts' =>              array(USER_LEVEL_SYSTEM, 'external', 'attempts', 'id', 0, 'ip', '', ''),
+    'phpauth_requests' =>              array(USER_LEVEL_SYSTEM, 'external', 'requests', 'id', 0, 'rkey', '', ''),
+    'phpauth_sessions' =>              array(USER_LEVEL_SYSTEM, 'external', 'sessions', 'id', 0, 'ip', '', ''),
 
 // object model
     'class' =>                array(USER_LEVEL_SYSTEM, 'object_model', '', 'type', NF_CACHE, 'name', '', ''),
     'class_group' =>          array(USER_LEVEL_SYSTEM, 'object_model', '', 'name', NF_CACHE, 'name', '', ''),
     'attribute' =>            array(USER_LEVEL_SYSTEM, 'object_model', '', 'id', NF_CACHE,   'name', 'id', ''),
     'attribute_type' =>       array(USER_LEVEL_SYSTEM, 'object_model', '', 'name', NF_CACHE_ASSOC,   'name', '', ''),
-    'object_description' =>   array(USER_LEVEL_STAFF, 'content', '', '', 0, '', '', ''),
+    'object_description' =>   array(USER_LEVEL_STAFF, 'object_model', '', '', 0, '', '', ''),
     //'default_class' =>        array(USER_LEVEL_SYSTEM, 'object_model', '', '', 0, '', '', ''),
+    'default_attributes' =>   array(USER_LEVEL_SYSTEM, 'object_model', '', '', 0, '', '', ''),
 
 // system
     'dictionary' =>           array(USER_LEVEL_SYSTEM, 'system', '', '', 0, 'term language', '', ''), /** special caching */
@@ -113,20 +114,9 @@ $__CLASSES = array(
 
     'price_breakdown'      => array(USER_LEVEL_USER,   'enquiry', '', '', 0, '', '', ''),
     'price_breakdown_row'  => array(USER_LEVEL_USER,   'enquiry', '', '', 0, '', 'date', ''),
+    'calendar_import' =>      array(USER_LEVEL_SYSTEM, 'system', '', '', 0, '', '', ''),
 
 // property
-    'property' =>             array(USER_LEVEL_SYSTEM, 'property', '', '', 0, '', '', ''),
-    'serviced_rental' =>      array(USER_LEVEL_OWNER,  'property', 'property', '', 0, '', '', 'property'),
-    'shortstay' =>            array(USER_LEVEL_OWNER,  'property', 'property', '', 0, '', '', 'serviced_rental'),
-    'facility' =>             array(USER_LEVEL_OWNER,  'property', 'facility', '', 0, '', '', ''),
-    'property_description' => array(USER_LEVEL_OWNER,  'property', '', '', NF_NO_LIST, '', '', ''),
-    'property_type' =>        array(USER_LEVEL_SYSTEM, 'property', '', '', NF_CACHE_ASSOC, '', '', ''),
-    'hosting_property_type' => array(USER_LEVEL_SYSTEM, 'property', '', '', NF_CACHE_ASSOC, '', 'id', ''),
-    'hosting_room_type'    => array(USER_LEVEL_SYSTEM, 'property', '', '', NF_CACHE_ASSOC, '', 'id', ''),
-    'cancellation_policy' =>  array(USER_LEVEL_SYSTEM, 'property', '', '', NF_CACHE_ASSOC, '', 'id', ''),
-    'checkin_time' =>         array(USER_LEVEL_SYSTEM, 'property', '', '', NF_CACHE_ASSOC, '', 'id', ''),
-    'checkout_time' =>        array(USER_LEVEL_SYSTEM, 'property', '', '', NF_CACHE_ASSOC, '', 'id', ''),
-    'calendar_import' =>      array(USER_LEVEL_OWNER,  'property', '', '', 0, '', 'id', ''),
     'agent' =>                array(USER_LEVEL_ADMIN,  'user', '', '', 0, 'name', 'name', ''),
 
 // review
@@ -201,20 +191,6 @@ $__CLASSES = array(
 
     'landmark_type' =>        array(USER_LEVEL_STAFF,  'location', 'landmark'        , 'id', NF_CACHE_ASSOC, '', '', ''),
 
-//   Third Party                    USER_LEVEL  GROUP TABLE KEY FLAGS DESCRIPTOR SORT  PARENT_CLASS PARENT_FIELD
-    'interhome_availability' => array(USER_LEVEL_SYSTEM,  'interhome', ''        , 'id', NF_CACHE, '', '', ''),
-    'interhome_price'        => array(USER_LEVEL_SYSTEM,  'interhome', ''        , 'id', 0, '', '', ''),
-    'interhome_service'      => array(USER_LEVEL_SYSTEM,  'interhome', ''        , 'id', 0, '', '', ''),
-
-//   CLASS                          USER_LEVEL  GROUP TABLE KEY FLAGS DESCRIPTOR SORT  PARENT_CLASS PARENT_FIELD
-    
-    'pet_profile' =>          array(USER_LEVEL_USER,   'pet', '', '', 0, 'display_name', '', '', 249),
-    'pet_type' =>             array(USER_LEVEL_SYSTEM, 'pet', '', '', NF_CACHE_ASSOC, 'name', 'name', '', 249),
-    'pet_subtype' =>          array(USER_LEVEL_SYSTEM, 'pet', '', '', NF_CACHE_ASSOC, 'name', 'name', '', 249),
-
-    'golf_region'      =>     array(USER_LEVEL_STAFF,  'golf', '', '', 0, '', '', '', 263),
-    'golf_club'        =>     array(USER_LEVEL_STAFF,  'golf', '', '', 0, '', '', '', 263),
-    'golf_course'      =>     array(USER_LEVEL_STAFF,  'golf', '', '', 0, '', '', '', 263),
 
 );
 // end class definitions
@@ -828,238 +804,6 @@ $__CLASS_ATTRIBUTES = array(
    ),
   
   
-    
-  "property" => 
-  
-  array(
-  
-     'id'=>                        array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT),
-     'type' =>                     array('Type',              'valSelect', '', AF_OBLIGATORY|AF_HIDE_EDIT, $propertyTypeArray),
-//     'owner_id'=>                  array('Owner',             'link',   0, AF_SEARCHABLE|AF_OBLIGATORY|AF_INLINE_ADD, 'owner', array('active' => 1)),
-     'site_id'=>                   array('Site',              'link',   ATT_DEFAULT_SITE_ID, 0, 'site'),
-     'host_id'=>                   array('Host',              'link',   ATT_DEFAULT_USER_ID, AF_HIDE_ADD|AF_READONLY|AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD, 'user'),
-     'user_id'=>                   array('User',              'link',   ATT_DEFAULT_USER_ID, AF_SEARCHABLE, 'user'),
-     'user_profile_id'=>           array('Profile',           'link',   ATT_DEFAULT_NULL, AF_SEARCHABLE, 'user_profile'),
-  
-     'client_id'=>              array('Client',    			  'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
-     'legal_entity_id'=>        array('Legal Entity',      'many2one', 0, AF_OBLIGATORY, 'legal_entity'),
-     'parent_id'=>              array('Parent Property',  'link', ATT_DEFAULT_NULL, AF_READONLY|AF_HIDE, 'property'),
-     'is_parent'=>              array('Placeholder Property',  'bool', 0, 0),
-     'pageviews'=>              array('Pageviews',         'int',  '', AF_SEARCHABLE, 10 ),
-
-     'currency'=>             array('Currency',          'valSelect', 0, AF_HIDE_LIST|AF_LOG, $currencyArray),
-     'gallery'              => array('Album size'       , 'int', 0, AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY),
-     //'media'                => array('Media'            , 'one2many', 0, AF_HIDE_LIST|AF_CASCADE_DELETE, 'media', 'parent_id'),
-     'media'                => array('Media',             'media',     '', 0, $property_media_options),
-     'media_json'           => array('Media (json)',      'json',     '', 0),
-     'changelog'            => array('Log',               'one2many', 0, AF_HIDE_ADD|AF_HIDE_LIST|AF_CASCADE_DELETE|AF_READONLY, 'changelog', 'parent_id'),
-     'descriptions'         => array('Descriptions',    'one2many', 0, AF_HIDE_LIST|AF_CASCADE_DELETE, 'property_description', 'property_id'),
-  
-     'fids'                     => array('Foreign IDs'       ,'json', '', AF_HIDE_LIST|AF_HIDE_ADD, 255),
-     'guid'=>                      array('GUID',             'uuid',    ATT_DEFAULT_UUID, AF_SEARCHABLE|AF_READONLY|AF_HIDE_ADD, 24),
-     'priority'                 => array('Priority'          ,'int', 0, AF_HIDE, 8),
-     'active'                   => array('Active'            ,'bool', 0, AF_SEARCHABLE, 1),
-     'activation_timestamp'     => array('First Actived'     ,'str', '', 0, 20),
-     'import_timestamp'         => array('Last Imported'     ,'str', '', 0, 20),
-     
-     'test'                     => array('Test Property?'    ,'bool', 0, AF_SEARCHABLE, 1),
-     'processed'                => array('Processed'         ,'bool', 0, AF_HIDE, 1),
-     'created'=>                   array('Created',           'datetime',   ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY),
-     'timestamp'=>                 array('Updated',           'timestamp',   ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY, 6 ),
-     'scraped'=>                   array('Scraped',           'date',   '', AF_HIDE, 10 ),
-     'source_id'                => array('Source'            ,'link', 0, AF_HIDE_LIST|AF_HIDE, 'source'),
-     'source_url'               => array('Source URL'        ,'str', 1, AF_HIDE, 100),
-     'dest_id'=>                   array('Destination',    	  'many2one', ATT_DEFAULT_NULL, AF_READONLY|AF_HIDE_LIST|AF_HIDE_ADD|AF_HIDE_EDIT, 'source'),
-  
-     'hide'=>                      array('Hide',              'bool', 0, AF_HIDE, ''),
-     'hide_local'=>                array('Hide Locally',      'bool', 0, AF_HIDE, ''),
-     'timezone' =>                  array('Timezone',         'timezone', '', 0, 32),
-  
-     'city_name'=>                 array('City Name',         'str',        '', 0, 128),
-     'city_id'=>                   array('City where shown',  'many2one',   0, AF_OBLIGATORY|AF_SEARCHABLE|AF_READONLY_EDIT, 'geo_city', array('active' => 1), 'name'),
-     //'borough_id' =>              array('District',          'many2one',   0, AF_SEARCHABLE|AF_HIDE_LIST|AF_HIDE_ADD, 'borough'),
-     //'neighborhood_id' =>          array('Area',              'many2one',   0, AF_SEARCHABLE|AF_HIDE_LIST|AF_HIDE_ADD, 'neighborhood'),
-  
-     'name'=>                      array('Name',              'str',    '', AF_OBLIGATORY|AF_SEARCHABLE|AF_LOG, 50),
-     'shortname'=>                 array('URL',               'str',    '', AF_OBLIGATORY|AF_HIDE_ADD|AF_HIDE_LIST, 30),
-     'short_description'=>         array('Short Description', 'str',    '', AF_HIDE_LIST, 200),
-     'special_deal'=>              array('Special Deal',      'text',    '', AF_HIDE_LIST),
-     'quote'=>                     array('Quote',             'str',    '', AF_HIDE_LIST, 150),
-  
-     'input_lang'=>                array('Input language',    'valSelect', 'en', AF_OBLIGATORY|AF_HIDE_LIST|AF_HIDE, $langArray),
-  
-     'address_street'     => array('Street'            ,'str','', AF_HIDE_LIST|AF_SEARCHABLE, 100),
-     'address_number'     => array('Street Number'     ,'str', '',  AF_HIDE_LIST, 12),
-     'address_suffix'     => array('Suffix'            ,'str','', AF_HIDE_LIST, 10),
-     'address_postcode'   => array('Postcode'          ,'str','', AF_HIDE_LIST|AF_SEARCHABLE, 10),
-     'address_city'       => array('City (Address)'              ,'str','', AF_OBLIGATORY|AF_HIDE_LIST, 50),
-     'address_state'    => array('State/Province/Region'      , 'str', '', AF_HIDE_LIST, 50),
-     'address_country'    =>  array('Country',           'many2one', 0, AF_OBLIGATORY, 'countries'),
-  
-     'location_id'          => array('Location'         , 'link', 0, AF_READONLY_EDIT, 'landmark'),
-     'location_accuracy'    => array('Accuracy'    			, 'map',  0, AF_HIDE_ADD|AF_HIDE_LIST),
-     'location_lat'         => array('Latitude'         , 'str','', AF_HIDE_ADD|AF_HIDE_LIST, 24),
-     'location_long'        => array('Longitude'        , 'str','', AF_HIDE_ADD|AF_HIDE_LIST, 24),
-     'location_bounds'      => array('Bounds'           , 'json', '', AF_HIDE_ADD|AF_HIDE_LIST, 200),
-  
-     'staff_notes' => array('Staff Notes',             'text',    '', AF_HIDE_LIST),
-  
-     'review_count'=>              array('Review Count',      'int',    0, AF_HIDE_ADD|AF_READONLY|AF_HIDE_LIST, 4),
-     'review_score'=>              array('Review Score',      'float',  0, AF_HIDE_ADD|AF_READONLY|AF_HIDE_LIST, '4.2'),
-     'review_recommend'=>          array('# Recommend',       'int',    0, AF_HIDE_ADD|AF_READONLY|AF_HIDE_LIST, 4),
-
-     /** old */
-     'review_nr'=>                 array('# Ratings',          'int',    0, AF_HIDE_ADD|AF_READONLY|AF_HIDE_LIST, ''),
-  
-  //         'external_account_number'     => array('Account #'          ,'str','', AF_HIDE_LIST, 10),
-     'account_rent'       => array('Account rent'                ,'str','', AF_HIDE_LIST, 10),
-     'account_lo_tax'     => array('Account lo tax'              ,'str','', AF_HIDE_LIST, 10),
-     'account_hi_tax'     => array('Account hi tax'              ,'str','', AF_HIDE_LIST, 10),
-     'account_no_tax'     => array('Account no tax'              ,'str','', AF_HIDE_LIST, 10),
-     'account_city_tax'   => array('Account city tax'            ,'str','', AF_HIDE_LIST, 10),
-     'account_booking_fee'=> array('Account booking fee'         ,'str','', AF_HIDE_LIST, 10),
-  
-     'golf_distance' =>     array('Golf Distance',               'int', '', AF_HIDE_LIST, 3),
-     'data' =>              array('Other Data',                  'json', '', AF_HIDE_LIST),
-     'distances' =>         array('Distances',                   'json', '', AF_HIDE_LIST),
-     'amenities' =>         array('Amenities',                   'json', '', AF_HIDE_LIST),
-     'children'=>                 array('Child Properties',   'one2many', ATT_DEFAULT_NULL, AF_HIDE_LIST, '__this->type', 'parent_id'),
-     'calendar_availability'   => array('Cal. Availability',     'text', '', AF_HIDE_LIST),
-     'calendar_startdate'      => array('Cal. start',              'date', '', AF_HIDE_LIST),
-     'calendar_changeover'     => array('Cal. changeover',        'text', '', AF_HIDE_LIST),
-     'calendar_minstay' => array('Cal. Min stay',              'text', '', AF_HIDE_LIST),
-
-     'locked' => array('Locked (Readonly import)',              'json', '', AF_HIDE_LIST),
-  ),
-  
-  
-  
-  // base class for rental property (boat, shortstay)
-  "serviced_rental" => 
-  //unset($base_fields['type']),
-  array(
-     'book_direct'=>               array('Directly bookable?', 'valSelect', 0, AF_HIDE_LIST, $yes_no_req),
-  
-     'rating'=>                    array('Rating',            'int',    0, AF_HIDE_LIST, ''),
-  
-      // checkin
-     'checkin_from'=>              array('Checkin from',       'str',    0, AF_HIDE|AF_HIDE_LIST, 5),
-     'checkin_to'=>                array('Checkin to',         'str',    0, AF_HIDE|AF_HIDE_LIST, 5),
-     'checkout_from'=>             array('Checkout from',      'str',    0, AF_HIDE|AF_HIDE_LIST, 5),
-     'checkout_to'=>               array('Checkout to',        'str',    0, AF_HIDE|AF_HIDE_LIST, 5),
-  
-     'cancellation_policy'=>       array('Cancellation Policy', 'many2one', 0, AF_HIDE|AF_HIDE_LIST, 'cancellation_policy'),
-
-     'licensed' =>                 array('Licensed?'           ,'bool', 0, 0, 0),
-     'charge_city_tax' =>          array('Charge City Tax?'    ,'bool', 0, AF_LOG, 0),
-     'charge_tax' =>               array('Charge V.A.T?'       ,'bool', 0, AF_LOG, 0),
-     'tax_included' =>             array('Tax included?'       ,'bool', 0, AF_LOG, 0),
-  
-      // deposit
-     'deposit'=>                   array('Deposit %',         'int',    0, 0),
-     'security_deposit'=>          array('Security Deposit',  'money',  0, AF_HIDE_LIST, 4),
-  
-  ),
-  
-  
-
-  "shortstay" => 
-  //unset($base_fields['id']),
-  array(
-     'id'=>                        array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT),
-     'type' =>                     array('Type',              'valSelect', 'shortstay', AF_OBLIGATORY|AF_HIDE, $propertyTypeArray),
-     'corporate'                => array('Corporate'          ,'bool', 0, AF_HIDE, 1),
-     'licensed'                 => array('Licensed?'          ,'bool', 0, AF_HIDE_LIST, 1),
-//     'owner_id'=>                  array('Owner',             'link',   0, AF_SEARCHABLE|AF_OBLIGATORY|AF_INLINE_ADD, 'owner', array('shortstay' => 1, 'active' => 1)),
-  
-     // day rate
-     'rate_day'=>                  array('Day rate',          'int',  0, AF_SEARCHABLE|AF_LOG, 8),
-     'rate_person'=>               array('Day rate per person', 'int',  0, AF_SEARCHABLE|AF_READONLY|AF_HIDE_ADD|AF_LOG, 8),
-     'rate_weekend'=>              array('Weekend rate',      'int',  0, AF_SEARCHABLE|AF_LOG, 8),
-     'rate_week'=>                 array('Week rate',         'int',      ATT_DEFAULT_NULL, AF_SEARCHABLE),
-     'rate_2_weeks'=>              array('2-Week rate',          'int',      ATT_DEFAULT_NULL, AF_SEARCHABLE),
-     'rate_3_weeks'=>              array('3-Week rate',          'int',      ATT_DEFAULT_NULL, AF_SEARCHABLE),
-     'rate_month'=>                array('Month rate',        'int',      ATT_DEFAULT_NULL, AF_SEARCHABLE),
-     'weekend_rate_cutoff'=>       array('Weekend rate cutoff',  'int',  7, AF_SEARCHABLE|AF_LOG, 3),
-     'max_guests'=>                array('Max guests',        'intSelect', 2, AF_OBLIGATORY|AF_SEARCHABLE|AF_LOG, array(1,10,1, '')),
-     'rate_num_guests'=>           array('# Guests incl. in rate',  'int',  2, AF_HIDE_LIST|AF_LOG, 2),
-  
-     'rate_day_min'=>              array('Min. Day rate',     'int',  0, AF_HIDE_LIST|AF_LOG, 8),
-     'rate_day_max'=>              array('Max. Day rate',     'int',  0, AF_HIDE_LIST|AF_LOG, 8),
-     'rate_hour'=>                 array('Hour rate',          'int',  0, AF_LOG, 8),
-  
-     'min_stay'=>                  array('Min stay (days)',   'int',    3, AF_SEARCHABLE, 5),
-     'max_stay'=>                  array('Max stay (days)',   'int',    0, AF_SEARCHABLE|AF_HIDE|AF_HIDE_LIST, 5),
-                                                                 
-     'rate_extraperson'=>          array('Extra person',      'int',  0, AF_SEARCHABLE|AF_LOG, 8),
-     //'rate_shortstay'=>            array('Short stay',        'money',  0, AF_HIDE|AF_LOG, 8),
-  
-     // discounts
-     //'discount'=>                  array('Flat Discount',     'discount',    0, AF_HIDE_LIST, 4),
-     'rate_change'=>               array('Rate Change',       'percent_or_number',  ATT_DEFAULT_NULL, AF_SEARCHABLE),
-     'discount_week'=>             array('Weekly Discount',   'int',  0, AF_SEARCHABLE),
-     'discount_2_weeks'=>          array('2-Week Discount',   'int',  0, AF_SEARCHABLE),
-     'discount_3_weeks'=>          array('3-Week Discount',   'int',  0, AF_SEARCHABLE),
-     'discount_month'=>            array('Monthly Discount',   'int',  0, AF_SEARCHABLE),
-  
-     'changeover'=>                array('Changeover',        'int',  0, 0),
-  
-      // fees
-     'fee_cleaning'=>              array('Cleaning fee',      'int',  0,  AF_HIDE_ADD|AF_HIDE_LIST, 8),
-     
-     'fee_local'=>                 array('Local fee',         'int',  0,  AF_HIDE_ADD|AF_HIDE_LIST, 8),
-     'fee_pickup'=>                array('Pickup fee',        'int',  0,  AF_HIDE_ADD|AF_HIDE_LIST, 8),
-     'fee_booking'=>               array('Booking fee',       'int',  0, AF_HIDE_ADD|AF_HIDE_LIST, 8),
-     'fee_other'=>                 array('Other fees',        'int',  0,  AF_HIDE_ADD|AF_HIDE_LIST, 8),
-  
-     'num_toilets'        => array('# Toilets',      'intSelect', 0, 0, array(1,10,1, '')),
-     'num_bedrooms'       => array('# Bedrooms',      'intSelect', 0, 0, array(1,10,1, '')),
-     'num_bathrooms'      => array('# Bathrooms',      'intSelect', 0, 0, array(1,10,1, '')),
-     'hosting_property_type'=>     array('Property Type',     'many2one',   0, AF_SEARCHABLE, 'hosting_property_type', array('active' => 1)),
-     'hosting_room_type'=>         array('Room Type',         'many2one',   0, AF_SEARCHABLE, 'hosting_room_type', array('active' => 1)),
-
-     'facilities'         => array('Facilities'        ,'msel','', AF_HIDE_LIST, 'facility', array('serviced' => 1)),
-  
-  ),
-  
-
-
-  "facility" => 
-  
-  array(
-     'id'               => array('ID'             ,'id',   0, AF_PRIMARY|AF_AUTOINCREMENT|AF_HIDE),
-     'name'             => array('Name'           ,'str', '', AF_SEARCHABLE|AF_OBLIGATORY, 100),
-     'group_name'       => array('Group'          ,'str', '', AF_SEARCHABLE, 100),
-     'searchable'       => array('Searchable'     ,'bool', 0, AF_SEARCHABLE),
-     'serviced'         => array('Serviced'       ,'bool', 0, AF_SEARCHABLE),
-     'golf'             => array('Golf Course'    ,'bool', 0, AF_SEARCHABLE),
-     'golf_rental'      => array('Golf Rental'    ,'bool', 0, AF_SEARCHABLE),
-  ),
-  
-  "cancellation_policy" => 
-  array(
-     'id'=>                  array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT),
-     'name'               => array('Name',              'str',  0, AF_OBLIGATORY|AF_SEARCHABLE,8),
-     'description'        => array('Description',       'html',  0, AF_OBLIGATORY|AF_SEARCHABLE,8),
-//     'site_id'=>             array('Site',            'link',   ATT_DEFAULT_SITE_ID, 0, 'site'),
-//     'client_id'=>           array('Client',    		  'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
-     'lead_time'          => array('Lead Time (Days)'   ,'int', '', AF_HIDE|AF_READONLY, 2),         
-     'refund'             => array('Refund (%)'         ,'int', '', AF_HIDE|AF_READONLY, 2),         
-
-  ),
-
-  "checkin_time" => 
-  array(
-     'id'=>                  array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT),
-     'name'               => array('Name',              'str',  0, AF_OBLIGATORY|AF_SEARCHABLE,8),
-  ),
-
-  "checkout_time" => 
-  array(
-     'id'=>                  array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT),
-     'name'               => array('Name',              'str',  0, AF_OBLIGATORY|AF_SEARCHABLE,8),
-  ),
-  
   "calendar_import" => 
   array(
      'id'=>                  array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT),
@@ -1485,33 +1229,7 @@ $__CLASS_ATTRIBUTES = array(
   
 
   
-  "weblog" => 
-  array(                                           
-     'id'=>                array('ID',                'id',   0,   AF_PRIMARY|AF_AUTOINCREMENT, 11),
-     'timestamp'=>         array('Timestamp',         'timestamp',      ATT_DEFAULT_NOW, AF_SEARCHABLE, 14 ),
-     'city_id'=>           array('City',              'many2one',  ATT_DEFAULT_CITY_ID, AF_SEARCHABLE, 'geo_city'),
-     'geo_id'=>            array('GeoObj',            'many2one',  ATT_DEFAULT_GEO_ID, 0, 'geoname'),
-     'page'=>              array('Page',              'many2one',  ATT_DEFAULT_PAGE_ID, AF_SEARCHABLE, 'site_page'),
-     'remote_ip'=>         array('IP',                'ip',        ATT_DEFAULT_CLIENT_IP, AF_READONLY|AF_SEARCHABLE, 15 ),
-     'session_id'=>        array('Session ID',        'str',       ATT_DEFAULT_SESS_ID, AF_SEARCHABLE, 32 ),
-     'country_code'=>      array('Country',           'str',       ATT_DEFAULT_CLIENT_CC, AF_SEARCHABLE, 2),
-     'language'=>          array('Language',          'str',       ATT_DEFAULT_LANG, AF_SEARCHABLE, 2),
-     'site_id'=>           array('Site ID',           'int',       ATT_DEFAULT_SITE_ID, AF_SEARCHABLE, 10 ),
-//     'aff_id'=>            array('Aff. ID',           'int',       ATT_DEFAULT_AFF_ID, AF_SEARCHABLE, 10 ),
-     'user_id'=>           array('User ID',           'int',       ATT_DEFAULT_USER_ID, AF_SEARCHABLE, 10 ),
-     'property_id'=>       array('Property ID',       'int',       ATT_DEFAULT_PROPERTY_ID, AF_SEARCHABLE, 10 ),
-     'property_type'=>     array('Property type',     'many2one',  ATT_DEFAULT_PROPERTY_TYPE, AF_SEARCHABLE, 'property_type'),
-//     'owner_id'=>          array('Owner ID',           'int',       0, AF_SEARCHABLE, 10 ),
-     'host_id'=>           array('Host ID',           'link',   0, AF_HIDE_ADD|AF_READONLY|AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD, 'user'),
-  
-  
-  //         'remote_host'=>       array('Remote Host',       'str',  '', AF_SEARCHABLE, 50 ),
-  //         'referer'=>           array('Referer',           'str',  '', AF_SEARCHABLE, 10 ),
-  //         'pageviews'=>         array('Pageviews',         'int',  '', AF_SEARCHABLE, 10 ),
-  //         'datetime'=>              array('Time (secs)',       'int',  '', AF_SEARCHABLE, 10 ),
-  ),
-  
-  
+
   "address" => 
   
   array(
@@ -1571,59 +1289,7 @@ $__CLASS_ATTRIBUTES = array(
   ),
   
   
-  "lead" => 
-  
-  array(
-     'id'=>                array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT),
-     'created'=>           array('Created',           'date',   ATT_DEFAULT_NOW, AF_READONLY|AF_HIDE_LIST),
-     'timestamp'=>         array('Updated',           'timestamp',   ATT_DEFAULT_NOW, AF_READONLY|AF_HIDE_LIST, 6 ),
-     'user_id'=>           array('Author',            'many2one',   ATT_DEFAULT_USER_ID, AF_HIDE_LIST|AF_SEARCHABLE|AF_READONLY, 'user'),
-     'site_id'=>           array('Site',              'many2one',   ATT_DEFAULT_SITE_ID, AF_HIDE_LIST|AF_LOG, 'site'),
-     'client_id'=>         array('Client',    			  'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
-     'status'=>            array('Status',            'many2one', '',  AF_SEARCHABLE, 'contact_status'),
-     'contacted'=>         array('Contacted',         'date',     '', AF_SEARCHABLE|AF_HIDE_LIST),
-  
-     'salutation'=>        array('Salutation',        'valSelect', '', AF_HIDE_LIST, $salutationArray),
-     'first_name'=>        array('First Name',        'str',    '', AF_SEARCHABLE, 50),
-     'infix'=>             array('Infix',             'str',    '', AF_SEARCHABLE, 20),
-     'last_name'=>         array('Last Name',         'str',    '', AF_SEARCHABLE, 50),
-     'email_address'=>     array('Email',             'email',  '', AF_SEARCHABLE, 50),
-     'org_id'=>            array('Org ID',            'many2one', 0, AF_HIDE_LIST, 'org'),
-     'organization'=>      array('Organization',      'str',    '', AF_SEARCHABLE, 50),
-     'department'=>        array('Department',        'str',    '', 0, 50),
-     'title'=>             array('Title',             'str',    '', 0, 30),
-     'address1'=>          array('Address1',          'str',    '', AF_HIDE_LIST, 50),
-     'address2'=>          array('Address2',          'str',    '', AF_HIDE_LIST, 50),
-     'city'=>              array('City',              'str',    '', AF_HIDE_LIST, 30),
-     'state'=>             array('State/Province',    'str',    '', AF_HIDE_LIST, 30),
-     'zip'=>               array('Postal code',       'str',    '', AF_HIDE_LIST, 10),
-     'country'=>           array('Country',           'many2one', 0, AF_SEARCHABLE, 'countries'),
-     'home_phone'=>        array('Home Phone',        'phone',  '', AF_HIDE_LIST, 20),
-     'work_phone'=>        array('Work Phone',        'phone',  '', AF_HIDE_LIST, 20),
-     'cell_phone'=>        array('Cell Phone',        'phone',  '', 0, 20),
-     'fax'=>               array('Fax',               'phone',  '', AF_HIDE_LIST, 20),
-     'web_address'=>       array('Web',               'url',    '', AF_SEARCHABLE|AF_HIDE_LIST, 50),
-     'notes'=>             array('Notes',             'text',    '', AF_HIDE_LIST),
 
-     'gender'           => array('gender'       ,      'many2one', '', 0, 'gender'),
-     'age'              => array('age',                'int',      '', 0 ),
-     
-     'salutation2'=>        array('Contact 2 - Salutation',        'valSelect', '', AF_HIDE_LIST, $salutationArray),
-     'first_name2'=>        array('Contact 2 - First Name',        'str',    '', AF_HIDE_LIST|AF_SEARCHABLE, 50),
-     'last_name2'=>         array('Contact 2 - Last Name',         'str',    '', AF_HIDE_LIST|AF_SEARCHABLE, 50),
-     'department2'=>        array('Contact 2 - Department',        'str',    '', AF_HIDE_LIST, 50),
-     'title2'=>             array('Contact 2 - Title',             'str',    '', AF_HIDE_LIST, 30),
-     'email_address2'=>     array('Contact 2 - Email',             'email',  '', AF_HIDE_LIST, 50),
-     'phone2'=>             array('Contact 2 - Phone',             'phone',  '', AF_HIDE_LIST, 20),
-  
-     'response'=>            array('Response',               'text',     '',  AF_SEARCHABLE|AF_HIDE_LIST),
-     'last_guest'=>          array('Last guest',             'str',      '',  AF_SEARCHABLE|AF_HIDE_LIST, 100),
-     'last_guest_checkout'=> array('Last guest checkout',    'date',     '',  AF_SEARCHABLE|AF_HIDE_LIST),
-     'contact_lead'=>        array('Contact lead',           'str',      '',  AF_SEARCHABLE, 100),
-  
-  ),
-  
-  
   
   
   "org" => 
@@ -2037,36 +1703,7 @@ $__CLASS_ATTRIBUTES = array(
      'description'=>       array('Description',       'str',   '', 1, 255),
      'user_level'=>        array('ID',                'int',   0, 0, 2),
   ),
-  
-
-  "property_type" => 
-  array(
-     'id'=>                array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT),
-     'name'=>              array('Name',              'str',   '', 1, 20),
-     'description'=>       array('Description',       'str',   '', 0, 80),
-     'active'=>            array('Active?',           'bool',   1, 0),
-     'hide'=>              array('Show?',             'bool',   0, 0),
-     'bookable'=>          array('Bookable?',         'bool',   0, 0),
-     'calendar'=>          array('Calendar?',         'bool',   0, 0),
-     'hourly'=>            array('Hourly?',           'bool',   0, 0),
-  ),
-  
-  "hosting_property_type" => 
-  array(
-     'id'=>             array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 2),
-     'name'=>           array('Name',              'str',   '', 1, 128 ),
-     'description'=>   array('Description',        'str',   '', 1, 200 ),
-     'active'=>            array('Active?',        'bool',   1, 0),
-  ),
-  
-  "hosting_room_type" => 
-  array(
-     'id'=>             array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 2),
-     'name'=>           array('Name',              'str',   '', 1, 128 ),
-     'description'=>   array('Description',        'str',   '', 1, 200 ),
-     'active'=>            array('Active?',        'bool',   1, 0),
-  ),
-  
+    
   "inv_type" => 
   array(
      'id'=>             array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 2),
@@ -2105,25 +1742,6 @@ $__CLASS_ATTRIBUTES = array(
      'id'=>                array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 2),
      'name'=>              array('Name',              'str',   '', 1, 50 ),
   ),
-  
-  
-  "room_type" => 
-  array(
-     'id'=>                array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 2),
-     'name'=>              array('Name',              'str',   '', 1, 20 ),
-  ),
-  
-  
-  "boat_type" =>                
-  
-  array(
-     'id'               => array('ID'             ,'id',   0, AF_PRIMARY|AF_AUTOINCREMENT|AF_HIDE),
-     'name'             => array('Name'           ,'str', '', AF_SEARCHABLE|AF_OBLIGATORY, 30),
-     'description'      => array('Description'    ,'str', '', AF_SEARCHABLE|AF_OBLIGATORY, 255),
-     'active'           => array('Active?'        ,'bool', 1, AF_SEARCHABLE),
-     'searchable'       => array('Searchable?'    ,'bool', 1, AF_SEARCHABLE),
-  ),
-  
   
   "db_sequence" => 
   array(
@@ -2212,22 +1830,7 @@ $__CLASS_ATTRIBUTES = array(
      'color'=>         array('Color',             'color',   '000000', 1, 6),
   ),
   
-  "pet_type" => 
-  array(
-     'id'=>            array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 2),
-     'name'=>          array('Name',              'str',   '', 1, 20 ),
-     'description'=>   array('Description',       'str',   '', 1, 200 ),
-  ),
 
-  "pet_subtype" => 
-  array(
-     'id'=>            array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 2),
-     'type'=>          array('Type',              'many2one', 0, AF_OBLIGATORY, 'pet_type'),
-     'name'=>          array('Name',              'str',   '', 1, 20 ),
-     'description'=>   array('Description',       'str',   '', 1, 200 ),
-  ),
-  
-  
   "country" => 
   array(
      'id'=>                array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 8),
@@ -2382,228 +1985,6 @@ $__CLASS_ATTRIBUTES = array(
      'descriptions'=>       array('Descriptions',       'one2many', 0, AF_HIDE_LIST|AF_CASCADE_DELETE|AF_READONLY, 'object_description', 'parent_id', array('parent_type' => 'landmark')), // last is filter
   ),
   
-  "golf_region" => 
-  array(
-     'id'=>                array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 8),
-     'golf_country_id'=>   array('Golf Country',      'many2one', 0, 0, 'golf_country'),
-     'level'=>             array('Level',             'int',   '', AF_SEARCHABLE, 1),
-     'active'=>            array('Active',            'bool',   1, 0),
-     'created'=>           array('Created',           'datetime',  ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY),
-     'timestamp'=>         array('Timestamp',         'timestamp',   ATT_DEFAULT_NOW, AF_HIDE),
-     'source_id'=>         array('Source',            'link',   ATT_DEFAULT_NULL, 0, 'source'),
-     'parent_id'=>         array('Parent',            'link',   0, 0, 'golf_region'),
-     'location_id'=>       array('Location',          'link',   0, 0, 'location'),
-     'name'=>              array('Name',              'str',   '', AF_OBLIGATORY|AF_SEARCHABLE, 50 ),
-     'code'=>              array('Code',              'str',   '', AF_SEARCHABLE, 10 ),
-     'fid'=>               array('Foreign ID',        'str',   '', AF_SEARCHABLE, 10 ),
-     'address'=>           array('Address',           'str',  '', AF_HIDE_LIST, 100),                                 
-     'description'=>       array('Description',       'html',  '', AF_HIDE_LIST),                                 
-     'country'    =>       array('Country',           'str',  '', 0, 2),
-     'nr_clubs'=>          array('# Clubs',           'int',   '', AF_SEARCHABLE, 4 ),
-  ),
-/**
-  "golf_country" => 
-  array(
-     'id'=>                array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 8),
-     'active'=>            array('Active',            'bool',   1, 0),
-     'created'=>           array('Created',           'datetime',  ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY),
-     'timestamp'=>         array('Timestamp',         'datetime',   ATT_DEFAULT_NOW, AF_HIDE),
-     'location_id'=>       array('Location',          'link',   0, 0, 'location'),
-     'name'=>              array('Name',              'str',   '', AF_OBLIGATORY|AF_SEARCHABLE, 50 ),
-     'code'=>              array('Code',              'str',   '', AF_OBLIGATORY|AF_SEARCHABLE, 10 ),
-     'description'=>       array('Description',       'html',  '', AF_HIDE_LIST),                                 
-  ),
-  
-  "golf_district" => 
-  array(
-     'id'=>                array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 8),
-     'golf_country_id'=>   array('Golf Country',      'link', 0, AF_OBLIGATORY, 'golf_country'),
-     'golf_region_id'=>    array('Golf Region',       'many2one', 0, AF_OBLIGATORY, 'golf_region'),
-     'active'=>            array('Active',            'bool',   1, 0),
-     'created'=>           array('Created',           'datetime',  ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY),
-     'timestamp'=>         array('Timestamp',         'datetime',   ATT_DEFAULT_NOW, AF_HIDE),
-     'location_id'=>       array('Location',          'link',   0, 0, 'location'),
-     'name'=>              array('Name',              'str',   '', AF_OBLIGATORY|AF_SEARCHABLE, 50),
-     'code'=>              array('Code',              'str',   '', AF_OBLIGATORY|AF_SEARCHABLE, 50),
-     'address'=>           array('Address',           'str',  '', AF_HIDE_LIST, 100),                                 
-     'description'=>       array('Description',       'html',  '', AF_HIDE_LIST),                                 
-     'country'    =>       array('Country',           'many2one', 0, AF_OBLIGATORY, 'countries'),
-  ),
-*/
-
-  "golf_club" => 
-  array(
-     'id'=>                 array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 8),
-     'active'=>             array('Active',            'bool',   1, 0),
-     'priority'=>           array('Priority'          ,'int', 0, AF_HIDE, 8),
-
-     'created'=>            array('Created',           'datetime',  ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY),
-     'timestamp'=>          array('Timestamp',         'timestamp',   ATT_DEFAULT_NOW, AF_HIDE),
-     'site_id'=>            array('Site',              'link',   ATT_DEFAULT_SITE_ID, AF_READONLY|AF_HIDE_ADD, 'site'),
-     'client_id'=>          array('Client',    		  	 'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
-
-     'source_id'=>          array('Source',            'link',   ATT_DEFAULT_NULL, 0, 'source'),
-     'source_updated'=>     array('Source Updated',    'datetime',  ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY),
-     'source_url'=>         array('Source URL',        'url',   0, 0, 255),
-     'fid'=>                array('Foreign ID',        'str', 0, 0, 10),
-
-     /** Book Your Golf */
-     'byg_id'=>             array('BYG ID',            'str',   '', 0, 40),
-     'byg_url'=>            array('BYG URL',           'str',   '', 0, 140),
-     'byg_date'=>           array('BYG Rate Date',     'date',  ATT_DEFAULT_NULL, 0),
-     'byg_rate_from'=>      array('BYG Rate From',     'money', '', 0, 0),
-     'byg_currency'=>       array('BYG Currency',      'str',   '', 0, 3),
-     
-     'golf_region_id'=>     array('Golf Region',       'link',   ATT_DEFAULT_NULL, 0, 'golf_region'),
-     'location_id'=>        array('Location',          'link',   0, 0, 'location'),
-                            
-     'name'=>               array('Name',              'str',   '', AF_OBLIGATORY|AF_SEARCHABLE, 255),
-     'slug'=>               array('Slug',              'slug',   '', AF_OBLIGATORY|AF_SEARCHABLE, 128),
-     'description'=>        array('Description',       'html',  '', AF_HIDE_LIST),                                 
-                            
-     // Leading Courses     
-     'currency'=>           array('Currency',          'valSelect', 'EUR', AF_HIDE_LIST, $currencyArray),
-     'currency_utf'=>       array('Currency UTF',      'str', '', AF_HIDE_LIST, 20),
-     'currency_html'=>      array('Currency HTML',     'str', '', AF_HIDE_LIST, 20),
-     'fee_weekend'=>        array('Fee weekend',       'money', 0, 0),
-     'fee_weekday'=>        array('Fee weekday',       'money', 0, 0),
-
-     'season_start'=>       array('Sesason Start',     'datetime',  ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY),
-     'season_end'=>         array('Season End',        'datetime',  ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY),
-
-     'nr_courses'=>         array('# courses',         'int',   0, 0, 3),
-     'handicap_men'=>       array('Handicap men',      'float',   0, 0, '3.2'),
-     'handicap_women'=>     array('Handicap women',    'float',   0, 0, '3.2'),
-
-     'founded'=>            array('Founded',           'str',  '', AF_HIDE_LIST, 10 ),
-     'formerly_known_as'=>  array('Formerly known as', 'str',  '', AF_HIDE_LIST, 128 ),
-     'payment_options'=>    array('Payment Options',   'str',  '', AF_HIDE_LIST, 128 ),
-     'allowed_cc'=>         array('Allowed CCs',       'str',  '', AF_HIDE_LIST, 128 ),
-
-     'address_street'=>     array('Street',            'str',  '', AF_HIDE_LIST, 50 ),
-     'address_number'=>     array('Number',            'str',  '', AF_HIDE_LIST, 12 ),
-     'address_city'=>       array('City',              'str',  '', AF_HIDE_LIST, 50 ),
-     'address_postcode'=>   array('Postcode',          'str',  '', AF_HIDE_LIST, 50 ),
-     'address_state'=>      array('State',             'str',  '', AF_HIDE_LIST, 50 ),
-     'address_country'=>    array('Country',           'link', '', AF_HIDE_LIST, 'countries'),
-     'address_formatted'=>  array('Full address',      'str', '', AF_HIDE_LIST, 255),
-
-     'source_url'=>         array('Source URL',        'url',   0, 0, 255),
-     'booking_url'=>        array('Booking URL',       'url',   0, 0, 255),
-     'address_web' =>       array('Web'                ,'str', '', 0, 255),
-
-     'phone'  =>            array('Phone'              ,'str', '', 0, 20),
-     'fax'  =>              array('Fax'                ,'str', '', 0, 20),
-     'email_address' =>     array('Email'              ,'str', '', 0, 255),
-     'facebook' =>          array('Facebook'           ,'str', '', 0, 255),
-     'twitter' =>           array('Twitter'            ,'str', '', 0, 255),
-
-     'location_lat'         => array('Latitude'         , 'str','', AF_HIDE_ADD|AF_HIDE_LIST, 24),
-     'location_long'        => array('Longitude'        , 'str','', AF_HIDE_ADD|AF_HIDE_LIST, 24),
-     'location_radius'=>    array('Radius',            'int',  0, 0, 5),
-                            
-     'review_count'=>       array('Review Count',      'int',  0, AF_HIDE_ADD|AF_READONLY|AF_HIDE_LIST, 4),
-     'review_score'=>       array('Review Score',      'float',  0, 0, '2.2'),
-     'review_recommend'=>   array('# Recommend',       'int',    0, AF_HIDE_ADD|AF_READONLY|AF_HIDE_LIST, 4),
-
-     /** from source - leading courses */
-     'feedback_count'=>       array('# LC Reviews',    'int',  0, AF_HIDE_ADD|AF_READONLY|AF_HIDE_LIST, 4),
-     
-
-     'facilities' =>        array('Facilities',        'msel','', AF_HIDE_LIST, 'facility', array('golf' => 1)),
-     
-     /** old */
-     'review_nr'=>          array('# Reviews',         'int',  0, 0, 5),
-
-     'images'  =>           array('Images',            'json', '', 0),     
-     'image_count'  =>      array('# Images',          'int', 0, 0, 2),     
-
-     'media'  =>            array('Media',             'media', '', 0, $property_media_options),     
-     'media_count'  =>      array('# Media',           'int', 0, 0, 2),     
-     'media_json'           => array('Media (json)',      'json',     ''),
-
-     'golf_courses'  =>     array('Golf courses',      'text', '', 0),     
-     
-  ),
-
-  "golf_course" => 
-  array(
-     'id'=>                array('ID',                'id',     0, AF_PRIMARY|AF_AUTOINCREMENT, 8),
-     'site_id'=>           array('Site',              'link',   ATT_DEFAULT_SITE_ID, AF_READONLY|AF_HIDE_ADD, 'site'),
-     'active'=>            array('Active',            'bool',   1, 0),
-     'source_id'=>         array('Source',            'link',   0, 0, 'source'),
-     'fid'=>               array('Foreign ID',        'str',    0, 0, 10),
-     'created'=>           array('Created',           'datetime', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY),
-     'timestamp'=>         array('Timestamp',         'timestamp', ATT_DEFAULT_NOW, AF_HIDE),
-     'source_updated'=>    array('Source Updated',    'datetime', ATT_DEFAULT_NULL, AF_HIDE),
-     'details_updated'=>   array('Details Updated',   'datetime', ATT_DEFAULT_NULL, AF_HIDE),
-
-     'live_booking'=>      array('Live Booking',      'bool',   0, 0),
-
-     'golf_club_id'=>      array('Golf Club',         'link',   ATT_DEFAULT_NULL, AF_OBLIGATORY, 'golf_club'),
-     'golf_country_id'=>   array('Golf Country ID',   'link',   ATT_DEFAULT_NULL, 0, 'golf_country'),
-     'golf_region_id'=>    array('Golf Region ID',    'link',   ATT_DEFAULT_NULL, 0, 'golf_region'),
-     'golf_district_id'=>  array('Golf District ID',  'many2one',   ATT_DEFAULT_NULL, 0, 'golf_district'),
-
-     'golf_country_code'=>   array('Golf Country',    'str', '', 0, 10),
-     'golf_region_code'=>    array('Golf Region',     'str', '', 0, 20),
-     'golf_district_code'=>  array('Golf District',   'str', '', 0, 50),
-
-     'location_id'=>       array('Location',          'link',   0, 0, 'location'),
-     'name'=>              array('Name',              'str',   '', AF_OBLIGATORY|AF_SEARCHABLE, 50),                                 
-     'short_description'=> array('Short Description', 'html',  '', AF_HIDE_LIST),
-     'description'=>       array('Description',       'html',  '', AF_HIDE_LIST),                                 
-     'course_type'=>       array('Type',              'str',   '', 0, 50),                                 
-     'currency'=>          array('Currency',          'valSelect', 'EUR', AF_HIDE_LIST, $currencyArray),
-     'fee_weekend'=>       array('Fee weekend',       'money', 0, 0),
-     'fee_weekday'=>       array('Fee weekday',       'money', 0, 0),
-     'fee_weekday_low'=>   array('Fee weekday (Low Season)', 'money', 0, 0),
-     'fee_weekend_low'=>   array('Fee weekend (Low Season)', 'money', 0, 0),
-     'number_holes'=>      array('Number holes',      'int',   0, 0, 3),
-     'signature_hole'=>    array('Signature hole',    'str',   '', 0, 64),
-     'par_men'=>           array('Par men',           'float',   0, 0, "2.1"),
-     'par_women'=>         array('Par women',         'float',   0, 0, "2.1"),
-     'slope_men'=>         array('Slope men',         'float',   0, 0, "2.1"),
-     'slope_women'=>       array('Slope women',       'float',   0, 0, "2.1"),
-     'length_men'=>        array('Length men',        'float',   0, 0, "4.1"),
-     'length_women'=>      array('Length women',      'float',   0, 0, "4.1"),
-     'rating_men'=>        array('Rating men',        'float', 0, 0, '2.2'),
-     'rating_women'=>      array('Rating women',      'float', 0, 0, '2.2'),
-     'architect'=>         array('Architect',         'text',  '', AF_HIDE_LIST),
-     'image_base'  =>      array('Image Base',        'str', '', 0, 255),
-     'image'  =>           array('Image',             'str', '', 0, 255),
-     'images'  =>          array('Images',            'text', '', 0),
-     'media'  =>           array('Media',             'media', '', 0, $property_media_options),
-
-     // Golf switch
-     'advance_days'=>       array('Advance days',     'int',   0, 0, 3),
-     'inside_days'=>        array('Inside days',      'int',   0, 0, 3),
-     
-     'address_street'=>     array('Street',            'str',  '', AF_HIDE_LIST, 50 ),
-     'address_number'=>     array('Number',            'str',  '', AF_HIDE_LIST, 12 ),
-     'address_city'=>       array('City',              'str',  '', AF_HIDE_LIST, 50 ),
-     'address_postcode'=>   array('Postcode',          'str',  '', AF_HIDE_LIST, 50 ),
-     'address_state'=>      array('State',             'str',  '', AF_HIDE_LIST, 50 ),
-     'address_country'=>    array('Country',           'link', '', AF_HIDE_LIST, 'countries'),
-     'greens' =>            array('Greens',            'str',  '', AF_HIDE_LIST, 50 ),
-     'notes' =>             array('Notes',             'html', '', AF_HIDE_LIST),
-     'rating_count' =>      array('Rating Count',      'int',  '', AF_HIDE_LIST, 4),
-     'allowed_cc' =>        array('Allowed CC',        'str',  '', AF_HIDE_LIST, 50),
-     'allowed_players' =>   array('Allowed Players',   'str',  '', AF_HIDE_LIST, 50),
-     'year_built' =>        array('Year Built',        'str',  '', AF_HIDE_LIST, 4),
-     'dress_code' =>        array('Dress Code',        'str',  '', AF_HIDE_LIST, 100),
-     'services' =>          array('Services',          'text', '', AF_HIDE_LIST, 50),
-     'payment_terms' =>     array('Payment Terms',     'str',  '', AF_HIDE_LIST, 50),
-     'price_from' =>        array('Price From',        'money','', 0),
-     'price_to' =>          array('Price To',          'money','', 0),
-
-     'scorecard' =>         array('Scorecard',         'json', '', AF_HIDE_LIST), 
-     'cancel_type' =>       array('Cancellation Unit', 'str',  '', AF_HIDE_LIST, 50), 
-     'cancel_count' =>      array('Cancellation Count','int',  '', AF_HIDE_LIST, 4), 
-     'cancel_desc' =>       array('Cancellation Desc.','text', '', AF_HIDE_LIST, 50), 
-      
-),    
-  
 
   "language" => 
   array(
@@ -2683,36 +2064,6 @@ $__CLASS_ATTRIBUTES = array(
      'tax_included' =>             array('Tax included?'       ,'bool', 0, AF_LOG, 0),
   
      ),
-  
-  
-  
-  "server" => 
-  array(
-     'id'=>                array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 3),
-     'created'=>           array('Created',           'date',   ATT_DEFAULT_TODAY, AF_HIDE_LIST|AF_READONLY, 6 ),
-     'timestamp'=>         array('Timestamp',         'timestamp',   0, AF_HIDE|AF_READONLY, 14 ),
-     'active'=>            array('Active',            'bool',   1, 0),
-     'production'=>        array('Production Server?', 'bool',   0, 1),
-     'name'=>              array('Name',              'str',   '', AF_OBLIGATORY, 100 ),
-     'description'=>       array('Description',       'text',  '', AF_HIDE_LIST, 255),
-  
-     'hostname'=>          array('Hostname',          'str',  '', AF_OBLIGATORY|AF_READONLY_EDIT, 100 ),
-     'ip'=>                array('IP',                'ip',   '', AF_SEARCHABLE|AF_READONLY|AF_HIDE_ADD, 10 ),
-     'country'=>           array('Country',           'many2one', 0, AF_SEARCHABLE|AF_READONLY|AF_HIDE_ADD, 'countries'),
-  
-     'webroot'=>           array('Web root',           'str',   '/web/sites/', AF_HIDE_LIST, 100),
-     'imageroot'=>         array('Image root',         'str',   '/web/images/', AF_HIDE_LIST, 100),
-     'dataroot'=>          array('Data root',         'str',   '/web/data/', AF_HIDE_LIST, 100),
-     'logdir'=>            array('Log dir',           'str',   '/web/logs/', AF_HIDE_LIST, 100),
-  
-     'apachename'=>        array('Apache name',       'str',   'apache2', AF_HIDE_LIST, 20),
-  
-     'db_type'=>           array('DB name',           'valSelect',   'mysql', 0, $db_type_array),
-     'db_db'=>             array('DB name',           'str',   '', 0, 50),
-     'db_user'=>           array('DB user',           'str',   '', AF_HIDE_LIST, 20),
-     'db_password'=>       array('DB password',       'password',   '', AF_HIDE_LIST, 50),
-     
-  ),
   
   
   // per language defaults for site      
@@ -3110,17 +2461,6 @@ $__CLASS_ATTRIBUTES = array(
      'sender'=>            array('Sender',            'str',      '', AF_HIDE_LIST, 128),
      'recipient'=>         array('Recipient',         'str',      '', AF_HIDE_LIST, 128),
   ),                                                            
-  
-  
-  "reslog" => 
-  array(
-     'id'=>                array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT|AF_HIDE, 11),
-     'timestamp'=>         array('Timestamp',         'timestamp',  ATT_DEFAULT_NOW, AF_SEARCHABLE, 14),
-     'res_id'=>            array('ResId',             'link',  1, AF_SEARCHABLE|AF_HIDE, 'reservation'),
-     'user_id'=>           array('User',              'link',  ATT_DEFAULT_USER_ID, AF_SEARCHABLE, 'user'),
-  //         'weblog_id'=>         array('Web log',           'link',  0, 0, 'weblog'),
-     'action'=>            array('Action',            'str',   '', AF_SEARCHABLE, 100 ),
-  ),
   
   
   "changelog" => 
@@ -3619,26 +2959,6 @@ $__CLASS_ATTRIBUTES = array(
   ),
   
 
-  "geoname" => 
-  array(
-     'id' =>              array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 11),
-     'active'=>           array('Active',            'bool',  0, 0),
-     'directory'=>        array('Directory',         'str', 0, AF_OBLIGATORY|AF_SEARCHABLE, 100),
-     'name'=>             array('Name',              'str', '', AF_OBLIGATORY|AF_SEARCHABLE, 100),
-     'level'=>            array('Level',             'many2one',  0, AF_OBLIGATORY|AF_SEARCHABLE, 'geolevel'),
-     'fid'=>              array('Foreign ID',        'int',  0, AF_OBLIGATORY|AF_SEARCHABLE, 11),
-     'lang'=>             array('Language',          'str',  '', AF_SEARCHABLE, 2),
-     'priority'=>         array('Priority',          'int',  0, 0, 8),
-  ),
-  
-  
-  "geolevel" => 
-  array(
-     'id'=>              array('ID',                  'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 2),
-     'name'=>            array('Name',                'str',   '', 1, 20 ),
-  ),
-  
-  
   
   "object_description" => 
   array(
@@ -3656,33 +2976,7 @@ $__CLASS_ATTRIBUTES = array(
      'description'=>        array('Content (HTML)',     'html',     '', AF_OBLIGATORY|AF_HIDE_LIST),
      'image' =>            array('Image',             'image',      '', AF_HIDE_LIST, 128),
     ),
-  
-  
-  "property_description" => 
-  array(
-     'id'=>            	    array('ID',                	'id',       '', AF_PRIMARY|AF_AUTOINCREMENT|AF_HIDE, 11),
-     'property_id'=>        array('Property Id',        'parent_id',      0, AF_READONLY|AF_HIDE_ADD, 11),
-     'property_type'=>      array('Property Type',      'parent_type', 0, AF_OBLIGATORY|AF_READONLY|AF_HIDE_ADD, $propertyTypeArray),
-     'active'=>            array('Active',             'bool',     1, 0),
-     'site_id'=>            array('Site',               'many2one',  '', AF_SEARCHABLE|AF_READONLY_EDIT, 'site'),
-//     'owner_id'=>           array('Owner',              'many2one',  '', AF_SEARCHABLE, 'owner'),
-     'host_id'=>            array('Host',               'link', 0, AF_HIDE_ADD|AF_READONLY, 'user'),
-     'city_id'=>            array('City',               'many2one',  '', AF_SEARCHABLE, 'geo_city'),
-     'action' =>            array('Action',             'valSelect',  '', 0, $descriptionActionArray),
-  
-     //'foo'=>            	  array('Foo',                'str',       '', 0, 50),
-  
-     'source_id'=>          array('Source',             'link',  '', AF_SEARCHABLE|AF_HIDE_ADD|AF_READONLY, 'source'),
-     'created'=>            array('Created',            'datetime',  ATT_DEFAULT_NOW, AF_HIDE_ADD|AF_HIDE_LIST|AF_READONLY|AF_HIDE_LIST, 6),
-     'timestamp'=>          array('Timestamp',          'timestamp',  ATT_DEFAULT_NOW, AF_HIDE|AF_HIDE_ADD|AF_READONLY, 14),
-     'user_id'=>            array('Author',             'link',     ATT_DEFAULT_USER_ID, AF_HIDE_LIST|AF_HIDE_ADD|AF_SEARCHABLE|AF_READONLY, 'user'),
-     'machine_translated'=> array('Machine Translated', 'bool',  0, AF_HIDE_ADD|AF_READONLY),
-     'language'=>           array('Language',    			  'valSelect', 'en', AF_OBLIGATORY|AF_SEARCHABLE, $langArray),
-     'type' =>              array('Desc.Type',          'many2one', 50, AF_OBLIGATORY|AF_SEARCHABLE, 'description_type'),
-     'description'=>        array('Content (HTML)',     'html',     '', AF_OBLIGATORY|AF_HIDE_LIST, 30),
-    ),
-  
-  
+
   "dictionary" => 
   array(
      'id'=>            	    array('ID',                	'id',       '', AF_PRIMARY|AF_AUTOINCREMENT|AF_HIDE, 11),
@@ -3965,27 +3259,6 @@ $__CLASS_ATTRIBUTES = array(
     'holiday'  =>       array('Holiday',            'bool',     1,  AF_HIDE_ADD, 0),
   ),
 
-  "pet_profile" => 
-  array(
-     'id'=>                array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 3),
-     'created'=>           array('Created',           'datetime', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT),
-     'timestamp'=>         array('Timestamp',         'timestamp', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT, 14 ),
-     'site_id'=>           array('Site',              'link',   ATT_DEFAULT_SITE_ID, AF_HIDE|AF_LOG, 'site'),
-     'client_id'=>         array('Client',    			  'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
-     'user_id'=>           array('Owner',             'link', 0, AF_OBLIGATORY|AF_HIDE_ADD|AF_HIDE_EDIT, 'user'),
-     'type'=>              array('Type',              'many2one', 0, AF_OBLIGATORY, 'pet_type'),
-     'subtype'=>           array('Sub type',          'many2one', 0, 0, 'pet_subtype'),
-     'type_text'=>         array('Type (other)',      'str', '', 0, 100),
-     'display_name'     => array('Name' ,             'str',      '', AF_OBLIGATORY, 50 ),
-     'url_web'          => array('webSiteURL'   ,      'str',      '', 0, 255 ),
-     'photo'            => array('photo(s)',           'media',     '', 0, $user_media_options),
-     'gender'           => array('gender'       ,      'str',      '', 0, 10 ),
-     'description'      => array('description'  ,      'text',     '', 0),
-     'age'              => array('age'          ,      'str',      '', 0, 3 ),
-     'birth_day'        => array('birth day'     ,      'str',      '', 0, 2 ),
-     'birth_month'      => array('birth month'   ,      'str',      '', 0, 2 ),
-     'birth_year'       => array('birth year'    ,      'str',      '', 0, 2 ),
-  ),
 
 //array('allowed_types' => 'image', 'description_type' => IMAGE_TYPE_PROFILE, 'resize' => true, 'minimum_size' => 640)
 
@@ -4133,18 +3406,7 @@ $__CLASS_ATTRIBUTES = array(
      'client_secret'=>      array('client secret',   'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 40),
      'redirect_uri'  =>     array('Redirect URI'  ,  'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 255),
      'scope'  =>            array('scope',           'text', '', 0),
-  ),
-  
-  "password_reset" =>   
-  array(
-     'id'=>                array('ID',                'id',        0, AF_PRIMARY|AF_AUTOINCREMENT),
-     'created'=>           array('Created',           'datetime',  ATT_DEFAULT_NOW, AF_READONLY|AF_HIDE_LIST),
-     'expires'=>           array('Expires',           'datetime',  ATT_DEFAULT_NOW, AF_READONLY|AF_HIDE_LIST, 6 ),
-     'site_id'=>           array('Site',              'link',      ATT_DEFAULT_SITE_ID, AF_HIDE_LIST|AF_SEARCHABLE|AF_READONLY, 'site'),
-     'user_id'=>           array('User',              'link',      ATT_DEFAULT_USER_ID, AF_HIDE_LIST|AF_SEARCHABLE|AF_READONLY, 'user'),
-     'used'=>              array('Used?',             'bool',      0, 0),
-     'guid'=>              array('Guid',              'str',       '', AF_HIDE_LIST, 40),
-  ),
+  ),  
 
   "default_attributes" =>
   array(
@@ -4152,42 +3414,5 @@ $__CLASS_ATTRIBUTES = array(
      'name'=>               array('Name',                'str',   '', AF_OBLIGATORY|AF_SEARCHABLE, 100),
   ),
   
-  "interhome_availability" => 
-  array(
-     'id'=>            	    array('ID',                  'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
-     'code'=>            	  array('FID',                 'str',   '', AF_OBLIGATORY, 32),
-     'created'=>            array('Created',             'date',   '', 0),
-     'startdate'=>          array('Start date',          'date',   '', 0),
-     'availability'  =>     array('Availability',        'text', '', 0),
-     'changeover'  =>       array('Changeover',          'text', '', 0),
-     'minstay'  =>          array('Minstay',             'text', '', 0),
-     'flexbooking'  =>      array('Flexbooking',         'text', '', 0),
-  ),
-
-  "interhome_price" => 
-  array(
-     'id'=>            	    array('ID',                  'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
-     'code'=>            	  array('FID',                 'str',   '', AF_OBLIGATORY, 32),
-     'created'=>            array('Created',             'date',   '', 0),
-     'startdate'=>          array('Start date',          'date',   '', 0),
-     'enddate'=>            array('End date',            'date',   '', 0),
-     'rentalprice'=>        array('Rental price',        'money',   0, AF_HIDE_LIST|AF_READONLY),
-     'midweekrentalprice'=> array('Midweek price',       'money',   0, AF_HIDE_LIST|AF_READONLY),
-     'weekendrentalprice'=> array('Weekend price',       'money',   0, AF_HIDE_LIST|AF_READONLY),
-     'fixprice'=>           array('Fixec price',         'money',   0, AF_HIDE_LIST|AF_READONLY),
-  ),
-  "interhome_service" => 
-  array(
-     'id'=>            	    array('ID',                  'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
-     'code'=>            	  array('Code',                'str',   '', AF_OBLIGATORY, 10),
-     'accommodationcode'=>  array('FID',                 'str',   '', AF_OBLIGATORY, 32),
-     'textcode'=>           array('Text Code',           'str',   '', AF_OBLIGATORY, 6),
-     'created'=>            array('Created',             'date',   '', 0),
-     'validfrom'=>          array('Valid from',          'date',   '', 0),
-     'validto'=>            array('Valid to',            'date',   '', 0),
-     'currency'=>           array('Currency',            'valSelect', 0, AF_HIDE_LIST, $currencyArray),
-     'serviceprice'=>       array('Service price',       'money',   0, AF_HIDE_LIST|AF_READONLY),
-  ),
-
 );
 

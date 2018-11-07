@@ -137,377 +137,384 @@ require_once("helpers_site.inc"); /** This needs to be after, as it looks for co
 
 require_once("services/google/google.inc");
 
+
 /** which site */
 define('SITE_URL', siteURL());
-
-$uri = strip_query_string($_SERVER['REQUEST_URI']);
-$minisite = null;
-
-
-
-if($site_id = $_SESSION['site_id'] = $config['site_id']) { /** single tenant */
-  //die("site_id=$site_id");
-} else { /** multi tenant */
-  $site_id = $_SESSION['site_id'] = env_site_id($site_domain); /** inline switch */
-}
-
-print_log("Set-env: uri={$uri} site_id={$site_id} domain: {$domain}", 'minisite', LOG_LEVEL_ALWAYS);
-
-/** this allows for vpatina.com/kerrygroneng or treat www.kerrygroneng.com as vpatina */
-if($msObj = env_minisite($site_domain, $uri)) {
-  if($msObj->internal) $uri = substr($uri, strlen($minisite_basepath));
-  $site_id = $msObj->site_id;
-}
-
-
-if(!$site_id) die("Don't know {$site_domain}");
-
-$siteObj = $__SITE = get_object('site', $site_id); /** uses Redis */
-
-/** site specific includes - this will go away */
-if($lib_prefix = $siteObj->library_prefix ?: $siteObj->shortname) {
-  include_once($lib_prefix."_classes.inc");
-  include_once($lib_prefix."_class_handlers.inc");
-  include_once($lib_prefix."_class_constants.inc");
-  include_once($lib_prefix."_helpers.inc");
-  include_once($lib_prefix."_controllers.inc");
-  include_once($lib_prefix."_cronscripts.inc");
-  include_once($lib_prefix."_routing.inc");
-}  
-
-
-/** if login */
-require_once("db_user.inc");
-
-/** todo: move to site config */
-$siteObj->modules = ['gallery','payment','rating','rental'];
-
-if(in_array('gallery', $siteObj->modules)) {
-  require_once("gallery/helpers_gallery.inc");
-}
-
-if(in_array('golf', $siteObj->modules)) {
-  require_once("golf/golfswitch.inc");
-}
-
-if(in_array('payment', $siteObj->modules)) {
-  require_once("payment/db_invoice.inc");
-  require_once("payment/db_payment.inc");
-  require_once("payment/invoice_pdf_writer.inc");
-} 
-
-if(in_array('rating', $siteObj->modules)) {
-  require_once("rating/db_rating.inc");
-}
-
-if(in_array('rental', $siteObj->modules)) {
-  require_once("rental/db_rental.inc");
-  require_once("rental/db_booking.inc");
-  require_once("rental/db_reservation.inc"); /** get rid of */
-  require_once("rental/db_apartment.inc"); /** get rid of */
-  require_once("rental/db_location.inc");  
-}
-
-
-$_SESSION['client_id'] = $siteObj->client_id; 
-$_SESSION['legal_id'] = $siteObj->legal_entity_id; 
-$_SESSION['site_url'] = $site_url = SITE_URL; // will be http or https as needed
-$site_lang = $siteObj->default_language;
-$langs = $_SESSION['languages'] = json_decode($siteObj->languages) ?: [$siteObj->default_language];
-
-
-/** site specific directories */
-$data_dir = $_SESSION['data_dir'] = $live ? "/web/data/{$siteObj->shortname}/" : "/web/data-dev/{$siteObj->shortname}/"; 
-$log_dir = $_SESSION['log_dir'] = $data_dir."log/";
-$upload_dir = $_SESSION['upload_dir'] = $data_dir."upload/";
-$cache_dir = $_SESSION['cache_dir'] = $data_dir."cache/";
-if($_SESSION['test']) $cache_dir = $_SESSION['cache_dir'] = str_replace('/data-dev/', '/data/', $cache_dir);
-$xml_dir = $data_dir."XML/";
-
-$null = is_dir($data_dir) ?: mkdir($data_dir, 0700, true);
-$null = is_dir($log_dir) ?: mkdir($log_dir, 0700, true);
-$null = is_dir($cache_dir) ?: mkdir($cache_dir, 0700, true);
-
-
-/** which page */
-
-
   
-if($msObj) {  
-  $int = $msObj->internal;
-  $minisite = $msObj->url;
-  
-  print_log("SetEnv1: Minisite: {$minisite} Int:{$int} Path={$uri}", 'minisite', LOG_LEVEL_TEST);
-  if($int) $uri = str_replace("/{$minisite}", '', $uri);
-  print_log("SetEnv2: Minisite: {$minisite} Int:{$int} Path={$uri}", 'minisite', LOG_LEVEL_TEST);
-  
-  $pageObj = new stdClass;
-  $pageObj->active = 1;
-  $pageObj->path = $uri;
-  $pageObj->minisite = $siteObj->minisite = $msObj->url;
-  $pageObj->language = $lang = $_SESSION['language'] = $msObj->default_language;
-  $pageObj->controller = 'minisite';
+/** Set $no_app=1 to include this file without loading application */
+/** Used in setup.php */
+
+if($no_app) { 
+
+} else {
+  $uri = strip_query_string($_SERVER['REQUEST_URI']);
+  $minisite = null;
   
   
-  $keys = [];
-  foreach($keys as $key) {
-    $pageObj->scope->$key = $msObj->$key;
+  if($site_id = $_SESSION['site_id'] = $config['site_id']) { /** single tenant */
+    //die("site_id=$site_id");
+  } else { /** multi tenant */
+    $site_id = $_SESSION['site_id'] = env_site_id($site_domain); /** inline switch */
   }
-  $_SESSION['page_id'] = 0;
-
-  $siteObj->admin_user_id = $msObj->admin_user_id;
-  $app->minisite = $msObj;
   
-  //if(isset($_GET['foo'])) die("Set-env: uri={$uri} site_id={$site_id} domain: {$site_domain} ms:".dump($msObj,true));
-
-  //dump($pageObj);
-  //dump($msObj);
-} else {  /** Routing */
+  print_log("Set-env: uri={$uri} site_id={$site_id} domain: {$domain}", 'minisite', LOG_LEVEL_ALWAYS);
   
-  $response = route($app); /** New Alto router, Don't look up page_content any more */
-  if($response) {
+  /** this allows for vpatina.com/kerrygroneng or treat www.kerrygroneng.com as vpatina */
+  if($msObj = env_minisite($site_domain, $uri)) {
+    if($msObj->internal) $uri = substr($uri, strlen($minisite_basepath));
+    $site_id = $msObj->site_id;
+  }
+  
+  
+  if(!$site_id) die("Don't know {$site_domain}");
+  
+  $siteObj = $__SITE = get_object('site', $site_id); /** uses Redis */
+  
+  /** site specific includes - this will go away */
+  if($lib_prefix = $siteObj->library_prefix ?: $siteObj->shortname) {
+    include_once($lib_prefix."_classes.inc");
+    include_once($lib_prefix."_class_handlers.inc");
+    include_once($lib_prefix."_class_constants.inc");
+    include_once($lib_prefix."_helpers.inc");
+    include_once($lib_prefix."_controllers.inc");
+    include_once($lib_prefix."_cronscripts.inc");
+    include_once($lib_prefix."_routing.inc");
+  }  
+  
+  
+  /** if login */
+  require_once("db_user.inc");
+  
+  /** todo: move to site config */
+  $siteObj->modules = ['gallery','payment','rating','rental'];
+  
+  if(in_array('gallery', $siteObj->modules)) {
+    require_once("gallery/helpers_gallery.inc");
+  }
+  
+  if(in_array('golf', $siteObj->modules)) {
+    require_once("golf/golfswitch.inc");
+  }
+  
+  if(in_array('payment', $siteObj->modules)) {
+    require_once("payment/db_invoice.inc");
+    require_once("payment/db_payment.inc");
+    require_once("payment/invoice_pdf_writer.inc");
+  } 
+  
+  if(in_array('rating', $siteObj->modules)) {
+    require_once("rating/db_rating.inc");
+  }
+  
+  if(in_array('rental', $siteObj->modules)) {
+    require_once("rental/db_rental.inc");
+    require_once("rental/db_booking.inc");
+    require_once("rental/db_reservation.inc"); /** get rid of */
+    require_once("rental/db_apartment.inc"); /** get rid of */
+    require_once("rental/db_location.inc");  
+  }
+  
+  
+  $_SESSION['client_id'] = $siteObj->client_id; 
+  $_SESSION['legal_id'] = $siteObj->legal_entity_id; 
+  $_SESSION['site_url'] = $site_url = SITE_URL; // will be http or https as needed
+  $site_lang = $siteObj->default_language;
+  $langs = $_SESSION['languages'] = json_decode($siteObj->languages) ?: [$siteObj->default_language];
+  
+  
+  /** site specific directories */
+  $data_dir = $_SESSION['data_dir'] = $live ? "/web/data/{$siteObj->shortname}/" : "/web/data-dev/{$siteObj->shortname}/"; 
+  $log_dir = $_SESSION['log_dir'] = $data_dir."log/";
+  $upload_dir = $_SESSION['upload_dir'] = $data_dir."upload/";
+  $cache_dir = $_SESSION['cache_dir'] = $data_dir."cache/";
+  if($_SESSION['test']) $cache_dir = $_SESSION['cache_dir'] = str_replace('/data-dev/', '/data/', $cache_dir);
+  $xml_dir = $data_dir."XML/";
+  
+  $null = is_dir($data_dir) ?: mkdir($data_dir, 0700, true);
+  $null = is_dir($log_dir) ?: mkdir($log_dir, 0700, true);
+  $null = is_dir($cache_dir) ?: mkdir($cache_dir, 0700, true);
+  
+  
+  /** which page */
+  
+  
+    
+  if($msObj) {  
+    $int = $msObj->internal;
+    $minisite = $msObj->url;
+    
+    print_log("SetEnv1: Minisite: {$minisite} Int:{$int} Path={$uri}", 'minisite', LOG_LEVEL_TEST);
+    if($int) $uri = str_replace("/{$minisite}", '', $uri);
+    print_log("SetEnv2: Minisite: {$minisite} Int:{$int} Path={$uri}", 'minisite', LOG_LEVEL_TEST);
+    
     $pageObj = new stdClass;
-    list($controller, $action, $template) = explode('#', $response['target']);
-    $name = $response['name'] ?? '';
     $pageObj->active = 1;
     $pageObj->path = $uri;
-    $pageObj->controller = $controller;
-    $pageObj->template = $template ?: str_replace('_','-', $controller);
-    $app->params = $pageObj->params = $params = $response['params'] ?? [];
-    $app->object_id = $pageObj->object_id = $params['id'] ?? 0;
-    $app->subview = $pageObj->subview = $subview = $params['subview'] ?? '';
-    $app->action = $pageObj->action = $action = $params['action'] ?? '';
-    $app->tab = $pageObj->tab = $tabview = $params['tab'] ?? '';
-
-    $app->routing = $response;
+    $pageObj->minisite = $siteObj->minisite = $msObj->url;
+    $pageObj->language = $lang = $_SESSION['language'] = $msObj->default_language;
+    $pageObj->controller = 'minisite';
     
-    $pageObj->name = trim("{$name} {$action} {$subview}");
     
-    print_log("Alto Router: ".dump($response, true), 'app', LOG_LEVEL_TEST);
-    print_log("Page: ".dump($pageObj, true), 'app', LOG_LEVEL_TEST);
-      
-  } else { /** Deprectated - old style to be phased out */
-    list($path, $obj_id, $obj_name, $subview) = env_route($uri);
+    $keys = [];
+    foreach($keys as $key) {
+      $pageObj->scope->$key = $msObj->$key;
+    }
+    $_SESSION['page_id'] = 0;
   
-    //$api = strpos($path, '/api/') === 0 ? 1 : 0;
-    print_log("No Route: Path={$path} api=$api id={$obj_id} name={$obj_name} subview=$subview", 'app', LOG_LEVEL_TEST);
-
-    if($path) {
-      if($content = find_object('page_content', ['site_id' => $site_id, 'path' => $path])) {
-        $page = get_object('site_page', $content->page_id);  
-        if(!$page) {
-          $pageObj = page_error("No page found for {$path}");
-        } else {
-          $pageObj = site_merge_page_object($page, $content);
-          $pageObj->subview = $subview;
-          $subviews = $pageObj->subviews ? json_decode($pageObj->subviews) : [];
-          if($subview && !in_array($subview, $subviews)) die("404: {$page->name}: unknown subview {$subview}"); // 404
+    $siteObj->admin_user_id = $msObj->admin_user_id;
+    $app->minisite = $msObj;
     
-          $lang = $_SESSION['language'] = $__LANG = $pageObj->language;
-          $obj_type = $pageObj->object_type;
-          $path_var = $pageObj->path_var;
-          if($obj_id) {
-            if($path_var) {
-              $app->object_id = $app->slug = $obj_id;
-              $app->object_type = $obj_type;
-              $app->object_name = $obj_name;
-            } else {
-              $pageObj = page_error("{$path}: don't know {$obj_id}");
+    //if(isset($_GET['foo'])) die("Set-env: uri={$uri} site_id={$site_id} domain: {$site_domain} ms:".dump($msObj,true));
+  
+    //dump($pageObj);
+    //dump($msObj);
+  } else {  /** Routing */
+    
+    $response = route($app); /** New Alto router, Don't look up page_content any more */
+    if($response) {
+      $pageObj = new stdClass;
+      list($controller, $action, $template) = explode('#', $response['target']);
+      $name = $response['name'] ?? '';
+      $pageObj->active = 1;
+      $pageObj->path = $uri;
+      $pageObj->controller = $controller;
+      $pageObj->template = $template ?: str_replace('_','-', $controller);
+      $app->params = $pageObj->params = $params = $response['params'] ?? [];
+      $app->object_id = $pageObj->object_id = $params['id'] ?? 0;
+      $app->subview = $pageObj->subview = $subview = $params['subview'] ?? '';
+      $app->action = $pageObj->action = $action = $params['action'] ?? '';
+      $app->tab = $pageObj->tab = $tabview = $params['tab'] ?? '';
+  
+      $app->routing = $response;
+      
+      $pageObj->name = trim("{$name} {$action} {$subview}");
+      
+      print_log("Alto Router: ".dump($response, true), 'app', LOG_LEVEL_TEST);
+      print_log("Page: ".dump($pageObj, true), 'app', LOG_LEVEL_TEST);
+        
+    } else { /** Deprectated - old style to be phased out */
+      list($path, $obj_id, $obj_name, $subview) = env_route($uri);
+    
+      //$api = strpos($path, '/api/') === 0 ? 1 : 0;
+      print_log("No Route: Path={$path} api=$api id={$obj_id} name={$obj_name} subview=$subview", 'app', LOG_LEVEL_TEST);
+  
+      if($path) {
+        if($content = find_object('page_content', ['site_id' => $site_id, 'path' => $path])) {
+          $page = get_object('site_page', $content->page_id);  
+          if(!$page) {
+            $pageObj = page_error("No page found for {$path}");
+          } else {
+            $pageObj = site_merge_page_object($page, $content);
+            $pageObj->subview = $subview;
+            $subviews = $pageObj->subviews ? json_decode($pageObj->subviews) : [];
+            if($subview && !in_array($subview, $subviews)) die("404: {$page->name}: unknown subview {$subview}"); // 404
+      
+            $lang = $_SESSION['language'] = $__LANG = $pageObj->language;
+            $obj_type = $pageObj->object_type;
+            $path_var = $pageObj->path_var;
+            if($obj_id) {
+              if($path_var) {
+                $app->object_id = $app->slug = $obj_id;
+                $app->object_type = $obj_type;
+                $app->object_name = $obj_name;
+              } else {
+                $pageObj = page_error("{$path}: don't know {$obj_id}");
+              }
             }
           }
-        }
-        print_log("path:{$path}  page: {$page->name} merged:{$pageObj->name} ({$pageObj->id}): id={$obj_id} ctrl:{$pageObj->controller} tpl:{$pageObj->template}", 'app', LOG_LEVEL_TEST); 
-      } else {
-        $pageObj = page_error("{$path} does not exist");
-      }  
-      
-      $base_path = rtrim($path, '/');
-      $this_path = $base_path && $obj_id ? "{$base_path}/{$obj_id}" : $base_path;    
-      $full_path = $subview ? "{$this_path}/{$subview}" : $this_path;
-      
-      $app->page_id = $_SESSION['page_id'] = $pageObj->id;
-      
-      $app->base_path = $base_path; /** path of this page w/o id or subview */
-      $app->this_path = $this_path; /** path of this page with id, without subview */
-      $app->full_path = $full_path; /** path of this page with id and subview */
-      //dump($app);
-    } else {
-      $pageObj = page_error("Missing path");
-    }
-  }
-}
-
-/** auth - login */
-if($u_id = $_SESSION['u_id']) {
-  $userObj = $__USER = get_user($u_id); 
-  $u_level = $userObj->user_level;
-  $u = obj2array($userObj);
-
-} else {   
-  $config = new PHPAuth\Config($db);
-  $config->overrideAll($siteObj);
-  $phpauth = new PHPAuth\Auth($db, $config, $auth_lang);
-    
-  $auth_hash = $phpauth->getSessionHash();
-  $hash = pick_first($session_hash, $auth_hash, $cookie_hash);
-  
-  $_SESSION['auth_debug'] = false; // $_SESSION['live'] ? false : true;
-
-  if($provider_name = $_GET["provider"]) {
-    $user_id = user_provider_login($provider_name);
-    print_log("user_provider_login for {$provider_name} = {$user_id}", 'provider', LOG_LEVEL_ALWAYS);
-    $provider_login = $user_id ? true : false;
-    if ($provider_login) {
-      $result = $phpauth->third_party_login($user_id);
-      $hash = $result['hash'];
-      print_log("user_provider_login hash={$hash} result:".dump($result,true), 'provider', LOG_LEVEL_ALWAYS);
-    }
-  }
-    
-  
-  if($hash) {   
-    $_SESSION['hash'] = $hash;
-    $domain = $siteObj->domain;
-    $is_logged = $phpauth->isLogged();
-    $u_id = $_SESSION['u_id'];
-    $auth_u_id = $phpauth->getSessionUID($hash);
-    $valid = $phpauth->checkSession($hash);
-    $u_id = $auth_u_id ?: $u_id;
-    if ($u_id && $valid) {
-      if($_GET['act']=="logout") { // Check for logout
-        $phpauth->logout($hash);
-        $_SESSION['loggedin'] =  $_SESSION['hash'] = $u = $u_level = $u_id = $u_addid = $u_personid = $u_type = $u_email = $userObj = NULL;
-        session_destroy();
-      } else {
-        $_SESSION['loggedin'] = 1;
+          print_log("path:{$path}  page: {$page->name} merged:{$pageObj->name} ({$pageObj->id}): id={$obj_id} ctrl:{$pageObj->controller} tpl:{$pageObj->template}", 'app', LOG_LEVEL_TEST); 
+        } else {
+          $pageObj = page_error("{$path} does not exist");
+        }  
         
-        $userObj = get_user($u_id); /** database lookup */
-            
-        if(!$userObj) die("no user $u_id");
-        $upload_dir = $data_dir."user/"; // for all users
-        $null = is_dir($upload_dir) ?: mkdir($upload_dir, 0700, true);
-        $u_hostid = $userObj->user_level == USER_LEVEL_OWNER || user_has_role($userObj, USER_ROLE_OWNER) ? $u_id : 0;
-        $_SESSION['root_user'] =  $u_id == SYSTEM_USER_ID ? 1 : 0;  
-        $u_level = $u['user_level'] = $_SESSION['user_level'] = $userObj->user_level;
-        $u = obj2array($userObj);
-        $_SESSION['u_id'] = $_SESSION['user_id'] = $u_id;
+        $base_path = rtrim($path, '/');
+        $this_path = $base_path && $obj_id ? "{$base_path}/{$obj_id}" : $base_path;    
+        $full_path = $subview ? "{$this_path}/{$subview}" : $this_path;
+        
+        $app->page_id = $_SESSION['page_id'] = $pageObj->id;
+        
+        $app->base_path = $base_path; /** path of this page w/o id or subview */
+        $app->this_path = $this_path; /** path of this page with id, without subview */
+        $app->full_path = $full_path; /** path of this page with id and subview */
+        //dump($app);
+      } else {
+        $pageObj = page_error("Missing path");
       }
-    } else {
-      $_SESSION['loggedin'] = $_SESSION['hash'] = $u = $u_level = $u_id = $u_addid = $u_personid = $u_type = $u_email = $userObj = NULL;
     }
   }
   
-  if($provider_login && $_GET['redirect']) {
-    redirect($_GET['redirect']);
+  /** auth - login */
+  if($u_id = $_SESSION['u_id']) {
+    $userObj = $__USER = get_user($u_id); 
+    $u_level = $userObj->user_level;
+    $u = obj2array($userObj);
+  
+  } else {   
+    $config = new PHPAuth\Config($db);
+    $config->overrideAll($siteObj);
+    $phpauth = new PHPAuth\Auth($db, $config, $auth_lang);
+      
+    $auth_hash = $phpauth->getSessionHash();
+    $hash = pick_first($session_hash, $auth_hash, $cookie_hash);
+    
+    $_SESSION['auth_debug'] = false; // $_SESSION['live'] ? false : true;
+  
+    if($provider_name = $_GET["provider"]) {
+      $user_id = user_provider_login($provider_name);
+      print_log("user_provider_login for {$provider_name} = {$user_id}", 'provider', LOG_LEVEL_ALWAYS);
+      $provider_login = $user_id ? true : false;
+      if ($provider_login) {
+        $result = $phpauth->third_party_login($user_id);
+        $hash = $result['hash'];
+        print_log("user_provider_login hash={$hash} result:".dump($result,true), 'provider', LOG_LEVEL_ALWAYS);
+      }
+    }
+      
+    
+    if($hash) {   
+      $_SESSION['hash'] = $hash;
+      $domain = $siteObj->domain;
+      $is_logged = $phpauth->isLogged();
+      $u_id = $_SESSION['u_id'];
+      $auth_u_id = $phpauth->getSessionUID($hash);
+      $valid = $phpauth->checkSession($hash);
+      $u_id = $auth_u_id ?: $u_id;
+      if ($u_id && $valid) {
+        if($_GET['act']=="logout") { // Check for logout
+          $phpauth->logout($hash);
+          $_SESSION['loggedin'] =  $_SESSION['hash'] = $u = $u_level = $u_id = $u_addid = $u_personid = $u_type = $u_email = $userObj = NULL;
+          session_destroy();
+        } else {
+          $_SESSION['loggedin'] = 1;
+          
+          $userObj = get_user($u_id); /** database lookup */
+              
+          if(!$userObj) die("no user $u_id");
+          $upload_dir = $data_dir."user/"; // for all users
+          $null = is_dir($upload_dir) ?: mkdir($upload_dir, 0700, true);
+          $u_hostid = $userObj->user_level == USER_LEVEL_OWNER || user_has_role($userObj, USER_ROLE_OWNER) ? $u_id : 0;
+          $_SESSION['root_user'] =  $u_id == SYSTEM_USER_ID ? 1 : 0;  
+          $u_level = $u['user_level'] = $_SESSION['user_level'] = $userObj->user_level;
+          $u = obj2array($userObj);
+          $_SESSION['u_id'] = $_SESSION['user_id'] = $u_id;
+        }
+      } else {
+        $_SESSION['loggedin'] = $_SESSION['hash'] = $u = $u_level = $u_id = $u_addid = $u_personid = $u_type = $u_email = $userObj = NULL;
+      }
+    }
+    
+    if($provider_login && $_GET['redirect']) {
+      redirect($_GET['redirect']);
+    }
+    
+  }
+   
+  /** check if page is active */
+  if($pageObj && !$pageObj->active) {
+    if($u_level >= USER_LEVEL_EDITOR) {
+      $pageObj->scope->warning = "This page not active and is only visislbe to editors";
+    } else {
+      $pageObj = page_error("{$page->name} not active {$site_id}", 403);
+    }
+    print_log("Page not active. id:{$pageObj->id} site:{$site_id} url: {$uri}", 'error', LOG_LEVEL_ERROR);
   }
   
-}
- 
-/** check if page is active */
-if($pageObj && !$pageObj->active) {
-  if($u_level >= USER_LEVEL_EDITOR) {
-    $pageObj->scope->warning = "This page not active and is only visislbe to editors";
-  } else {
-    $pageObj = page_error("{$page->name} not active {$site_id}", 403);
+  /** gets set to Europe/Amsterdam somewhere above... */
+  // set System Timezone to UTC
+  if(date_default_timezone_get() != SYSTEM_TIMEZONE) {
+    date_default_timezone_set(SYSTEM_TIMEZONE); // UTC: Also set MySQL?
   }
-  print_log("Page not active. id:{$pageObj->id} site:{$site_id} url: {$uri}", 'error', LOG_LEVEL_ERROR);
-}
-
-/** gets set to Europe/Amsterdam somewhere above... */
-// set System Timezone to UTC
-if(date_default_timezone_get() != SYSTEM_TIMEZONE) {
-  date_default_timezone_set(SYSTEM_TIMEZONE); // UTC: Also set MySQL?
-}
-
-
   
-/** global scope, all pages */
-$global = new stdClass; /** data passed to app */
-/** end global scope */
-
-
-/** store site globals */
-$__GLOBAL = $global;
-$app->live = $__LIVE   = $_SESSION['live'];
-$app->test = $__TEST   = $_SESSION['test'];
-$app->dev = $__DEV    = $_SESSION['dev'];
-$app->client_id = $__CLIENT_ID = $_SESSION['client_id'];
-$app->app_root = $__APP_ROOT = $_SESSION['app_root'] = approot(true);
-$lib->lib_root = $__LIB_ROOT = $_SESSION['lib_root'] = libroot(true);
-$app->doc_root = $__DOC_ROOT = $_SESSION['doc_root'] = $doc_root;
-$app->log_dir = $log_dir;
-$app->site_url = $site_url;
-
-$app->user = $__USER   = $userObj;
-$app->site = $__SITE   = $siteObj;
-$app->page = $__PAGE   = $pageObj;
-
-$app->page_id = $__PAGE_ID = $pageObj->id;
-$app->site_id = $__SITE_ID = $siteObj->id;
-$app->user_id = $__USER_ID = $userObj->id;        
-$app->user_level = $__USER_LEVEL = $userObj ? $userObj->user_level : 0;        
-$app->local_tempplate = $__LOCAL_TEMPLATE = 0; // set to 1 if the smarty template is local to this site
-$app->template = $__TEMPLATE = $__TEMPLATE_PATH = '';
-$app->language = $__LANG = $__LANGUAGE = $_SESSION['language'];
-$app->languages = $__LANGS = $__LANGUAGES = $_SESSION['languages'];
-$app->deployment = $__DEPLOYMENT = $_SESSION['deployment'];
-$app->user_currency = $__USER_CURRENCY = $_SESSION['user_currency'] = 'EUR'; /** todo: make configurable by user */
-$app->user_levels = $__USER_LEVELS = [USER_LEVEL_USER => 'Member', USER_LEVEL_EDITOR => 'Editor', USER_LEVEL_STAFF => 'Staff'];
-$app->path_var = $__PATH_VAR = $_SESSION['path_var'];
-$app->default_bounds = $__DEFAULT_BOUNDS = '[["28.4371","-16.0021"],["74.6767","41.6541"]]';
-$app->remote_ip = $app->client_ip = client_ip();
-$app->locale = lang2locale($app->language) ?: "en_US.utf8";;
-$app->host_sub = $host_sub;
-$app->host_protocol = $host_protocol;
-$app->host_domain = $host_domain;
-$app->config = $_SESSION['config'];
-
-$__APP->db = $db;
-
-$__APP = $app; /** global used sparingly */
-
-$gapi_key = "AIzaSyDqzndmgSgkwaD6AEATZOkeEWUo4foizEo";
-define("GMAP_API", "https://maps.googleapis.com/maps/api/js?key={$gapi_key}&libraries=places&language={$__LANG}&v=3.26");
-
-$_SESSION['send_mail']['test'] = 0; 
-if($client_ip == '213.93.144.196') {
-  $_SESSION['send_mail']['test'] = 'test@kjakman.com'; 
-  $_SESSION['send_mail']['dev'] = 'dev@kjakman.com';
-}
-
-$__EDIT_MENU = ''; 
-$__AUTH_EDIT = auth_site($siteObj); // allowed to edit using CMS
-if($__AUTH_EDIT) {
-  if(isset($_GET['__edit_mode'])) $_SESSION['__edit_mode'] = $_GET['__edit_mode'];
-  $url = this_url();  
-  if($_SESSION['__edit_mode']) {
-    $button = html_link(replace_query_var($url, '__edit_mode', 0), "<i class='fa fa-times-circle'></i>", array('title' => 'Exit Edit Mode', 'class' => 'btn btn-danger __edit_site-off __edit_on-off'));
-  } else {
-    $button = html_link(replace_query_var($url, '__edit_mode', 1), "<i class='fa fa-pencil-square-o'></i>", array('title' => 'Enter Edit Mode', 'class' => 'btn btn-success __edit_page-off'));
+  
+    
+  /** global scope, all pages */
+  $global = new stdClass; /** data passed to app */
+  /** end global scope */
+  
+  
+  /** store site globals */
+  $__GLOBAL = $global;
+  $app->live = $__LIVE   = $_SESSION['live'];
+  $app->test = $__TEST   = $_SESSION['test'];
+  $app->dev = $__DEV    = $_SESSION['dev'];
+  $app->client_id = $__CLIENT_ID = $_SESSION['client_id'];
+  $app->app_root = $__APP_ROOT = $_SESSION['app_root'] = approot(true);
+  $lib->lib_root = $__LIB_ROOT = $_SESSION['lib_root'] = libroot(true);
+  $app->doc_root = $__DOC_ROOT = $_SESSION['doc_root'] = $doc_root;
+  $app->log_dir = $log_dir;
+  $app->site_url = $site_url;
+  
+  $app->user = $__USER   = $userObj;
+  $app->site = $__SITE   = $siteObj;
+  $app->page = $__PAGE   = $pageObj;
+  
+  $app->page_id = $__PAGE_ID = $pageObj->id;
+  $app->site_id = $__SITE_ID = $siteObj->id;
+  $app->user_id = $__USER_ID = $userObj->id;        
+  $app->user_level = $__USER_LEVEL = $userObj ? $userObj->user_level : 0;        
+  $app->local_tempplate = $__LOCAL_TEMPLATE = 0; // set to 1 if the smarty template is local to this site
+  $app->template = $__TEMPLATE = $__TEMPLATE_PATH = '';
+  $app->language = $__LANG = $__LANGUAGE = $_SESSION['language'];
+  $app->languages = $__LANGS = $__LANGUAGES = $_SESSION['languages'];
+  $app->deployment = $__DEPLOYMENT = $_SESSION['deployment'];
+  $app->user_currency = $__USER_CURRENCY = $_SESSION['user_currency'] = 'EUR'; /** todo: make configurable by user */
+  $app->user_levels = $__USER_LEVELS = [USER_LEVEL_USER => 'Member', USER_LEVEL_EDITOR => 'Editor', USER_LEVEL_STAFF => 'Staff'];
+  $app->path_var = $__PATH_VAR = $_SESSION['path_var'];
+  $app->default_bounds = $__DEFAULT_BOUNDS = '[["28.4371","-16.0021"],["74.6767","41.6541"]]';
+  $app->remote_ip = $app->client_ip = client_ip();
+  $app->locale = lang2locale($app->language) ?: "en_US.utf8";;
+  $app->host_sub = $host_sub;
+  $app->host_protocol = $host_protocol;
+  $app->host_domain = $host_domain;
+  $app->config = $_SESSION['config'];
+  
+  $__APP->db = $db;
+  
+  $__APP = $app; /** global used sparingly */
+  
+  $gapi_key = "AIzaSyDqzndmgSgkwaD6AEATZOkeEWUo4foizEo";
+  define("GMAP_API", "https://maps.googleapis.com/maps/api/js?key={$gapi_key}&libraries=places&language={$__LANG}&v=3.26");
+  
+  $_SESSION['send_mail']['test'] = 0; 
+  if($client_ip == '213.93.144.196') {
+    $_SESSION['send_mail']['test'] = 'test@kjakman.com'; 
+    $_SESSION['send_mail']['dev'] = 'dev@kjakman.com';
   }
-  $__EDIT_MENU = html_div($button, '__edit_button');
+  
+  $__EDIT_MENU = ''; 
+  $__AUTH_EDIT = auth_site($siteObj); // allowed to edit using CMS
+  if($__AUTH_EDIT) {
+    if(isset($_GET['__edit_mode'])) $_SESSION['__edit_mode'] = $_GET['__edit_mode'];
+    $url = this_url();  
+    if($_SESSION['__edit_mode']) {
+      $button = html_link(replace_query_var($url, '__edit_mode', 0), "<i class='fa fa-times-circle'></i>", array('title' => 'Exit Edit Mode', 'class' => 'btn btn-danger __edit_site-off __edit_on-off'));
+    } else {
+      $button = html_link(replace_query_var($url, '__edit_mode', 1), "<i class='fa fa-pencil-square-o'></i>", array('title' => 'Enter Edit Mode', 'class' => 'btn btn-success __edit_page-off'));
+    }
+    $__EDIT_MENU = html_div($button, '__edit_button');
+  }
+  
+  $__EDIT_MODE = $__AUTH_EDIT && $_SESSION['__edit_mode'];
+  
+  $app->version = $version;
+  $app->header = new stdClass;
+  $app->header->base_scripts = [];
+  $app->header->scripts = [];
+  $app->header->styles = [];
+  $app->header->meta = [];
+  $app->header->link = [];
+  $app->header->code = [];
+  $app->header->onload = [];
+  
+  $time = elapsed($start_time);
+  $mem = bytes2human(memory_get_usage());
+  //print_log("Auth={$__AUTH_EDIT} edit={$__EDIT_MODE}", 'set_env', LOG_LEVEL_TEST); 
+  print_log("Loaded env in {$time}s using {$mem}", 'app', LOG_LEVEL_TEST); 
+  
+  //echo("<br><br><br>");dump($dbconf);
+  //dump($app->config);
+  
+  //dump($_SESSION['config']);
+  
+  //die("Local={$local}");
 }
-
-$__EDIT_MODE = $__AUTH_EDIT && $_SESSION['__edit_mode'];
-
-$app->version = $version;
-$app->header = new stdClass;
-$app->header->base_scripts = [];
-$app->header->scripts = [];
-$app->header->styles = [];
-$app->header->meta = [];
-$app->header->link = [];
-$app->header->code = [];
-$app->header->onload = [];
-
-$time = elapsed($start_time);
-$mem = bytes2human(memory_get_usage());
-//print_log("Auth={$__AUTH_EDIT} edit={$__EDIT_MODE}", 'set_env', LOG_LEVEL_TEST); 
-print_log("Loaded env in {$time}s using {$mem}", 'app', LOG_LEVEL_TEST); 
-
-//echo("<br><br><br>");dump($dbconf);
-//dump($app->config);
-
-//dump($_SESSION['config']);
-
-//die("Local={$local}");
