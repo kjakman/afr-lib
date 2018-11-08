@@ -54,7 +54,7 @@ $__CLASSES = array(
 
     'minisite' =>             array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'name', '', ''),
     'minisite_page_type' =>   array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'name', '', ''),
-    'minisite_pages' =>       array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'page_name', '', ''),
+    'minisite_page' =>       array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'page_name', '', ''),
     'minisite_layout' =>      array(USER_LEVEL_SYSTEM, 'site', '', '', NF_CACHE_ASSOC, 'name', 'id', ''),
     'minisite_home_page' =>   array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'id', '', ''),
     'minisite_artist_page' =>   array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'id', '', ''),
@@ -2143,17 +2143,18 @@ $__CLASS_ATTRIBUTES = array(
       'name'=>          array('Name',              'str',   '', 1, 32 ),
    ),
 
-    "minisite_pages" => 
+    "minisite_page" => 
    array(
-      'id'=>                 array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 8),
-      'created'=>            array('Created',            'datetime', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT),
-      'timestamp'=>          array('Timestamp',          'timestamp', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT, 14 ),
-      'active'  =>           array('Active?',            'bool',     1,  AF_HIDE_ADD, 0),
-      'site_id'=>            array('Site',               'link',  0, AF_SEARCHABLE|AF_HIDE, 'site'),
-      'client_id'=>          array('Client',                'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
-      'user_id' =>           array('User ID',            'link', ATT_DEFAULT_USER_ID, 0, 'user'),
-      'type' =>              array('Type',         'many2one', 0, AF_LOG|AF_SEARCHABLE , 'minisite_page_type'),
-      'page_name'=>          array('Page Name',              'str',   '', 1, 32 ),
+      'id'=>                 array('ID',               'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 8),
+      'created'=>            array('Created',          'datetime', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT),
+      'timestamp'=>          array('Timestamp',        'timestamp', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT, 14 ),
+      'active'  =>           array('Active?',          'bool',     1,  AF_HIDE_ADD, 0),
+      'site_id'=>            array('Site',             'link',  0, AF_SEARCHABLE|AF_HIDE, 'site'),
+      'client_id'=>          array('Client',           'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
+      'user_id' =>           array('User ID',          'link', ATT_DEFAULT_USER_ID, 0, 'user'),
+      'type' =>              array('Type',             'many2one', 0, AF_LOG|AF_SEARCHABLE , 'minisite_page_type'),
+      'page_name'=>          array('Page Name',        'str',   '', 1, 32 ),
+      'path'=>               array('Path',             'str',   '', 1, 128 ),
    ),
 
    "minisite_layout" => 
@@ -2193,7 +2194,7 @@ $__CLASS_ATTRIBUTES = array(
       'site_id'=>            array('Site',               'link',  0, AF_SEARCHABLE|AF_HIDE, 'site'),
       'client_id'=>          array('Client',                'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
       'user_id' =>           array('User ID',            'link', ATT_DEFAULT_USER_ID, 0, 'user'),
-      'page_id' =>           array('Page',               'link', 0, AF_HIDE_EDIT|AF_HIDE_ADD, 'minisite_pages'),
+      'page_id' =>           array('Page',               'link', 0, AF_HIDE_EDIT|AF_HIDE_ADD, 'minisite_page'),
       'active'  =>           array('Active?',            'bool',     1,  AF_HIDE_ADD, 0),
       'menu_title'=>         array('Artist Menu Title',  'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
       'page_title'=>         array('Artist Page Title',  'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
@@ -2208,7 +2209,7 @@ $__CLASS_ATTRIBUTES = array(
       'site_id'=>            array('Site',               'link',  0, AF_SEARCHABLE|AF_HIDE, 'site'),
       'client_id'=>          array('Client',                'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
       'user_id' =>           array('User ID',            'link', ATT_DEFAULT_USER_ID, 0, 'user'),
-      'page_id' =>           array('Page',               'link', 0, AF_HIDE_EDIT|AF_HIDE_ADD, 'minisite_pages'),
+      'page_id' =>           array('Page',               'link', 0, AF_HIDE_EDIT|AF_HIDE_ADD, 'minisite_page'),
       'active'  =>           array('Active?',            'bool',     1,  AF_HIDE_ADD, 0),
       'menu_title'=>  array('Exhibition Menu Title',  'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
       'page_title'=>  array('Exhibition Page Title',  'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),

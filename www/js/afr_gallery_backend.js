@@ -302,7 +302,7 @@ $(document).on("click", '#soft_delete', function(){
 //Delete minisite pages
 $(document).on("click", '#page_delete', function(){
   var id = $(this).data('value');
-  var obj_type = "minisite_pages";
+  var obj_type = "minisite_page";
   $.ajax({
     url: "/ajax.php",
     dataType: "json",
@@ -332,11 +332,11 @@ $(document).on("click", '#event_delete', function(){
   });     
 });
 
-$(document).on("click",'#show_web',function() {
+/*$(document).on("click",'#show_web',function() {
    setTimeout(function() { 
     $("#gbe_artist_link").trigger('click');
   }, 1000);
-});
+});*/
 
 //dynamic table edit on artwork module 
 

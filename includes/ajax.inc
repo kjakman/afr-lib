@@ -420,33 +420,87 @@
       exit;      
       break;
 
+      case 'save-minisite-page':
+        extract($obj_data);
+        $obj_type = "minisite_page";
+        $user_id = $obj_data[user_id];
+        $site_id = $obj_data[site_id];
+        $page_name = $obj_data[page_name];
+
+        /*$artist = find_objects('minisite_page', ['user_id' => $user_id, 'type' =>20 , 'active' => 1]);
+        $count = count($artist);
+
+        $exhibition = find_objects('minisite_page', ['user_id' => $user_id, 'type' =>30 , 'active' => 1]);
+        $count1 = count($exhibition);*/
+
+        if($obj_data[type] == 10) json_error("Home page cannot be added");
+        /*if($obj_data[type] == 20) $obj_data[page_name] = 'artist'.$count;
+        if($obj_data[type] == 30) $obj_data[page_name] = 'exhibition'.$count1;*/
+
+        if($obj_id){
+          list($id, $errors) = add_object($obj_type, $obj_data);
+          print_log("save-minisite: added: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
+        }        
+            
+        if($errors) json_error($errors); 
+
+        $data = find_objects('minisite_page', ['user_id' => $user_id, 'page_name' =>$page_name , 'active' => 1]);
+
+        foreach($data as $datas){
+          $obj_data1[site_id] = $site_id;
+          $obj_data1[user_id] = $user_id;
+          $obj_data1[page_id] = $datas->id;
+          $obj_data1[menu_title] = $datas->page_name;
+          $obj_data1[page_title] = $datas->page_name;
+      
+          if($datas->type == 20){
+            $sub_type = "minisite_artist_page";  
+            list($id, $errors) = add_object($sub_type, $obj_data1);
+            if($errors) json_error($errors); 
+          }else{
+            $sub_type = "minisite_exhibition_page";  
+            list($id, $errors) = add_object($sub_type, $obj_data1);
+            if($errors) json_error($errors); 
+          }
+        }  
+
+        $obj = get_object($obj_type, $id);
+        $obj->next_tab = $obj_data['next_tab'];
+        
+        $result->success = 1;
+        $result->data = $obj;    
+        $result->message = "OK. Minisite Pages Saved";       
+        echo(json_encode($result));
+        exit;      
+      break;
+
       case 'save-minisite':
-      extract($obj_data);
-      $obj_type = $obj_data[obj_type];
-      $page_id = $obj_data[page_id];
-      $page_id = $obj_data[page_id];
+        extract($obj_data);
+        $obj_type = $obj_data[obj_type];
+        $page_id = $obj_data[page_id];
+        $page_id = $obj_data[page_id];
 
-      $obj_id = getobj_id($obj_type, $user_id, $page_id);
+        $obj_id = getobj_id($obj_type, $user_id, $page_id);
 
-      if($obj_id) {
-        list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
-        //echo "updated";
-        print_log("save-ministe: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
-      } else {
-        list($id, $errors) = add_object($obj_type, $obj_data);
-        print_log("save-minisite: added: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
-      }              
-          
-      if($errors) json_error($errors);
-      
-      //obj = get_object($obj_type, $id);
-      //$obj->next_tab = $obj_data['next_tab'];
-      
-      $result->success = 1;
-      $result->data = $obj;
-      $result->message = "OK. Minisite Saved";
-      
-      echo(json_encode($result));exit;      
+        if($obj_id) {
+          list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
+          //echo "updated";
+          print_log("save-ministe: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
+        } else {
+          list($id, $errors) = add_object($obj_type, $obj_data);
+          print_log("save-minisite: added: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
+        }              
+            
+        if($errors) json_error($errors);
+        
+        //obj = get_object($obj_type, $id);
+        //$obj->next_tab = $obj_data['next_tab'];
+        
+        $result->success = 1;
+        $result->data = $obj;
+        $result->message = "OK. Minisite Saved";
+        
+        echo(json_encode($result));exit;      
       break;
 
       case 'save-minisite-artist':
@@ -484,54 +538,27 @@
         exit;
       break;
 
-    case 'save-minisite-page':
+    case 'save-minisite-basic':
       extract($obj_data);
-      $obj_type = "minisite_pages";
-      $user_id = $obj_data[user_id];
-      $site_id = $obj_data[site_id];
+      $obj_type = $obj_data[obj_type];
 
-      $artist = find_objects('minisite_pages', ['user_id' => $user_id, 'type' =>20 , 'active' => 1]);
-      $count = count($artist);
-
-      $exhibition = find_objects('minisite_pages', ['user_id' => $user_id, 'type' =>30 , 'active' => 1]);
-      $count1 = count($exhibition);
-
-      if($obj_data[type] == 10) json_error("Home page cannot be added");
-      if($obj_data[type] == 20) $obj_data[page_name] = 'artist'.$count;
-      if($obj_data[type] == 30) $obj_data[page_name] = 'exhibition'.$count1;
-
-      if($obj_id){
+      if($obj_id) {
+        list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
+        print_log("save-ministe: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
+      } else {
         list($id, $errors) = add_object($obj_type, $obj_data);
         print_log("save-minisite: added: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
-      }        
+      }              
           
-      if($errors) json_error($errors); 
-
-      $data = find_objects('minisite_pages', ['user_id' => $user_id, 'page_name' =>$obj_data[page_name] , 'active' => 1]);
-
-      foreach($data as $datas){
-        $obj_data1[site_id] = $site_id;
-        $obj_data1[user_id] = $user_id;
-        $obj_data1[page_id] = $datas->id;
-        $obj_data1[menu_title] = $datas->page_name;
-        $obj_data1[page_title] = $datas->page_name;
-    
-        if($datas->type == 20){
-          $sub_type = "minisite_artist_page";  
-          list($id, $errors) = add_object($sub_type, $obj_data1);
-          if($errors) json_error($errors); 
-        }else{
-          $sub_type = "minisite_exhibition_page";  
-          list($id, $errors) = add_object($sub_type, $obj_data1);
-          if($errors) json_error($errors); 
-        }
-      }      
+      if($errors) json_error($errors);
       
       $result->success = 1;
-      $result->message = "OK. Minisite Pages Saved";       
-      echo(json_encode($result));
-      exit;      
+      $result->data = $obj;
+      $result->message = "OK. Minisite Saved";
+      
+      echo(json_encode($result));exit;      
     break;
+
 
     case 'save-event':
       $obj_type = 'event';
@@ -5376,7 +5403,7 @@
     case 'page-delete':
 
       $id = trim($obj_data['val']);
-      $obj_type = 'minisite_pages';
+      $obj_type = 'minisite_page';
       
       if($id){
         list($delete_count, $errors) = delete_object($obj_type, $id);
@@ -5402,28 +5429,6 @@
       echo (json_encode($result));
       exit;
       break;
-
-    /*case 'find-page':
-      //$page_id = $_GET['page_id'];
-      //echo "<pre>";
-        //print_r($page_id);
-      $page_id = trim($obj_data['page_id']);
-      $user_id = trim($obj_data['user_id']);
-      $scope->page_id= $page_id;
-      if($page_id){
-        $search = ['active' => 1, 'user_id' => $user_id, 'id' => $page_id];
-        $data = find_object('minisite_pages', $search);
-      }
-      $obj = get_object(minisite_pages, $page_id);
-      if($data->type == '10') $obj->next_tab = 'home';
-      if($data->type == '20') $obj->next_tab = 'artist';
-      if($data->type == '30') $obj->next_tab = 'exhibition';
-      
-      $result->success = 1;
-      $result->data = $obj;
-      echo (json_encode($data));
-      exit;
-      break;*/
 
     case 'add-artist':
       
