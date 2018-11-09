@@ -61,11 +61,11 @@ function controller_minisite($app, $options = []) {
     $scope->mObj = $mObj = find_object('minisite', ['user_id' => $user_id, 'active' => 1]);
     $scope->homeObj = $homeObj = find_object('minisite_home_page', ['user_id' => $user_id, 'active' => 1]);
     $scope->artist_Objs = $artist_Obj = find_object('minisite_artist_page', ['user_id' => $user_id, 'active' => 1]);
-    $scope->exhibition_Obj = $exhibitionpage = find_objects('minisite_exhibition_page', ['user_id' => $user_id, 'active' => 1]);
+    $scope->exhibition_Obj = $exhibitionpage = find_object('minisite_exhibition_page', ['user_id' => $user_id, 'active' => 1]);
     //dump($scope->exhibition_Obj);
 
     //$scope->timings = $timings = find_objects('opening_hours', ['user_id' => $user_id], ['sort' => 'id asc']);
-    $scope->profileObj = $profileObj = find_objects('user_profile', ['user_id' => $user_id]);
+    $scope->profileobj = $profileobj = find_object('user_profile', ['user_id' => $user_id]);
 
     $scope->timings = $timings = db_getAll("select * from opening_hours where user_id='$user_id' ORDER BY `id` ASC");
 
@@ -253,6 +253,7 @@ function controller_minisite($app, $options = []) {
       $scope->exhibition_Obj = $exhibitionpage = find_object('minisite_exhibition_page', ['user_id' => $user_id, 'active' => 1]);
       $scope->mObj = $mObj = find_object('minisite', ['user_id' => $user_id, 'active' => 1]);
       //$scope->timings = $timings = find_objects('opening_hours', ['user_id' => $user_id], ['sort' => 'id asc']);
+      $scope->profileobj = $profileobj = find_object('user_profile', ['user_id' => $user_id]);
       $scope->timings = $timings = db_getAll("select * from opening_hours where user_id='$user_id' ORDER BY `id` ASC");
     }
     
@@ -276,7 +277,7 @@ function controller_minisite($app, $options = []) {
       $scope->artist_Objs = $artist_Obj = find_object('minisite_artist_page', ['user_id' => $user_id, 'active' => 1]);
       $scope->mObj = $mObj = find_object('minisite', ['user_id' => $user_id, 'active' => 1]);
       $scope->exhibition_menu = $exhibition_menu = find_objects('minisite_page', ['user_id' => $user_id, 'active' => 1, 'type' => '30']);
-      
+      $scope->profileobj = $profileobj = find_object('user_profile', ['user_id' => $user_id]);
       $scope->timings = $timings = db_getAll("select * from opening_hours where user_id='$user_id' ORDER BY `id` ASC");
 
       if($exhibitionpage->show_gallery)
@@ -412,11 +413,13 @@ function controller_minisite($app, $options = []) {
     case 'contact':
       $scope->receiver_name = $display_name;
       $scope->receiver_email = $user->email_address;
+      $scope->userdetail = $userdetail = find_object('user_profile', ['user_id' => $user_id]);
       $scope->mObj = $mObj = find_object('minisite', ['user_id' => $user_id, 'active' => 1]); 
       $scope->homeObj = $homeObj = find_object('minisite_home_page', ['user_id' => $user_id, 'active' => 1]);
       $scope->exhibition_Obj = $exhibitionpage = find_object('minisite_exhibition_page', ['user_id' => $user_id, 'active' => 1]);
       $scope->artist_Objs = $artist_Obj = find_object('minisite_artist_page', ['user_id' => $user_id, 'active' => 1]);
       $scope->contact_Obj = $contactObj = find_object('minisite_home_page', ['user_id' => $user_id, 'active' => 1]);
+      $scope->profileobj = $profileobj = find_object('user_profile', ['user_id' => $user_id]);
       //$scope->timings = $timings = find_objects('opening_hours', ['user_id' => $user_id], ['sort' => 'id asc']);
       $scope->timings = $timings = db_getAll("select * from opening_hours where user_id='$user_id' ORDER BY `id` ASC");
       
@@ -4337,6 +4340,9 @@ function controller_gallery_backend($app, $options = []) {
 
       $page_id = $_GET['page_id'];
       $scope->page_id = $page_id;
+
+      $userid = $_GET['user_id'];
+      $scope->userid = $userid;
       
       $colSearch = ['user_id' => $obj->user_id, 'active' => 1];
       $scope->minisiteobj = $minisiteobj = find_object('minisite', $colSearch);
