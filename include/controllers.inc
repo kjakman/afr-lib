@@ -4491,7 +4491,6 @@ function controller_gallery_backend($app, $options = []) {
       if(!$add) {                  
         if(!$id) return controller_error($app, "Missing ID");
         controller_gallery_collections($app);
-        dump($app);
         $obj = $scope->collection;
         $scope->auth_edit_collection = $auth_edit = $obj ? gallery_auth_media($obj_type, $obj, $u_id) : false;
         
@@ -4942,7 +4941,7 @@ function controller_gallery_collections($app, $options = []) {
   $siteObj = $app->site;
   
 
-  //die("tpl={$app->page->template}");
+  die("tpl={$app->page->template}");
   
   $scope = $app->page->scope;
   $scope->items = $scope->objects;  
