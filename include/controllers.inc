@@ -50,9 +50,11 @@ function controller_minisite($app, $options = []) {
     if(in_array($slug, ['current', 'future', 'past', 'all'])) {
       $subview = $slug;
     } else { /** Look for a custom exhibitions page */
-      $minisitePageObj = find_object('minisite_page', ['slug' => $slug, 'active' => 1]);
+      $pageSearch = ['minisite_id' => $msObj->id, 'slug' => $slug, 'active' => 1];
+      $minisitePageObj = find_object('minisite_page', $pageSearch);
       if($minisitePageObj) {
-        
+        $scope->minisite_page = $minisitePageObj;
+
         $scope->error[]= "Some error";
         $scope->message[] = "Path: {$pageObj->path} Slug: {$slug}";
         
@@ -463,8 +465,23 @@ function controller_minisite($app, $options = []) {
       //$tpl = "{$minisite}/{$tpl}";
       //die("page={$page} tpl={$tpl}");
       break;
-    default:
-      return scope_error($app, "Page {$page} not found", '404');
+    default: /** Look for custom page */
+      $pageSearch = ['minisite_id' => $msObj->id, 'path' => $page, 'active' => 1];
+      $minisitePageObj = find_object('minisite_page', $pageSearch);
+      if($minisitePageObj) {
+        $tpl = $minisitePageObj->template; 
+        $tpl = 'test'; /** add this to DB - hard coded for now */
+        $minisitePageObj->title = "Some Title"; /** add this to DB - hard coded for now */
+        $minisitePageObj->content = "<p>Some Content</p><p>Bla bla bla</p>"; /** add this to DB - hard coded for now */
+        
+        $scope->minisite_page = $minisitePageObj;
+
+        $type = $minisitePageObj->type;
+        $scope->debug = html_h3("Found custom minisite page");
+        $scope->debug .= "Name: {$minisitePageObj->page_name} ID: {$minisitePageObj->id}) Tpl: {$tpl}";        
+      } else {
+        return scope_error($app, "Page {$page} not found", 'minisites/404');
+      }
       break;
   }
   
