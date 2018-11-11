@@ -2155,6 +2155,9 @@ $__CLASS_ATTRIBUTES = array(
       'type' =>              array('Type',             'many2one', 0, AF_LOG|AF_SEARCHABLE , 'minisite_page_type'),
       'page_name'=>          array('Page Name',        'str',   '', 1, 32 ),
       'path'=>               array('Path',             'str',   '', 1, 128 ),
+      'slug'=>               array('Slug',             'str',   '', 1, 128 ),
+      'search'=>             array('Search',           'json',   '', 1),
+      
    ),
 
    "minisite_layout" => 

@@ -43,7 +43,36 @@ function controller_minisite($app, $options = []) {
   }
   $subview = count($parts) > 2 ? strtolower($parts[2]) : '';
   
-  if($page == 'exhibitions' && count($parts) > 1) $subview = strtolower($parts[1]);
+  if($page == 'exhibitions' && count($parts) > 1) {
+    $slug = $parts[1];    
+    
+    /** These are reserved for the tabs */
+    if(in_array($slug, ['current', 'future', 'past', 'all'])) {
+      $subview = $slug;
+    } else { /** Look for a custom exhibitions page */
+      $minisitePageObj = find_object('minisite_page', ['slug' => $slug, 'active' => 1]);
+      if($minisitePageObj) {
+        
+        $scope->error[]= "Some error";
+        $scope->message[] = "Path: {$pageObj->path} Slug: {$slug}";
+        
+        if($exSearch = $minisitePageObj->search) {
+          $exSearch = json_decode($exSearch, true);
+          $exObjs = find_objects('media_collection', $exSearch);
+          
+          
+        }
+        $scope->debug = "Search:".dump($exSearch,true);
+        //$scope->debug .= "Routing".dump($scope->routing,true);
+        $scope->debug .= html_h3("Found Page {$minisitePageObj->id} {$minisitePageObj->page_name}");
+        $scope->debug .= html_h4("Exhibitions:");
+        foreach($exObjs as $exObj) $scope->debug .= "{$exObj->id} {$exObj->title}<br>";
+        
+      } else {
+        return scope_error($app, "Exhibitions page {$slug} not found", 'minisites/404');
+      }      
+    }
+  }
   
   $scope->artworks = [];
   $scope->user_id = $user_id;
