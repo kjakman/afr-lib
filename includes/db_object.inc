@@ -4598,9 +4598,11 @@ function object_site_search($obj_type, $search, $val, $options = []) {
   /** post processing - expensive */
   switch($obj_type) {
   case 'user':
-    foreach($objs as &$obj) {
-      $obj->rentals = count_objects('property', array('host_id' => $obj->id));
-      $obj->listed_rentals = count_objects('property', array('host_id' => $obj->id, 'active' => 1));
+    if($siteObj->property_site && is_class('property')){
+      foreach($objs as &$obj) {
+        $obj->rentals = count_objects('property', array('host_id' => $obj->id));
+        $obj->listed_rentals = count_objects('property', array('host_id' => $obj->id, 'active' => 1));
+      }
     }
     break;
   case 'gallery': /** look for media in this folder */
