@@ -423,9 +423,6 @@
             list($id, $errors) = add_object($times_type, $times_data); 
           }else{
             if($start >= $end){
-                print_r($times_data->day);
-                print_r($start);
-                print_r($end);
               json_error("End time must be after start time");
             }
             else 
@@ -446,36 +443,50 @@
       exit;      
       break;
 
+      case 'save-minisite':
+        extract($obj_data);
+        $obj_type = 'minisite';
+        //dump($obj_data);
+        if(!$obj_id){
+          list($id, $errors) = add_object($obj_type, $obj_data);
+          print_log("save-minisite: added: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
+        }
+        if($errors) json_error($errors); 
+
+        if($id){
+          list($id, $errors) = add_default_page($id, $user_id);
+        } 
+        if($errors) json_error($errors); 
+
+        $result->message = "OK. Saved minisite";
+        echo(json_encode($result));
+        exit;      
+      break;
+
       case 'save-minisite-page':
         extract($obj_data);
         $obj_type = "minisite_page";
         $user_id = $obj_data[user_id];
         $site_id = $obj_data[site_id];
         $page_name = $obj_data[page_name];
-        //$path = $obj_data[path];
-
+        $obj_data[menu_title] = $obj_data[page_name];
+        $obj_data[page_title] = $obj_data[page_name];
+        
         $path = url_safe("/".$obj_data['path']."/", true); // slashes allowed
         $obj_data['path'] = clean_path($path);
+        $obj_data['slug'] = $obj_data['path'];
 
         $col = find_objects('minisite_page', ['user_id' => $user_id, 'path' => $obj_data['path'] , 'user_id' => $user_id , 'active' => 1]);
         
-        if($col){
-          json_error($obj_data['path']." is already used, Please choose a unique path"); 
-        }
-       
-        /*$artist = find_objects('minisite_page', ['user_id' => $user_id, 'type' =>20 , 'active' => 1]);
-        $count = count($artist);
-
-        $exhibition = find_objects('minisite_page', ['user_id' => $user_id, 'type' =>30 , 'active' => 1]);
-        $count1 = count($exhibition);*/
-
+        if($col)  json_error($obj_data['path']." is already used, Please choose a unique path"); 
+         
         if($obj_data[type] == 10) json_error("Home page cannot be added");
-        /*if($obj_data[type] == 20) $obj_data[page_name] = 'artist'.$count;
-        if($obj_data[type] == 30) $obj_data[page_name] = 'exhibition'.$count1;*/
 
-        if($obj_id){
+        if($minisite_id){
           list($id, $errors) = add_object($obj_type, $obj_data);
           print_log("save-minisite: added: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
+        }else{
+          json_error("There is no minisite ID"); 
         }        
             
         if($errors) json_error($errors); 
@@ -488,6 +499,7 @@
           $obj_data1[page_id] = $datas->id;
           $obj_data1[menu_title] = $datas->page_name;
           $obj_data1[page_title] = $datas->page_name;
+          $obj_data1[slug] = $datas->path;
       
           if($datas->type == 20){
             $sub_type = "minisite_artist_page";  
@@ -510,17 +522,27 @@
         exit;      
       break;
 
-      case 'save-minisite':
+      case 'edit-minisite-page':
         extract($obj_data);
         $obj_type = $obj_data[obj_type];
         $page_id = $obj_data[page_id];
-        $page_id = $obj_data[page_id];
+        $menu_title = $obj_data[menu_title];
+        $page_title = $obj_data[page_title];
+        
+        // To update menu_title, page_title in minisite_page 
+        $page = find_object('minisite_page', ['id' => $page_id, 'active' => 1]);
+        if($page){
+          $id = $page->id;
+          $page->menu_title = $menu_title;
+          $page->page_title = $page_title;
+          list($id, $errors) = update_object('minisite_page', $page, $id);
+        }
+        if($errors) json_error($errors);
 
         $obj_id = getobj_id($obj_type, $user_id, $page_id);
 
         if($obj_id) {
           list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
-          //echo "updated";
           print_log("save-ministe: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
         } else {
           list($id, $errors) = add_object($obj_type, $obj_data);
@@ -541,17 +563,19 @@
 
       case 'save-minisite-artist':
         extract($obj_data);
-        $user = $user_id;
+        $user_id = $obj_data[user_id];
         $val = $tags;
         $host_user_id = explode('|',$val);
+        $page_id = $obj_data[page_id];
         
-        $data = db_getAll("select * from user_map where host_user_id='$host_user_id[1]' AND soft_delete= '1'");
+        $data = db_getAll("select * from user_map where host_user_id='$host_user_id[1]' AND active= '1'");
         
         if($data){
           foreach($data as $datas){
             $datas->user_id = $user;
             $datas->soft_delete = 0;
             $update_data= update_object('user_map', $datas, $datas->id);
+
             $media = db_getAll("select * from media_collection where artist_id='$host_user_id[1]' AND active= '1' AND type='120' AND start_date=''");
 
             if($media){
@@ -561,13 +585,32 @@
               }  
             }
             else{
-              json_error("No medias to display");
+              json_error("No medias to display in media_collection");
             }
+
+            $colsearch = ['user_id' => $user_id, 'host_user_id'=> $host_user_id[1], 'page_id' => $page_id];
+            $page = find_objects('page_map', $colsearch);
+            if($page){
+              foreach($page as $pages){
+                $pages->user_id = $user_id;
+                $pages->host_user_id = $host_user_id[1];
+                $pages->page_id = $page_id;
+                $pages->active = '1';
+                list($id, $errors)= update_object('page_map', $pages, $pages->id);
+              }
+            }
+            else{
+              $page[user_id] = $user_id;
+              $page[host_user_id] = $host_user_id[1];
+              $page[page_id] = $page_id;
+              list($id, $errors) = add_object('page_map', $page);                
+            }
+            if($errors) json_error($errors);            
           }
 
         }
         else{
-          json_error("No medias to display"); 
+          json_error("No medias to display in user_map"); 
         }
         $result->message = "Artist will be displayed in website";
         echo(json_encode($result));
@@ -1936,7 +1979,7 @@
 
     /** more secure version of 'list' below, with implicit filters and security checks, used by bootstrap-table */
     case 'get-rows':
-      //extract($obj_data);
+      extract($obj_data);
       $allowed_types = ['invoice', 'inv_lineitem', 'payment', 'withdrawal', 'user', 'shortstay', 'dictionary', 'reservation', 
                         'artwork', 'gallery', 'media_collection', 'media', 'plugin', 'minisite', 'uhuru_registration', 'uhuru_trial_lesson'];
       if(!in_array($obj_type, $allowed_types)) json_error("Listing $obj_type not supported");
@@ -5159,19 +5202,40 @@
     case 'artist-delete':
       $val = trim($obj_data['val']);
       if($val){
-        $data = db_getAll("select * from user_map where host_user_id='$val'");
+        $data = db_getAll("select * from page_map where host_user_id='$val'");
         if($data){
           foreach($data as $datas){
-            $soft_delete = 1;
-            $datas->soft_delete = $soft_delete;
-            $output= update_object('user_map', $datas, $datas->id);
+            //$soft_delete = 1;
+            //$datas->soft_delete = $soft_delete;
+            $datas->active = '0';
+            $output= update_object('page_map', $datas, $datas->id);
           }  
         }
       }
+      if($errors) json_error($errors);
+
+      $result->success = 1;
       $result->message = "Artist will be removed from website";
       echo(json_encode($result));
       exit;
       break;
+
+    case 'submit-order':
+      $row = $_POST['val'];
+      $i = 1;
+      foreach($row as $rows) {
+        $data = find_object('minisite_page', ['id' => $rows]);
+        $data->row_order = $i;
+        $output = update_object('minisite_page', $data, $data->id);
+        $i++;
+      }
+      if($errors) json_error($errors);
+
+      $result->success = 1;
+      $result->message = "Re-ordered in the website";
+      echo(json_encode($result));
+      exit;
+    break;
 
     case 'event-delete':
 
@@ -5209,6 +5273,16 @@
             $obj_id = $artists->id;
             list($delete_artist, $errors) = delete_object($obj_type1, $obj_id);
           }
+        }
+      }
+      if($errors) json_error($errors);
+
+      $pagemap = db_getAll("select * from page_map where page_id='$id'");
+      if($pagemap){
+        foreach($pagemap as $pagemaps){
+          $map_id = $pagemaps->id;
+          $pagemaps->active = '0';
+          list($pagemaps, $errors) = update_object('page_map', $pagemaps, $map_id);
         }
       }
       if($errors) json_error($errors);
@@ -6985,6 +7059,7 @@
       if(strpos($id, ',')) { // delete multiple
         list($delete_count, $errors) = delete_objects($obj_type, explode(',', $id));
       } else {
+        echo "in";
         list($delete_count, $errors) = delete_object($obj_type, $id);
         if($errors) write_file($log_file, "Delete errors:".dump($errors, true), 'a'); // "\n------------\n\n"
       }

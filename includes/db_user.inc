@@ -921,6 +921,7 @@ function user_artist_list($userObj_or_id, $options = array()) {
   return $artist_ids;
 }
 
+//Added by pradeepa
 // return list of artist with soft delete to display in website
 function user_artist_list_display($userObj_or_id, $options = array()) {
   if(!$userObj_or_id) return [];
@@ -940,8 +941,26 @@ function user_artist_list_display($userObj_or_id, $options = array()) {
       if($edit == 'edit') $artist_ids[] = $mapObj->host_user_id;
     }
   }
-  //dump($artist_ids);
-  return $artist_ids;
+  
+  if($options[page_id]){
+    foreach($artist_ids as $artist_id) {
+      $pageobj = ['user_id' => $userObj->id, host_user_id=> $artist_id, 'active' => 1, 'page_id' => $options[page_id]];
+      $collectionobj = find_object('page_map', $pageobj);
+      if($collectionobj){
+        $artist[] = $collectionobj->host_user_id;
+      }
+    }
+    return $artist;
+  }else{
+    foreach($artist_ids as $artist_id) {
+      $pageobj = ['user_id' => $userObj->id, host_user_id=> $artist_id, 'active' => 1];
+      $collectionobj = find_object('page_map', $pageobj);
+      if($collectionobj){
+        $artist[] = $collectionobj->host_user_id;
+      }
+    }
+    return $artist;
+  }
 }
 
 function fix_profile_location($app, $options) {

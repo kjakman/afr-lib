@@ -882,6 +882,43 @@ function getobj_id($obj_type, $user_id, $page_id){
   return $obj_id;
 }
 
+// Add default pages
+function add_default_page($id, $user_id, $options = array()) {
+
+  if(!$user_id) mydie ("add_default_pages: missing id");
+  $data = [];
+  $type = ['10','20','30','40'];
+  foreach($type as $types){
+    if($type == '10'){
+      $page = 'Home';
+      $obj_type = 'minisite_home_page';
+    } 
+    if($type == '20'){
+      $page = 'Artist';
+      $obj_type = 'minisite_artist_page';
+    } 
+    if($type == '30'){
+      $page = 'Exhibition';
+      $obj_type = 'minisite_exhibition_page';
+    } 
+    $data['user_id'] = $user_id; 
+    $data['page_name'] = $page;
+    $data['menu_title'] = $page;
+    $data['page_title'] = $page;
+    $data['path'] = "/default".$page."/";
+    $data['minisite_id'] = $id;
+    if($data){
+      list($id, $errors) = add_object($obj_type, $data);
+    }else{
+      json_error("No datas found for default pages");
+    }
+    if($errors) json_error($errors); 
+  }
+  
+
+  return array($data, $errors, $messages);
+}
+
 // update one object
 function update_object($obj_type, $data, $id, $options = array()) {
 

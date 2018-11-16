@@ -3935,3 +3935,6 @@ function class_actions_invoice($obj_type, $data, $context='recordset', $ref_name
   $actions[] = html_link($url.$this_id, "".html_i("", "fa fa-globe".$big_class), array("class" => "", "title" => phrase('view_web', CAPITALIZE)));
   return $actions;
 }
+
+
+

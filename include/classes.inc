@@ -87,6 +87,7 @@ $__CLASSES = array(
     'user_level' =>           array(USER_LEVEL_SYSTEM, 'user', '', 'user_level', NF_CACHE_ASSOC, 'user_type', '', ''),
     'user_role' =>            array(USER_LEVEL_SYSTEM, 'user', '', '', NF_CACHE_ASSOC|NF_NO_ACTIONS, '', '', ''),
     'user_map' =>             array(USER_LEVEL_SYSTEM, 'user', '', '', 0, '', '', ''),
+    'page_map' =>             array(USER_LEVEL_SYSTEM, 'user', '', '', 0, '', '', ''),
     'auth_log' =>             array(USER_LEVEL_SYSTEM, 'user', '', '', NF_NO_DELETE, 'display_name', '', ''),
     'user_profile' =>         array(USER_LEVEL_STAFF,  'user', '', '', 0, 'display_name', '', ''),
     'opening_hours' =>        array(USER_LEVEL_STAFF,  'user', '', '', 0, '', '', ''),
@@ -1464,9 +1465,20 @@ $__CLASS_ATTRIBUTES = array(
      'verified'=>      array('Verified',       'bool',  0, 0),
      'site_id'=>       array('Site ID',        'link',  0, AF_OBLIGATORY, 'site'),
      'user_id'=>       array('User',           'link',  0, AF_OBLIGATORY, 'user'),
+     //'page_id'=>       array('Page ID',         'text',  0, AF_OBLIGATORY, 'minisite_page'),
      'host_user_id'=>  array('Host',           'link',  0, AF_OBLIGATORY, 'user'),
      'permissions' =>  array('Permissions',    'json', '', 0),
-     ),               
+     ), 
+
+    "page_map" => 
+    array(
+       'id'=>            array('ID',             'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 11),
+       'created'=>       array('Created',        'datetime',  ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY),
+       'user_id'=>       array('User',           'int',  0, AF_OBLIGATORY),
+       'host_user_id'=>  array('User',           'int',  0, AF_OBLIGATORY),
+       'page_id'=>       array('Page ID',        'int',  0, AF_OBLIGATORY),
+       'active'=>        array('Active',         'bool',  1, 0),
+       ),               
 
   "auth_log" => 
   array(
@@ -2155,10 +2167,12 @@ $__CLASS_ATTRIBUTES = array(
       'user_id' =>           array('User ID',          'link', ATT_DEFAULT_USER_ID, 0, 'user'),
       'type' =>              array('Type',             'many2one', 0, AF_LOG|AF_SEARCHABLE , 'minisite_page_type'),
       'page_name'=>          array('Page Name',        'str',   '', AF_OBLIGATORY, 32 ),
+      'menu_title'=>         array('Menu Title',  'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
+      'page_title'=>         array('Page Title',  'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
       'path'=>               array('Path',             'str',   '', 0, 128 ),
       'slug'=>               array('Slug',             'str',   '', 0, 128 ),
       'search'=>             array('Search',           'json',   ''),
-      
+      'row_order'=>          array('Row Order',        'int',   '', 0, 11 ),
    ),
 
    "minisite_layout" => 
@@ -2202,7 +2216,7 @@ $__CLASS_ATTRIBUTES = array(
       'active'  =>           array('Active?',            'bool',     1,  AF_HIDE_ADD, 0),
       'menu_title'=>         array('Artist Menu Title',  'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
       'page_title'=>         array('Artist Page Title',  'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
-      
+      'slug'=>               array('Slug',               'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 64 ),
    ),
 
    "minisite_exhibition_page" => 
@@ -2225,7 +2239,7 @@ $__CLASS_ATTRIBUTES = array(
       'show_future'  =>        array('Show Future',            'bool',     1,  AF_HIDE_ADD, 0),
       'show_latest'  =>        array('Show Future',            'bool',     1,  AF_HIDE_ADD, 0),
       'show_recent'  =>        array('Show Recent',            'bool',     1,  AF_HIDE_ADD, 0),
-      
+      'slug'=>               array('Slug',               'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 64 ),
    ),
  
   "site" => 
