@@ -400,7 +400,6 @@
               }                   
             }         
           }
-
         }else{
           $times_data->user_id = $user_id;
           $times_data->day = $days[$i]; 
@@ -451,7 +450,7 @@
           list($id, $errors) = add_object($obj_type, $obj_data);
           print_log("save-minisite: added: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
         }
-        if($errors) json_error($errors); 
+        //if($errors) json_error($errors); 
 
         if($id){
           list($id, $errors) = add_default_page($id, $user_id);
@@ -481,8 +480,8 @@
         if($col)  json_error($obj_data['path']." is already used, Please choose a unique path"); 
          
         if($obj_data[type] == 10) json_error("Home page cannot be added");
-
-        if($minisite_id){
+        
+        if($obj_data[minisite_id]){
           list($id, $errors) = add_object($obj_type, $obj_data);
           print_log("save-minisite: added: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
         }else{
@@ -5297,10 +5296,16 @@
       $obj_type = 'user';
       $userData = $obj_data;
       extract($userData);
-
+      //dump($obj_data);
       if($error = check_required($obj_data, array('site_id' => "Site ID", 'first_name' => "First Name", 'last_name' => "Last Name"))) json_error("Missing: ".implode(', ', $error));
       $host_user_id = $obj_data['aff_id']?$obj_data['aff_id']:$u->id;
-     
+      
+      $opening_times = $obj_data[opening_time];
+      $closing_times = $obj_data[closing_time];
+      $holiday = $obj_data[holiday];
+
+      $business_time = validate_business_hours($opening_times, $closing_times, $holiday);
+
       $ts = time();
       $userData['display_name'] = $name = trim($first_name.(trim($infix) ? " ".trim($infix)." " : " ").$last_name);
       $userData['username'] = $username = slugify($name)."_{$ts}"; /** ensure uniqueness */
@@ -5329,44 +5334,15 @@
       if($errors) json_error($errors);
 
       $times_type = 'opening_hours';
-      $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-      $opening_times = $obj_data[opening_time];
-      $closing_times = $obj_data[closing_time];
-      
-      $data = db_getAll("select * from opening_hours where user_id='$user_id'");
-      
-      if($data) {
-        foreach($data as $datas){
-          
-          for($i=0; $i<=6; $i++){
-            if($datas->day == $days[$i]){
-              $times_id = $datas->id;
-              $times_data->opening_time = $opening_times[$i];
-              $times_data->closing_time = $closing_times[$i];
-
-              $times_data->opening_time = $start = "{$times_data->opening_time}";
-              $times_data->closing_time  = $end = "{$times_data->closing_time}";
-              if($start >= $end) json_error("End time must be after start time");
-
-              list($id, $errors) = update_object($times_type, $times_data, $times_id);
-            }
-          }
-        }
+      if($business_time){
+        foreach($business_time as $times){
+          $times[user_id] = $user_id;         
+          list($id, $errors) = add_object($times_type, $times);  
+        }         
       }else{
-        for($i=0; $i<=6; $i++){
-          $times_data->user_id = $user_id;
-          $times_data->day = $days[$i]; 
-          $times_data->opening_time = $opening_times[$i];
-          $times_data->closing_time = $closing_times[$i];
-
-          $times_data->opening_time = $start = "{$times_data->opening_time}";
-          $times_data->closing_time  = $end = "{$times_data->closing_time}";
-          if($start >= $end) json_error("End time must be after start time");
-
-          list($id, $errors) = add_object($times_type, $times_data);  
-        }
+        json_error("Time array not found");
       }
-      
+         
       if($errors) json_error($errors);
       
       $result->data = get_user($user_id);

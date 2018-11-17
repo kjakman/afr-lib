@@ -882,7 +882,7 @@ function getobj_id($obj_type, $user_id, $page_id){
   return $obj_id;
 }
 
-// Add default pages
+//Pradeepa// Add default pages (Home, Artist, Exhibition, Contact)
 function add_default_page($id, $user_id, $options = array()) {
 
   if(!$user_id) mydie ("add_default_pages: missing id");
@@ -917,6 +917,40 @@ function add_default_page($id, $user_id, $options = array()) {
   
 
   return array($data, $errors, $messages);
+}
+
+function validate_business_hours($opening_time, $closing_time, $holiday) {
+  if(!$opening_time && !$closing_time && !$holiday) mydie ("validate_business_hours: missing hours");
+  $opening_times = $opening_time;
+  $closing_times = $closing_time;
+  $holiday = $holiday;
+
+  $times = [];
+  $i= 0;
+  $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+  foreach($days as $day){
+    $times_data[day] = $day;
+    $times_data[opening_time] = $opening_times[$i];
+    $times_data[closing_time] = $closing_times[$i];
+    if(!$holiday[$i]) $holiday[$i] = '0';
+
+    $times_data[holiday] = $holiday[$i];
+    
+    if( $times_data[holiday] == '1'){
+      $times_data[opening_time] = '00:00';
+      $times_data[closing_time] = '00:00';
+    }
+    $times_data[opening_time] = $start = "{$times_data[opening_time]}:00";
+    $times_data[closing_time]  = $end = "{$times_data[closing_time]}:00";
+
+    if( (($start != '00:00:00') && ($end != '00:00:00')) &&  ($start >= $end)){
+      json_error("End time must be after start time");
+    } 
+    $i++;
+    $business_time[] = $times_data;    
+  }
+  //dump($business_time);
+  return $business_time;
 }
 
 // update one object

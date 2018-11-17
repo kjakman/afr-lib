@@ -27,7 +27,6 @@ function controller_minisite($app, $options = []) {
   $scope->basepath = $msObj->internal ? "/{$minisite}" : '';    
   $scope->minisite_name = $msObj->name;
   $scope->minisite_type = $type = $msObj->type;
-  //dump($type);
   
   $user_id = $msObj->user_id;
   if(!$user_id) die("Minisite: missing user");
@@ -38,10 +37,12 @@ function controller_minisite($app, $options = []) {
   $parts = array_filter(explode('/', trim($path,'/')));
   $page = $tpl = pick_first(strtolower($parts[0]), 'home');
   $slug = count($parts) > 1 ? strtolower($parts[1]) : '';
+  //dump($slug);
   $obj_id = 0;
   if(strstr($slug, '~')) {
     list($name, $obj_id) = explode('~', $slug);
   }
+ 
   $subview = count($parts) > 2 ? strtolower($parts[2]) : '';
   
   $scope->artworks = [];
@@ -298,9 +299,11 @@ function controller_minisite($app, $options = []) {
         $others = '30'; 
       
       $host_user_ids = user_artist_list_display($user_id) ?: [];
-      
-        $search = ['user_id' => $user_id, 'type' => COLLECTION_TYPE_EXHIBITION, 'artist_id' => $host_user_ids, 'active' => 1, 'subtype' => [$gallery,$artfair,$others] ];
-        
+        if($page == 'exhibitions') {
+          $search = ['user_id' => $user_id, 'type' => COLLECTION_TYPE_EXHIBITION, 'artist_id' => $host_user_ids, 'active' => 1, 'subtype' => [$gallery,$artfair,$others] ];
+        }else{
+          unset($search['subtype']);
+        }
         switch($when) {
           case 'past':
             $search['end_date'] = ['<', $today];
@@ -348,11 +351,10 @@ function controller_minisite($app, $options = []) {
             }
             $exhibitionObj->current = $current;    
             $exhibitions[$exhibitionObj->slug] = $exhibitionObj;
-            //dump($exhibitionObj);
             $exhibition_ids[] = $exhibitionObj->id;
           }
           $scope->exhibitions = $exhibitions; 
-          //dump($exhibitions);
+          
         }       
     break;
   }
@@ -362,6 +364,7 @@ function controller_minisite($app, $options = []) {
   switch($page) {
     case 'artist':    
       $artist = $artists[$slug];
+      //dump($artists[$slug]);
       $scope->artist = $artist;
       if($collection_id = $artist->collection_id) {
         $jsonObj = gallery_get_json($collection_id);
@@ -388,10 +391,9 @@ function controller_minisite($app, $options = []) {
     case 'exhibition':
       if(!$slug) return scope_error($app, "Missing slug", '404');
       $collectionObj = $obj_id ? get_object('media_collection', $obj_id) : $exhibitions[$slug];
-      
       if(!$collectionObj) {
         print_log("no $slug in ".dump($exhibitions,true), 'minisite', LOG_LEVEL_TEST);
-        return scope_error($app, "Exhibition {$slug} not found", '404');
+        //return scope_error($app, "Exhibition {$slug} not found", '404');
       }
       
       $artist_names = collection_artist_list($collectionObj);
