@@ -74,9 +74,9 @@ function controller_minisite($app, $options = []) {
       $others = '30'; 
     $today = today();
 
-    $host_user_ids = user_artist_list_display($user_id) ?: [];
+    //$host_user_ids = user_artist_list_display($user_id) ?: [];
     
-    $search = ['user_id' => $user_id, 'type' => COLLECTION_TYPE_EXHIBITION, 'active' => 1, 'artist_id' => $host_user_ids, 'subtype' => [$gallery,$artfair,$others] ];
+    $search = ['user_id' => $user_id, 'type' => COLLECTION_TYPE_EXHIBITION, 'active' => 1, 'subtype' => [$gallery,$artfair,$others] ];
     $search['start_date'] = ['<=', $today];
     $search['end_date'] = ['>=', $today];
 
@@ -115,7 +115,8 @@ function controller_minisite($app, $options = []) {
       }
 
       $exhibitionObj = $exhibitionObjs[0];
-      $slug = slugify($exhibitionObj->title);        
+      $slug = slugify($exhibitionObj->title);  
+      $obj_id = $exhibitionObj->id;      
     }
 
     if ($homeObj->layout == '2'){ //Timeline View
@@ -160,7 +161,15 @@ function controller_minisite($app, $options = []) {
 
         /* To view latest exhibition */
         $latestexhibition = find_objects('media_collection', $search, ['sort' => 'start_date desc', 'limit' => 1]) ?: []; 
-        $scope->latest_exhibitions = $latestexhibition;
+        if($latestexhibition){
+          foreach($latestexhibition as $exhibitions) {
+            $exhibitions->slug = slugify($exhibitions->title);
+            $latestexhibitions[] = $exhibitions;          
+          }
+          $scope->latest_exhibitions = $latestexhibitions;
+        }else{
+          return scope_error($app, "Missing Latest Exhibitions", '404');
+        }
       }
       else{
         print_log("No templates chosen", 'minisite', LOG_LEVEL_TEST);
@@ -298,9 +307,9 @@ function controller_minisite($app, $options = []) {
       if($exhibitionpage->show_others)
         $others = '30'; 
       
-      $host_user_ids = user_artist_list_display($user_id) ?: [];
+      //$host_user_ids = user_artist_list_display($user_id) ?: [];
         if($page == 'exhibitions') {
-          $search = ['user_id' => $user_id, 'type' => COLLECTION_TYPE_EXHIBITION, 'artist_id' => $host_user_ids, 'active' => 1, 'subtype' => [$gallery,$artfair,$others] ];
+          $search = ['user_id' => $user_id, 'type' => COLLECTION_TYPE_EXHIBITION, 'active' => 1, 'subtype' => [$gallery,$artfair,$others] ];
         }else{
           unset($search['subtype']);
         }
@@ -473,6 +482,7 @@ function controller_minisite($app, $options = []) {
   //dump($_SERVER);
   $docroot = docroot(false);
   $custom_filename = "{$docroot}/user/minisite/{$minisite}/pages/{$page}/default.html";
+  dump($custom_filename);
   if(is_file($custom_filename)) {
     //print_log("page=$page path={$path} slug={$slug} subview={$subview} tpl={$pageObj->template}".dump($parts,true), 'minisite', LOG_LEVEL_TEST);
     list($custom_header, $custom_content) = site_parse_pagefile($custom_filename);
