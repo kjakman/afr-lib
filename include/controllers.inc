@@ -482,7 +482,6 @@ function controller_minisite($app, $options = []) {
   //dump($_SERVER);
   $docroot = docroot(false);
   $custom_filename = "{$docroot}/user/minisite/{$minisite}/pages/{$page}/default.html";
-  dump($custom_filename);
   if(is_file($custom_filename)) {
     //print_log("page=$page path={$path} slug={$slug} subview={$subview} tpl={$pageObj->template}".dump($parts,true), 'minisite', LOG_LEVEL_TEST);
     list($custom_header, $custom_content) = site_parse_pagefile($custom_filename);

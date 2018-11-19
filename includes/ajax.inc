@@ -1979,6 +1979,7 @@
     /** more secure version of 'list' below, with implicit filters and security checks, used by bootstrap-table */
     case 'get-rows':
       extract($obj_data);
+       
       $allowed_types = ['invoice', 'inv_lineitem', 'payment', 'withdrawal', 'user', 'shortstay', 'dictionary', 'reservation', 
                         'artwork', 'gallery', 'media_collection', 'media', 'plugin', 'minisite', 'uhuru_registration', 'uhuru_trial_lesson'];
       if(!in_array($obj_type, $allowed_types)) json_error("Listing $obj_type not supported");
@@ -2018,7 +2019,10 @@
         $objs = object_site_search($obj_type, $search, $val, $search_options);
       }
       
-      
+      if($mode = $obj_data['mode']) {  //TODO need to update the softdelete column using the ids   
+       delete_objects($obj_type,$id); // need to update the softdelete db_object.inc file
+       unset($id);
+      }
       
       if($obj_data['return'] == 'rows') { // return array, not object (required when using javascript URL instead of data-url, for some reason */
         echo(json_encode($objs));exit;
@@ -5296,16 +5300,21 @@
       $obj_type = 'user';
       $userData = $obj_data;
       extract($userData);
-      //dump($obj_data);
+      if($userData['artist']){
+        $userData['facebook'] = '';
+        $userData['instagram'] = '';
+        $userData['twitter'] = '';
+      }
       if($error = check_required($obj_data, array('site_id' => "Site ID", 'first_name' => "First Name", 'last_name' => "Last Name"))) json_error("Missing: ".implode(', ', $error));
       $host_user_id = $obj_data['aff_id']?$obj_data['aff_id']:$u->id;
       
-      $opening_times = $obj_data[opening_time];
-      $closing_times = $obj_data[closing_time];
-      $holiday = $obj_data[holiday];
+      if(!$userData['artist']){
+        $opening_times = $obj_data[opening_time];
+        $closing_times = $obj_data[closing_time];
+        $holiday = $obj_data[holiday];
 
-      $business_time = validate_business_hours($opening_times, $closing_times, $holiday);
-
+        $business_time = validate_business_hours($opening_times, $closing_times, $holiday);
+      }
       $ts = time();
       $userData['display_name'] = $name = trim($first_name.(trim($infix) ? " ".trim($infix)." " : " ").$last_name);
       $userData['username'] = $username = slugify($name)."_{$ts}"; /** ensure uniqueness */
@@ -5333,18 +5342,19 @@
       list($id, $errors) = add_object('user_map', $mapData);
       if($errors) json_error($errors);
 
-      $times_type = 'opening_hours';
-      if($business_time){
-        foreach($business_time as $times){
-          $times[user_id] = $user_id;         
-          list($id, $errors) = add_object($times_type, $times);  
-        }         
-      }else{
-        json_error("Time array not found");
-      }
+      if(!$userData['artist']){
+        $times_type = 'opening_hours';
+        if($business_time){
+          foreach($business_time as $times){
+            $times[user_id] = $user_id;         
+            list($id, $errors) = add_object($times_type, $times);  
+          }         
+        }else{
+          json_error("Time array not found");
+        }
          
-      if($errors) json_error($errors);
-      
+        if($errors) json_error($errors);
+      }
       $result->data = get_user($user_id);
       $result->success = 1;
       $result->message = "$action artist {$name} ($user_id)";

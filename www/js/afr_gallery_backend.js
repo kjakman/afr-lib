@@ -281,7 +281,6 @@ $(document).on("click", "#sel_del_success", function() { //Bala
                 //~ values: g_selections
             });
   $("#table").bootstrapTable('refresh', {query: {id: g_selections, mode: 'del'}, pageSize: 10});
-   $("#selection").hide();
 });
 
 //Delete artist in minisite
@@ -744,48 +743,6 @@ function gallery_backend_ready() {
 $(document).on("click", ".clone_modal_icon", function() {  
   $("#clone_dialog_form input[name=obj_id]").val($(this).attr('id'));
 });
-
-// Neelamegam_clone
-// From list-base.html to clone.php
-/**
-$(document).on("click", ".clone_modal", function() {  
-  var row_id = $(this).attr('id');
-  row_id = row_id.replace('clone_modal','');
-  $('.modal-body').html('<p style="text-align:center;">Are you sure want to clone the Data</p><div style="margin-left: 200px;"><a type="button" class="clone btn btn-success" id="clone'+row_id + '" class="clone" style="margin-right: 25px;">Clone<input type="hidden" value="1" id="clone_hidden'+row_id +'" class="clone_hidden"/></a><button type="button" class="btn btn-danger" data-dismiss="modal" style="margin-right: 25px;">No</button></div>');
-    $(document).on("click", ".clone", function() {  
-      var row_id = $(this).attr('id');
-      row_id = row_id.replace('clone','');
-      var obj_type= "artwork";
-      var cloneval= "clone_id";
-      var col= 1;
-      var value1 = $(this).children().prop('id');
-      value1 = value1.replace('clone_hidden','');
-      var value2 = $(this).children().val();
-      $.ajax({ 
-        url: "/clone.php",
-        type: "POST",
-        datatype:"json",
-        data: {
-          type : obj_type,
-          row_id : row_id,
-          col : col,
-          value1 : value1,
-          value2 : value2,
-          cloneval : cloneval,
-        },
-        success: function( result ) {
-          var data = JSON.parse(result);
-          $.each(data, function(index, el) { 
-            if(index=="values"){
-              $('#clone_hidden'+row_id).val(el);
-            }
-          }); 
-          }
-      }); 
-    });
-  });
-*/
-
 
 /**
 $(document).ready(function() {  
