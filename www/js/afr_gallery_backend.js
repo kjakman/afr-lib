@@ -281,6 +281,7 @@ $(document).on("click", "#sel_del_success", function() { //Bala
                 //~ values: g_selections
             });
   $("#table").bootstrapTable('refresh', {query: {id: g_selections, mode: 'del'}, pageSize: 10});
+  $("#table").bootstrapTable('refresh', {pageSize: 20});
 });
 
 //Delete artist in minisite

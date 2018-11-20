@@ -2018,7 +2018,8 @@
         $objs = object_site_search($obj_type, $search, $val, $search_options);
       }
       
-      if($mode = $obj_data['mode']) {  //TODO need to update the softdelete column using the ids   
+      if($mode = $obj_data['mode']) {  //TODO need to update the softdelete column using the ids
+        //dump($obj_type);   
        delete_objects($obj_type,$id); // need to update the softdelete db_object.inc file
        unset($id);
       }
