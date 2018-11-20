@@ -3264,6 +3264,7 @@ $__CLASS_ATTRIBUTES = array(
      'facebook'=>      array('Facebook',          'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 64 ),
      'instagram'=>     array('Instagram',          'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 64 ),
      'twitter'=>       array('Twitter',          'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 64 ),
+     'artist'  =>       array('artist',            'bool',     1,  AF_HIDE_ADD, 1),
   ),
 
    "opening_hours" => 

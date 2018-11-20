@@ -340,9 +340,7 @@
       extract($obj_data);
       
       $user_id = $obj_data[user_id];
-      $opening_times = $obj_data[opening_time];
-      $closing_times = $obj_data[closing_time];
-      $holiday = $obj_data[holiday];
+      
       $obj_type = 'user_profile';
 
       $today = today();     
@@ -365,71 +363,75 @@
 
       if($errors) json_error($errors);
 
-      $times_type = 'opening_hours';
-      $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-      
-      for($i=0; $i<=6; $i++){
-        $data = db_getAll("select * from opening_hours where user_id='$user_id' AND day= '$days[$i]'");
-        if($data) {
-          foreach($data as $datas){
-            
-            if($datas->day == $days[$i]){
-              $times_id = $datas->id;
-              $times_data->opening_time = $opening_times[$i];
-              $times_data->closing_time = $closing_times[$i];
-              if(!$holiday[$i])
-                $holiday[$i] = '0';
-              $times_data->holiday = $holiday[$i];
+      if(!$obj_data['artist']){
+        $times_type = 'opening_hours';
+        $opening_times = $obj_data[opening_time];
+        $closing_times = $obj_data[closing_time];
+        $holiday = $obj_data[holiday];
+        $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        
+        for($i=0; $i<=6; $i++){
+          $data = db_getAll("select * from opening_hours where user_id='$user_id' AND day= '$days[$i]'");
+          if($data) {
+            foreach($data as $datas){
               
-              if( $times_data->holiday == '1'){
-                $times_data->opening_time = '00:00';
-                $times_data->closing_time = '00:00';
-              }
+              if($datas->day == $days[$i]){
+                $times_id = $datas->id;
+                $times_data->opening_time = $opening_times[$i];
+                $times_data->closing_time = $closing_times[$i];
+                if(!$holiday[$i])
+                  $holiday[$i] = '0';
+                $times_data->holiday = $holiday[$i];
                 
-              $times_data->opening_time = $start = "{$times_data->opening_time}:00";
-              $times_data->closing_time  = $end = "{$times_data->closing_time}:00";
+                if( $times_data->holiday == '1'){
+                  $times_data->opening_time = '00:00';
+                  $times_data->closing_time = '00:00';
+                }
+                  
+                $times_data->opening_time = $start = "{$times_data->opening_time}:00";
+                $times_data->closing_time  = $end = "{$times_data->closing_time}:00";
 
-              if(($start == '00:00:00') && ($end == '00:00:00') ){
-                list($id, $errors) = update_object($times_type, $times_data, $times_id);
-              }else{
-                if($start >= $end) 
-                  json_error("End time must be after start time");
-                else 
+                if(($start == '00:00:00') && ($end == '00:00:00') ){
                   list($id, $errors) = update_object($times_type, $times_data, $times_id);
-              }                   
-            }         
-          }
-        }else{
-          $times_data->user_id = $user_id;
-          $times_data->day = $days[$i]; 
-          $times_data->opening_time = $opening_times[$i];
-          $times_data->closing_time = $closing_times[$i];
-
-          if(!$holiday[$i])
-            $holiday[$i] = '0';
-          $times_data->holiday = $holiday[$i];
-          
-          if( $times_data->holiday == '1'){
-            $times_data->opening_time = '00:00';
-            $times_data->closing_time = '00:00';
-          }
-
-          $times_data->opening_time = $start = "{$times_data->opening_time}:00";
-          $times_data->closing_time  = $end = "{$times_data->closing_time}:00";
-          
-          if(($start == '00:00:00') && ($end == '00:00:00') ){
-            list($id, $errors) = add_object($times_type, $times_data); 
-          }else{
-            if($start >= $end){
-              json_error("End time must be after start time");
+                }else{
+                  if($start >= $end) 
+                    json_error("End time must be after start time");
+                  else 
+                    list($id, $errors) = update_object($times_type, $times_data, $times_id);
+                }                   
+              }         
             }
-            else 
-              list($id, $errors) = add_object($times_type, $times_data);  
+          }else{
+            $times_data->user_id = $user_id;
+            $times_data->day = $days[$i]; 
+            $times_data->opening_time = $opening_times[$i];
+            $times_data->closing_time = $closing_times[$i];
+
+            if(!$holiday[$i])
+              $holiday[$i] = '0';
+            $times_data->holiday = $holiday[$i];
+            
+            if( $times_data->holiday == '1'){
+              $times_data->opening_time = '00:00';
+              $times_data->closing_time = '00:00';
+            }
+
+            $times_data->opening_time = $start = "{$times_data->opening_time}:00";
+            $times_data->closing_time  = $end = "{$times_data->closing_time}:00";
+            
+            if(($start == '00:00:00') && ($end == '00:00:00') ){
+              list($id, $errors) = add_object($times_type, $times_data); 
+            }else{
+              if($start >= $end){
+                json_error("End time must be after start time");
+              }
+              else 
+                list($id, $errors) = add_object($times_type, $times_data);  
+            }
           }
         }
+        if($errors) json_error($errors);
       }
-      if($errors) json_error($errors);
-
       $obj = get_object($obj_type, $id);
       $obj->next_tab = $obj_data['next_tab'];
       
@@ -5299,52 +5301,81 @@
       
       $obj_type = 'user';
       $userData = $obj_data;
-
       extract($userData);
+
       if($userData['artist']){
         $userData['facebook'] = 'NULL';
         $userData['instagram'] = 'NULL';
         $userData['twitter'] = 'NULL';
-      }
-      if($error = check_required($obj_data, array('site_id' => "Site ID", 'first_name' => "First Name", 'last_name' => "Last Name"))) json_error("Missing: ".implode(', ', $error));
-      $host_user_id = $obj_data['aff_id']?$obj_data['aff_id']:$u->id;
-      
-      if(!$userData['artist']){
+
+        if($error = check_required($obj_data, array('site_id' => "Site ID", 'first_name' => "First Name", 'last_name' => "Last Name"))) json_error("Missing: ".implode(', ', $error));
+        $host_user_id = $obj_data['aff_id']?$obj_data['aff_id']:$u->id;
+
+        $ts = time();
+        $userData['display_name'] = $name = trim($first_name.(trim($infix) ? " ".trim($infix)." " : " ").$last_name);
+        $userData['username'] = $username = slugify($name)."_{$ts}"; /** ensure uniqueness */
+        $userData['user_level'] = 1;
+        $userData['auto_password'] = 1;
+        $userData['roles'] = USER_ROLE_ARTIST;
+        $userData['phone'] = $phone;        
+        $password = "Auto_".random_int(1000,9999);; // generate random password
+        
+        list($user_id, $errors) = user_register($username, $password, $userData);
+        if($errors) json_error($errors);
+                
+        $action = 'Added';
+        
+        if($errors) json_error($errors);
+        //$redirect = site_page_link($siteObj, $page_type).$id;
+
+        /** link users */
+        $perms = '{"vault":"edit","profile":"edit","account":"edit","login":"full"}';
+        $mapData = ['site_id' => $site_id, 
+                    'verified' => 1, 
+                    'host_user_id' => $user_id, 
+                    'user_id' => $host_user_id, 
+                    'permissions' => $perms];
+        list($id, $errors) = add_object('user_map', $mapData);
+        if($errors) json_error($errors);
+
+      }else{
         $opening_times = $obj_data[opening_time];
         $closing_times = $obj_data[closing_time];
         $holiday = $obj_data[holiday];
 
+        if($error = check_required($obj_data, array('site_id' => "Site ID", 'first_name' => "First Name", 'last_name' => "Last Name"))) json_error("Missing: ".implode(', ', $error));
+        $host_user_id = $obj_data['aff_id']?$obj_data['aff_id']:$u->id;
+
         $business_time = validate_business_hours($opening_times, $closing_times, $holiday);
         $count = count($business_time);
-      }
-      $ts = time();
-      $userData['display_name'] = $name = trim($first_name.(trim($infix) ? " ".trim($infix)." " : " ").$last_name);
-      $userData['username'] = $username = slugify($name)."_{$ts}"; /** ensure uniqueness */
-      $userData['user_level'] = 1;
-      $userData['auto_password'] = 1;
-      $userData['roles'] = USER_ROLE_ARTIST;
-      $userData['phone'] = $phone;        
-      $password = "Auto_".random_int(1000,9999);; // generate random password
-      
-      list($user_id, $errors) = user_register($username, $password, $userData);
-      if($errors) json_error($errors);
-              
-      $action = 'Added';
-      
-      if($errors) json_error($errors);
-      //$redirect = site_page_link($siteObj, $page_type).$id;
 
-      /** link users */
-      $perms = '{"vault":"edit","profile":"edit","account":"edit","login":"full"}';
-      $mapData = ['site_id' => $site_id, 
-                  'verified' => 1, 
-                  'host_user_id' => $user_id, 
-                  'user_id' => $host_user_id, 
-                  'permissions' => $perms];
-      list($id, $errors) = add_object('user_map', $mapData);
-      if($errors) json_error($errors);
+        $ts = time();
+        $userData['display_name'] = $name = trim($first_name.(trim($infix) ? " ".trim($infix)." " : " ").$last_name);
+        $userData['username'] = $username = slugify($name)."_{$ts}"; /** ensure uniqueness */
+        $userData['user_level'] = 1;
+        $userData['auto_password'] = 1;
+        $userData['roles'] = USER_ROLE_ARTIST;
+        $userData['phone'] = $phone;        
+        $password = "Auto_".random_int(1000,9999);; // generate random password
+        
+        list($user_id, $errors) = user_register($username, $password, $userData);
+        if($errors) json_error($errors);
+                
+        $action = 'Added';
+        
+        if($errors) json_error($errors);
+        //$redirect = site_page_link($siteObj, $page_type).$id;
 
-      if(!$userData['artist']){
+        /** link users */
+        $perms = '{"vault":"edit","profile":"edit","account":"edit","login":"full"}';
+        $mapData = ['site_id' => $site_id, 
+                    'verified' => 1, 
+                    'host_user_id' => $user_id, 
+                    'user_id' => $host_user_id, 
+                    'permissions' => $perms];
+        list($id, $errors) = add_object('user_map', $mapData);
+        if($errors) json_error($errors);
+
         $times_type = 'opening_hours';
         if($count == 7){
           foreach($business_time as $times){
@@ -5357,6 +5388,7 @@
          
         if($errors) json_error($errors);
       }
+      
       $result->data = get_user($user_id);
       $result->success = 1;
       $result->message = "$action artist {$name} ($user_id)";
