@@ -949,7 +949,6 @@ function validate_business_hours($opening_time, $closing_time, $holiday) {
     $i++;
     $business_time[] = $times_data;    
   }
-  //dump($business_time);
   return $business_time;
 }
 

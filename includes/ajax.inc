@@ -339,11 +339,11 @@
       case 'save-profile':
       extract($obj_data);
       
+      $user_id = $obj_data[user_id];
       $opening_times = $obj_data[opening_time];
       $closing_times = $obj_data[closing_time];
       $holiday = $obj_data[holiday];
       $obj_type = 'user_profile';
-      $user_id = $obj_data[user_id];
 
       $today = today();     
       $dateOfBirth = $obj_data[date_of_birth];      
@@ -370,7 +370,6 @@
       
       for($i=0; $i<=6; $i++){
         $data = db_getAll("select * from opening_hours where user_id='$user_id' AND day= '$days[$i]'");
-      
         if($data) {
           foreach($data as $datas){
             
@@ -5299,11 +5298,12 @@
       
       $obj_type = 'user';
       $userData = $obj_data;
+
       extract($userData);
       if($userData['artist']){
-        $userData['facebook'] = '';
-        $userData['instagram'] = '';
-        $userData['twitter'] = '';
+        $userData['facebook'] = 'NULL';
+        $userData['instagram'] = 'NULL';
+        $userData['twitter'] = 'NULL';
       }
       if($error = check_required($obj_data, array('site_id' => "Site ID", 'first_name' => "First Name", 'last_name' => "Last Name"))) json_error("Missing: ".implode(', ', $error));
       $host_user_id = $obj_data['aff_id']?$obj_data['aff_id']:$u->id;
@@ -5314,6 +5314,7 @@
         $holiday = $obj_data[holiday];
 
         $business_time = validate_business_hours($opening_times, $closing_times, $holiday);
+        $count = count($business_time);
       }
       $ts = time();
       $userData['display_name'] = $name = trim($first_name.(trim($infix) ? " ".trim($infix)." " : " ").$last_name);
@@ -5344,7 +5345,7 @@
 
       if(!$userData['artist']){
         $times_type = 'opening_hours';
-        if($business_time){
+        if($count == 7){
           foreach($business_time as $times){
             $times[user_id] = $user_id;         
             list($id, $errors) = add_object($times_type, $times);  
