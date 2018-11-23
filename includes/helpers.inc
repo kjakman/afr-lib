@@ -245,6 +245,7 @@ function print_debug($str) {
 }
 
 function print_log($str, $logfile=0, $level=0) {
+  if(!$_SESSION['log_dir']) return 0;
   if(!$logfile) $logfile = $_SESSION['system_log_file'];
   if($level > $_SESSION['log_level']) return;
   if(($level == LOG_LEVEL_SEVERE || $level == LOG_LEVEL_ERROR) && $logfile != 'error') print_log($str, 'error', $level); // log all errors to separate error log

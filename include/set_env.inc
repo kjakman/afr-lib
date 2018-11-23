@@ -78,7 +78,7 @@ if($local) {
   $test = $_SESSION['test'] = 1;
 } else {
   $_SESSION['dev'] = $dev = $host_sub == 'dev' ? 1 : 0;
-  $_SESSION['test'] = $test = $host_sub == 'test' || $host_sub == 'vpatina' ? 1 : 0;
+  $_SESSION['test'] = $test = $host_sub == 'test' || $host_sub == 'vpatina' ? 1 : 0; /** last is dirty hack for Indians... */
   $_SESSION['staging'] = $staging = $host_sub == 'staging' ? 1 : 0;
   $_SESSION['beta'] = $beta = $host_sub == 'beta' ? 1 : 0;
 }
@@ -157,7 +157,6 @@ if($no_app) {
     $site_id = $_SESSION['site_id'] = env_site_id($site_domain); /** inline switch */
   }
   
-  print_log("Set-env: uri={$uri} site_id={$site_id} domain: {$domain}", 'minisite', LOG_LEVEL_ALWAYS);
   
   /** this allows for vpatina.com/kerrygroneng or treat www.kerrygroneng.com as vpatina */
   if($msObj = env_minisite($site_domain, $uri)) {
@@ -169,6 +168,20 @@ if($no_app) {
   if(!$site_id) die("Don't know {$site_domain}");
   
   $siteObj = $__SITE = get_object('site', $site_id); /** uses Redis */
+
+  /** site specific directories */
+  $data_dir = $_SESSION['data_dir'] = $live || $test ? "/web/data/{$siteObj->shortname}/" : "/web/data-dev/{$siteObj->shortname}/"; 
+  $log_dir = $_SESSION['log_dir'] = $data_dir."log/";
+  $upload_dir = $_SESSION['upload_dir'] = $data_dir."upload/";
+  $cache_dir = $_SESSION['cache_dir'] = $data_dir."cache/";
+  if($_SESSION['test']) $cache_dir = $_SESSION['cache_dir'] = str_replace('/data-dev/', '/data/', $cache_dir);
+  $xml_dir = $data_dir."XML/";
+  
+  $null = is_dir($data_dir) ?: mkdir($data_dir, 0700, true);
+  $null = is_dir($log_dir) ?: mkdir($log_dir, 0700, true);
+  $null = is_dir($cache_dir) ?: mkdir($cache_dir, 0700, true);
+  
+  print_log("Set-env: uri={$uri} site_id={$site_id} domain: {$domain}", 'minisite', LOG_LEVEL_ALWAYS);
   
   /** site specific includes - this will go away */
   if($lib_prefix = $siteObj->library_prefix ?: $siteObj->shortname) {
@@ -220,19 +233,6 @@ if($no_app) {
   $_SESSION['site_url'] = $site_url = SITE_URL; // will be http or https as needed
   $site_lang = $siteObj->default_language;
   $langs = $_SESSION['languages'] = json_decode($siteObj->languages) ?: [$siteObj->default_language];
-  
-  
-  /** site specific directories */
-  $data_dir = $_SESSION['data_dir'] = $live ? "/web/data/{$siteObj->shortname}/" : "/web/data-dev/{$siteObj->shortname}/"; 
-  $log_dir = $_SESSION['log_dir'] = $data_dir."log/";
-  $upload_dir = $_SESSION['upload_dir'] = $data_dir."upload/";
-  $cache_dir = $_SESSION['cache_dir'] = $data_dir."cache/";
-  if($_SESSION['test']) $cache_dir = $_SESSION['cache_dir'] = str_replace('/data-dev/', '/data/', $cache_dir);
-  $xml_dir = $data_dir."XML/";
-  
-  $null = is_dir($data_dir) ?: mkdir($data_dir, 0700, true);
-  $null = is_dir($log_dir) ?: mkdir($log_dir, 0700, true);
-  $null = is_dir($cache_dir) ?: mkdir($cache_dir, 0700, true);
   
   
   /** which page */

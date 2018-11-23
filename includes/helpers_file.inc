@@ -464,7 +464,7 @@ function display_filesize($filesize) {
   }   
 }
 
-function mkdir_recursive($path, $rights = 0777) {
+function mkdir_recursive($path, $rights = 0775) {
   return mkdir($path, $rights, true);
 }
 
