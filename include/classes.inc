@@ -2166,10 +2166,8 @@ $__CLASS_ATTRIBUTES = array(
       'client_id'=>          array('Client',           'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
       'user_id' =>           array('User ID',          'link', ATT_DEFAULT_USER_ID, 0, 'user'),
       'type' =>              array('Type',             'many2one', 0, AF_LOG|AF_SEARCHABLE , 'minisite_page_type'),
-      'page_name'=>          array('Page Name',        'str',   '', AF_OBLIGATORY, 32 ),
       'menu_title'=>         array('Menu Title',  'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
       'page_title'=>         array('Page Title',  'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
-      'path'=>               array('Path',             'str',   '', 0, 128 ),
       'slug'=>               array('Slug',             'str',   '', 0, 128 ),
       'search'=>             array('Search',           'json',   ''),
       'row_order'=>          array('Row Order',        'int',   '', 0, 11 ),
@@ -3261,10 +3259,10 @@ $__CLASS_ATTRIBUTES = array(
      'press'      => array('Press'  ,      'html',     '', 0),
 
      'data'=>        array('Data',           'json',  '', AF_SEARCHABLE|AF_HIDE_ADD),
-     'facebook'=>      array('Facebook',          'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 64 ),
-     'instagram'=>     array('Instagram',          'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 64 ),
-     'twitter'=>       array('Twitter',          'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 64 ),
-     'artist'  =>       array('artist',            'bool',     1,  AF_HIDE_ADD, 1),
+     'facebook'=>      array('Facebook',     'str',  '', AF_SEARCHABLE, 64 ),
+     'instagram'=>     array('Instagram',    'str',  '', AF_SEARCHABLE, 64 ),
+     'twitter'=>       array('Twitter',      'str',  '', AF_SEARCHABLE, 64 ),
+     'artist'  =>       array('artist',      'bool',     1,  AF_HIDE_ADD, 1),
   ),
 
    "opening_hours" => 

@@ -61,8 +61,6 @@ function controller_minisite($app, $options = []) {
     $scope->mObj = $mObj = find_object('minisite', ['user_id' => $user_id, 'active' => 1]);
     $scope->menuObj = $menuObj = find_objects('minisite_page', ['user_id' => $user_id, 'active' => 1], ['sort' => 'row_order asc']);
     $scope->homeObj = $homeObj = find_object('minisite_home_page', ['user_id' => $user_id, 'active' => 1]);
-    $scope->artist_Objs = $artist_Objs = find_objects('minisite_artist_page', ['user_id' => $user_id, 'active' => 1]);
-    $scope->exhibition_Objs = $exhibitionpage = find_objects('minisite_exhibition_page', ['user_id' => $user_id, 'active' => 1]);
     $scope->profileobj = $profileobj = find_object('user_profile', ['user_id' => $user_id]);
     $scope->timings = $timings = db_getAll("select * from opening_hours where user_id='$user_id' ORDER BY `id` ASC");
 
@@ -263,8 +261,7 @@ function controller_minisite($app, $options = []) {
       $scope->artists = $artists;
       //dump($artists->slug);
 
-      $scope->artist_Objs = $artist_Objs = find_objects('minisite_artist_page', ['user_id' => $user_id, 'active' => 1]);
-      $scope->exhibition_Objs = $exhibitionpage = find_objects('minisite_exhibition_page', ['user_id' => $user_id, 'active' => 1], ['sort' => 'id asc']);
+      $scope->artist_Objs = $artist_Objs = find_object('minisite_artist_page', ['user_id' => $user_id, 'active' => 1]);
       $scope->mObj = $mObj = find_object('minisite', ['user_id' => $user_id, 'active' => 1]);
       $scope->menuObj = $menuObj = find_objects('minisite_page', ['user_id' => $user_id, 'active' => 1], ['sort' => 'row_order asc']);
       //$scope->timings = $timings = find_objects('opening_hours', ['user_id' => $user_id], ['sort' => 'id asc']);
@@ -293,10 +290,8 @@ function controller_minisite($app, $options = []) {
       $others = '0';
       $scope->mObj = $mObj = find_object('minisite', ['user_id' => $user_id, 'active' => 1]);
       $scope->menuObj = $menuObj = find_objects('minisite_page', ['user_id' => $user_id, 'active' => 1], ['sort' => 'row_order asc']);
-      $scope->homeObj = $homeObj = find_object('minisite_home_page', ['user_id' => $user_id, 'active' => 1]);
       $scope->exhibition_Objs = $exhibition_Objs = find_objects('minisite_exhibition_page', ['user_id' =>$user_id, 'active' => 1]);
       $scope->exhibitionpage = $exhibitionpage = find_object('minisite_exhibition_page', ['user_id' => $user_id, 'page_id' => $page_id, 'active' => 1]);
-      $scope->artist_Objs = $artist_Objs = find_objects('minisite_artist_page', ['user_id' => $user_id, 'active' => 1]);
       $scope->profileobj = $profileobj = find_object('user_profile', ['user_id' => $user_id]);
       $scope->timings = $timings = db_getAll("select * from opening_hours where user_id='$user_id' ORDER BY `id` ASC");
       
@@ -439,12 +434,8 @@ function controller_minisite($app, $options = []) {
       $scope->userdetail = $userdetail = find_object('user_profile', ['user_id' => $user_id]);
       $scope->mObj = $mObj = find_object('minisite', ['user_id' => $user_id, 'active' => 1]);
       $scope->menuObj = $menuObj = find_objects('minisite_page', ['user_id' => $user_id, 'active' => 1], ['sort' => 'row_order asc']); 
-      $scope->homeObj = $homeObj = find_object('minisite_home_page', ['user_id' => $user_id, 'active' => 1]);
-      $scope->exhibition_Objs = $exhibitionpage = find_objects('minisite_exhibition_page', ['user_id' => $user_id, 'active' => 1]);
-      $scope->artist_Objs = $artist_Objs = find_objects('minisite_artist_page', ['user_id' => $user_id, 'active' => 1]);
-      $scope->contact_Obj = $contactObj = find_object('minisite_home_page', ['user_id' => $user_id, 'active' => 1]);
+  
       $scope->profileobj = $profileobj = find_object('user_profile', ['user_id' => $user_id]);
-      //$scope->timings = $timings = find_objects('opening_hours', ['user_id' => $user_id], ['sort' => 'id asc']);
       $scope->timings = $timings = db_getAll("select * from opening_hours where user_id='$user_id' ORDER BY `id` ASC");
       
       break;
@@ -459,7 +450,7 @@ function controller_minisite($app, $options = []) {
       //die("page={$page} tpl={$tpl}");
       break;
     default: /** Look for custom page */
-      $pageSearch = ['minisite_id' => $msObj->id, 'path' => $page, 'active' => 1];
+      $pageSearch = ['minisite_id' => $msObj->id, 'slug' => $page, 'active' => 1];
       $minisitePageObj = find_object('minisite_page', $pageSearch);
       if($minisitePageObj) {
         $tpl = $minisitePageObj->template; 
@@ -471,7 +462,7 @@ function controller_minisite($app, $options = []) {
 
         $type = $minisitePageObj->type;
         $scope->debug = html_h3("Found custom minisite page");
-        $scope->debug .= "Name: {$minisitePageObj->page_name} ID: {$minisitePageObj->id}) Tpl: {$tpl}";        
+        $scope->debug .= "Name: {$minisitePageObj->menu_title} ID: {$minisitePageObj->id}) Tpl: {$tpl}";        
       } else {
         return scope_error($app, "Page {$page} not found", 'minisites/404');
       }
@@ -1863,7 +1854,10 @@ function controller_backend($app, $options = []) {
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js"; /** todo: support other languages, use $app->locale  */
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/export/bootstrap-table-export.js";
+  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.js";
+  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/filter-control/bootstrap-table-filter-control.js";
   $__header->styles[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.css";
+  $__header->styles[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.css";
 
   $limit = 50;
 

@@ -24,6 +24,15 @@
       die("success");
   }
   
+  if($_REQUEST['type'] == 'media_collection') {
+      $obj_type= $_REQUEST['type'];
+      $obj_id= $_REQUEST['id'];
+      $obj_col= $_REQUEST['col'];
+      $data= $_REQUEST['data'];
+      $obj_data= array('obj_type'=>$obj_type,'obj_id'=>$obj_id,$obj_col=>$data);
+      $result= update_object($obj_type, $obj_data, $obj_id);
+      die("success");
+  }
 
   //if($_SESSION['dev'] && $_GET['debug'] == 'cre8ive') $inputVars = $_GET; // allow using GET by setting debug=cre8ive
   //else $inputVars = $_GET;
@@ -390,12 +399,16 @@
                   
                 $times_data->opening_time = $start = "{$times_data->opening_time}:00";
                 $times_data->closing_time  = $end = "{$times_data->closing_time}:00";
-
+                if( (strlen($start) != 8) ||  (strlen($end) != 8)){
+                  $start = str_pad($start, 8, "0", STR_PAD_LEFT);
+                  $end = str_pad($end, 8, "0", STR_PAD_LEFT);
+                }
+                
                 if(($start == '00:00:00') && ($end == '00:00:00') ){
                   list($id, $errors) = update_object($times_type, $times_data, $times_id);
                 }else{
                   if($start >= $end) 
-                    json_error("End time must be after start time");
+                    json_error($datas->day."- End time must be after start time");
                   else 
                     list($id, $errors) = update_object($times_type, $times_data, $times_id);
                 }                   
@@ -418,6 +431,10 @@
 
             $times_data->opening_time = $start = "{$times_data->opening_time}:00";
             $times_data->closing_time  = $end = "{$times_data->closing_time}:00";
+            if( (strlen($start) != 8) ||  (strlen($end) != 8)){
+              $start = str_pad($start, 8, "0", STR_PAD_LEFT);
+              $end = str_pad($end, 8, "0", STR_PAD_LEFT);
+            }
             
             if(($start == '00:00:00') && ($end == '00:00:00') ){
               list($id, $errors) = add_object($times_type, $times_data); 
@@ -468,17 +485,16 @@
         $obj_type = "minisite_page";
         $user_id = $obj_data[user_id];
         $site_id = $obj_data[site_id];
-        $page_name = $obj_data[page_name];
-        $obj_data[menu_title] = $obj_data[page_name];
-        $obj_data[page_title] = $obj_data[page_name];
+        $menu_title = $obj_data[menu_title];
+        $obj_data[menu_title] = $obj_data[menu_title];
+        $obj_data[page_title] = $obj_data[page_title];
         
-        $path = url_safe("/".$obj_data['path']."/", true); // slashes allowed
-        $obj_data['path'] = clean_path($path);
-        $obj_data['slug'] = $obj_data['path'];
+        $slug = url_safe("/".$obj_data['menu_title']."/", true); // slashes allowed
+        $obj_data['slug'] = $slug;
 
-        $col = find_objects('minisite_page', ['user_id' => $user_id, 'path' => $obj_data['path'] , 'user_id' => $user_id , 'active' => 1]);
+        $col = find_objects('minisite_page', ['user_id' => $user_id, 'slug' => $obj_data['slug'] , 'active' => 1]);
         
-        if($col)  json_error($obj_data['path']." is already used, Please choose a unique path"); 
+        if($col)  json_error($obj_data['slug']." is already used, Please choose a unique menu title"); 
          
         if($obj_data[type] == 10) json_error("Home page cannot be added");
         
@@ -491,15 +507,15 @@
             
         if($errors) json_error($errors); 
 
-        $data = find_objects('minisite_page', ['user_id' => $user_id, 'page_name' =>$page_name , 'active' => 1]);
+        $data = find_objects('minisite_page', ['user_id' => $user_id, 'menu_title' =>$menu_title , 'active' => 1]);
 
         foreach($data as $datas){
           $obj_data1[site_id] = $site_id;
           $obj_data1[user_id] = $user_id;
           $obj_data1[page_id] = $datas->id;
-          $obj_data1[menu_title] = $datas->page_name;
-          $obj_data1[page_title] = $datas->page_name;
-          $obj_data1[slug] = $datas->path;
+          $obj_data1[menu_title] = $datas->menu_title;
+          $obj_data1[page_title] = $datas->page_title;
+          $obj_data1[slug] = $datas->menu_title;
       
           if($datas->type == 20){
             $sub_type = "minisite_artist_page";  
@@ -525,16 +541,28 @@
       case 'edit-minisite-page':
         extract($obj_data);
         $obj_type = $obj_data[obj_type];
+        $user_id = $obj_data[user_id];
         $page_id = $obj_data[page_id];
         $menu_title = $obj_data[menu_title];
         $page_title = $obj_data[page_title];
-        
-        // To update menu_title, page_title in minisite_page 
+
+        $slug = url_safe("/".$menu_title."/", true); // slashes allowed
+        $obj_data['slug'] = $slug;
+
+        //$col = find_objects('minisite_page', ['user_id' => $user_id, 'slug' => $obj_data['slug'] , 'active' => 1]);
+        $col = $data = db_getAll("select * from minisite_page where user_id='$user_id' AND active= '1' AND slug= '$slug' AND id!= '$page_id' ");
+        if($col){
+          json_error($obj_data['slug']." is already used, Please choose a unique menu title");
+        }  
+      
+
+        // To update menu_title, page_title, slug in minisite_page 
         $page = find_object('minisite_page', ['id' => $page_id, 'active' => 1]);
         if($page){
           $id = $page->id;
           $page->menu_title = $menu_title;
           $page->page_title = $page_title;
+          $page->slug = $slug;
           list($id, $errors) = update_object('minisite_page', $page, $id);
         }
         if($errors) json_error($errors);
@@ -5304,9 +5332,6 @@
       extract($userData);
 
       if($userData['artist']){
-        $userData['facebook'] = 'NULL';
-        $userData['instagram'] = 'NULL';
-        $userData['twitter'] = 'NULL';
 
         if($error = check_required($obj_data, array('site_id' => "Site ID", 'first_name' => "First Name", 'last_name' => "Last Name"))) json_error("Missing: ".implode(', ', $error));
         $host_user_id = $obj_data['aff_id']?$obj_data['aff_id']:$u->id;

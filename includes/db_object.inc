@@ -902,7 +902,6 @@ function add_default_page($id, $user_id, $options = array()) {
       $obj_type = 'minisite_exhibition_page';
     } 
     $data['user_id'] = $user_id; 
-    $data['page_name'] = $page;
     $data['menu_title'] = $page;
     $data['page_title'] = $page;
     $data['path'] = "/default".$page."/";
@@ -943,6 +942,11 @@ function validate_business_hours($opening_time, $closing_time, $holiday) {
     $times_data[opening_time] = $start = "{$times_data[opening_time]}:00";
     $times_data[closing_time]  = $end = "{$times_data[closing_time]}:00";
 
+    if( (strlen($start) != 8) ||  (strlen($end) != 8)){
+      $start = str_pad($start, 8, "0", STR_PAD_LEFT);
+      $end = str_pad($end, 8, "0", STR_PAD_LEFT);
+    }
+    
     if( (($start != '00:00:00') && ($end != '00:00:00')) &&  ($start >= $end)){
       json_error("End time must be after start time");
     } 

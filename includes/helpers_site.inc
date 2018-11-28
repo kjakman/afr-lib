@@ -2853,7 +2853,8 @@ function traveler_dependencies($app, $options = array()) {
   $scripts[] = "/afr/bower/addtocalendar/atc.min.js"; 
   $scripts[] = "/afr/bower/handlebars/handlebars.min.js";
   $scripts[] = "/afr/bower/jquery-truncate-html/jquery.truncate.js";
-  $scripts[] = "/traveler/js/custom.js{$v}";    
+  $scripts[] = "/traveler/js/custom.js{$v}";   
+  $scripts[] = "/afr/bower/bootstrap-table/src/extensions/filter-control/bootstrap-table-filter-control.js"; 
 
   if($app->user_level >= USER_LEVEL_ADMIN) {
     $styles[] = "/afr/bower/CodeMirror/lib/codemirror.css"; 
