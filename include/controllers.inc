@@ -261,7 +261,7 @@ function controller_minisite($app, $options = []) {
       $scope->artists = $artists;
       //dump($artists->slug);
 
-      $scope->artist_Objs = $artist_Objs = find_object('minisite_artist_page', ['user_id' => $user_id, 'active' => 1]);
+      $scope->artist_Objs = $artist_Objs = find_object('minisite_artist_page', ['user_id' => $user_id, 'page_id' => $page_id ,'active' => 1]);
       $scope->mObj = $mObj = find_object('minisite', ['user_id' => $user_id, 'active' => 1]);
       $scope->menuObj = $menuObj = find_objects('minisite_page', ['user_id' => $user_id, 'active' => 1], ['sort' => 'row_order asc']);
       //$scope->timings = $timings = find_objects('opening_hours', ['user_id' => $user_id], ['sort' => 'id asc']);
@@ -4550,12 +4550,13 @@ function controller_gallery_backend($app, $options = []) {
         $locations[0] = "Another location...";          
         $scope->locations = $locations;
         
-        $scope->events = $events = find_objects('event', ['active' => 1, 'parent_type' => 'media_collection', 'parent_id' => $id]); //pradeepa
+        $scope->events = $events = find_objects('event', ['active' => 1, 'parent_type' => 'media_collection', 'parent_id' => $id]); 
         
         $collection = get_object('media_collection', $id);
         $collection_id = $collection->id;
         
         $art = find_objects('media_collection_map', ['media_collection_id' => $collection_id, 'artwork_id' => ['>', 0]]);
+        $scope->images = $art;
         $media = find_objects('media_collection_map', ['media_collection_id' => $collection_id, 'artwork_id' => ATT_DEFAULT_NULL]);
         
         $art_ids = array_find_key($art, 'artwork_id');
