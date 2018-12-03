@@ -313,7 +313,7 @@
     
     case 'save-artwork':
       extract($obj_data);
-      //dump($obj_data);
+      
       print_log("save-artwork: type: {$obj_type} id: {$obj_id} data:".dump($obj_data,true), 'gallery', LOG_LEVEL_TEST);
       //if(isset($obj_data['type']) && !$type) json_error("Please select a category."); 
       //if(isset($obj_data['status']) && !$status) json_error("Please select a status."); 
@@ -5213,6 +5213,7 @@
       
       print_log("find-artist ul={$app->user_level} ids:".dump($artist_ids,true), 'backend', LOG_LEVEL_TEST);
       $rows = [];
+
       if($val) {
         $search[DB_LOGICAL_OR] = 
         array('first_name' => "*$val*", 

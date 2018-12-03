@@ -632,10 +632,10 @@ function bstStartDateFormatter(value, row, index) {
   return sql2human_short(row.start_date);
 }
 
-// function bstArtistFormatter(value, row, index) {
-//   if(!value) return '';
-//   return g_artists[value];
-// }
+function bstArtistFormatter(value, row, index) {
+  if(!value) return '';
+  return g_artists[value];
+}
 
 function bstArtistsFormatter(value, row, index) {
   if(!value) return '';
@@ -744,7 +744,17 @@ function gallery_backend_ready() {
       }
     });
     
-  }  
+  }
+  $(".export.btn-group").append(" <span class='export_datan'><b>Download Records</b><a data-toggle='tooltip' data-placement='right' title='Download the art records shown in the table (to download all records set the row selector to 'All' ) Make sure you add the correct extension to the downloaded file (for example .xls for Excel files, 'artrecords.xls')'> <i class='fa fa-info-circle'></i></a></span>");
+  $(".keep-open.btn-group").append(" <span class='export_datan'><b>Select Columns</b></span>");  
+     
+	 $(".pagination-detail > .dropdown-toggle").click(function(){        
+      $(".btn-group.dropup").removeClass("dropup");
+  });
+   
+      $("body").tooltip({ selector: '[data-toggle=tooltip]' });
+
+
 }
 
 $(document).on("click", ".clone_modal_icon", function() {  
