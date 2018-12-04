@@ -352,8 +352,6 @@ $(document).on("focusout", ".edit", function() {
     $(this).text("0.00");
   }
   if(col=="primary_year" && data.length!=4){
-    alert(col);
-    alert(data.length);
     alert("Year is not proper. Please check");
     return false;
   }
@@ -745,7 +743,7 @@ function gallery_backend_ready() {
     });
     
   }
-  $(".export.btn-group").append(" <span class='export_datan'><b>Download Records</b><a data-toggle='tooltip' data-placement='right' title='Download the art records shown in the table (to download all records set the row selector to 'All' ) Make sure you add the correct extension to the downloaded file (for example .xls for Excel files, 'artrecords.xls')'> <i class='fa fa-info-circle'></i></a></span>");
+  $(".export.btn-group").append(" <span class='export_datan'><b>Download Records</b><a data-toggle='tooltip' data-placement='right' title='Download the art records shown in the table (to download all records set the row selector to All ) Make sure you add the correct extension to the downloaded file (for example .xls for Excel files, artrecords.xls)'> <i class='fa fa-info-circle'></i></a></span>");
   $(".keep-open.btn-group").append(" <span class='export_datan'><b>Select Columns</b></span>");  
      
 	 $(".pagination-detail > .dropdown-toggle").click(function(){        

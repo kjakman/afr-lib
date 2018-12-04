@@ -780,6 +780,20 @@
 
       
       if($obj_id) {
+        /* upload title image validation */ 
+        if($obj_data['title_image_option'] == 0){
+          $data = find_object('media_collection', ['id' => $obj_id]);
+          if($data->title_image_json){
+            $image = json_decode($data->title_image_json);
+            foreach($image as $images){
+              $image_id = $images->id;
+              $delete_upload = find_object('media', ['id' => $image_id]);
+              $delete_upload->active = '0';
+              list($id, $errors) = update_object('media', $delete_upload, $image_id);
+            }
+            $obj_data['title_image_json'] = '[]';
+          }
+        }
         list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
       } else {
         list($id, $errors) = add_object($obj_type, $obj_data);
