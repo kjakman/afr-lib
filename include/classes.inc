@@ -2626,6 +2626,7 @@ $__CLASS_ATTRIBUTES = array(
      'event_id'=>           array('Event',             'link',   0, AF_READONLY|AF_HIDE_ADD, 'event'),
 
      'settings'=>        array('Settings',           'json',  '', AF_SEARCHABLE|AF_HIDE_ADD),
+     'title_image_option'  =>       array('Title Image Radio button',         'bool',     1,  AF_HIDE_ADD, 0),
      
   ),
   
