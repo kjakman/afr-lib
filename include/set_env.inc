@@ -56,9 +56,6 @@ if(strpos($_SERVER['REQUEST_URI'], 'act=logout')) {
 $_SESSION['auth_token'] = $_SESSION['auth_token'] ?: md5(rand(0, 100000)); // random token
 $_SESSION['version'] = $version = 1519209001; // used for cachebusting. Don't change, hotfix.sh depends on this exact line.
 $_SESSION['debug_db'] = false;
-$_SESSION['system_cache'] = true; /** now using Redis - this is in use */
-$_SESSION['redis_cache'] = true;
-$_SESSION['mongodb'] = false;
 $_SESSION['legacy'] = true; /** don't use site_application() */
 $_SESSION['media_server'] = $beta ? 1 : 0;
 $_SESSION['cloudinary']   = 0;
@@ -542,4 +539,10 @@ if($no_app) {
   //dump($_SESSION['config']);
   
   //die("Local={$local}");
+  
+  /** get rid of this and use $app->cache->xxx */
+  $_SESSION['system_cache'] = $app->cache->system;
+  $_SESSION['redis_cache'] = $app->cache->redis;
+  $_SESSION['mongodb'] = $app->cache->mongo;
+  
 }
