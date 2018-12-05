@@ -1,16 +1,17 @@
 <?php
 
 $dbType = 'mysql';  ## Valid values: mysql, pgsql, oci8, odbc, sybase, fbsql, ibase, ifx, msql, mssql (These are pear supported dbs)
-$key = $_SESSION['live'] ? 'db' : 'devdb';
-$dbconf = get_config('db', 0);
+$db_key = $_SESSION['live'] || $_SESSION['test'] ? 'db' : 'devdb';
+$db_conf = get_config($db_key, 0);
 
-if(!$dbconf) echo("Failed to fetch database parameters");
-$db_db = $dbconf->db;
-$_SESSION['db_dev'] = $key == 'devdb' ? 1 : 0;
+if(!$db_conf) echo("Failed to fetch database parameters");
+$db_db = $db_conf->db;
 
-$db_user = $dbconf->user;
-$db_host = $dbconf->host ?: "localhost";
-$db_password = $dbconf->pass;
+$_SESSION['db_dev'] = $dev_db = $db_key == 'devdb' ? 1 : 0;
+
+$db_user = $db_conf->user;
+$db_host = $db_conf->host ?: "localhost";
+$db_password = $db_conf->pass;
 $db_dsn = "mysql://$db_user:$db_password@$db_host/$db_db";
 
 // connect to db
@@ -31,7 +32,7 @@ if(!$db) {
 $app->db = $db;
 $mysqli = mysqli_connect($db_host, $db_user, $db_password, $db_db); // used for escaping strings only
   
-//die("Gh:".dump($dbconf,true));
+//die("Gh:".dump($db_conf,true));
 
 if($_SESSION['redis_cache']) {
   $redis = new Redis();

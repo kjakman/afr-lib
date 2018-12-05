@@ -112,8 +112,9 @@ if(!$config) die("Failed to read config file");
 $_SESSION['log_level'] = $_SESSION['system_log_level'] = env_log_level($deployment);
 
 /** config files overrides */
-if(isset($config['system_cache'])) $_SESSION['system_cache'] = $config['system_cache']; 
-if(isset($config['redis_cache'])) $_SESSION['redis_cache'] = $config['redis_cache']; 
+if(isset($config['system_cache'])) $_SESSION['system_cache'] = $config['cache']['system_cache']; 
+if(isset($config['redis_cache'])) $_SESSION['redis_cache'] = $config['cache']['redis_cache']; 
+if(isset($config['mongo_cache'])) $_SESSION['mongo_cache'] = $config['cache']['mongo_cache']; 
 
 
 /** db */
@@ -170,7 +171,15 @@ if($no_app) {
   $siteObj = $__SITE = get_object('site', $site_id); /** uses Redis */
 
   /** site specific directories */
-  $data_dir = $_SESSION['data_dir'] = $live || $test ? "/web/data/{$siteObj->shortname}/" : "/web/data-dev/{$siteObj->shortname}/"; 
+  
+  $app->name = $app_name = $config['name'];
+  if(!$app_name) die("Application name must be set in config/main.yml");
+  $app_slug = $config['settings']['slug'] ?: slugify($app_name);
+  if(!$live) $app_slug .= "-dev";
+
+  $data_dir = $data_path = $config['settings']['data_path'] ? rtrim($config['settings']['data_path'], '/')."/{$app_slug}/" : "/data/dir/{$app_slug}/";
+  $shortname = $data_dir; 
+  
   $log_dir = $_SESSION['log_dir'] = $data_dir."log/";
   $upload_dir = $_SESSION['upload_dir'] = $data_dir."upload/";
   $cache_dir = $_SESSION['cache_dir'] = $data_dir."cache/";
@@ -184,7 +193,7 @@ if($no_app) {
   print_log("Set-env: uri={$uri} site_id={$site_id} domain: {$domain}", 'minisite', LOG_LEVEL_ALWAYS);
   
   /** site specific includes - this will go away */
-  if($lib_prefix = $siteObj->library_prefix ?: $siteObj->shortname) {
+  if($lib_prefix = $siteObj->library_prefix ?: $shortname) {
     include_once($lib_prefix."_classes.inc");
     include_once($lib_prefix."_class_handlers.inc");
     include_once($lib_prefix."_class_constants.inc");
@@ -314,7 +323,7 @@ if($no_app) {
             $path_var = $pageObj->path_var;
             if($obj_id) {
               if($path_var) {
-                $app->object_id = $app->slug = $obj_id;
+                $app->object_id = $app->object_slug = $obj_id;
                 $app->object_type = $obj_type;
                 $app->object_name = $obj_name;
               } else {
@@ -350,9 +359,9 @@ if($no_app) {
     $u = obj2array($userObj);
   
   } else {   
-    $config = new PHPAuth\Config($db);
-    $config->overrideAll($siteObj);
-    $phpauth = new PHPAuth\Auth($db, $config, $auth_lang);
+    $authConfigObj = new PHPAuth\Config($db);
+    $authConfigObj->overrideAll($siteObj);
+    $phpauth = new PHPAuth\Auth($db, $authConfigObj, $auth_lang);
       
     $auth_hash = $phpauth->getSessionHash();
     $hash = pick_first($session_hash, $auth_hash, $cookie_hash);
@@ -468,7 +477,22 @@ if($no_app) {
   $app->host_domain = $host_domain;
   $app->config = $_SESSION['config'];
   
-  $__APP->db = $db;
+  $app->db = $db_db;
+  $app->db_conf = $db_conf;
+  $app->db_key = $db_key;
+  $app->dev_db = $dev_db;
+  $app->live_db = !$dev_db;
+  
+  $app->config = $config;
+  $app->cache = $config['cache'];
+  
+  $app->name = $app_name;
+  $app->slug = $app_slug;
+  $app->description = $config['description'];
+  $app->data_path = $data_path;
+  $app->config_file = $config['settings']['config_file'];
+  
+  //$app->site_id = $config->site_id;  
   
   $__APP = $app; /** global used sparingly */
   
@@ -510,6 +534,7 @@ if($no_app) {
   $mem = bytes2human(memory_get_usage());
   //print_log("Auth={$__AUTH_EDIT} edit={$__EDIT_MODE}", 'set_env', LOG_LEVEL_TEST); 
   print_log("Loaded env in {$time}s using {$mem}", 'app', LOG_LEVEL_TEST); 
+  $app->elapsed = $time;
   
   //echo("<br><br><br>");dump($dbconf);
   //dump($app->config);
