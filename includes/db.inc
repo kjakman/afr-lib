@@ -34,7 +34,7 @@ $mysqli = mysqli_connect($db_host, $db_user, $db_password, $db_db); // used for 
   
 //die("Gh:".dump($db_conf,true));
 
-if($_SESSION['redis_cache']) {
+if($app->cache->redis) {
   $redis = new Redis();
   $redis->connect('127.0.0.1');
   $app->redis = $redis;
@@ -42,7 +42,7 @@ if($_SESSION['redis_cache']) {
   $redis = null;
 }  
 
-if($_SESSION['mongodb']) {
+if($app->cache->mongo) {
   $client = new MongoDB\Client("mongodb://localhost:27017");
   $app->mongodb = $mongodb = $client->$db_db;
 }

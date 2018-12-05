@@ -64,6 +64,10 @@ $_SESSION['host_tld'] = $host_tld;
 $_SESSION['host_dom'] = $host_dom;
 $_SESSION['host_sub'] = $host_sub;   
 
+$_SESSION['system_cache'] = 0;
+$_SESSION['redis_cache'] = 0;
+$_SESSION['mongodb'] = 0;
+
 # live or dev/test/staging/beta/local ?
 $_SESSION['local'] = $local = $host_sub == 'local' || $host_tld == 'dev' ? 1 : 0;
 
@@ -107,12 +111,6 @@ $_SESSION['config'] = $config = !$_SESSION['config'] || isset($_GET['reload-conf
 if(!$config) die("Failed to read config file");
 
 $_SESSION['log_level'] = $_SESSION['system_log_level'] = env_log_level($deployment);
-
-/** config files overrides */
-if(isset($config['system_cache'])) $_SESSION['system_cache'] = $config['cache']['system_cache']; 
-if(isset($config['redis_cache'])) $_SESSION['redis_cache'] = $config['cache']['redis_cache']; 
-if(isset($config['mongo_cache'])) $_SESSION['mongo_cache'] = $config['cache']['mongo_cache']; 
-
 
 /** db */
 require_once("PEAR.php");
@@ -481,7 +479,7 @@ if($no_app) {
   $app->live_db = !$dev_db;
   
   $app->config = $config;
-  $app->cache = $config['cache'];
+  $app->cache = array2obj($config['cache']);
   
   $app->name = $app_name;
   $app->slug = $app_slug;
