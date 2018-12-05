@@ -1,11 +1,12 @@
 <?php
 
 $dbType = 'mysql';  ## Valid values: mysql, pgsql, oci8, odbc, sybase, fbsql, ibase, ifx, msql, mssql (These are pear supported dbs)
+$key = $_SESSION['live'] ? 'db' : 'devdb';
 $dbconf = get_config('db', 0);
 
 if(!$dbconf) echo("Failed to fetch database parameters");
-$db_db =  $_SESSION['dev'] || $_SESSION['staging'] ? $dbconf->devdb : $dbconf->db;
-$_SESSION['db_dev'] = $db_db == $dbconf->devdb ? 1 : 0;
+$db_db = $dbconf->db;
+$_SESSION['db_dev'] = $key == 'devdb' ? 1 : 0;
 
 $db_user = $dbconf->user;
 $db_host = $dbconf->host ?: "localhost";
