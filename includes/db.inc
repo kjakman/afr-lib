@@ -1,7 +1,7 @@
 <?php
 
 $dbType = 'mysql';  ## Valid values: mysql, pgsql, oci8, odbc, sybase, fbsql, ibase, ifx, msql, mssql (These are pear supported dbs)
-$db_key = $_SESSION['live'] || $_SESSION['test'] ? 'db' : 'devdb';
+$db_key = $_SESSION['live'] || $_SESSION['test'] || $_SESSION['staging_live'] ? 'db' : 'devdb';
 $db_conf = get_config($db_key, 0);
 
 if(!$db_conf) echo("Failed to fetch database parameters");

@@ -81,6 +81,7 @@ if($local) {
   $_SESSION['dev'] = $dev = $host_sub == 'dev' ? 1 : 0;
   $_SESSION['test'] = $test = $host_sub == 'test' || $host_sub == 'vpatina' ? 1 : 0; /** last is dirty hack for Indians... */
   $_SESSION['staging'] = $staging = $host_sub == 'staging' ? 1 : 0;
+  $_SESSION['staging_live'] = $staging_live = $host_sub == 'live' ? 1 : 0;
   $_SESSION['beta'] = $beta = $host_sub == 'beta' ? 1 : 0;
 }
 
@@ -90,7 +91,7 @@ $_SESSION['aid'] = isset($_GET['_aid']) ? $_GET['_aid'] : $_SESSION['aid'];
 
 //if(in_array($host_sub, ['ms', 'ww'])) $_SESSION['test'] = $test = 1; // minisite
 
-$live = $_SESSION['live'] = !($dev || $test || $beta || $staging || $local) ? 1 : 0; // www or no sub
+$live = $_SESSION['live'] = !($dev || $test || $beta || $staging|| $staging_live || $local) ? 1 : 0; // www or no sub
 
 $_SESSION['deployment'] = $live ? 'live' : $host_sub;
 if($local) $_SESSION['deployment'] = 'local'; 
