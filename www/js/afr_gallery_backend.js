@@ -286,14 +286,16 @@ $(document).on("click", "#sel_del_success", function() { //Bala
 
 //Delete artist in minisite
 $(document).on("click", '#soft_delete', function(){
-  var id = $(this).data('value');
+  var artist_id = $(this).data('value');
+  var page_id = $(this).data('page');
   var obj_type = "minisite";
   $.ajax({
     url: "/ajax.php",
     dataType: "json",
     data: {
       oper: "artist-delete",
-      val: id
+      artist_id: artist_id,
+      page_id: page_id
     },     
   });     
 });
@@ -366,6 +368,7 @@ $(document).on("focusout", ".edit", function() {
     }  
   });    
 });  
+
 //For price option in artwork
 $(document).on("click", "#phide", function() { 
   $('.phide'+id).show();
@@ -410,6 +413,7 @@ $(document).on("click", "#phide", function() {
     });
   }    
 });
+
 // For Status drop down in artwork
 $(document).on("click", "#status", function() { 
   $('.status'+id).show();
@@ -490,6 +494,17 @@ $(document).on("focusout", ".edit_exhibition", function() {
   
   });  
 }); 
+
+//upload image hide on delete
+$(document).on("click", "#apply-delete", function(){
+  $(this).closest('li').hide();
+  console.log("deleted list");
+});
+
+function bstMinisiteArtistFormatter(value, row, index) {
+  if(!value) return '';
+  return g_artists[value];
+}
 
 $(document).on("change", "#gbe_collection_active", function() {
   var checked = $(this).prop('checked');
@@ -758,6 +773,8 @@ function gallery_backend_ready() {
 $(document).on("click", ".clone_modal_icon", function() {  
   $("#clone_dialog_form input[name=obj_id]").val($(this).attr('id'));
 });
+
+
 
 /**
 $(document).ready(function() {  

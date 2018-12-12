@@ -56,9 +56,6 @@ $__CLASSES = array(
     'minisite_page_type' =>   array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'name', '', ''),
     'minisite_page' =>       array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'page_name', '', ''),
     'minisite_layout' =>      array(USER_LEVEL_SYSTEM, 'site', '', '', NF_CACHE_ASSOC, 'name', 'id', ''),
-    'minisite_home_page' =>   array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'id', '', ''),
-    'minisite_artist_page' =>   array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'id', '', ''),
-    'minisite_exhibition_page' =>   array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'id', '', ''),
     
     
     /** get rid of the next 4 - CMS no longer in use */
@@ -2122,8 +2119,8 @@ $__CLASS_ATTRIBUTES = array(
      'admin_users' =>       array('Admin Users',        'json', '', 0),
      'type'=>               array('Type',               'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 32 ),
      'name'=>               array('Name',               'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
-     'sub_title'=>          array('Sub Title',          'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
-     'description'=>        array('Description',          'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
+     'sub_title'=>          array('Sub Title',          'str',  '', AF_SEARCHABLE, 128 ),
+     'description'=>        array('Description',          'str',  '', AF_SEARCHABLE, 128 ),
      'url'=>                array('Url',                'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 64 ),
      'domain'=>             array('Domain',             'str',  '', AF_SEARCHABLE, 128 ),
      'email_address'=>      array('Email',              'email',  '', AF_SEARCHABLE|AF_HIDE_LIST, 128),
@@ -2142,7 +2139,7 @@ $__CLASS_ATTRIBUTES = array(
      'font'=>               array('Font',               'str',  '', 0, 64 ),
      'css'=>                array('Css',                'str',  '', 0, 64 ),
      'location_id'=>        array('Location',           'link',   0, AF_HIDE_ADD, 'location'),
-     'footer'=>             array('Footer',             'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
+     'footer'=>             array('Footer',             'str',  '', AF_SEARCHABLE, 128 ),
      'show_title'  =>       array('Show title',         'bool',     1,  AF_HIDE_ADD, 0),
      'show_subtitle'  =>    array('Show subtitle',      'bool',     1,  AF_HIDE_ADD, 0),
      'show_timing'  =>      array('Show timing',        'bool',     1,  AF_HIDE_ADD, 0),
@@ -2171,73 +2168,13 @@ $__CLASS_ATTRIBUTES = array(
       'slug'=>               array('Slug',             'str',   '', 0, 128 ),
       'search'=>             array('Search',           'json',   ''),
       'row_order'=>          array('Row Order',        'int',   '', 0, 11 ),
+      'data'=>               array('data',              'json',     '', AF_HIDE_ADD),
    ),
 
    "minisite_layout" => 
    array(
       'id'=>            array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 2),
       'name'=>          array('Name',              'str',   '', 1, 20 ),
-   ),
-
-   "minisite_home_page" => 
-   array(
-      'id'=>                 array('ID',                 'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 3),
-      'created'=>            array('Created',            'datetime', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT),
-      'timestamp'=>          array('Timestamp',          'timestamp', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT, 14 ),
-      'site_id'=>            array('Site',               'link',  0, AF_SEARCHABLE|AF_HIDE, 'site'),
-      'client_id'=>          array('Client',                'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
-      'user_id' =>           array('User ID',            'link', ATT_DEFAULT_USER_ID, 0, 'user'),
-      'active'  =>           array('Active?',            'bool',     1,  AF_HIDE_ADD, 0),
-      'menu_title'=>         array('Home Menu Title',  'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
-      'page_title'=>         array('Home Page Title',  'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
-      'layout'  =>           array('Active?',            'bool',     1,  AF_HIDE_ADD, 0),
-      'show_gallery'  =>       array('Show Gallery',            'bool',     1,  AF_HIDE_ADD, 0),
-      'show_artfair'  =>       array('Show Artfair',            'bool',     1,  AF_HIDE_ADD, 0),
-      'show_others'  =>        array('Show Others',            'bool',     1,  AF_HIDE_ADD, 0),
-      'show_past'  =>          array('Show Past',            'bool',     1,  AF_HIDE_ADD, 0),
-      'show_current'  =>       array('Show Current',            'bool',     1,  AF_HIDE_ADD, 0),
-      'show_future'  =>        array('Show Future',            'bool',     1,  AF_HIDE_ADD, 0),
-      'show_latest'  =>        array('Show Future',            'bool',     1,  AF_HIDE_ADD, 0),
-      'show_recent'  =>        array('Show Recent',            'bool',     1,  AF_HIDE_ADD, 0),
-      
-   ),
-
-   "minisite_artist_page" => 
-   array(
-      'id'=>                 array('ID',                 'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 3),
-      'created'=>            array('Created',            'datetime', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT),
-      'timestamp'=>          array('Timestamp',          'timestamp', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT, 14 ),
-      'site_id'=>            array('Site',               'link',  0, AF_SEARCHABLE|AF_HIDE, 'site'),
-      'client_id'=>          array('Client',                'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
-      'user_id' =>           array('User ID',            'link', ATT_DEFAULT_USER_ID, 0, 'user'),
-      'page_id' =>           array('Page',               'link', 0, AF_HIDE_EDIT|AF_HIDE_ADD, 'minisite_page'),
-      'active'  =>           array('Active?',            'bool',     1,  AF_HIDE_ADD, 0),
-      'menu_title'=>         array('Artist Menu Title',  'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
-      'page_title'=>         array('Artist Page Title',  'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
-      'slug'=>               array('Slug',               'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 64 ),
-   ),
-
-   "minisite_exhibition_page" => 
-   array(
-      'id'=>                 array('ID',                 'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 3),
-      'created'=>            array('Created',            'datetime', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT),
-      'timestamp'=>          array('Timestamp',          'timestamp', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT, 14 ),
-      'site_id'=>            array('Site',               'link',  0, AF_SEARCHABLE|AF_HIDE, 'site'),
-      'client_id'=>          array('Client',                'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
-      'user_id' =>           array('User ID',            'link', ATT_DEFAULT_USER_ID, 0, 'user'),
-      'page_id' =>           array('Page',               'link', 0, AF_HIDE_EDIT|AF_HIDE_ADD, 'minisite_page'),
-      'active'  =>           array('Active?',            'bool',     1,  AF_HIDE_ADD, 0),
-      'menu_title'=>  array('Exhibition Menu Title',  'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
-      'page_title'=>  array('Exhibition Page Title',  'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
-      'show_gallery'  =>       array('Show Gallery',            'bool',     1,  AF_HIDE_ADD, 0),
-      'show_artfair'  =>       array('Show Artfair',            'bool',     1,  AF_HIDE_ADD, 0),
-      'show_others'  =>        array('Show Others',            'bool',     1,  AF_HIDE_ADD, 0),
-      'show_past'  =>          array('Show Past',            'bool',     1,  AF_HIDE_ADD, 0),
-      'show_current'  =>       array('Show Current',            'bool',     1,  AF_HIDE_ADD, 0),
-      'show_future'  =>        array('Show Future',            'bool',     1,  AF_HIDE_ADD, 0),
-      'show_latest'  =>        array('Show Future',            'bool',     1,  AF_HIDE_ADD, 0),
-      'show_recent'  =>        array('Show Recent',            'bool',     1,  AF_HIDE_ADD, 0),
-      'slug'=>               array('Slug',               'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 64 ),
    ),
  
   "site" => 

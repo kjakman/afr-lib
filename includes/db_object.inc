@@ -883,38 +883,38 @@ function getobj_id($obj_type, $user_id, $page_id){
 }
 
 //Pradeepa// Add default pages (Home, Artist, Exhibition, Contact)
-function add_default_page($id, $user_id, $options = array()) {
-
-  if(!$user_id) mydie ("add_default_pages: missing id");
-  $data = [];
-  $type = ['10','20','30','40'];
+function add_default_page($id, $data, $options = array()) {
+  if(!data['user_id']) mydie ("add_default_pages: missing id");
+  $obj_type = 'minisite_page';
+  $minisite_id = $id;
+  $type = ['10','20','30'];
   foreach($type as $types){
-    if($type == '10'){
-      $page = 'Home';
-      $obj_type = 'minisite_home_page';
+
+    if($types == '10'){
+      $page = 'default_home';
+      $slug = url_safe("/".$page."/", true);
     } 
-    if($type == '20'){
-      $page = 'Artist';
-      $obj_type = 'minisite_artist_page';
+    if($types == '20'){
+      $page = 'default_artist';
+      $slug = url_safe("/".$page."/", true);
     } 
-    if($type == '30'){
-      $page = 'Exhibition';
-      $obj_type = 'minisite_exhibition_page';
+    if($types == '30'){
+      $page = 'default_exhibition';
+      $slug = url_safe("/".$page."/", true);
     } 
-    $data['user_id'] = $user_id; 
+    $data['type'] = $types; 
     $data['menu_title'] = $page;
     $data['page_title'] = $page;
-    $data['path'] = "/default".$page."/";
-    $data['minisite_id'] = $id;
+    $data['slug'] = $slug;
+    $data['minisite_id'] = $minisite_id;
     if($data){
-      list($id, $errors) = add_object($obj_type, $data);
+      list($page_id, $errors) = add_object($obj_type, $data);
     }else{
       json_error("No datas found for default pages");
     }
     if($errors) json_error($errors); 
   }
   
-
   return array($data, $errors, $messages);
 }
 
