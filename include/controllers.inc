@@ -689,7 +689,7 @@ function controller_geo_location($app, $options = []) {
   /** preprocessing - find bounds */
   $__header->styles[] = "/afr/css/afr-air.css";
 
-  $slug = $app->slug;
+  $slug = $app->object_slug;
   $obj_type = $scope->obj_type = $app->object_type;
   $obj_id = $scope->obj_id = $app->object_id;
   $obj = $locObj = $obj_type && $obj_id ? get_object($obj_type, $obj_id) : null;
@@ -1695,7 +1695,7 @@ function rental_booking_handler($app, $options = array()) {
   $siteObj = $app->site;
   $pageObj = $app->page;
   $scope = $app->page->scope;
-  $obj_id = $slug = $scope->obj_id = $app->slug ?: $app->object_id;
+  $obj_id = $slug = $scope->obj_id = $app->object_slug ?: $app->object_id;
   if(!$obj_id) return scope_error($app, "Missing rental ID", '404');
   $obj_type = pick_first($scope->property_type, $app->object_type, $pageObj->property_type, $siteObj->property_type, 'shortstay');  
   $obj = $aptObj = $scope->rental = get_object($obj_type, $obj_id);
@@ -2159,7 +2159,7 @@ function controller_bookings($app, $options = []) {
 
   $errors = $messages = array();
 
-  $slug = $app->slug;  
+  $slug = $app->object_slug;  
   $obj_type = $scope->obj_type = "reservation"; 
   
   $all_hosts = 0;
@@ -3320,7 +3320,7 @@ function controller_inbox($app, $options=[]) {
   if(!$u_id) return;
   $user_id = $u_id;  
 
-  $thread_id = pick_first($scope->thread, $option['thread'], $app->slug);
+  $thread_id = pick_first($scope->thread, $option['thread'], $app->object_slug);
 
   if($thread_id) { // get one thread
     $user_ids = explode('-', $thread_id);
@@ -3437,7 +3437,7 @@ function controller_event($app, $options = []) {
   $city = $options['city'] ?: 'Amsterdam';
   $country = $options['country'] ?: 'NL';
   $fields = array("id", "name", "notes", "start_address", "start_time", "end_time", "startdatetime", "enddatetime", "startdate", "enddate", "location_lat", "location_long","location_bounds","address_street","address_number","address_city","address_postcode","address_state","address_country","address_formatted");
-  $id = pick_first($_GET['id'], $options['id'], $_GET['article_id'], $app->object_id, $app->slug, $scope->event_id, $options['event_id']);
+  $id = pick_first($_GET['id'], $options['id'], $_GET['article_id'], $app->object_id, $app->object_slug, $scope->event_id, $options['event_id']);
 
   $scope->auth_add_event = $u_level >= USER_LEVEL_EDITOR ? 1 : 0;
   
@@ -3650,7 +3650,7 @@ function controller_golf_club($app, $options = []) {
   $ver = $app->version ?: date('md');
   $__header->styles[] = "/afr/css/afr-air.css";
   $obj_type = 'golf_club';
-  $slug = $app->slug;
+  $slug = $app->object_slug;
   $id = $obj_id = $golf_club_id = $scope->obj_id = $scope->golf_club_id = pick_first($scope->golf_club_id, $scope->obj_id, $_GET['obj_id'], $options['obj_id'], $app->object_id);
   
   if(!$id) { 
@@ -3803,7 +3803,7 @@ function controller_mail_campaign($app, $options = []) {
   global $__SITE_ROLES;
   $siteObj = $app->site;
   $scope = $app->page->scope;
-  $campaign_id = pick_first($_GET['campaign_id'], $app->object_id, $app->slug, $scope->campaign_id, $options['campaign_id']);
+  $campaign_id = pick_first($_GET['campaign_id'], $app->object_id, $app->object_slug, $scope->campaign_id, $options['campaign_id']);
 
   $step = 0;
   if($campaign_id) {

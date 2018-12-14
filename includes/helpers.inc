@@ -13,7 +13,7 @@ function config_load() {
 function get_config($key, $site_id = -1) {
   if($site_id < 0) $site_id = $_SESSION['site_id'];
   $configAr = $_SESSION['config'];
-  $password_file = $_SESSION['dev'] ? $configAr['settings']['dev']['password_file'] : $configAr['settings']['live']['password_file'];
+  $password_file = $configAr['settings']['config_file'];
   if(!$password_file) die("get_config: secret file not set");  
   $password_file = approot(true).$password_file;
   if(!$password_file) die("get_config: did not find secret file {$password_file}");

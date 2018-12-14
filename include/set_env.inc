@@ -56,9 +56,6 @@ if(strpos($_SERVER['REQUEST_URI'], 'act=logout')) {
 $_SESSION['auth_token'] = $_SESSION['auth_token'] ?: md5(rand(0, 100000)); // random token
 $_SESSION['version'] = $version = 1519209001; // used for cachebusting. Don't change, hotfix.sh depends on this exact line.
 $_SESSION['debug_db'] = false;
-$_SESSION['system_cache'] = true; /** now using Redis - this is in use */
-$_SESSION['redis_cache'] = true;
-$_SESSION['mongodb'] = false;
 $_SESSION['legacy'] = true; /** don't use site_application() */
 $_SESSION['media_server'] = $beta ? 1 : 0;
 $_SESSION['cloudinary']   = 0;
@@ -66,6 +63,10 @@ $_SESSION['host'] = ['protocol' => $host_protocol, 'sub' => $host_sub, 'domain' 
 $_SESSION['host_tld'] = $host_tld;
 $_SESSION['host_dom'] = $host_dom;
 $_SESSION['host_sub'] = $host_sub;   
+
+$_SESSION['system_cache'] = 0;
+$_SESSION['redis_cache'] = 0;
+$_SESSION['mongodb'] = 0;
 
 # live or dev/test/staging/beta/local ?
 $_SESSION['local'] = $local = $host_sub == 'local' || $host_tld == 'dev' ? 1 : 0;
@@ -80,6 +81,7 @@ if($local) {
   $_SESSION['dev'] = $dev = $host_sub == 'dev' ? 1 : 0;
   $_SESSION['test'] = $test = $host_sub == 'test' || $host_sub == 'vpatina' ? 1 : 0; /** last is dirty hack for Indians... */
   $_SESSION['staging'] = $staging = $host_sub == 'staging' ? 1 : 0;
+  $_SESSION['staging_live'] = $staging_live = $host_sub == 'live' ? 1 : 0;
   $_SESSION['beta'] = $beta = $host_sub == 'beta' ? 1 : 0;
 }
 
@@ -89,7 +91,7 @@ $_SESSION['aid'] = isset($_GET['_aid']) ? $_GET['_aid'] : $_SESSION['aid'];
 
 //if(in_array($host_sub, ['ms', 'ww'])) $_SESSION['test'] = $test = 1; // minisite
 
-$live = $_SESSION['live'] = !($dev || $test || $beta || $staging || $local) ? 1 : 0; // www or no sub
+$live = $_SESSION['live'] = !($dev || $test || $beta || $staging|| $staging_live || $local) ? 1 : 0; // www or no sub
 
 $_SESSION['deployment'] = $live ? 'live' : $host_sub;
 if($local) $_SESSION['deployment'] = 'local'; 
@@ -110,11 +112,6 @@ $_SESSION['config'] = $config = !$_SESSION['config'] || isset($_GET['reload-conf
 if(!$config) die("Failed to read config file");
 
 $_SESSION['log_level'] = $_SESSION['system_log_level'] = env_log_level($deployment);
-
-/** config files overrides */
-if(isset($config['system_cache'])) $_SESSION['system_cache'] = $config['system_cache']; 
-if(isset($config['redis_cache'])) $_SESSION['redis_cache'] = $config['redis_cache']; 
-
 
 /** db */
 require_once("PEAR.php");
@@ -170,7 +167,15 @@ if($no_app) {
   $siteObj = $__SITE = get_object('site', $site_id); /** uses Redis */
 
   /** site specific directories */
-  $data_dir = $_SESSION['data_dir'] = $live || $test ? "/web/data/{$siteObj->shortname}/" : "/web/data-dev/{$siteObj->shortname}/"; 
+  
+  $app->name = $app_name = $config['name'];
+  if(!$app_name) die("Application name must be set in config/main.yml");
+  $app_slug = $config['settings']['slug'] ?: slugify($app_name);
+  if(!$live) $app_slug .= "-dev";
+
+  $data_dir = $data_path = $config['settings']['data_path'] ? rtrim($config['settings']['data_path'], '/')."/{$app_slug}/" : "/data/dir/{$app_slug}/";
+  $shortname = $data_dir; 
+  
   $log_dir = $_SESSION['log_dir'] = $data_dir."log/";
   $upload_dir = $_SESSION['upload_dir'] = $data_dir."upload/";
   $cache_dir = $_SESSION['cache_dir'] = $data_dir."cache/";
@@ -184,7 +189,7 @@ if($no_app) {
   print_log("Set-env: uri={$uri} site_id={$site_id} domain: {$domain}", 'minisite', LOG_LEVEL_ALWAYS);
   
   /** site specific includes - this will go away */
-  if($lib_prefix = $siteObj->library_prefix ?: $siteObj->shortname) {
+  if($lib_prefix = $siteObj->library_prefix ?: $shortname) {
     include_once($lib_prefix."_classes.inc");
     include_once($lib_prefix."_class_handlers.inc");
     include_once($lib_prefix."_class_constants.inc");
@@ -314,7 +319,7 @@ if($no_app) {
             $path_var = $pageObj->path_var;
             if($obj_id) {
               if($path_var) {
-                $app->object_id = $app->slug = $obj_id;
+                $app->object_id = $app->object_slug = $obj_id;
                 $app->object_type = $obj_type;
                 $app->object_name = $obj_name;
               } else {
@@ -350,9 +355,9 @@ if($no_app) {
     $u = obj2array($userObj);
   
   } else {   
-    $config = new PHPAuth\Config($db);
-    $config->overrideAll($siteObj);
-    $phpauth = new PHPAuth\Auth($db, $config, $auth_lang);
+    $authConfigObj = new PHPAuth\Config($db);
+    $authConfigObj->overrideAll($siteObj);
+    $phpauth = new PHPAuth\Auth($db, $authConfigObj, $auth_lang);
       
     $auth_hash = $phpauth->getSessionHash();
     $hash = pick_first($session_hash, $auth_hash, $cookie_hash);
@@ -468,7 +473,22 @@ if($no_app) {
   $app->host_domain = $host_domain;
   $app->config = $_SESSION['config'];
   
-  $__APP->db = $db;
+  $app->db = $db_db;
+  $app->db_conf = $db_conf;
+  $app->db_key = $db_key;
+  $app->dev_db = $dev_db;
+  $app->live_db = !$dev_db;
+  
+  $app->config = $config;
+  $app->cache = array2obj($config['cache']);
+  
+  $app->name = $app_name;
+  $app->slug = $app_slug;
+  $app->description = $config['description'];
+  $app->data_path = $data_path;
+  $app->config_file = $config['settings']['config_file'];
+  
+  //$app->site_id = $config->site_id;  
   
   $__APP = $app; /** global used sparingly */
   
@@ -510,6 +530,7 @@ if($no_app) {
   $mem = bytes2human(memory_get_usage());
   //print_log("Auth={$__AUTH_EDIT} edit={$__EDIT_MODE}", 'set_env', LOG_LEVEL_TEST); 
   print_log("Loaded env in {$time}s using {$mem}", 'app', LOG_LEVEL_TEST); 
+  $app->elapsed = $time;
   
   //echo("<br><br><br>");dump($dbconf);
   //dump($app->config);
@@ -517,4 +538,10 @@ if($no_app) {
   //dump($_SESSION['config']);
   
   //die("Local={$local}");
+  
+  /** get rid of this and use $app->cache->xxx */
+  $_SESSION['system_cache'] = $app->cache->system;
+  $_SESSION['redis_cache'] = $app->cache->redis;
+  $_SESSION['mongodb'] = $app->cache->mongo;
+  
 }
