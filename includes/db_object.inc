@@ -888,31 +888,40 @@ function add_default_page($id, $data, $options = array()) {
   $obj_type = 'minisite_page';
   $minisite_id = $id;
   $type = ['10','20','30'];
+  
   foreach($type as $types){
-
     if($types == '10'){
-      $page = 'default_home';
+      $page = 'home';
       $slug = url_safe("/".$page."/", true);
+      $search['layout'] = 1; 
+      $datas = json_encode($search);
     } 
     if($types == '20'){
-      $page = 'default_artist';
+      $page = 'artist';
       $slug = url_safe("/".$page."/", true);
     } 
     if($types == '30'){
-      $page = 'default_exhibition';
+      $page = 'exhibition';
       $slug = url_safe("/".$page."/", true);
+      $search['show_latest'] = 1;
+      $search['show_gallery'] = 1;
+      $search['show_artfair'] = 1;
+      $datas = json_encode($search);
     } 
     $data['type'] = $types; 
     $data['menu_title'] = $page;
     $data['page_title'] = $page;
     $data['slug'] = $slug;
+    $data['data'] = ($page == 'home' || $page == 'exhibition')?$datas:'';
     $data['minisite_id'] = $minisite_id;
     if($data){
       list($page_id, $errors) = add_object($obj_type, $data);
     }else{
       json_error("No datas found for default pages");
     }
-    if($errors) json_error($errors); 
+    if($errors){
+      json_error($errors);
+    } 
   }
   
   return array($data, $errors, $messages);

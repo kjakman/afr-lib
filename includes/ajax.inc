@@ -462,15 +462,16 @@
 
       case 'save-minisite':
         extract($obj_data);
+        //dump($obj_data);
         $obj_type = 'minisite';
 
         if(!$obj_id){
           list($id, $errors) = add_object($obj_type, $obj_data);
           print_log("save-minisite: added: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
         }
-        //if($errors) json_error($errors); 
+        if($errors) json_error($errors); 
 
-        if($id){
+        if($id && $obj_data['type'] == 'gallery'){
           $data = add_default_page($id, $obj_data);
         } 
         if($errors) json_error($errors); 
@@ -543,13 +544,13 @@
           if($data_arr_encode){
             foreach($artist_ids as $artist_id){             //check If media exists for the artist
               $media = find_object('media_collection', ['user_id' => $user_id, 'artist_id' => $artist_id, 'type' => 120,'active' => 1]);
-              if(!$media){
+              /*if(!$media){
                 $user = get_user($artist_id);
                 $display_name = user_display_name($user);
                 json_error("No medias for ".$display_name);                
-              }else{
+              }else{ */
                 $obj_data[search] = json_encode(array_unique(array_merge(json_decode($data->search, true),json_decode($search, true))));
-              }
+              //}
             }
           }else{
             $obj_data[search] = $search;
