@@ -4599,19 +4599,22 @@ function controller_gallery_backend($app, $options = []) {
         
         // locations
         $locations = [];
-        if($loc_id = $curator->location_id) {
+        $locations[0] = "Another location..."; 
+        if($loc_id = $curator->address_formatted) {
           $locObj = get_object('location', $loc_id);
-          $locations[$loc_id] = "{$locObj->address_street} {$locObj->address_number}";
+          //$locations[$loc_id] = "{$locObj->address_street} {$locObj->address_number} {$locObj->address_formatted}";
+          $locations[1] = "{$loc_id}";
         }
 
         $locObjs = find_objects('location', ['user_id' => $curator->user_id, 'active' => 1, 'parent_type' => ['media_collection', 'event']], ['debug_query' => 0]);
         foreach($locObjs as $locObj) {
           $loc_id = $locObj->id;
-          $locations[$loc_id] = "{$locObj->address_street} {$locObj->address_number}";
+          //$locations[$loc_id] = "{$locObj->address_street} {$locObj->address_number} {$locObj->address_formatted}";
+          $locations[$loc_id] = "{$locObj->address_formatted}";
         }
-        $locations[0] = "Another location...";          
+                 
         $scope->locations = $locations;
-        
+        //dump($locations);
         $scope->events = $events = find_objects('event', ['active' => 1, 'parent_type' => 'media_collection', 'parent_id' => $id]); 
         
         $collection = get_object('media_collection', $id);

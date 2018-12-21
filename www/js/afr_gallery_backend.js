@@ -627,12 +627,17 @@ function responseHandler(res) {
 
 function bstCollectionSubtypeFormatter(value, row, index) {
   switch(parseInt(row.subtype)) {           
-    case 10: return 'Physical';
-    case 20: return 'Virtual';
-    case 30: return 'Art Fair';
+    case 10: return 'Gallery';
+    case 20: return 'Art Fair';
+    case 30: return 'Other Event';
     case 40: return 'Selection';
     default: return '';
   }      
+}
+
+function bstPublishedFormatter(value, row, index) {
+  if(parseInt(row.active)) return 'ON';
+  else return 'OFF';   
 }
 
 // function bstDateFormatter(value, row, index) {
@@ -645,9 +650,20 @@ function bstStartDateFormatter(value, row, index) {
   return sql2human_short(row.start_date);
 }
 
+function bstEndDateFormatter(value, row, index) {
+  if(!row.end_date) return '';
+  return sql2human_short(row.end_date);
+}
+
 function bstArtistFormatter(value, row, index) {
   if(!value) return '';
   return g_artists[value];
+}
+
+function bstLocationFormatter(value, row, index) {
+  if(!row.address_formatted) return '';
+  return row.address_formatted;
+  
 }
 
 function bstArtistsFormatter(value, row, index) {
