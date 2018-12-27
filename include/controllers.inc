@@ -4449,7 +4449,7 @@ function controller_gallery_backend($app, $options = []) {
       $scope->minisitepage = $minisitepage = find_object('minisite_page', $col);
 
       $scope->userprofile = $userprofile = get_user($obj->user_id);
-
+      
       $profileSearch = ['user_id' => $obj->user_id];
       $scope->baseprofile = $profile = find_objects('user_profile', $profileSearch);
       
@@ -4545,7 +4545,29 @@ function controller_gallery_backend($app, $options = []) {
       if(!$add) {   
         if(!$id) return controller_error($app, "Missing ID");
         if($_GET['profile_id']) $id = $scope->id = $scope->obj_id = get_object('user_profile', $id, 'user_id');
-        $scope->profile = get_user($id);
+        $scope->profile = $profile_data= get_user($id);
+        $awards = json_decode($profile_data->awards);
+
+        function sortMonths($a, $b) {
+          if ($a->year == $b->year)
+              return 0;
+
+          list($ay,$am,$ad) = explode('-', $a->year);
+          list($by,$bm,$bd) = explode('-', $b->year);
+
+          if ($ay == $by){
+            $am = strtotime($am); 
+            $bm = strtotime($bm);
+            return ($am < $bm ? 1 : -1);
+          }
+              
+          else
+              return ($a->year < $b->year ? 1 : -1);
+        }
+
+        uasort($awards, 'sortMonths'); 
+        //dump($awards);        
+        $scope->awards = json_encode($awards, TRUE);
         controller_artist_profile($app);
         $profile = $scope->profile;
       }

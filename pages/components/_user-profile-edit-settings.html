@@ -113,65 +113,71 @@
               </div>
             </div> 
 
+            {$days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']}
+            {$working_hour = json_decode($profile.working_hours, True)}
             <div class="row mb20">
               <div class="col-sm-12">
                 <label for="Time">Opening Times</label>
                 <table cellspacing="20">
                   <tr style="height: 15px;"> 
-                    {$i = 0}
-                    {if ($timings)}
-                      {foreach from=$timings  item=$timing}
-                        <tr>
-                          <td style= "width:200px">
-                            <label for="Monday">{$timing.day}</label>
-                          </td>          
-                            <td style= "width:200px">
-                              <div class="input-group" style= "width:150px">
-                                <input type="text" name="opening_time[]" class="form-control input-small timepicker"  value="{$timing.opening_time|date_format:'H:i'}"  data-time-format="H:i">
-                                <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
-                              </div>
-                            </td>
-                            <td style= "width:200px">
-                              <div class="input-group" style= "width:150px">
-                                <input type="text" name="closing_time[]" class="form-control input-small timepicker" {if ($timing.closing_time)} value="{$timing.closing_time|date_format:'H:i'}" {else} data-default="0:00" {/if} data-time-format="H:i">
-                                <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
-                              </div>
-                            </td>
-                            <td>
-                              <input type="checkbox" {if ($timing.holiday == '1')}checked{/if} class="form-control" name="holiday[{$i}]" value="1" style= "width:20px">
-                            </td> 
-                            <td style= "width:200px">Closed</td> 
-                        </tr>
-                        {$i = $i + 1}
-                      {/foreach}
-                    {else}
-                      {$days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']}
-                      {foreach from=$days  item=$day}
-                        <tr>
-                          <tr style="height: 15px;"/> 
-                          <td style= "width:200px">
-                            <label for="Monday">{$day}</label>
-                          </td>
+                  {if ($working_hour)}
+                    {for $i=0 to 6}
+                      {$time = explode('-', $working_hour[{$days[$i]}])}
+                      {$holiday = 0}
+                      {if (($time[0] =='0:00') && ($time[1] =='0:00'))}
+                        {$holiday = 1}
+                      {/if}
+                      <tr>
+                        <td style= "width:200px">
+                          <label for="days">{$days[$i]}</label>
+                        </td>          
                           <td style= "width:200px">
                             <div class="input-group" style= "width:150px">
-                              <input type="text" name="opening_time[]" value="{$timing.opening_time|default:'00:00'}" class="form-control input-small timepicker" >
+                              <input type="text" id ="open_time" name="opening_time[{$days[$i]}]" class="form-control input-small timepicker"  value="{$time[0]|date_format:'H:i'}"  data-time-format="H:i">
                               <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
                             </div>
                           </td>
                           <td style= "width:200px">
                             <div class="input-group" style= "width:150px">
-                              <input type="text" name="closing_time[]" value="{$timing.closing_time|default:'00:00'}" class="form-control input-small timepicker" >
+                              <input type="text" id ="close_time" name="closing_time[{$days[$i]}]" class="form-control input-small timepicker" value="{$time[1]|date_format:'H:i'}" data-default="00:00" data-time-format="H:i">
                               <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
                             </div>
                           </td>
                           <td>
-                            <input type="checkbox" class="form-control" name="holiday[{$i}]" value="1" style= "width:20px" checked>
+                            <input type="checkbox" id="holiday" {if ($holiday == '1')}checked{/if} class="form-control" name="holiday[{$days[$i]}]" value="1" style= "width:20px"> 
                           </td> 
                           <td style= "width:200px">Closed</td> 
-                        </tr>
-                        {$i = $i + 1}
-                      {/foreach}
-                    {/if}
+                      </tr>
+                      
+                    {/for}
+                  {else}
+                    {$i = 0}
+                    {foreach from=$days  item=$day}
+                      <tr>
+                        <td style= "width:200px">
+                          <label for="days">{$day}</label>
+                        </td>          
+                          <td style= "width:200px">
+                            <div class="input-group" style= "width:150px">
+                              <input type="text" id ="open_time" name="opening_time[{$days[$i]}]" class="form-control input-small timepicker"  value="{$time[0]|default:'00:00'}"  data-time-format="H:i">
+                              <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+                            </div>
+                          </td>
+                          <td style= "width:200px">
+                            <div class="input-group" style= "width:150px">
+                              <input type="text" id ="close_time" name="closing_time[{$days[$i]}]" class="form-control input-small timepicker" value="{$time[1]|default:'00:00'}"  data-time-format="H:i">
+                              <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+                            </div>
+                          </td>
+                          <td>
+                            <input type="checkbox" id="holiday" {if ($holiday == '1')}checked{/if} class="form-control" name="holiday[{$days[$i]}]" value="1" style= "width:20px" checked>
+                          </td> 
+                          <td style= "width:200px">Closed</td> 
+                      </tr>
+                      {$i = $i + 1}
+                    {/foreach}
+                  {/if}
+                  <tr style="height: 15px;"/>
                 </table>           
               </div> 
             </div> 
