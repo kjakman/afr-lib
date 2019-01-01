@@ -1,7 +1,9 @@
                   {$profile = $scope.profile}
-                  {$awards = json_decode($profile.awards, TRUE)}
+                  {$awards = $scope.awards}
+                  {$awards = json_decode($awards,True)}
+
                   {$counts= count($awards['year'])}
-                  
+                              
                     <form id="user_overview_form" class="ajax-submit"  data-handler="save-cv" data-toggle="validator">
                       <input type="hidden" name="obj_type" value="user_profile" />
                       <input type="hidden" name="id"  value="{$scope.profile.profile_id}" />
@@ -25,51 +27,129 @@
                     </div>
 
                     <div class="form-group form-group-icon-left">
-                      <label>Awards</label>
+                      <table cellspacing="10">
+                        <tr>
+                          <td width="45%"><label>Awards</label></td>
+                          <td width="47%">
+                            <div class="input-group">
+                              <input name='show_subtitle' value='0' type='hidden'> 
+                              <input type="checkbox" class="bootstrap-toggle" value="1" name="show_subtitle" id="sub_title">
+                            </div>
+                          </td>
+                          <td ><button type="button" class="btn btn-primary add">ADD</button></td>
+                        </tr>
+                        <tr style="height: 10px;"/>
+                      </table>
+                      
                       <div id="wrapper">
                         <table cellspacing="2">
-                          {$i = 0}
-                          {while ($i < $counts)}       
+                    
+                          {foreach from=$awards item=$award}
+                            {$data = explode("-", $award['year'])}
                             <tr>
-                              <td width="10%"><input type="text" class="form-control" name="awards[year][]" value="{$awards['year'][$i]}" maxlength="100" placeholder="Year"></td>
+                              <td width="10%">
+                                <div class="input-group">
+                                  <input type="text" id="yearpicker" class="form-control datepicker yearpick" name="awards[year][]" value="{$data[0]}" maxlength="100" placeholder="Year" style="padding-left: 5px;">
+                                  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                                </div>
+                              </td>
                               <td width="2%"></td>
-                              <td width="10%"><input type="text" class="form-control" name="awards[month][]" value="{$awards['month'][$i]}" maxlength="100" placeholder="Month"></td>
+                              <td width="15%">
+                                <div class="input-group">
+                                  <input type="text" id="monthpicker" class="form-control datepicker monthpick" name="awards[month][]" value="{$data[1]}" maxlength="100" placeholder="Month" style="padding-left: 5px;">
+                                  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                                </div>
+                              </td>
                               <td width="2%"></td>
-                              <td width="25%"><input type="text" class="form-control" name="awards[award][]" value="{$awards['award'][$i]}" maxlength="100" ></td>
+                              <td width="25%"><input type="text" class="form-control" name="awards[description][]" value="{$award['description']}" maxlength="100" style="padding-left: 5px;"></td>
                               <td width="5%"></td>
-                              <td ><button type="button" class="btn btn-primary add">ADD</button></td>
+                              <td><button type="button" class="btn btn-danger remove">x</button></td>   
                             </tr>
-                            <tr style="height: 15px;"/>
-                            {$i= $i+1} 
-                          {/while}
+                            <tr style="height: 5px;"/>
+                          {/foreach}   
+                           
+                          {if (($award['year']== '') && ($award['month']=='') && ($award['description'] == ''))}
+                            <tr>
+                              <td width="10%">
+                                <div class="input-group">
+                                  <input type="text" id="yearpicker" class="form-control datepicker yearpick" name="awards[year][]" maxlength="100" placeholder="Year" style="padding-left: 5px;">
+                                  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                                </div>
+                              </td>
+                              <td width="2%"></td>
+                              <td width="15%">
+                                <div class="input-group">
+                                  <input type="text" id="monthpicker" class="form-control datepicker monthpick" name="awards[month][]" maxlength="100" placeholder="Month" style="padding-left: 5px;">
+                                  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                                </div>
+                              </td>
+                              <td width="2%"></td>
+                              <td width="25%">
+                                <input type="text" class="form-control" name="awards[description][]" maxlength="100" style="padding-left: 5px;" ></td>
+                              <td width="5%"></td>
+                              <td><button type="button" class="btn btn-danger remove">x</button></td>
+                            </tr>
+                            <tr style="height: 5px;"/>
+                          {/if}
                         </table>  
                       </div>                
                     </div>
 
-                    <input type="submit" class="btn btn-primary" value="Save">
-                    <div class="gap gap-small"></div>
+                    <input type="submit" class="btn btn-primary" value="Save" id="save-cv">
 
 
 <script type="text/javascript">
   $(document).ready(function() {
     var max_fields = 10; //maximum input boxes allowed
     var wrapper = $("#wrapper"); //Fields wrapper
-    var add = $(".add"); //Add button ID
+    var add = $(".add"); //Add button ID    
 
     var x = 1; //initlal text box count
     $(add).click(function(e){ //on add input button click
       e.preventDefault();
       if(x < max_fields){ //max input box allowed
         x++; //text box increment
-        $(wrapper).append('<div id="newadd"><table cellspacing="2"><tr><td width="10%"><input type="text" class="form-control" name="awards[year][]" maxlength="100" placeholder="Year"></td><td width="2%"></td><td width="10%"><input type="text" class="form-control" name="awards[month][]" maxlength="100" placeholder="Month"></td><td width="2%"></td><td width="25%"><input type="text" class="form-control" name="awards[award][]" maxlength="100" ></td><td width="5%"></td><td ><button type="button" class="btn btn-danger remove">x</button></td></td></tr><tr style="height: 15px;"/></table></div>'); //add input box
+        $(wrapper).append('<table cellspacing="2"><tr><td width="10%"><div class="input-group"><input type="text" id="yearpicker1" class="form-control datepicker yearpick" name="awards[year][]" maxlength="100" placeholder="Year" style="padding-left: 5px;" ><span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span></div></td><td width="2%"></td><td width="15%"><div class="input-group"><input type="text" id="monthpicker1" class="form-control datepicker monthpick" name="awards[month][]" maxlength="100" placeholder="Month" style="padding-left: 5px;" ><span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span></div></td><td width="2%"></td><td width="25%"><input type="text" class="form-control" name="awards[description][]" maxlength="100" style="padding-left: 5px;"></td><td width="5%"></td><td><button type="button" class="btn btn-danger remove">x</button></td></tr><tr style="height: 5px;"/></table>'); //  add input box
+
+        $( ".yearpick" ).datepicker({
+           minViewMode: 2,
+           format: 'yyyy',
+           autoclose : true
+        });
+
+        $( ".monthpick" ).datepicker({
+          minViewMode: 1,
+          format: 'MM',
+          autoclose : true
+        });
       }
     });
-
-    //Remove button ID
     
-     $('#wrapper').on('click','.remove', function(e){ //user click on remove field
-      $('#newadd').remove(); 
+    $('#wrapper').on('click','.remove', function(e){ //user click on remove field
+      console.log("removed");
+      $(this).closest('tr').remove();
        x--; 
     });
-  });
+
+    $( ".yearpick" ).datepicker({
+       minViewMode: 2,
+       format: 'yyyy',
+       autoclose : true
+    });
+
+    $( ".monthpick" ).datepicker({
+      minViewMode: 1,
+      format: 'MM',
+      autoclose : true
+    }); 
+
+});
+
+$(document).on("click",'#save-cv',function() {
+   setTimeout(function() { 
+    $("#gbe_cv_link").trigger('click');
+  }, 1000);
+});
+
+  
 </script>     

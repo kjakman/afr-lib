@@ -496,10 +496,10 @@ $(document).on("focusout", ".edit_exhibition", function() {
 }); 
 
 //upload image hide on delete
-$(document).on("click", "#apply-delete", function(){
+/*$(document).on("click", "#apply-delete", function(){
   $(this).closest('li').hide();
   console.log("deleted list");
-});
+});*/
 
 function bstMinisiteArtistFormatter(value, row, index) {
   if(!value) return '';
@@ -789,6 +789,20 @@ function gallery_backend_ready() {
 $(document).on("click", ".clone_modal_icon", function() {  
   $("#clone_dialog_form input[name=obj_id]").val($(this).attr('id'));
 });
+
+$(document).on("click", "apply-delete",function (e) {
+   // Hide image on click delete
+    e.preventDefault();
+    if($(this).closest('li').length){
+      $(this).closest('li').hide();
+      console.log("media deleted");
+    }             
+    else{
+      $(this).closest('tr').hide();
+      console.log("artwork media deleted");
+    }
+});
+
 
 
 
