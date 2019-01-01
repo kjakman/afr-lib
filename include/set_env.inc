@@ -147,13 +147,32 @@ if($no_app) {
   $uri = strip_query_string($_SERVER['REQUEST_URI']);
   $minisite = null;
   
+  $app->name = $app_name = $config['name'];  
+  if(!$app_name) die("Application name must be set in config/main.yml");
+  $app_slug = $config['settings']['slug'] ?: slugify($app_name);
+  $shortname = $lib_prefix = $app_slug;
+
+  if(!$live) $app_slug .= "-dev";
+  $data_dir = $data_path = $config['settings']['data_path'] ? rtrim($config['settings']['data_path'], '/')."/{$app_slug}/" : "/data/dir/{$app_slug}/";
+    
+  /** site specific includes */
+  if($lib_prefix) {
+    include_once($lib_prefix."_classes.inc");
+    include_once($lib_prefix."_class_handlers.inc");
+    include_once($lib_prefix."_class_constants.inc");
+    include_once($lib_prefix."_helpers.inc");
+    include_once($lib_prefix."_controllers.inc");
+    include_once($lib_prefix."_cronscripts.inc");
+    include_once($lib_prefix."_routing.inc");
+  }  
+    
   
   if($site_id = $_SESSION['site_id'] = $config['site_id']) { /** single tenant */
     //die("site_id=$site_id");
   } else { /** multi tenant */
     $site_id = $_SESSION['site_id'] = env_site_id($site_domain); /** inline switch */
   }
-  
+    
   
   /** this allows for vpatina.com/kerrygroneng or treat www.kerrygroneng.com as vpatina */
   if($msObj = env_minisite($site_domain, $uri)) {
@@ -167,15 +186,7 @@ if($no_app) {
   $siteObj = $__SITE = get_object('site', $site_id); /** uses Redis */
 
   /** site specific directories */
-  
-  $app->name = $app_name = $config['name'];
-  if(!$app_name) die("Application name must be set in config/main.yml");
-  $app_slug = $config['settings']['slug'] ?: slugify($app_name);
-  if(!$live) $app_slug .= "-dev";
-
-  $data_dir = $data_path = $config['settings']['data_path'] ? rtrim($config['settings']['data_path'], '/')."/{$app_slug}/" : "/data/dir/{$app_slug}/";
-  $shortname = $data_dir; 
-  
+    
   $log_dir = $_SESSION['log_dir'] = $data_dir."log/";
   $upload_dir = $_SESSION['upload_dir'] = $data_dir."upload/";
   $cache_dir = $_SESSION['cache_dir'] = $data_dir."cache/";
@@ -188,17 +199,7 @@ if($no_app) {
   
   print_log("Set-env: uri={$uri} site_id={$site_id} domain: {$domain}", 'minisite', LOG_LEVEL_ALWAYS);
   
-  /** site specific includes - this will go away */
-  if($lib_prefix = $siteObj->library_prefix ?: $shortname) {
-    include_once($lib_prefix."_classes.inc");
-    include_once($lib_prefix."_class_handlers.inc");
-    include_once($lib_prefix."_class_constants.inc");
-    include_once($lib_prefix."_helpers.inc");
-    include_once($lib_prefix."_controllers.inc");
-    include_once($lib_prefix."_cronscripts.inc");
-    include_once($lib_prefix."_routing.inc");
-  }  
-  
+
   
   /** if login */
   require_once("db_user.inc");
