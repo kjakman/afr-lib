@@ -88,7 +88,7 @@ function controller_minisite($app, $options = []) {
   }
   
   $subview = count($parts) > 1 ? strtolower($parts[2]) : '';
-  
+
   $scope->artworks = [];
   $scope->user_id = $user_id;
   $scope->user = $user = get_user($user_id);
@@ -1045,8 +1045,7 @@ function controller_rentals($app, $options = []) {
   $siteObj = $app->site;
   
   $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
-  // $__header->scripts[] = "/afr/bower/table-export/jquery.base64.js";
-  $__header->scripts[] = "/afr/js/jquery.base64.js"; /** Fix: https://github.com/wenzhixin/bootstrap-table/issues/189 */
+  $__header->scripts[] = "/afr/bower/table-export/jquery.base64.js";
   $__header->scripts[] = "/afr/bower/table-export/tableExport.js";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js"; /** todo: support other languages, use $app->locale  */
@@ -1829,7 +1828,7 @@ function controller_dictionary($app, $options = []) {
   $__header = $app->header; 
   $siteObj = $app->site;
   $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
-  $__header->scripts[] = "/afr/js/jquery.base64.js";
+  $__header->scripts[] = "/afr/bower/table-export/jquery.base64.js";
   $__header->scripts[] = "/afr/bower/table-export/tableExport.js";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js"; /** todo: support other languages, use $app->locale  */
@@ -1875,7 +1874,7 @@ function controller_users($app, $options = []) {
   global $u_id;
   $__header = $app->header; 
   $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
-  $__header->scripts[] = "/afr/js/jquery.base64.js";
+  $__header->scripts[] = "/afr/bower/table-export/jquery.base64.js";
   $__header->scripts[] = "/afr/bower/table-export/tableExport.js";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js"; /** todo: support other languages, use $app->locale  */
@@ -1929,7 +1928,7 @@ function controller_backend($app, $options = []) {
   $__header = $app->header; 
   $siteObj = $app->site;
   $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
-  $__header->scripts[] = "/afr/js/jquery.base64.js";
+  $__header->scripts[] = "/afr/bower/table-export/jquery.base64.js";
   $__header->scripts[] = "/afr/bower/table-export/tableExport.js";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js"; /** todo: support other languages, use $app->locale  */
@@ -2024,7 +2023,7 @@ function controller_invoices($app, $options = []) {
   $siteObj = $app->site;
   
   $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
-  $__header->scripts[] = "/afr/js/jquery.base64.js";
+  $__header->scripts[] = "/afr/bower/table-export/jquery.base64.js";
   $__header->scripts[] = "/afr/bower/table-export/tableExport.js";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js"; /** todo: support other languages, use $app->locale  */
@@ -4258,7 +4257,7 @@ function controller_gallery_backend($app, $options = []) {
 
   $__header->scripts[] = "/afr/bower/tag-it/js/tag-it.min.js";
   $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
-  $__header->scripts[] = "/afr/js/jquery.base64.js?v=1.11";
+  $__header->scripts[] = "/afr/bower/table-export/jquery.base64.js?v=1.11";
   $__header->scripts[] = "/afr/bower/table-export/tableExport.js?v=1.11";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js?v=1.11";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js?v=1.11"; /** todo: support other languages, use $app->locale  */
