@@ -345,119 +345,103 @@
       exit;      
       break;
 
-      case 'save-profile':
-      extract($obj_data);
-      
-      $user_id = $obj_data[user_id];
-      
-      $obj_type = 'user_profile';
-
-      $today = today();     
-      $dateOfBirth = $obj_data[date_of_birth];      
-      $diff = date_diff(date_create($dateOfBirth), date_create($today));
-      $age = $diff->format("%y");
-      if($age > 18){ 
-        $data = db_getAll("select * from user_profile where user_id='$user_id'");
-        foreach($data as $datas){
-          $id = $datas->id;        
-          if($id) {
-            list($id, $errors) = update_object($obj_type, $obj_data, $id);       
-          } else {
-            list($id, $errors) = add_object($obj_type, $obj_data);
-          } 
-        }
-      }else{
-        json_error("Age should be greater than 18");
-      }
-
-      if($errors) json_error($errors);
-
-      if(!$obj_data['artist']){
-        $times_type = 'opening_hours';
-        $opening_times = $obj_data[opening_time];
-        $closing_times = $obj_data[closing_time];
+       case 'save-profile':
+       extract($obj_data);
+     //dump($obj_data);
+       $id = $obj_data[obj_id];
+       $user_id = $obj_data[user_id];
+       $obj_type = 'user_profile';
+       
+       if($obj_data[date_of_birth]){
+        $today = today();     
+        $dateOfBirth = $obj_data[date_of_birth];      
+        $diff = date_diff(date_create($dateOfBirth), date_create($today));
+        $age = $diff->format("%y");
+        if ($age < 18) json_error("Age should be greater than 18");
+       }
+       
+       if($obj_data[opening_time]){
+        $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        $opening_time = $obj_data[opening_time];
+        $closing_time = $obj_data[closing_time];
         $holiday = $obj_data[holiday];
-        $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-        
+        $time = [];
         for($i=0; $i<=6; $i++){
-          $data = db_getAll("select * from opening_hours where user_id='$user_id' AND day= '$days[$i]'");
-          if($data) {
-            foreach($data as $datas){
-              
-              if($datas->day == $days[$i]){
-                $times_id = $datas->id;
-                $times_data->opening_time = $opening_times[$i];
-                $times_data->closing_time = $closing_times[$i];
-                if(!$holiday[$i])
-                  $holiday[$i] = '0';
-                $times_data->holiday = $holiday[$i];
-                
-                if( $times_data->holiday == '1'){
-                  $times_data->opening_time = '00:00';
-                  $times_data->closing_time = '00:00';
-                }
-                  
-                $times_data->opening_time = $start = "{$times_data->opening_time}:00";
-                $times_data->closing_time  = $end = "{$times_data->closing_time}:00";
-                if( (strlen($start) != 8) ||  (strlen($end) != 8)){
-                  $start = str_pad($start, 8, "0", STR_PAD_LEFT);
-                  $end = str_pad($end, 8, "0", STR_PAD_LEFT);
-                }
-                
-                if(($start == '00:00:00') && ($end == '00:00:00') ){
-                  list($id, $errors) = update_object($times_type, $times_data, $times_id);
-                }else{
-                  if($start >= $end) 
-                    json_error($datas->day."- End time must be after start time");
-                  else 
-                    list($id, $errors) = update_object($times_type, $times_data, $times_id);
-                }                   
-              }         
-            }
-          }else{
-            $times_data->user_id = $user_id;
-            $times_data->day = $days[$i]; 
-            $times_data->opening_time = $opening_times[$i];
-            $times_data->closing_time = $closing_times[$i];
-
-            if(!$holiday[$i])
-              $holiday[$i] = '0';
-            $times_data->holiday = $holiday[$i];
-            
-            if( $times_data->holiday == '1'){
-              $times_data->opening_time = '00:00';
-              $times_data->closing_time = '00:00';
-            }
-
-            $times_data->opening_time = $start = "{$times_data->opening_time}:00";
-            $times_data->closing_time  = $end = "{$times_data->closing_time}:00";
-            if( (strlen($start) != 8) ||  (strlen($end) != 8)){
-              $start = str_pad($start, 8, "0", STR_PAD_LEFT);
-              $end = str_pad($end, 8, "0", STR_PAD_LEFT);
-            }
-            
-            if(($start == '00:00:00') && ($end == '00:00:00') ){
-              list($id, $errors) = add_object($times_type, $times_data); 
-            }else{
-              if($start >= $end){
-                json_error("End time must be after start time");
-              }
-              else 
-                list($id, $errors) = add_object($times_type, $times_data);  
-            }
+          $day = $days[$i];
+          $opening_times = $start = $opening_time[$day];
+          $closing_times = $end = $closing_time[$day];
+          if($holiday[$day] == '1' ){
+            $opening_times = '0:00';
+            $closing_times = '0:00';
           }
+           
+          if( (strlen($start) != 5) ||  (strlen($end) != 5)){
+            $start = str_pad($start, 5, "0", STR_PAD_LEFT);
+            $end = str_pad($end, 5, "0", STR_PAD_LEFT);
+          }
+          if($start >= $end){
+            if(($start != '00:00') && ($end != '00:00')) json_error($day."- End time must be after start time");
+          } 
+          $time[$day] = $opening_times.'-'.$closing_times;        
         }
-        if($errors) json_error($errors);
-      }
-      $obj = get_object($obj_type, $id);
-      $obj->next_tab = $obj_data['next_tab'];
-      
-      $result->success = 1;
-      $result->data = $obj;
-      $result->message = "OK. Saved profile";
+        $obj_data['working_hours'] = json_encode($time);
 
-      echo(json_encode($result));
-      exit;      
+       }
+
+       if($obj_data[contact]){
+        $more_contact = array_filter($obj_data[contact]);
+        $obj_data[contact] = json_encode($more_contact, True);
+       }
+
+       //if($obj_data[social])  $obj_data[social] = json_encode($obj_data[social]);
+
+       if($id) {
+         list($id, $errors) = update_object($obj_type, $obj_data, $id);       
+       } else {
+         list($id, $errors) = add_object($obj_type, $obj_data);
+       } 
+
+       $obj = get_object($obj_type, $id);
+       $obj->next_tab = $obj_data['next_tab'];
+       
+       $result->success = 1;
+       $result->data = $obj;
+       $result->message = "OK. Saved profile";
+
+       echo(json_encode($result));
+       exit;      
+       break;
+
+      case 'save-cv':
+        extract($obj_data);
+        //dump($obj_data);
+        $awards = $obj_data[awards];
+        $count = count($awards['year']);
+        $datas = [];
+        for( $i=0; $i<$count; $i++){
+          if($awards['year'][$i] != ''){
+            $datas[$i]['year'] = $awards['year'][$i].'-'.$awards['month'][$i];
+            $datas[$i]['description'] = $awards['description'][$i];
+          }         
+        }
+        
+        $obj_data[awards] = json_encode($datas);
+       
+        if($id){
+          list($id, $errors) = update_object($obj_type, $obj_data, $id);
+        }else{
+          list($id, $errors) = add_object($obj_type, $obj_data);
+        }
+
+        $obj = get_object($obj_type, $id);
+        $obj->next_tab = $obj_data['next_tab'];
+        
+        $result->success = 1;
+        $result->data = $obj;
+        $result->message = "OK. Saved profile";
+
+        echo(json_encode($result));
+        exit;      
       break;
 
       case 'save-minisite':
@@ -705,6 +689,34 @@
 
       
       if($obj_id) {
+        /* upload title image validation */         
+        if($obj_data['title_image_option'] == 0){   //Inactive existing media if title image selected from artwork
+          $data = find_object('media_collection', ['id' => $obj_id]);
+          if($data->title_image_option == 1){
+            $image_id = $data->title_image;
+            if($image_id){
+              $find_media = find_object('media', ['id' => $image_id]);
+              $find_media->active = 0;
+              list($id, $errors) = update_object('media', $find_media, $image_id);
+            }
+            if($errors) json_error($errors);
+          }
+          if($obj_data['title_image']){         //Json encode artwork image path
+            $title_image = $obj_data['title_image']; 
+            $find_media = find_object('media', ['id' => $title_image]);
+            $title_image_arr['filename'] = $find_media->path.$find_media->src;
+            $title_image_arr['id'] = $find_media->id;
+            $title_image_arr['type'] = $find_media->type;
+            $obj_data['title_image_json'] = json_encode($title_image_arr);
+          }
+
+        }else{
+          $data = find_object('media_collection', ['id' => $obj_id]);   //Save image_id on upload
+          $title_images = json_decode($data->title_image_json);
+          foreach($title_images as $title_image){
+            $obj_data['title_image'] = $title_image->id;
+          }
+        }
         list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
       } else {
         list($id, $errors) = add_object($obj_type, $obj_data);

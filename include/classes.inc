@@ -3162,7 +3162,8 @@ $__CLASS_ATTRIBUTES = array(
      'passport'         => array('Passport'        ,   'media',    '', 0, $passport_media_options),
      'passport_verified'=> array('Passport Verifed',   'str',      '', AF_READONLY, 128),
      'mobile'           => array('Mobile'        ,     'str',      '', 0, 30 ),
-     'address'         => array('Address'      ,      'str',      '', 0, 200 ), // pradeepa
+     'fax'              => array('Fax'        ,     'str',      '', 0, 30 ),
+     'address'          => array('Address'      ,      'str',      '', 0, 200 ), // pradeepa
      'address1'         => array('Address'      ,      'str',      '', 0, 200 ),
      'address2'         => array('Address...',         'str',      '', 0, 200 ),
      'city'             => array('City'         ,      'str',      '', 0, 50 ),
@@ -3189,32 +3190,24 @@ $__CLASS_ATTRIBUTES = array(
      'golf_handicap'        => array('Handicap'     ,     'int',      0, 0, 6),
      'location_lat'         => array('Latitude'         , 'str','', AF_HIDE_ADD|AF_HIDE_LIST, 24),
      'location_long'        => array('Longitude'        , 'str','', AF_HIDE_ADD|AF_HIDE_LIST, 24),
-     'location_bounds'      =>  array('Bounds',            'json', '', AF_HIDE_ADD|AF_HIDE_LIST),
-     'address_formatted'=>  array('Formatted Address', 'text',   '', AF_HIDE_LIST),
+     'location_bounds'      => array('Bounds',            'json', '', AF_HIDE_ADD|AF_HIDE_LIST),
+     'address_formatted'    => array('Formatted Address', 'text',   '', AF_HIDE_LIST),
      
-     'gallery_solo_shows'      => array('Solo Shows'  ,      'html',     '', 0),
-     'gallery_group_shows'      => array('Group Shows'  ,      'html',     '', 0),
-     'press'      => array('Press'  ,      'html',     '', 0),
+     'gallery_solo_shows'   => array('Solo Shows'  ,      'html',     '', 0),
+     'gallery_group_shows'  => array('Group Shows'  ,      'html',     '', 0),
+     'press'                => array('Press'  ,      'html',     '', 0),
+     'show_awards'          => array('Show Awards'     ,     'int',      0, 0, 6),
      'awards'=>        array('Awards',           'json',  '', AF_SEARCHABLE|AF_HIDE_ADD),
      'data'=>          array('Data',           'json',  '', AF_SEARCHABLE|AF_HIDE_ADD),
      'working_hours'=>        array('Working Hours',           'json',  '', AF_SEARCHABLE|AF_HIDE_ADD),
+     'social'=>        array('Social',           'json',  '', AF_SEARCHABLE|AF_HIDE_ADD),
      'facebook'=>      array('Facebook',     'str',  '', AF_SEARCHABLE, 64 ),
      'instagram'=>     array('Instagram',    'str',  '', AF_SEARCHABLE, 64 ),
      'twitter'=>       array('Twitter',      'str',  '', AF_SEARCHABLE, 64 ),
      'artist'  =>       array('artist',      'bool',     1,  AF_HIDE_ADD, 1),
+     'contact'=>        array('More Contacts',           'json',  '', AF_SEARCHABLE|AF_HIDE_ADD),
   ),
 
-   "opening_hours" => 
-  array(
-    'id'=>                array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 4),
-    'created'=>           array('Created',           'datetime', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT),
-    'timestamp'=>         array('Timestamp',         'timestamp', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT, 14 ),
-    'user_id'=>           array('User',              'link', 0, AF_OBLIGATORY, 'user_profile'),
-    'day'=>               array('Day'  ,     'str',      '', 0, 128 ),
-    'opening_time' =>     array('Opening Time',   'datetime', '', ATT_DEFAULT_NULL), 
-    'closing_time' =>      array('Closing Time',   'datetime', '', ATT_DEFAULT_NULL), 
-    'holiday'  =>       array('Holiday',            'bool',     1,  AF_HIDE_ADD, 0),
-  ),
 
 
 //array('allowed_types' => 'image', 'description_type' => IMAGE_TYPE_PROFILE, 'resize' => true, 'minimum_size' => 640)

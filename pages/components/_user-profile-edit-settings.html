@@ -1,7 +1,6 @@
 
           {$profile = $scope.profile}
-          {$timings = $scope.timing}
-
+          
           <form id="user_profile_form" class="ajax-submit" data-handler="save-profile" data-toggle="validator" data-reload_link="#user-verification-link">
             <!-- <input type="hidden" name="obj_type" value="user_profile" /> -->
             <input type="hidden" name="obj_id"  value="{$scope.user.profile_id}" />
@@ -54,6 +53,18 @@
               </div>
               <!--div class="help-block with-errors">Whole Number</div-->                          
               </div>
+              <div class="col-sm-3">
+                <label for="Mobile">Mobile</label>
+                <div class="form-group">
+                  <input name="mobile" id="mobile" class="form-control" value ="{$scope.profile.mobile}" type="tel" />
+                </div>         
+              </div> 
+              <div class="col-sm-3">
+                <label for="Mobile">Fax</label>
+                <div class="form-group">
+                  <input name="fax" id="fax" class="form-control" value ="{$scope.profile.fax}" type="tel" />
+                </div>         
+              </div> 
               <!-- <div class="col-sm-6">
               <label>Gallery Name</label>
               <div class="input-group">
