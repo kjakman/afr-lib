@@ -162,7 +162,7 @@
   </script>
   {/if}
   
-  {if (!$app.live)}
+  {if (!$app.live && $app.debug)}
   <div class="alert alert-info" role="alert">
     <a href="#" class="close" data-dismiss="alert">&times;</a>        
     <span class="glyphicon glyphicon-$icon" aria-hidden="true"></span>
