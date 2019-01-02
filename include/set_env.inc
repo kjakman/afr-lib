@@ -42,7 +42,7 @@ $doc_root = rtrim($_SERVER['DOCUMENT_ROOT'], '/').'/';
 
 //$app_root = is_dir("{$doc_root}../afr/") ? "{$doc_root}../afr/" : "{$doc_root}/afr/";
 //if(!is_dir($app_root)) die("App root {$app_root} not found");
-  
+                               
 set_include_path(get_include_path().PATH_SEPARATOR."{$doc_root}afr-lib".PATH_SEPARATOR."{$doc_root}afr-lib/include".PATH_SEPARATOR."{$doc_root}afr-lib/includes".PATH_SEPARATOR."{$doc_root}afr-lib/classes".PATH_SEPARATOR."{$doc_root}afr-lib/includes/services".PATH_SEPARATOR."{$doc_root}afr-lib/modules".PATH_SEPARATOR."{$doc_root}afr".PATH_SEPARATOR."{$doc_root}../include");
 
 session_start();       
@@ -134,6 +134,15 @@ require_once("helpers_site.inc"); /** This needs to be after, as it looks for co
 
 require_once("services/google/google.inc");
 
+/** application specific includes */
+include_once("app_classes.inc");
+include_once("app_class_handlers.inc");
+include_once("app_class_constants.inc");
+include_once("app_helpers.inc");
+include_once("app_controllers.inc");
+include_once("app_cronscripts.inc");
+include_once("app_routing.inc");
+
 
 /** which site */
 define('SITE_URL', siteURL());
@@ -155,18 +164,6 @@ if($no_app) {
   if(!$live) $app_slug .= "-dev";
   $data_dir = $data_path = $config['settings']['data_path'] ? rtrim($config['settings']['data_path'], '/')."/{$app_slug}/" : "/data/dir/{$app_slug}/";
     
-  /** site specific includes */
-  if($lib_prefix) {
-    include_once($lib_prefix."_classes.inc");
-    include_once($lib_prefix."_class_handlers.inc");
-    include_once($lib_prefix."_class_constants.inc");
-    include_once($lib_prefix."_helpers.inc");
-    include_once($lib_prefix."_controllers.inc");
-    include_once($lib_prefix."_cronscripts.inc");
-    include_once($lib_prefix."_routing.inc");
-  }  
-    
-  
   if($site_id = $_SESSION['site_id'] = $config['site_id']) { /** single tenant */
     //die("site_id=$site_id");
   } else { /** multi tenant */
