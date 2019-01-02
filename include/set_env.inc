@@ -42,7 +42,7 @@ $doc_root = rtrim($_SERVER['DOCUMENT_ROOT'], '/').'/';
 
 //$app_root = is_dir("{$doc_root}../afr/") ? "{$doc_root}../afr/" : "{$doc_root}/afr/";
 //if(!is_dir($app_root)) die("App root {$app_root} not found");
-  
+                               
 set_include_path(get_include_path().PATH_SEPARATOR."{$doc_root}afr-lib".PATH_SEPARATOR."{$doc_root}afr-lib/include".PATH_SEPARATOR."{$doc_root}afr-lib/includes".PATH_SEPARATOR."{$doc_root}afr-lib/classes".PATH_SEPARATOR."{$doc_root}afr-lib/includes/services".PATH_SEPARATOR."{$doc_root}afr-lib/modules".PATH_SEPARATOR."{$doc_root}afr".PATH_SEPARATOR."{$doc_root}../include");
 
 session_start();       
@@ -134,6 +134,15 @@ require_once("helpers_site.inc"); /** This needs to be after, as it looks for co
 
 require_once("services/google/google.inc");
 
+/** application specific includes */
+include_once("app_classes.inc");
+include_once("app_class_handlers.inc");
+include_once("app_class_constants.inc");
+include_once("app_helpers.inc");
+include_once("app_controllers.inc");
+include_once("app_cronscripts.inc");
+include_once("app_routing.inc");
+
 
 /** which site */
 define('SITE_URL', siteURL());
@@ -147,13 +156,20 @@ if($no_app) {
   $uri = strip_query_string($_SERVER['REQUEST_URI']);
   $minisite = null;
   
-  
+  $app->name = $app_name = $config['name'];  
+  if(!$app_name) die("Application name must be set in config/main.yml");
+  $app_slug = $config['settings']['slug'] ?: slugify($app_name);
+  $shortname = $lib_prefix = $app_slug;
+
+  if(!$live) $app_slug .= "-dev";
+  $data_dir = $data_path = $config['settings']['data_path'] ? rtrim($config['settings']['data_path'], '/')."/{$app_slug}/" : "/data/dir/{$app_slug}/";
+    
   if($site_id = $_SESSION['site_id'] = $config['site_id']) { /** single tenant */
     //die("site_id=$site_id");
   } else { /** multi tenant */
     $site_id = $_SESSION['site_id'] = env_site_id($site_domain); /** inline switch */
   }
-  
+    
   
   /** this allows for vpatina.com/kerrygroneng or treat www.kerrygroneng.com as vpatina */
   if($msObj = env_minisite($site_domain, $uri)) {
@@ -167,15 +183,7 @@ if($no_app) {
   $siteObj = $__SITE = get_object('site', $site_id); /** uses Redis */
 
   /** site specific directories */
-  
-  $app->name = $app_name = $config['name'];
-  if(!$app_name) die("Application name must be set in config/main.yml");
-  $app_slug = $config['settings']['slug'] ?: slugify($app_name);
-  if(!$live) $app_slug .= "-dev";
-
-  $data_dir = $data_path = $config['settings']['data_path'] ? rtrim($config['settings']['data_path'], '/')."/{$app_slug}/" : "/data/dir/{$app_slug}/";
-  $shortname = $data_dir; 
-  
+    
   $log_dir = $_SESSION['log_dir'] = $data_dir."log/";
   $upload_dir = $_SESSION['upload_dir'] = $data_dir."upload/";
   $cache_dir = $_SESSION['cache_dir'] = $data_dir."cache/";
@@ -188,17 +196,7 @@ if($no_app) {
   
   print_log("Set-env: uri={$uri} site_id={$site_id} domain: {$domain}", 'minisite', LOG_LEVEL_ALWAYS);
   
-  /** site specific includes - this will go away */
-  if($lib_prefix = $siteObj->library_prefix ?: $shortname) {
-    include_once($lib_prefix."_classes.inc");
-    include_once($lib_prefix."_class_handlers.inc");
-    include_once($lib_prefix."_class_constants.inc");
-    include_once($lib_prefix."_helpers.inc");
-    include_once($lib_prefix."_controllers.inc");
-    include_once($lib_prefix."_cronscripts.inc");
-    include_once($lib_prefix."_routing.inc");
-  }  
-  
+
   
   /** if login */
   require_once("db_user.inc");
