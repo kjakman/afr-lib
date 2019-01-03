@@ -88,7 +88,7 @@ function controller_minisite($app, $options = []) {
   }
   
   $subview = count($parts) > 1 ? strtolower($parts[2]) : '';
-  
+
   $scope->artworks = [];
   $scope->user_id = $user_id;
   $scope->user = $user = get_user($user_id);

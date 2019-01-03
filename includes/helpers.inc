@@ -41,7 +41,8 @@ function env_log_level($deployment) { // logging level
 
 
 /** check if URL is minisite - todo: use file cache */
-function env_minisite($domain, $uri) {  
+function env_minisite($domain, $uri) {
+  if(!is_class('minisite')) return null;
   $parts = array_filter(explode('/', $uri));
   $path = array_shift($parts);
   print_log("Looking for minisite wih uri: {$uri} domain: {$domain}", 'minisite', LOG_LEVEL_TEST);
