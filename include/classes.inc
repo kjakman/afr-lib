@@ -2982,23 +2982,18 @@ $__CLASS_ATTRIBUTES = array(
      'golf_home_course' => array('Home Course',        'link', 0, 0, 'golf_club'),
      'golf_favorite_course' => array('Favorite Course',        'link', 0, 0, 'golf_club'),
      'golf_handicap'        => array('Handicap'     ,     'int',      0, 0, 6),
+
      'location_lat'         => array('Latitude'         , 'str','', AF_HIDE_ADD|AF_HIDE_LIST, 24),
      'location_long'        => array('Longitude'        , 'str','', AF_HIDE_ADD|AF_HIDE_LIST, 24),
      'location_bounds'      => array('Bounds',            'json', '', AF_HIDE_ADD|AF_HIDE_LIST),
      'address_formatted'    => array('Formatted Address', 'text',   '', AF_HIDE_LIST),
      
-     'gallery_solo_shows'   => array('Solo Shows'  ,      'html',     '', 0),
-     'gallery_group_shows'  => array('Group Shows'  ,      'html',     '', 0),
-     'press'                => array('Press'  ,      'html',     '', 0),
-     'show_awards'          => array('Show Awards'     ,     'int',      0, 0, 6),
-     'awards'=>        array('Awards',           'json',  '', AF_SEARCHABLE|AF_HIDE_ADD),
+
      'data'=>          array('Data',           'json',  '', AF_SEARCHABLE|AF_HIDE_ADD),
-     'working_hours'=>        array('Working Hours',           'json',  '', AF_SEARCHABLE|AF_HIDE_ADD),
      'social'=>        array('Social',           'json',  '', AF_SEARCHABLE|AF_HIDE_ADD),
      'facebook'=>      array('Facebook',     'str',  '', AF_SEARCHABLE, 64 ),
      'instagram'=>     array('Instagram',    'str',  '', AF_SEARCHABLE, 64 ),
      'twitter'=>       array('Twitter',      'str',  '', AF_SEARCHABLE, 64 ),
-     'artist'  =>       array('artist',      'bool',     1,  AF_HIDE_ADD, 1),
      'contact'=>        array('More Contacts',           'json',  '', AF_SEARCHABLE|AF_HIDE_ADD),
   ),
 
