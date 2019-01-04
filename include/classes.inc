@@ -2930,7 +2930,6 @@ $__CLASS_ATTRIBUTES = array(
      'photo_json'       => array('Photo (json)',        'json',     '', 0),
      
      'display_name'     => array('Display name'  ,     'str',      '', 0, 50 ),
-     'gallery_name'     => array('Gallery name'  ,     'str',      '', 0, 50 ),
      'first_name'       => array('First name'    ,     'str',      '', 0, 50 ),
      'infix'            => array('Infix'     ,         'str',      '', 0, 20 ),
      'last_name'        => array('Last name'     ,     'str',      '', 0, 50 ),
@@ -2990,11 +2989,6 @@ $__CLASS_ATTRIBUTES = array(
      
 
      'data'=>          array('Data',           'json',  '', AF_SEARCHABLE|AF_HIDE_ADD),
-     'social'=>        array('Social',           'json',  '', AF_SEARCHABLE|AF_HIDE_ADD),
-     'facebook'=>      array('Facebook',     'str',  '', AF_SEARCHABLE, 64 ),
-     'instagram'=>     array('Instagram',    'str',  '', AF_SEARCHABLE, 64 ),
-     'twitter'=>       array('Twitter',      'str',  '', AF_SEARCHABLE, 64 ),
-     'contact'=>        array('More Contacts',           'json',  '', AF_SEARCHABLE|AF_HIDE_ADD),
   ),
 
 
