@@ -7029,7 +7029,6 @@
       if(strpos($id, ',')) { // delete multiple
         list($delete_count, $errors) = delete_objects($obj_type, explode(',', $id));
       } else {
-        echo "in";
         list($delete_count, $errors) = delete_object($obj_type, $id);
         if($errors) write_file($log_file, "Delete errors:".dump($errors, true), 'a'); // "\n------------\n\n"
       }
