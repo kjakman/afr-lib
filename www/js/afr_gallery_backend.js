@@ -556,6 +556,7 @@ $(document).on('click', 'a', function(e) {
 });
                                   
 function confirm_modal($link) {
+  return;
   return confirm('You have unsaved changes. Are you sure you want to leave?');
   
   console.log("Showing confirm modal");
@@ -683,7 +684,7 @@ function gbe_confirm_callback() {
 }
 
 function gallery_backend_ready() {
-  console.log("gallery_backend_ready v2.1 ARE YOU SURE");
+  console.log("gallery_backend_ready v2.2 NO ARE YOU SURE");
 
   $('form').areYouSure( {'silent':true} );
   
@@ -781,9 +782,12 @@ function gallery_backend_ready() {
       $(".btn-group.dropup").removeClass("dropup");
   });
    
-      $("body").tooltip({ selector: '[data-toggle=tooltip]' });
-
-
+  $("body").tooltip({ selector: '[data-toggle=tooltip]' });
+  
+  
+  console.log("Remove modal backdrop");
+  $('body').removeClass('modal-open');
+  $('.modal-backdrop').remove();
 }
 
 $(document).on("click", ".clone_modal_icon", function() {  
