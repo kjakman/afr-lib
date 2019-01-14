@@ -37,8 +37,30 @@ function controller_minisite($app, $options = []) {
   $parts = array_filter(explode('/', trim($path,'/')));
   //$page = $tpl = pick_first(strtolower($parts[0]), 'home');
 
-  if($parts){                                                     //to simplify paths
-    $page = find_object('minisite_page', ['minisite_id' => $minisite_id, 'menu_title' => $parts, 'active' => 1]);
+  $page_slug = count($parts) ? trim($parts[0],'/') : 'home';
+  
+  print_log("Path={$path} Slug=$page_slug Parts: ".dump($parts,true), 'minisite', LOG_LEVEL_ALWAYS);
+  
+  /** By Kjetil */
+  $msPageObj = find_object('minisite_page', ['minisite_id' => $minisite_id, 'slug' => $page_slug, 'active' => 1]);
+  print_log("msPage ".dump($msPageObj,true), 'minisite', LOG_LEVEL_ALWAYS);
+  
+  if($minisite_id == 1001 && $msPageObj) {
+    $page = $page_slug;
+    $page_title = $msPageObj->menu_title;
+    $tpl = $page; /** fix */
+    
+    $minisite_pageObj = $msPageObj;
+
+  print_log("kerry: msPage ".dump($msPageObj,true), 'minisite', LOG_LEVEL_ALWAYS);
+    
+  } elseif($parts) {     /** Pradeepa */  //to simplify paths
+    //$page = find_object('minisite_page', ['minisite_id' => $minisite_id, 'slug' => $path, 'active' => 1]);
+    $page = find_object('minisite_page', ['minisite_id' => $minisite_id, 'menu_title' => $parts[0], 'active' => 1]);
+    print_log("Pradeepa: Type={$page->type} Path={$path} Parts: ".dump($parts,true), 'minisite', LOG_LEVEL_ALWAYS);
+    print_log("Pradeepa: Page ".dump($page,true), 'minisite', LOG_LEVEL_ALWAYS);
+    
+    
     if(count($parts) == 1){
       if($page->type == '20'){
         $page = 'artists';
@@ -68,9 +90,10 @@ function controller_minisite($app, $options = []) {
       }       
     }
   } else{
+    
     $page_search = find_object('minisite_page', ['minisite_id' => $minisite_id, 'type' =>'30', 'active' => 1]);
     
-    if(page_search){
+    if($page_search){
       $page = 'home';
       $page_title = $page_search->slug;
     }else{
@@ -236,7 +259,7 @@ function controller_minisite($app, $options = []) {
   
   $exhibitions = $artists = [];
   
-  print_log("type={$type} path: {$path} page:{$page} slug:{$slug} id: {$obj_id} name: {$name} sub:{$subview} options".dump($options,true), 'minisite', LOG_LEVEL_TEST);  
+  print_log("type={$type} path: {$path} page:{$page} slug:{$slug} id: {$obj_id} name: {$name} sub:{$subview} options".dump($options,true), 'minisite', LOG_LEVEL_ALWAYS);  
   
   $se_title = $minisite;
   $se_description = $minisite;
@@ -476,10 +499,14 @@ function controller_minisite($app, $options = []) {
     case 'exhibition':
       if($parts[1]) $slug = $parts[1];
       if(!$slug) return scope_error($app, "Missing slug", '404');
+      if(strstr($slug, '~')) {
+        list($name, $obj_id) = explode('~', $slug);
+      }
+      
       $collectionObj = $obj_id ? get_object('media_collection', $obj_id) : $exhibitions[$slug];
       if(!$parts[1]) $collectionObj->page_slug = $page_title;
       if(!$collectionObj) {
-        print_log("no $slug in ".dump($exhibitions,true), 'minisite', LOG_LEVEL_TEST);
+        print_log("no $slug in ex. id=$obj_id", 'minisite', LOG_LEVEL_TEST);
         //return scope_error($app, "Exhibition {$slug} not found", '404');
       }
       
@@ -4257,8 +4284,8 @@ function controller_gallery_backend($app, $options = []) {
 
   $__header->scripts[] = "/afr/bower/tag-it/js/tag-it.min.js";
   $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
-  $__header->scripts[] = "/afr/js/jquery.base64.js";
-  $__header->scripts[] = "/afr/bower/table-export/tableExport.js";
+  $__header->scripts[] = "/afr/js/jquery.base64.js?v=1.11";
+  $__header->scripts[] = "/afr/bower/table-export/tableExport.js?v=1.11";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js?v=1.11";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js?v=1.11"; /** todo: support other languages, use $app->locale  */
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/export/bootstrap-table-export.js?v=1.11";
