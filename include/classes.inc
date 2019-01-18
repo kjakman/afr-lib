@@ -2949,7 +2949,6 @@ $__CLASS_ATTRIBUTES = array(
      'photo_json'       => array('Photo (json)',        'json',     '', 0),
      
      'display_name'     => array('Display name'  ,     'str',      '', 0, 50 ),
-     'gallery_name'     => array('Gallery name'  ,     'str',      '', 0, 50 ),
      'first_name'       => array('First name'    ,     'str',      '', 0, 50 ),
      'infix'            => array('Infix'     ,         'str',      '', 0, 20 ),
      'last_name'        => array('Last name'     ,     'str',      '', 0, 50 ),
@@ -3001,11 +3000,13 @@ $__CLASS_ATTRIBUTES = array(
      'golf_home_course' => array('Home Course',        'link', 0, 0, 'golf_club'),
      'golf_favorite_course' => array('Favorite Course',        'link', 0, 0, 'golf_club'),
      'golf_handicap'        => array('Handicap'     ,     'int',      0, 0, 6),
+
      'location_lat'         => array('Latitude'         , 'str','', AF_HIDE_ADD|AF_HIDE_LIST, 24),
      'location_long'        => array('Longitude'        , 'str','', AF_HIDE_ADD|AF_HIDE_LIST, 24),
      'location_bounds'      => array('Bounds',            'json', '', AF_HIDE_ADD|AF_HIDE_LIST),
      'address_formatted'    => array('Formatted Address', 'text',   '', AF_HIDE_LIST),
      
+<<<<<<< HEAD
      'gallery_solo_shows'   => array('Solo Shows'  ,      'html',     '', 0),
      'gallery_group_shows'  => array('Group Shows'  ,      'html',     '', 0),
      'press'                => array('Press'  ,      'html',     '', 0),
@@ -3020,6 +3021,10 @@ $__CLASS_ATTRIBUTES = array(
      'group_shows_'         => array('Group Shows'  ,      'html',     '', 0),
      'press_data'               => array('Press data'  ,      'html',     '', 0),
      'show_data'            => array('Show Data'  ,      'html',     '', 0),
+=======
+
+     'data'=>          array('Data',           'json',  '', AF_SEARCHABLE|AF_HIDE_ADD),
+>>>>>>> dc9b2235b4ea73e65594544d0e1dd9c0e72238ff
   ),
 
 

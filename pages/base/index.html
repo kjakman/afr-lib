@@ -162,7 +162,7 @@
   </script>
   {/if}
   
-  {if (!$app.live && $app.debug)}
+  {if ($app.dev)}
   <div class="alert alert-info" role="alert">
     <a href="#" class="close" data-dismiss="alert">&times;</a>        
     <span class="glyphicon glyphicon-$icon" aria-hidden="true"></span>
@@ -172,6 +172,7 @@
       App Slug:<b>{$app.slug}</b><br>
       App Config file:<b  >{$app.config_file}</b><br>
       App Data Path:<b  >{$app.data_path}</b><br>
+      Log dir:<b  >{$app.log_dir}</b><br>
       Site ID:<b>{$app.site_id}</b><br>
       Live code?: <b>No</b><br>
       Live data?: <b>{if ($app.live_db)}Yes{else}No{/if}</b><br>

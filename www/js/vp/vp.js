@@ -452,7 +452,7 @@ function vp_load(element, data, reload) {
   var cid = element.getAttribute('id');
   var plugin_id = data.plugin_id;
   
-  var ajax_url = g_site_url + '/home/app_data.php?oper=get-gallery&jsoncallback=handleStuff';
+  var ajax_url = g_site_url + '/ajax.php?oper=get-gallery&jsoncallback=handleStuff';
   var data_str = "&obj_type=" + data.obj_type +"&obj_id=" + data.obj_id + "&plugin_id=" + data.plugin_id + "&target=" + cid;
   
   //var key = data.obj_type + "-id_" + data.obj_id + '-share_' + data.plugin_id;
@@ -1074,7 +1074,7 @@ var openPhotoSwipe = function(cid, index, galleryElement, disableAnimation, from
   });
   
   g_pswp.like = function(cid, vpdata) {
-    var ajax_url = g_site_url + '/home/app_data.php?oper=gallery-favorite&format=json&jsoncallback=likeStuff';
+    var ajax_url = g_site_url + '/ajax.php?oper=gallery-favorite&format=json&jsoncallback=likeStuff';
     
     //$('#galleria .galleria-stage').addClass("loading-big");
 
