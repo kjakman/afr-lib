@@ -46,6 +46,7 @@ $__CLASSES = array(
     'legal_entity' =>         array(USER_LEVEL_SYSTEM, 'system', '', '', 0, '', '', ''),
     'media' =>                array(USER_LEVEL_USER,   'system', '', '', NF_NO_LIST, '', '', ''),
     'db_sequence' =>          array(USER_LEVEL_SYSTEM, 'system', '', 'seq_name', 0, 'seq_name', 'seq_name', ''),
+    'profile_media_map' =>    array(USER_LEVEL_USER,   'system', '', '', NF_NO_LIST, '', '', ''),
 
 // site
     /** get rid of the next 2 - use config file */
@@ -2607,8 +2608,27 @@ $__CLASS_ATTRIBUTES = array(
     'copyright_url'       => array('Copyright URL',      'url', '', AF_HIDE_LIST, 255),     
                                                                                 
     'cloud_url'       => array('Cloud URL',      'url', '', AF_HIDE_LIST),     
-    'cloud_data'       => array('Cloud Data',     'json', '', AF_HIDE_LIST),        
+    'cloud_data'       => array('Cloud Data',     'json', '', AF_HIDE_LIST),  
   ),
+
+  "profile_media_map" => 
+  array(
+    'id'                   => array('ID'            , 'id',   0, AF_PRIMARY|AF_HIDE_LIST|AF_AUTOINCREMENT, 11),   
+    'user_id'              => array('User Id'       , 'link', ATT_DEFAULT_USER_ID, AF_OBLIGATORY|AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY, 'user'),
+    'media_id'             => array('Media Id'     , 'link', ATT_DEFAULT_NULL, AF_HIDE_ADD, 'media'),
+    'site_id'              => array('Site Id'     ,    'link', ATT_DEFAULT_SITE_ID,  AF_OBLIGATORY|AF_HIDE_ADD|AF_HIDE_LIST|AF_READONLY, 'site'),
+    'artist_id'            => array('Artist Id'     , 'link', ATT_DEFAULT_NULL, AF_OBLIGATORY|AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY, 'user'),
+    'name'                 => array('Name'  , 'str', '', AF_SEARCHABLE, 128), 
+    'curator_id'           => array('Curator Id'    , 'link', ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY, 'user'), 
+    'original_year'        => array('Original year'     , 'str', '', AF_HIDE_LIST, 4),     
+    'original_technique'   => array('Original technique', 'str', '', AF_HIDE_LIST, 255),
+    'artist_name'          => array('Artist Name'  , 'str', '', AF_SEARCHABLE, 50), 
+    'curator_name'         => array('Curator Name'  , 'str', '', AF_SEARCHABLE, 50), 
+    'created'              => array('Created',          'datetime',   ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY, 6 ),
+    'artwork_id'           =>array('Artwork Id'     , 'link', ATT_DEFAULT_NULL, AF_HIDE_ADD, 'artwork'),
+    'active'               => array('Active'        , 'bool', 1, 0, 1),
+   ),
+  
   
   "artwork" => 
   array(
@@ -2685,7 +2705,6 @@ $__CLASS_ATTRIBUTES = array(
     'related_media_json'  => array('Media (json)',      'json',     '', 0),
         
   ),
-  
     
   "source" => 
   array(
@@ -2990,16 +3009,17 @@ $__CLASS_ATTRIBUTES = array(
      'gallery_solo_shows'   => array('Solo Shows'  ,      'html',     '', 0),
      'gallery_group_shows'  => array('Group Shows'  ,      'html',     '', 0),
      'press'                => array('Press'  ,      'html',     '', 0),
-     'show_awards'          => array('Show Awards'     ,     'int',      0, 0, 6),
+     //'show_awards'          => array('Show Awards'     ,     'int',      0, 0, 6),
      'awards'=>        array('Awards',           'json',  '', AF_SEARCHABLE|AF_HIDE_ADD),
      'data'=>          array('Data',           'json',  '', AF_SEARCHABLE|AF_HIDE_ADD),
      'working_hours'=>        array('Working Hours',           'json',  '', AF_SEARCHABLE|AF_HIDE_ADD),
      'social'=>        array('Social',           'json',  '', AF_SEARCHABLE|AF_HIDE_ADD),
-     'facebook'=>      array('Facebook',     'str',  '', AF_SEARCHABLE, 64 ),
-     'instagram'=>     array('Instagram',    'str',  '', AF_SEARCHABLE, 64 ),
-     'twitter'=>       array('Twitter',      'str',  '', AF_SEARCHABLE, 64 ),
      'artist'  =>       array('artist',      'bool',     1,  AF_HIDE_ADD, 1),
      'contact'=>        array('More Contacts',           'json',  '', AF_SEARCHABLE|AF_HIDE_ADD),
+     'solo_shows_'          => array('Solo Shows'  ,      'html',     '', 0),
+     'group_shows_'         => array('Group Shows'  ,      'html',     '', 0),
+     'press_data'               => array('Press data'  ,      'html',     '', 0),
+     'show_data'            => array('Show Data'  ,      'html',     '', 0),
   ),
 
 

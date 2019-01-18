@@ -269,6 +269,21 @@ $(document).on("click", "#sel_add", function() {
   }
 });
 
+$(document).on("click", "#sel_add_profile", function() {
+  $link = $(this);
+  console.log("sel add ids=", g_selections);
+  var artist_id = $link.data('target_id');
+  console.log("target_id=", artist_id);
+  if(artist_id && g_selections.length) {
+    var href = '/backend/profile/' + artist_id + '/edit/art?' + add_what + '=' + g_selections.join();
+    var $link = $("#submit");
+    console.log("Calling soft-load: href=" + href);
+    soft_load($link, "#subview-container", href);
+  } else {
+  }
+
+});
+
 $(document).on("click", "#sel_show", function() {
   console.log("sel show ids=", g_selections);
   $("#table").bootstrapTable('refresh', {query: {id: g_selections}, pageSize: 100});  

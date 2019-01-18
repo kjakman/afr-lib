@@ -3833,6 +3833,7 @@ function gallery_publish_artwork($siteObj, $artworkObj_or_id, $collection_id, $o
   }
   return $result;                         
 }
+
 // function to add media to collection 
 function gallery_publish_image($siteObj, $mediaObj_or_id, $collection_id, $options=array()) {
   $mediaObj = any2obj('media', $mediaObj_or_id);

@@ -1,11 +1,11 @@
 
                         {$p = "`$smarty.const.PAGE_EDIT_PROFILE|link``$scope.obj_id`"}
                         <ul class="list user-profile-nav">
-                          <li class="class-filter active"><a href="{$p}/overview"></i>Overview</a></li>
+                          <li class="class-filter active"><a href="{$p}/overview"></i>Bio/Photo</a></li>
                         {if ($scope.auth_edit_user)}
                           <li class="class-filter"><a href="{$p}/settings"></i>Basic Info</a></li>
-                          <li class="class-filter"><a href="{$p}/verification" id="user-verification-link"></i>Verification</a></li> 
-                          <li class="class-filter"><a href="{$p}/details"></i>Details</a></li>                      
+                          <li class="class-filter"><a href="{$p}/details"></i>Details</a></li>    
+                          <li class="class-filter"><a href="{$p}/verification" id="user-verification-link"></i>Verification</a></li>                   
 
                           {if ($site.property_site)}
                           <li class="class-filter"><a href="{$p}/history"></i>My trips</a></li>
