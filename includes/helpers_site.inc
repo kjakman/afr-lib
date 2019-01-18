@@ -1172,7 +1172,7 @@ function apply_controller($app, $options = array()) {
   }
   
   // site controller
-  if($lib_prefix = $siteObj->library_prefix ?: $siteObj->shortname) {
+  if($lib_prefix = 'app') {
     $controller_func = "{$lib_prefix}_controller_{$ctrl}";
     print_log("Looking for local controller {$controller_func}", 'app', LOG_LEVEL_TEST);
     //die("Looking for local controller {$controller_func}");

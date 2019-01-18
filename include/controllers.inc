@@ -13,7 +13,7 @@ function controller_home($app, $options = []) {
   return;
 }
 
-function controller_minisite($app, $options = []) {
+function controller_minisite_old($app, $options = []) {
   $__header = $app->header;
   $u_id = $app->user_id;
   $pageObj = $app->page;
