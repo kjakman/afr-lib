@@ -1403,12 +1403,14 @@ function find_object($obj_type, $search, $field='', $options = array()) {
 //function find_objects($obj_type, $searchArray='', $sort=0, $order=0, $start=0, $limit=0, $selected_fields='') {  
 function find_objects($obj_type, $search=array(), $options = array()) {
   $debug = $options['debug_query'];
-
+  //dump($search);
   if($search && count($search) == 1 && (array_keys($search))[0] == 'id') {
     $tbl = get_object_table($obj_type);
     $search = ["{$tbl}.id" => (array_values($search))[0]]; // we need tablename.id to avoid ambigiuity
   }
   list($filters, $values) = search2pdo($search);
+  //dump($filters);
+  //dump($values);
   $options['values'] = $values;
   
   if($options['debug_query'] || $_SESSION['debug_db']) {
@@ -1428,6 +1430,8 @@ function find_objects($obj_type, $search=array(), $options = array()) {
 //function get_objects($obj_type, $filters='', $sort=0, $order=0, $start=0, $limit=0, $selected_fields='') {
 // for more than one fields, use array('field1', 'field2')
 function get_objects($obj_type, $filters=array(), $options = array()) {
+  //dump($filters);
+  //dump($options);
   $sort  = $options['sort'] ?: get_object_sort_clause($obj_type);
   $order = $options['order'] ?: 0;
   $start = $options['start'] ?: $options['offset'];
@@ -1490,10 +1494,13 @@ function get_objects($obj_type, $filters=array(), $options = array()) {
     if($options['format'] == "list") return implode(",", $result); // comma separated list
     $method = "db_getCol";
   }
-  
+
   $count = count($result);
 
-  check_db_result($result);    
+  check_db_result($result);
+  //echo "<pre>";
+    //print_r($query_str);
+    //print_r($values);
   
   return $result ?: array();
 }
@@ -4441,6 +4448,7 @@ function get_operators() {
 
 /** New PDO: converts associate array of search terms to array of PDO bound statments and variables */
 function search2pdo($array, $level=0) {
+  //dump($array);
   if(!$array) return;
   $filters = $values = array();
   $operators = get_operators();
@@ -4451,7 +4459,9 @@ function search2pdo($array, $level=0) {
     dump($array);
     $array = (array) $array;
   }
+  //dump($array);
   foreach($array as $k => $v) {
+    //dump($k);
     $val = $subvals = array();
     $filter = array();
     $binding = ":".underscore2camel($k);
@@ -4547,9 +4557,11 @@ function search2pdo($array, $level=0) {
       
     if(count($filter)) $filters[] = $filter[0];
     if(count($filter) > 1) $filters[] = $filter[1];
-
+    //dump($filters);
   } 
   
+  //dump($filters);
+  //dump($values);
   //foreach($values as $k => $v) if(!strlen($v)) $values[$k] = ''; // not null
   return array($filters, $values);
 }
@@ -4652,7 +4664,7 @@ function object_site_search($obj_type, $search, $val, $options = []) {
     default:
       break;
   }
-  
+  //dump($search); 
   if($filters = $options['filters']) {
     $filters = json_decode($filters, true);
     if(is_array($filters)) {
@@ -4710,6 +4722,75 @@ function object_site_search($obj_type, $search, $val, $options = []) {
   }
   return $result;
 }
+
+// For Drop down filters in artwork and exhibition table
+function object_site_filter($obj_type, $search, $val, $options = [], $filter_data) {  
+  
+  $arr = [];
+  $col = json_decode($filter_data, True);
+  $count = count($col);
+  
+  switch($obj_type) {
+    
+    case 'artwork':
+      foreach($col as $key=>$val){
+        $arr['artwork.active'] = "1";
+        $arr[$key] = "$val";
+      }         
+      $search[DB_LOGICAL_AND] = $arr;          
+    break;
+
+    case 'media_collection':
+      $arr['media_collection.filter'] = "1";
+      foreach($col as $key=>$val){
+        if(($count == 1) && ($key == subtype)){
+          $arr['subtype'] = "$val";
+        }elseif(($count == 1) && ($key == active)){
+          $arr['active'] = "$val";
+        }else{
+          $arr[$key] = "$val";
+        }        
+      }         
+      $search[DB_LOGICAL_AND] = $arr;
+    break;
+    
+    default:
+      break;
+  }
+  //dump($search);
+  if($filters = $options['filters']) {
+    $filters = json_decode($filters, true);
+    if(is_array($filters)) {
+      foreach($filters as $k => $v) $search[$k] = $v;
+    }          
+  }
+
+  if($ids = $options['id']) { // limit to selected IDs
+    $search['id'] = $ids;
+  }
+  
+  print_log("get-rows {$obj_type} GET: ".dump($_GET, true), 'debug', LOG_LEVEL_TEST);
+  print_log("get-rows {$obj_type} filters: ".dump($filters, true), 'debug', LOG_LEVEL_TEST);
+  print_log("get-rows {$obj_type} search: ".dump($search, true), 'debug', LOG_LEVEL_TEST);
+  
+  $key = get_object_key($obj_type);      
+  if(!$options['sort']) $options['sort'] = get_object_sort($obj_type) ?: "{$key} desc";
+  
+  $objs = find_objects($obj_type, $search, $options);
+
+  $count = count($objs);
+  print_log("get-rows $obj_type val=$val count=$count", 'debug', LOG_LEVEL_TEST);
+  //print_log("First:".dump($objs[0], true), 'debug', LOG_LEVEL_TEST);
+  
+  $result = [];
+  if(!$options['associative']) return $objs;
+  
+  foreach($objs as $obj) {
+    $id = get_object_id($obj_type, $obj);
+    $result[$id] = $obj;
+  }
+  return $result;
+}
       
 
 /**
@@ -4733,3 +4814,144 @@ class db
 	}
 }
 */
+
+// function to add art to collection in profile module
+function gallery_publish_artwork1($siteObj, $artwork_id, $options=array()) {
+  $find_media = find_object('media', array('parent_id' => $artwork_id, 'active' => 1));
+  if($find_media){
+    $find_media->show_artwork = 1;
+    list($id, $errors) = update_object('media', $find_media, $find_media->id);
+    print_log("save-ministe: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
+  }
+  if($errors) json_error($errors);
+
+  $obj = get_object('media', $id);
+  $result->data = $obj;
+  
+  if($messages) $result->messages = $messages;
+  if($errors) {                 
+    $result->errors = $errors;
+    $result->success = 0;
+  } else {
+    $result->success = 1;
+    $result->id = $id;
+  }
+  return $result;  
+}
+
+function find_page_menus($obj_id, $user_id, $minisite_id, $slug){
+
+  $val = find_object('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id,'slug' => $slug, 'active' => 1]);
+  if($val->type == '30'){
+    $data = json_decode($val->data, True);
+    if($data[show_gallery])  $gallery = '10';
+    if($data[show_artfair])  $artfair = '20';
+    if($data[show_others])   $others = '30'; 
+    if($data[show_current])  $current = 1;
+    if($data[show_past])     $past = 1;
+    if($data[show_future])   $future = 1;
+
+    $search = ['user_id' => $user_id, 'type' => '120', 'active' => 1, 'subtype' => [$gallery,$artfair,$others] ];
+    $today = today(); 
+    if($current && $future && past){
+      $search['start_date'] = ['<=', $today];
+      $search['end_date'] = ['>=', $today]; 
+    }
+    elseif($current && $future){
+      $search['start_date'] = ['<=', $today];
+      $search['end_date'] = ['>=', $today]; 
+    }elseif($current && $past){
+      $search['start_date'] = ['<=', $today];
+      $search['end_date'] = ['>=', $today]; 
+    }elseif($future && $past){
+      $search['start_date'] = ['>', $today];
+      unset($search['end_date']);
+    }
+    elseif($current){
+      $search['start_date'] = ['<=', $today];
+      $search['end_date'] = ['>=', $today]; 
+    }elseif($future){
+      $search['start_date'] = ['>', $today];
+      unset($search['end_date']);
+    }elseif($past){
+      unset($search['start_date']);
+      $search['end_date'] = ['<', $today];
+    }
+
+    $exhibitionObjs = find_objects('media_collection', $search, ['sort' => 'start_date asc']) ?: [];
+    if($exhibitionObjs) $get_data = loop_exhibition($exhibitionObjs);
+    
+    if(!$get_data){
+      if($current && $future && past){
+        $search['start_date'] = ['>', $today];
+        unset($search['end_date']);
+      }
+      elseif($current && $future){
+        $search['start_date'] = ['>', $today];
+        unset($search['end_date']);
+      }elseif($current && $past){
+        unset($search['start_date']);
+        $search['end_date'] = ['<', $today];
+      }elseif($future && $past){
+        unset($search['end_date']);
+        $search['end_date'] = ['<', $today];
+      }
+      elseif($current){
+        $search['start_date'] = ['<=', $today];
+        $search['end_date'] = ['>=', $today]; 
+      }elseif($future){
+        $search['start_date'] = ['>', $today];
+        unset($search['end_date']);
+      }elseif($past){
+        unset($search['start_date']);
+        $search['end_date'] = ['<', $today];
+      }
+      $exhibitionObjs = find_objects('media_collection', $search) ?: [];
+      if($exhibitionObjs) $get_data = loop_exhibition($exhibitionObjs);
+    }
+    if($get_data){
+      $datas = array_merge($data, $get_data);
+      return $datas;
+    }    
+  }else{
+    return 0;
+  }
+  
+}
+
+function loop_exhibition($exhibitionObjs){
+  $today = today(); 
+  $exhibition_ids = $exhibitions = $latestexhibition = [];
+  $current_exist = $future_exist = $past_exist = 0;
+  foreach($exhibitionObjs as $exhibitionObj) {
+    $exhibitionObj->slug = slugify($exhibitionObj->title);
+    $current = "";
+    if($exhibitionObj->start_date && $exhibitionObj->end_date) {
+      if($exhibitionObj->end_date < $today) {
+        $current = "past";
+        $past_exist = 1;
+      }elseif($exhibitionObj->start_date > $today) {
+        $current =  "future";
+        $future_exist = 1;
+      }else {
+        $current = "current";
+        $current_exist = 1 ;
+      }
+    } else {
+      continue; /** skip exhibitions w/o dates */
+    }
+    $exhibitionObj->current = $current;   
+    $exhibitionObj->page_slug = $page_slug; 
+    $exhibitions[$exhibitionObj->slug] = $exhibitionObj;
+    $exhibition_ids[] = $exhibitionObj->id;
+  }
+  //dump($past_exist.' '.$future_exist.' '.$current_exist);
+  if($future_exist) $pre['future'] = 1;
+  elseif($current_exist) $pre['current'] = 1;
+  elseif($past_exist) $pre['past'] = 1;
+  else{
+    if($data['show_latest'] == 1)
+      $pre['latest'] = 1;  
+  }
+  return $pre;
+}

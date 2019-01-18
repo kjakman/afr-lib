@@ -1,5 +1,5 @@
 {$profile = $scope.profile}
-<form id="user_details_form" class="ajax-submit" data-handler="save-profile" data-toggle="validator" data-reload_link="#user-verification-link">
+<form id="user_profile_form" class="ajax-submit" data-handler="save-details" data-toggle="validator" data-reload_link="#user-verification-link">
   <!-- <input type="hidden" name="obj_type" value="user_profile" /> -->
   <input type="hidden" name="obj_id"  value="{$scope.user.profile_id}" />
   <input type="hidden" name="user_id" value="{$scope.user.user_id}" />
@@ -85,7 +85,217 @@
         <tr style="height: 15px;"/>
       </table>           
     </div> 
-  </div> 
+  </div>
+
+  {$contact = json_decode($profile.contact, True)}
+  {$count = count($contact)}
+  <div class="row mb20">
+    <div class="form-group col-sm-6">
+      <label for="contacts">Additional Contacts</label>
+      {if ($contact)}
+        {for $i = 0 to 4}
+          <div class="row mt20" style="margin-bottom: 10px;">
+            <div class="col-md-3 col-sm-3">
+              <label for="contacts">Contact Title</label> 
+            </div>
+            <div class="col-md-6 col-sm-6">    
+              <input name="contact[title][]" id="name" class="form-control" value="{$contact[$i]['title']}" type="text" placeholder="Title" />
+            </div>
+          </div>
+
+          <div class="row" style="margin-bottom: 10px;">
+            <div class="col-md-3 col-sm-3">
+              <label for="contacts">E-mail address</label> 
+            </div>
+            <div class="col-md-6 col-sm-6">    
+              <input name="contact[email][]" id="name" class="form-control" value="{$contact[$i]['email']}" type="email" placeholder="E-mail" />
+            </div>
+          </div>
+          <div class="row mb20">
+            <div class="col-md-3 col-sm-3">
+              <label for="contacts">Phone No.</label> 
+            </div>
+            <div class="col-md-6 col-sm-6">    
+              <input name="contact[phone][]" id="name" class="form-control" value="{$contact[$i]['phone']}" type="tel" placeholder="Phone Number" />
+            </div>
+          </div>
+        {/for}
+      {else}
+        <div class="row mt20" style="margin-bottom: 10px;">
+          <div class="col-md-3 col-sm-3">
+            <label for="contacts">Contact Title</label> 
+          </div>
+          <div class="col-md-6 col-sm-6">    
+            <input name="contact[title][]" id="name" class="form-control" value="" type="text" placeholder="Title" />
+          </div>
+        </div>
+
+        <div class="row" style="margin-bottom: 10px;">
+          <div class="col-md-3 col-sm-3">
+            <label for="contacts">E-mail address</label> 
+          </div>
+          <div class="col-md-6 col-sm-6">    
+            <input name="contact[email][]" id="name" class="form-control" value="" type="email" placeholder="E-mail" />
+          </div>
+        </div>
+
+        <div class="row mb20">
+          <div class="col-md-3 col-sm-3">
+            <label for="contacts">Phone No.</label> 
+          </div>
+          <div class="col-md-6 col-sm-6">    
+            <input name="contact[phone][]" id="name" class="form-control" value="" type="tel" placeholder="Phone Number" />
+          </div>
+        </div>
+
+        <div class="row mt20" style="margin-bottom: 10px;">
+          <div class="col-md-3 col-sm-3">
+            <label for="contacts">Contact Title</label> 
+          </div>
+          <div class="col-md-6 col-sm-6">    
+            <input name="contact[title][]" id="name" class="form-control" value="" type="text" placeholder="Title" />
+          </div>
+        </div>
+
+        <div class="row" style="margin-bottom: 10px;">
+          <div class="col-md-3 col-sm-3">
+            <label for="contacts">E-mail address</label> 
+          </div>
+          <div class="col-md-6 col-sm-6">    
+            <input name="contact[email][]" id="name" class="form-control" value="" type="email" placeholder="E-mail" />
+          </div>
+        </div>
+
+        <div class="row mb20">
+          <div class="col-md-3 col-sm-3">
+            <label for="contacts">Phone No.</label> 
+          </div>
+          <div class="col-md-6 col-sm-6">    
+            <input name="contact[phone][]" id="name" class="form-control" value="" type="tel" placeholder="Phone Number" />
+          </div>
+        </div>
+
+        <div class="row mt20" style="margin-bottom: 10px;">
+          <div class="col-md-3 col-sm-3">
+            <label for="contacts">Contact Title</label> 
+          </div>
+          <div class="col-md-6 col-sm-6">    
+            <input name="contact[title][]" id="name" class="form-control" value="" type="text" placeholder="Title" />
+          </div>
+        </div>
+
+        <div class="row" style="margin-bottom: 10px;">
+          <div class="col-md-3 col-sm-3">
+            <label for="contacts">E-mail address</label> 
+          </div>
+          <div class="col-md-6 col-sm-6">    
+            <input name="contact[email][]" id="name" class="form-control" value="" type="email" placeholder="E-mail" />
+          </div>
+        </div>
+
+        <div class="row mb20">
+          <div class="col-md-3 col-sm-3">
+            <label for="contacts">Phone No.</label> 
+          </div>
+          <div class="col-md-6 col-sm-6">    
+            <input name="contact[phone][]" id="name" class="form-control" value="" type="tel" placeholder="Phone Number" />
+          </div>
+        </div>
+
+        <div class="row mt20" style="margin-bottom: 10px;">
+          <div class="col-md-3 col-sm-3">
+            <label for="contacts">Contact Title</label> 
+          </div>
+          <div class="col-md-6 col-sm-6">    
+            <input name="contact[title][]" id="name" class="form-control" value="" type="text" placeholder="Title" />
+          </div>
+        </div>
+
+        <div class="row" style="margin-bottom: 10px;">
+          <div class="col-md-3 col-sm-3">
+            <label for="contacts">E-mail address</label> 
+          </div>
+          <div class="col-md-6 col-sm-6">    
+            <input name="contact[email][]" id="name" class="form-control" value="" type="email" placeholder="E-mail" />
+          </div>
+        </div>
+
+        <div class="row mb20">
+          <div class="col-md-3 col-sm-3">
+            <label for="contacts">Phone No.</label> 
+          </div>
+          <div class="col-md-6 col-sm-6">    
+            <input name="contact[phone][]" id="name" class="form-control" value="" type="tel" placeholder="Phone Number" />
+          </div>
+        </div>
+
+        <div class="row mt20" style="margin-bottom: 10px;">
+          <div class="col-md-3 col-sm-3">
+            <label for="contacts">Contact Title</label> 
+          </div>
+          <div class="col-md-6 col-sm-6">    
+            <input name="contact[title][]" id="name" class="form-control" value="" type="text" placeholder="Title" />
+          </div>
+        </div>
+
+        <div class="row" style="margin-bottom: 10px;">
+          <div class="col-md-3 col-sm-3">
+            <label for="contacts">E-mail address</label> 
+          </div>
+          <div class="col-md-6 col-sm-6">    
+            <input name="contact[email][]" id="name" class="form-control" value="" type="email" placeholder="E-mail" />
+          </div>
+        </div>
+
+        <div class="row mb20">
+          <div class="col-md-3 col-sm-3">
+            <label for="contacts">Phone No.</label> 
+          </div>
+          <div class="col-md-6 col-sm-6">    
+            <input name="contact[phone][]" id="name" class="form-control" value="" type="tel" placeholder="Phone Number" />
+          </div>
+        </div>
+      {/if}
+    </div>
+  </div>
+   
+  <!-- <div class="row mb20">
+    <div class="col-sm-6">
+      <label for="contacts">Add More Contact</label>     
+        <table>
+          <tr>
+            <td><input name="contact[]" id="name" class="form-control" value="{$contact[0]}" type="text" placeholder="Name" /></td>
+            <td style= "width: 5px"></td>
+            <td><input type="tel" id="contact" class="form-control" name="contact[]" value="{$contact[1]}"></td>
+          </tr>
+          <tr>
+            <td><input name="contact[]" id="name" class="form-control" value="{$contact[2]}" type="text" placeholder="Name" /></td>
+            <td style= "width: 5px"></td>
+            <td><input type="tel" id="contact" class="form-control" name="contact[]" value="{$contact[3]}"></td>
+          </tr>
+          <tr>
+            <td><input name="contact[]" id="name" class="form-control" value="{$contact[4]}" type="text" placeholder="Name" /></td>
+            <td style= "width: 5px"></td>
+            <td><input type="tel" id="contact" class="form-control" name="contact[]" value="{$contact[5]}"></td>
+          </tr>
+          <tr>
+            <td><input name="contact[]" id="name" class="form-control" value="{$contact[6]}" type="text" placeholder="Name" /></td>
+            <td style= "width: 5px"></td>
+            <td><input type="tel" id="contact" class="form-control" name="contact[]" value="{$contact[7]}"></td>
+          </tr>
+          <tr>
+            <td><input name="contact[]" id="name" class="form-control" value="{$contact[8]}" type="text" placeholder="Name" /></td>
+            <td style= "width: 5px"></td>
+            <td><input type="tel" id="contact" class="form-control" name="contact[]" value="{$contact[9]}"></td>
+          </tr>      
+        </table>   
+      
+    </div>
+  </div> -->
+
+  {$socio = $scope.profile.social}
+  {$jsonData = stripslashes(html_entity_decode($socio))}
+  {$social = json_decode(trim($jsonData), TRUE)}
 
   <div class="row mb20">
     <div class="col-sm-12">
@@ -98,7 +308,7 @@
           </td>
           <td style= "width:500px">
             <div class="input-group" style= "width:300px">
-              <input name="instagram" id="instagram" class="form-control" value="{$scope.profile.instagram}" type="text" /> 
+              <input name="social[insta]" id="instagram" class="form-control" value="{$social['insta']}" type="text" /> 
             </div>
           </td>
         </tr>
@@ -109,7 +319,7 @@
           </td>
           <td style= "width:500px">
             <div class="input-group" style= "width:300px">
-              <input name="facebook" id="facebook" class="form-control" value="{$scope.profile.facebook}" type="text" />
+              <input name="social[fbook]" id="facebook" class="form-control" value="{$social['fbook']}" type="text" />
             </div>
           </td>
         </tr>
@@ -120,7 +330,7 @@
           </td>
           <td style= "width:500px">
             <div class="input-group" style= "width:300px">
-              <input name="twitter" id="twitter" class="form-control" value="{$scope.profile.twitter}" type="text" />
+              <input name="social[twit]" id="twitter" class="form-control" value="{$social['twit']}" type="text" />
             </div>
           </td>
         </tr>
