@@ -426,7 +426,7 @@
        
       case 'save-details':
         extract($obj_data);
-
+        //dump($obj_data);
         $id = $obj_data[obj_id];
         $user_id = $obj_data[user_id];
         $contact = $obj_data[contact];

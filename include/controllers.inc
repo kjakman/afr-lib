@@ -37,9 +37,10 @@ function controller_minisite($app, $options = []) {
   $parts = array_filter(explode('/', trim($path,'/')));
 
   //$page = $tpl = pick_first(strtolower($parts[0]), 'home');
-
+  
   if($parts){                                                     //to simplify paths
     $page = find_object('minisite_page', ['minisite_id' => $minisite_id, 'menu_title' => $parts[0], 'active' => 1]);
+    
     if(count($parts) == 1){
       if($page->type == '20'){
         $page = 'artists';
@@ -66,7 +67,11 @@ function controller_minisite($app, $options = []) {
           $page = 'exhibition';
           $tpl = 'exhibition';
         }       
-      }       
+      }
+      if($page->type == 40){
+        $page = 'contact';
+        $tpl = 'contact';       
+      }        
     }
   } else{
     $page_search = find_object('minisite_page', ['minisite_id' => $minisite_id, 'type' =>'30', 'active' => 1]);
@@ -340,16 +345,12 @@ function controller_minisite($app, $options = []) {
       $minisite_id = $msObj->id;
       $find_page = find_object('minisite_page', ['user_id' => $user_id, 'active' => 1, 'slug' => $page_slug]);
       $page_id = $find_page->id;
+
       //$scope->menuObj = $menuObj = get_page_menus($user_id, $minisite_id);
       $scope->menuObj = $menuObj = find_objects('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'active' => 1], ['sort' => 'row_order asc']); 
-      
-      if($page == 'exhibitions') {
-        //$when = $subviews ?: 'currentandfuture';
-        //$when = 'all';
-        $when = $subviews ?: 'all';
-      } else { // single exhibition, load all
-        $when = 'all';
-      }
+      $scope->mObj = $mObj = find_object('minisite', ['user_id' => $user_id, 'active' => 1]);     
+      $scope->profileobj = $profileobj = find_object('user_profile', ['user_id' => $user_id]);
+      $scope->timings = $timings = db_getAll("select * from opening_hours where user_id='$user_id' ORDER BY `id` ASC");
 
       $today = today();      
       /** Exhibitions - only do when needed  */
@@ -368,53 +369,70 @@ function controller_minisite($app, $options = []) {
       if($data[show_past]) $past_view = 1;
       if($data[show_future]) $future_view = 1;  
       if($data[show_latest]) $latest_view = 1;
-      
+
+      $search = ['user_id' => $user_id, 'type' => COLLECTION_TYPE_EXHIBITION, 'active' => 1, 'subtype' => [$gallery,$artfair,$others] ];
+
       //$host_user_ids = user_artist_list_display($user_id) ?: [];
-        if($page == 'exhibitions') {
-          $search = ['user_id' => $user_id, 'type' => COLLECTION_TYPE_EXHIBITION, 'active' => 1, 'subtype' => [$gallery,$artfair,$others] ];
-        }else{
+        if(($page == 'exhibitions') &&  ($data[layout] == '40') ){
+          
+          $when = $subviews ?: 'all';
+          //dump($today);
+          switch($when) {
+            case 'past':
+              $search['end_date'] = ['<', $today];
+              break;
+            case 'current':
+
+              $search['start_date'] = ['<=', $today];
+              $search['end_date'] = ['>=', $today];      
+              break;
+            case 'future':
+              
+              $search['start_date'] = ['>', $today];
+              break;
+            case 'currentandfuture':
+
+              $search['end_date'] = ['>=', $today];
+              break;
+
+            case 'all':
+              $future_past = 0;
+                if(($current_view == 1) && ($past_view == 1) && ($future_view == 1)){
+                  unset($search['start_date']);
+                  unset($search['end_date']);
+                }
+                elseif(($future_view == 1) && ($current_view == 1)){
+                  $search['end_date'] = ['>=', $today];
+                }
+                elseif(($future_view == 1) && ($past_view == 1)){
+                  $scope->future_past = 1;
+                }
+                elseif(($current_view == 1) && ($past_view == 1)){
+                  $search['start_date'] = ['<=', $today];
+                }
+              
+              break;
+          
+            default: // all or single
+              break;
+          }
+        
+        }elseif(($page == 'exhibitions') &&  ($data[layout] == '10')){
+          $tpl = $page = 'coverpage';          
+        }elseif(($page == 'exhibitions') &&  ($data[layout] == '20')){
+          $tpl = $page = 'landscape_time'; 
+        }elseif(($page == 'exhibitions') &&  ($data[layout] == '30')){
+          $tpl = $page = 'coverpage_landscape'; 
+        }elseif(($page == 'exhibitions') &&  ($data[layout] == '50')){
+          $tpl = $page = 'natural_time'; 
+        }elseif(($page == 'exhibitions') &&  ($data[layout] == '60')){
+          $tpl = $page = 'natural'; 
+        }elseif(($page == 'exhibitions') &&  ($data[layout] == '70')){
+          $tpl = $page = 'tiles'; 
+        }
+        else{
           unset($search['subtype']);
         }
-        switch($when) {
-          case 'past':
-            $search['end_date'] = ['<', $today];
-            break;
-          case 'current':
-
-            $search['start_date'] = ['<=', $today];
-            $search['end_date'] = ['>=', $today];      
-            break;
-          case 'future':
-            
-            $search['start_date'] = ['>', $today];
-            break;
-          case 'currentandfuture':
-
-            $search['end_date'] = ['>=', $today];
-            break;
-
-          case 'all':
-            $future_past = 0;
-              if(($current_view == 1) && ($past_view == 1) && ($future_view == 1)){
-                unset($search['start_date']);
-                unset($search['end_date']);
-              }
-              elseif(($future_view == 1) && ($current_view == 1)){
-                $search['end_date'] = ['>=', $today];
-              }
-              elseif(($future_view == 1) && ($past_view == 1)){
-                $scope->future_past = 1;
-              }
-              elseif(($current_view == 1) && ($past_view == 1)){
-                $search['start_date'] = ['<=', $today];
-              }
-            
-            break;
-      
-          default: // all or single
-            break;
-        }
-
         //dump($search);
         /** Filter by gallery, Art, Other events */
         if($data[show_recent] == 1 )
@@ -423,57 +441,73 @@ function controller_minisite($app, $options = []) {
           $exhibitionObjs = find_objects('media_collection', $search, ['sort' => 'start_date asc']) ?: [];
             
         //dump($exhibitionObjs);
-        $exhibition_ids = $exhibitions = $latestexhibition = [];
+        $exhibition_ids = $exhibitions = $latestexhibition = $data_exist = [];
+        $future_count = $past_count = $current_count = 0;
         $current_exist = $future_exist = $past_exist = 0;
         foreach($exhibitionObjs as $exhibitionObj) {
           $exhibitionObj->slug = slugify($exhibitionObj->title);
           $current = "";
           if($exhibitionObj->start_date && $exhibitionObj->end_date) {
             if($exhibitionObj->end_date < $today) {
-              $past_exist = 1;
+              $data_exist['past'] = 1;
               $current = "past";
+              $past_count = $past_count+1;
             }elseif($exhibitionObj->start_date > $today) {
               $current = "future";
-              $future_exist = 1;
+              $data_exist[future] = 1;
+              $future_count = $future_count +1;
             }else {
               $current = "current";
-              $current_exist = 1 ;
+              $data_exist[current] = 1 ;
+              $current_count = $current_count+1;
             }
           } else {
             continue; /** skip exhibitions w/o dates */
           }
-          $exhibitionObj->current = $current;   
+          $exhibitionObj->current = $current;     
           $exhibitionObj->page_slug = $page_slug; 
           $exhibitions[$exhibitionObj->slug] = $exhibitionObj;
           $exhibition_ids[] = $exhibitionObj->id;
+
         }
-        
         $scope->exhibitions = $exhibitions;
-        //dump($exhibitions);
+        $scope->data_exist = $data_exist;
         
         /* To view latest exhibition */
         if($latest_view){
           unset($search['start_date']);
           unset($search['end_date']);
-          $latestexhibition = find_objects('media_collection', $search, ['sort' => 'start_date desc', 'limit' => 1]) ?: []; 
+          $latestexhibition = find_objects('media_collection', $search, ['sort' => 'end_date desc', 'limit' => 1]) ?: []; 
+          
           if(($latestexhibition) ){
             foreach($latestexhibition as $exhibition) {
-              $exhibition->slug = slugify($exhibition->title);
-              $exhibition->page_slug = $page_slug;
-              $latestexhibitions[] = $exhibition;          
+              if($exhibition->start_date && $exhibition->end_date){
+                $exhibition->slug = slugify($exhibition->title);
+                $exhibition->page_slug = $page_slug;
+                $latestexhibitions[] = $exhibition;
+              }          
             }
             $scope->latest_exhibitions = $latestexhibitions;
           }else{
             return scope_error($app, "Missing Latest Exhibitions in home page", '404');
           }
-        }
-        
-        $scope->mObj = $mObj = find_object('minisite', ['user_id' => $user_id, 'active' => 1]);
-        
-        $scope->profileobj = $profileobj = find_object('user_profile', ['user_id' => $user_id]);
-        $scope->timings = $timings = db_getAll("select * from opening_hours where user_id='$user_id' ORDER BY `id` ASC");
+        }        
+      } 
 
-        }       
+      if($page == 'contact'){
+        $scope->page_slug = $parts[0];
+        $scope->sub_slug = $title= $subviews = $parts[2];
+        $page_slug = "/".$parts[0]."/"; 
+        $find_page = find_object('minisite_page', ['user_id' => $user_id, 'active' => 1, 'slug' => $page_slug]);
+        $page_id = $find_page->id;
+        $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'id' => $page_id, 'active' => 1]);
+        $data = json_decode($minisite_pageObj->data, True);
+
+        if($data[layout] == 10) 
+          $tpl = $page = 'contact';
+        else
+          $tpl = $page = 'cv';
+      }      
     break;
   }
   
@@ -516,7 +550,7 @@ function controller_minisite($app, $options = []) {
         print_log("no $slug in ".dump($exhibitions,true), 'minisite', LOG_LEVEL_TEST);
         //return scope_error($app, "Exhibition {$slug} not found", '404');
       }
-      
+
       $artist_names = collection_artist_list($collectionObj);      
       $se_title = "{$collectionObj->title}, {$artist_names}";
       $se_description = $collectionObj->description;
@@ -530,8 +564,8 @@ function controller_minisite($app, $options = []) {
   
       if($event_id = $collectionObj->event_id) {
         $eventObj = get_object('event', $event_id);
-        if(!$eventObj) die("event $event_id not found");
-        $scope->collection->event = $eventObj;
+        if($eventObj) //die("event $event_id not found");
+          $scope->collection->event = $eventObj;
       }      
       $search = ['media_collection_id' => $collection_id, 'active' => 1];
       $scope->artworks = $mapObjs = find_objects('media_collection_map', $search, ['sort' => 'rank']);
@@ -540,12 +574,127 @@ function controller_minisite($app, $options = []) {
       
       break;
     case 'exhibitions':
+
       break;
+    case 'coverpage':
+      $data = [];
+      if($parts[0]) $page_slug = $parts[0];
+      //dump($slug);
+      foreach($exhibitions as $collectionObj){
+        
+        if(!$collectionObj) {
+          print_log("no $slug in ".dump($exhibitions,true), 'minisite', LOG_LEVEL_TEST);
+          //return scope_error($app, "Exhibition {$slug} not found", '404');
+        }
+
+        $collectionObj->collection_id = $collectionObj->id;
+        $collectionObj->page_slug = $page_slug;
+        $collectionObj->slug = slugify($collectionObj->title);
+        $collectionObj->artist_names = collection_artist_list($collectionObj); 
+        $collectionObj->se_title = "{$collectionObj->title}, {$artist_names}";
+        $collectionObj->se_description = $collectionObj->description;
+                
+        
+        if($loc_id = $collectionObj->location_id) {
+          $locObj = get_object('location', $loc_id);
+          $collectionObj->location = $locObj;
+        }
+    
+        if($event_id = $collectionObj->event_id) {
+          $eventObj = get_object('event', $event_id);
+          //if(!$eventObj) die("event $event_id not found");
+          $collectionObj->event = $eventObj;
+        }      
+        $search = ['media_collection_id' => $collection_id, 'active' => 1];
+        $scope->artworks = $mapObjs = find_objects('media_collection_map', $search, ['sort' => 'rank']);
+        $data[] = $collectionObj;
+      }
+      //dump($data);
+      $scope->collection_data = $data;
+    break;
+    case 'landscape_time':
+      $data = [];
+      if($parts[0]) $page_slug = $parts[0];
+      foreach($exhibitions as $collectionObj){
+        $collectionObj->page_slug = $page_slug;
+        $collectionObj->slug = slugify($collectionObj->title);
+        $data[] = $collectionObj;
+      }
+      $scope->exhibitions = $data;
+      $scope->latest = $latestexhibitions;
+      //dump($scope->latestexhibitions);
+    break;  
+    case 'natural_time':
+      $data = [];
+      if($parts[0]) $page_slug = $parts[0];
+      foreach($exhibitions as $collectionObj){
+        $collectionObj->page_slug = $page_slug;
+        $collectionObj->slug = slugify($collectionObj->title);
+        $data[] = $collectionObj;
+      }
+      $scope->exhibitions = $data;
+      $scope->latest = $latestexhibitions;
+      //dump($scope->latestexhibitions);
+    break; 
+    case 'natural':
+      $data = [];
+      if($parts[0]) $page_slug = $parts[0];
+      foreach($exhibitions as $collectionObj){
+        $collectionObj->page_slug = $page_slug;
+        $collectionObj->slug = slugify($collectionObj->title);
+        $data[] = $collectionObj;
+      }
+      $scope->exhibitions = $data;
+      $scope->latest = $latestexhibitions;
+    break;   
+
+    case 'tiles':
+      $data = [];
+      if($parts[0]) $page_slug = $parts[0];
+      foreach($exhibitions as $collectionObj){
+        $collectionObj->page_slug = $page_slug;
+        $collectionObj->slug = slugify($collectionObj->title);
+        $data[] = $collectionObj;
+      }
+      $scope->exhibitions = $data;
+      $scope->latest = $latestexhibitions;
+    break;   
+    case 'coverpage_landscape':
+      $data = 0;
+      if($parts[0]) $page_slug = $parts[0];
+      if($latestexhibitions){
+        foreach($latestexhibitions as $collectionObj){
+          $collectionObj->collection_id = $collectionObj->id;
+          $collectionObj->page_slug = $page_slug;
+          $collectionObj->slug = slugify($collectionObj->title);
+          $collectionObj->artist_names = collection_artist_list($collectionObj); 
+          $collectionObj->se_title = "{$collectionObj->title}, {$artist_names}";
+          $collectionObj->se_description = $collectionObj->description;
+                  
+          
+          if($loc_id = $collectionObj->location_id) {
+            $locObj = get_object('location', $loc_id);
+            $collectionObj->location = $locObj;
+          }
+          
+          if($event_id = $collectionObj->event_id) {
+            $eventObj = get_object('event', $event_id);
+            //if(!$eventObj) die("event $event_id not found");
+            $collectionObj->event = $eventObj;
+          }      
+          $search = ['media_collection_id' => $collection_id, 'active' => 1];
+          $scope->artworks = $mapObjs = find_objects('media_collection_map', $search, ['sort' => 'rank']);
+          $data = $collectionObj;
+        }      
+        $scope->collection = $data;
+      }
+    
+    break;  
+
     case 'contact':
       $page_slug = "/".$parts[0]."/";       
       $search = find_object('minisite_page', ['user_id' => $user_id, 'active' => 1, 'minisite_id' => $minisite_id,'slug' => $page_slug]);
       $page_id = $search->id;
-      //$scope->menuObj = $menuObj = get_page_menus($user_id, $minisite_id);
 
       $scope->receiver_name = $display_name;
       $scope->receiver_email = $user->email_address;
@@ -556,7 +705,14 @@ function controller_minisite($app, $options = []) {
       $scope->profileobj = $profileobj = find_object('user_profile', ['user_id' => $user_id]);
       $scope->timings = $timings = db_getAll("select * from opening_hours where user_id='$user_id' ORDER BY `id` ASC");
       
-      break;
+    break;
+    case 'cv':
+      $subview = $parts[1]; 
+      $scope->menuObj = $menuObj = find_objects('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'active' => 1], ['sort' => 'row_order asc']); 
+      $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'id' => $page_id ,'active' => 1]);
+      $artist = find_object('user_profile', ['user_id' => $user_id]);
+      $scope->artist = get_object_vars($artist);
+    break;
     case 'about':
       break;
     case 'news':
@@ -1084,7 +1240,7 @@ function controller_rentals($app, $options = []) {
   $siteObj = $app->site;
   
   $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
-  $__header->scripts[] = "/afr/js/jquery.base64.js";
+  $__header->scripts[] = "/afr/bower/table-export/jquery.base64.js";
   $__header->scripts[] = "/afr/bower/table-export/tableExport.js";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js"; /** todo: support other languages, use $app->locale  */
@@ -1867,7 +2023,7 @@ function controller_dictionary($app, $options = []) {
   $__header = $app->header; 
   $siteObj = $app->site;
   $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
-  $__header->scripts[] = "/afr/js/jquery.base64.js";
+  $__header->scripts[] = "/afr/bower/table-export/jquery.base64.js";
   $__header->scripts[] = "/afr/bower/table-export/tableExport.js";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js"; /** todo: support other languages, use $app->locale  */
@@ -1913,7 +2069,7 @@ function controller_users($app, $options = []) {
   global $u_id;
   $__header = $app->header; 
   $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
-  $__header->scripts[] = "/afr/js/jquery.base64.js";
+  $__header->scripts[] = "/afr/bower/table-export/jquery.base64.js";
   $__header->scripts[] = "/afr/bower/table-export/tableExport.js";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js"; /** todo: support other languages, use $app->locale  */
@@ -1967,7 +2123,7 @@ function controller_backend($app, $options = []) {
   $__header = $app->header; 
   $siteObj = $app->site;
   $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
-  $__header->scripts[] = "/afr/js/jquery.base64.js";
+  $__header->scripts[] = "/afr/bower/table-export/jquery.base64.js";
   $__header->scripts[] = "/afr/bower/table-export/tableExport.js";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js"; /** todo: support other languages, use $app->locale  */
@@ -2062,7 +2218,7 @@ function controller_invoices($app, $options = []) {
   $siteObj = $app->site;
   
   $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
-  $__header->scripts[] = "/afr/js/jquery.base64.js";
+  $__header->scripts[] = "/afr/bower/table-export/jquery.base64.js";
   $__header->scripts[] = "/afr/bower/table-export/tableExport.js";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js"; /** todo: support other languages, use $app->locale  */
@@ -4303,7 +4459,7 @@ function controller_gallery_backend($app, $options = []) {
 
   $__header->scripts[] = "/afr/bower/tag-it/js/tag-it.min.js";
   $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
-  $__header->scripts[] = "/afr/js/jquery.base64.js?v=1.11";
+  $__header->scripts[] = "/afr/bower/table-export/jquery.base64.js?v=1.11";
   $__header->scripts[] = "/afr/bower/table-export/tableExport.js?v=1.11";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js?v=1.11";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js?v=1.11"; /** todo: support other languages, use $app->locale  */
