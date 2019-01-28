@@ -4842,7 +4842,7 @@ function controller_gallery_backend($app, $options = []) {
             $existing = $what == 'artwork' ? $art_ids : $media_ids;
             if(in_array($this_id, $existing)) continue; // already exists
 
-            $result = $what == 'artwork' ? gallery_publish_artwork1($siteObj, $this_id) : [];
+            $result = $what == 'artwork' ? gallery_publish_artwork_profile($siteObj, $this_id, $user_id) : [];
             if($error = $result->error ?: $result->errors) $errors = array_merge_smart($errors, $error);
             if($message = $result->message ?: $result->messages) $messages = array_merge_smart($messages, $message);
             

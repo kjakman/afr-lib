@@ -5931,6 +5931,7 @@
         echo json_encode($result);exit;
       }
       extract($obj_data);
+      //dump($obj_data);
       
       if($parent_type == 'media_collection' && $parent_field == 'map') { // special case
         //die("gh");
@@ -5951,6 +5952,13 @@
           $mediaObjs[] = $mediaObj;
           
         }
+      } elseif($parent_type == 'artwork' && $parent_field == 'map_profile'){
+        $search = ['active' => 1, 'user_id' => $user_id];
+        $mapObjs = find_objects('media_collection_map', $search, ['sort' => 'rank']);
+        $files = [];
+        $edit_url = "edit-url";
+        //dump("in");
+
       } elseif($inline) {
         $media = get_object($parent_type, $parent_id, $parent_field);
         $mediaObjs = isJson($media) ? json_decode($media) : explode(',', $media);       

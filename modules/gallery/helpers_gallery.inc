@@ -3837,6 +3837,7 @@ function gallery_publish_artwork($siteObj, $artworkObj_or_id, $collection_id, $o
 // function to add art to profile
 function gallery_publish_artwork_profile($siteObj, $artworkObj_or_id, $user_id, $options=array()) {
   $artworkObj = any2obj('artwork', $artworkObj_or_id);
+
   if(!$artworkObj) return json_error_object("Artwork {$artworkObj_or_id} not found");
   $errors = $messages = array();
   
@@ -3847,16 +3848,18 @@ function gallery_publish_artwork_profile($siteObj, $artworkObj_or_id, $user_id, 
     $artwork_name = $artworkObj->title ?: phrase('this_image', CAPITALIZE);
     return json_error_object("$artwork_name is already in this collection.");
   }
-  $mapData['site_id'] = $siteObj->id;
+  
   $mapData['user_id'] = $user_id;
   $mapData['media_id'] = $artworkObj->title_image;
-  $mapData['artwork_id'] = $artwork_id;
+  $mapData['site_id'] = $siteObj->id;
   $mapData['artist_id'] = $artworkObj->artist_id;
+  $mapData['artwork_id'] = $artwork_id;
+  $mapData['name'] = $artworkObj->title;
+  $mapData['curator_id'] = $artworkObj->curator_id;
   $mapData['artist_name'] = user_display_name($artworkObj->artist_id);
   $mapData['original_technique'] = $artworkObj->technique;
   $mapData['original_year'] = $artworkObj->year;
-  $mapData['name'] = $artworkObj->title;
-  
+   
   $image_title = $artworkObj->title ?: $artwork_id;
 
   print_log("gallery_publish_artwork_profile: publish artwork {$artwork_id} to collection {$collection_id} stack:".caller_stack(), 'gallery', LOG_LEVEL_TEST);
