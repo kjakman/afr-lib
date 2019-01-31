@@ -3486,7 +3486,19 @@ function controller_artist_profile($app, $options = []) {
     $scope->artist_projects = $artist_projects = find_objects('media_collection', 
       array('user_id' => $artist_id, 'type' => MEDIA_COLLECTION_TYPE_PROJECT, 'active' => 1), ['start' => $start, 'limit' => $limit]);;
     if($project_ids = array_find_key($artist_projects, 'id')) {
-      $scope->artist_artworks = gallery_unique_artworks($project_ids, ['start' => $start, 'limit' => $limit]);          
+      $artist_artworks = gallery_unique_artworks($project_ids, ['start' => $start, 'limit' => $limit]);   
+      //dump($artist_artworks); 
+      foreach($artist_artworks as $art){
+        $a = (array)$art;
+        $id = $art->media_id;
+        $data = find_object('media', array('id' => $id));
+        $art_id = $data->parent_id;
+        $find = find_object('artwork', array('id' => $art_id));
+        if($find) $b = (array)$find;
+        else $b = (array)$data;
+        $merge[] = array_merge($a, $b);
+      }
+      $scope->artist_artworks = $merge;     
       //$scope->artist_artworks = $artist_artworks = find_objects('media_collection_map', array('media_collection_id' => $project_ids, 'active' => 1));
     }
     $artist_exhibitions_ids = find_objects('media_collection_map', 
@@ -5200,7 +5212,16 @@ function controller_gallery_artworks($app, $options = []) {
       $scope->curator_exhibitions = $curator_exhibitions = find_objects('media_collection', 
           array('user_id' => $curator_id, 'type' => MEDIA_COLLECTION_TYPE_EXHIBITION), 
           array('active' => 1, 'start' => $start, 'limit' => $limit));
-      $scope->curator_artworks = gallery_unique_artworks(array_find_key($curator_exhibitions, 'id'), ['start' => $start, 'limit' => $limit]);
+      $curator_arts = gallery_unique_artworks(array_find_key($curator_exhibitions, 'id'), ['start' => $start, 'limit' => $limit]);
+
+      $curator_artworks = [];
+      foreach($curator_arts as $curator_art){
+        if($curator_art->curator_id == $curator_id){
+          $curator_artworks[] = $curator_art;
+        }
+      }
+      $scope->curator_artworks= $curator_artworks;
+      //dump($curator_artworks);
     }
 
     
@@ -5403,14 +5424,35 @@ function controller_gallery_collections($app, $options = []) {
     $scope->mail_controller = 'gallery_collections';
 
     /** find artwork in collection */
-    $scope->artworks = $artworks = find_objects('media_collection_map', array('media_collection_id' => $collection_id, 'active' => 1), array('sort' => 'rank'));
+    $artworks = find_objects('media_collection_map', array('media_collection_id' => $collection_id, 'active' => 1), array('sort' => 'rank'));
+    
+    foreach($artworks as $art){
+      $a = (array)$art;
+      $ids = $art->media_id;
+      $data = find_object('media', array('id' => $ids));
+      $art_id = $data->parent_id;
+      $find = find_object('artwork', array('id' => $art_id));
+      if($find) $b = (array)$find;
+      else $b = (array)$data;
+      $merge[] = array_merge($a, $b);
+    }
+    $scope->artworks = $merge;
 
     if($collectionObj->type == MEDIA_COLLECTION_TYPE_EXHIBITION) {
       if($scope->curator_id = $curator_id = $collectionObj->user_id) $scope->curator = get_user($collectionObj->user_id);
       $scope->curator_exhibitions = $curator_exhibitions = find_objects('media_collection', 
           array('id' => array('!=', $collection_id), 'user_id' => $curator_id, 'type' => MEDIA_COLLECTION_TYPE_EXHIBITION, 'active' => 1),
           array('start' => $start, 'limit' => $limit));
-      $scope->curator_artworks = gallery_unique_artworks(array_find_key($curator_exhibitions, 'id'),['start' => $start, 'limit' => $limit]);
+      
+      $curator_arts = gallery_unique_artworks(array_find_key($curator_exhibitions, 'id'),['start' => $start, 'limit' => $limit]);
+      $curator_artworks = [];
+      foreach($curator_arts as $curator_art){
+        if($curator_art->curator_id == $curator_id){
+          $curator_artworks[] = $curator_art;
+        }
+      }
+      $scope->curator_artworks= $curator_artworks;
+      //dump($curator_artworks);
     }
 
     $scope->url = site_full_url($siteObj).page_link(PAGE_GALLERY, 'media_collection', $collectionObj->type).slugify($collectionObj->title)."~".$obj_id;  

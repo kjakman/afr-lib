@@ -351,6 +351,7 @@ function gallery_add_user_collection($siteObj_or_id, $userObj_or_id, $options=ar
 /** return list of mapObjs representing unique artwork for given collection ids */
 
 function gallery_unique_artworks($collection_ids, $options) {
+  //dump($collection_ids);
   $mapObjs = find_objects('media_collection_map', array('media_collection_id' => $collection_ids, 'active' => 1), $options);
   $media_ids = array();
   $objs = array();

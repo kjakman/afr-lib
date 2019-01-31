@@ -554,10 +554,11 @@ function pre_edit_media_collection($obj_type, $data, $orgObj) {
     if($data['artist_id'] && !$data['artist_ids']) {
       $data['artist_ids'] = "[{$data['artist_id']}]";
     } else if($data['artist_ids']) {
-      $artist_ids = json_decode($data['artist_ids']) ?: [];
+      $artist_ids = json_decode($data['artist_ids'], True) ?: [];
       $data['artist_id'] = $artist_ids[0];
     }
   }
+  
   $data['artist_name'] = user_display_name($data['artist_id']); 
   
   return [$data, $errors];  
