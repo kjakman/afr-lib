@@ -151,11 +151,12 @@ git clone https://github.com/kjakman/afr-app.git
 
 # below should probably be handled by git repo, but...
 # create smarty dirs and make writeable
-mkdir afr-app/smarty
-mkdir afr-app/smarty/templates
-mkdir afr-app/smarty/templates_c
-sudo chgrp -R www-data afr-app/smarty/*
-sudo chmod -R ug+rw afr-app/smarty/*
+cd afr-app
+mkdir smarty
+mkdir smarty/templates
+mkdir smarty/templates_c
+sudo chgrp -R www-data smarty/*
+sudo chmod -R ug+rw smarty/*
 
 # also, the user directory afr-app/www/user/ should be writeable by www-data
 # default is to symlink this to /web/data/user/ or /web/data/[site]/user/
