@@ -376,7 +376,6 @@ function controller_minisite($app, $options = []) {
         if(($page == 'exhibitions') &&  ($data[layout] == '40') ){
           
           $when = $subviews ?: 'all';
-          //dump($today);
           switch($when) {
             case 'past':
               $search['end_date'] = ['<', $today];
@@ -433,14 +432,13 @@ function controller_minisite($app, $options = []) {
         else{
           unset($search['subtype']);
         }
-        //dump($search);
+        
         /** Filter by gallery, Art, Other events */
         if($data[show_recent] == 1 )
           $exhibitionObjs = find_objects('media_collection', $search, ['sort' => 'start_date desc']) ?: [];
         else
           $exhibitionObjs = find_objects('media_collection', $search, ['sort' => 'start_date asc']) ?: [];
             
-        //dump($exhibitionObjs);
         $exhibition_ids = $exhibitions = $latestexhibition = $data_exist = [];
         $future_count = $past_count = $current_count = 0;
         $current_exist = $future_exist = $past_exist = 0;
@@ -525,7 +523,6 @@ function controller_minisite($app, $options = []) {
         $scope->collection_id = $collection_id;
         $search = ['media_collection_id' => $collection_id, 'active' => 1];
         $scope->artworks = $mapObjs = find_objects('media_collection_map', $search, ['sort' => 'rank']);
-        //dump($scope->artworks);
       }        
       
       $se_title = $artist->display_name;
@@ -579,7 +576,6 @@ function controller_minisite($app, $options = []) {
     case 'coverpage':
       $data = [];
       if($parts[0]) $page_slug = $parts[0];
-      //dump($slug);
       foreach($exhibitions as $collectionObj){
         
         if(!$collectionObj) {
@@ -609,7 +605,6 @@ function controller_minisite($app, $options = []) {
         $scope->artworks = $mapObjs = find_objects('media_collection_map', $search, ['sort' => 'rank']);
         $data[] = $collectionObj;
       }
-      //dump($data);
       $scope->collection_data = $data;
     break;
     case 'landscape_time':
@@ -622,7 +617,6 @@ function controller_minisite($app, $options = []) {
       }
       $scope->exhibitions = $data;
       $scope->latest = $latestexhibitions;
-      //dump($scope->latestexhibitions);
     break;  
     case 'natural_time':
       $data = [];
@@ -634,7 +628,6 @@ function controller_minisite($app, $options = []) {
       }
       $scope->exhibitions = $data;
       $scope->latest = $latestexhibitions;
-      //dump($scope->latestexhibitions);
     break; 
     case 'natural':
       $data = [];
@@ -3210,8 +3203,6 @@ function controller_user_account($app, $options = []) {
 function controller_user_profile($app, $options = []) {
   //global $u_id, $u_level;
   $u_id = $app->user->id;
-  //dump($app);
-  
   $__header = $app->header; 
   $__header->scripts[] = "/afr/bower/lightslider/dist/js/lightslider.min.js";
   $__header->styles[] = "/afr/bower/lightslider/dist/css/lightslider.min.css";
@@ -3434,7 +3425,6 @@ function controller_artist_profile($app, $options = []) {
   $scope = $app->page->scope;
   
   controller_user_profile($app,$options);
-  //dump($scope);
   $obj_type = $scope->obj_type = $scope->obj_type ?: $app->object_type;
   $obj_id = $scope->obj_id =  $scope->obj_id ?: $app->object_id;
   $obj = $obj_type && $obj_id ? get_object($obj_type, $obj_id) : null;
@@ -3466,8 +3456,7 @@ function controller_artist_profile($app, $options = []) {
   $is_artist = $user_id && user_has_role($user_id, USER_ROLE_ARTIST);
 
   // find curators  
-  $scope->curator_ids = find_objects('media_collection_map', array('artist_id' => $user_id, 'curator_id' => array('>', 0)), array('fields' => 'distinct curator_id', 'debug_query' => 0));
-  //dump($curator_ids);
+  $scope->curator_ids = $curator_ids =find_objects('media_collection_map', array('artist_id' => $user_id, 'curator_id' => array('>', 0)), array('fields' => 'distinct curator_id', 'debug_query' => 0));
 
   $start = 0;
   $limit = 12;
@@ -3486,27 +3475,25 @@ function controller_artist_profile($app, $options = []) {
     $scope->artist_projects = $artist_projects = find_objects('media_collection', 
       array('user_id' => $artist_id, 'type' => MEDIA_COLLECTION_TYPE_PROJECT, 'active' => 1), ['start' => $start, 'limit' => $limit]);;
     if($project_ids = array_find_key($artist_projects, 'id')) {
-      $artist_artworks = gallery_unique_artworks($project_ids, ['start' => $start, 'limit' => $limit]);   
-      //dump($artist_artworks); 
-      foreach($artist_artworks as $art){
-        $a = (array)$art;
-        $id = $art->media_id;
-        $data = find_object('media', array('id' => $id));
-        $art_id = $data->parent_id;
-        $find = find_object('artwork', array('id' => $art_id));
-        if($find) $b = (array)$find;
-        else $b = (array)$data;
-        $merge[] = array_merge($a, $b);
-      }
-      $scope->artist_artworks = $merge;     
-      //$scope->artist_artworks = $artist_artworks = find_objects('media_collection_map', array('media_collection_id' => $project_ids, 'active' => 1));
+      //$scope->artist_artworks = gallery_unique_artworks($project_ids, ['start' => $start, 'limit' => $limit]); 
     }
+
+    $scope->artist_artworks = gallery_selected_artworks($user_id, ['start' => $start, 'limit' => $limit]); 
+
     $artist_exhibitions_ids = find_objects('media_collection_map', 
       array('artist_id' => $artist_id, 'collection_type' => MEDIA_COLLECTION_TYPE_EXHIBITION, 'active' => 1), 
       array('fields' => 'distinct media_collection_id', ['start' => $start, 'limit' => $limit]));
 
     $scope->artist_exhibitions = find_objects('media_collection', 
       array('id' => $artist_exhibitions_ids, 'active' => 1), ['start' => $start, 'limit' => $limit]);
+
+    /*To view Exhibitions curated by gallery in artist profile*/
+    $curator_profile = get_user($curator_ids[0]);
+    $curator_id = $curator_profile->id;
+    $scope->curator_name = $curator_profile->display_name;
+    $scope->curator_exhibitions = $curator_exhibitions = find_objects('media_collection', 
+      array('user_id' => $curator_id, 'type' => MEDIA_COLLECTION_TYPE_EXHIBITION, 'active' => 1), ['start' => $start, 'limit' => $limit]);
+    
   } else {
     $scope->template = "user-profile-collector.html";
   }
@@ -4553,6 +4540,7 @@ function controller_gallery_backend($app, $options = []) {
     case "artwork":
       $scope->section = 'artwork';
       $scope->obj_type = $obj_type = "artwork";
+
       if(!$add) {
         if(!$id) return controller_error($app, "Missing ID");
         controller_gallery_artworks($app);
@@ -4568,6 +4556,7 @@ function controller_gallery_backend($app, $options = []) {
       print_log("action={$action} type={$obj_type} id={$obj_id} title={$obj->title} edit={$edit} auth={$auth_edit} sub={$sub}", 'backend', LOG_LEVEL_TEST);
       
       break;
+
     case "artworks":
       $scope->section = 'artwork';
       $scope->obj_type = $obj_type = "artwork";
@@ -4720,7 +4709,6 @@ function controller_gallery_backend($app, $options = []) {
       
       $time = db_getAll("select * from opening_hours where user_id='$obj->user_id'");
       $scope->timing = $time;
-      //dump($time);
 
       $sub = $app->host_sub;
       $app->page->itemview = 'website';
@@ -4842,8 +4830,10 @@ function controller_gallery_backend($app, $options = []) {
         controller_artist_profile($app);
         $profile = $scope->profile;
 
+        $user_id = $id;
         $artwork_ids = $_GET['add_art'];
         $media_ids = $_GET['add_media'];
+
 
         if($artwork_ids || $media_ids) { // cannot be both
           $ids = $artwork_ids ?: $media_ids; 
@@ -4854,32 +4844,15 @@ function controller_gallery_backend($app, $options = []) {
             $existing = $what == 'artwork' ? $art_ids : $media_ids;
             if(in_array($this_id, $existing)) continue; // already exists
 
-            $result = $what == 'artwork' ? gallery_publish_artwork_profile($siteObj, $this_id, $user_id) : [];
-            if($error = $result->error ?: $result->errors) $errors = array_merge_smart($errors, $error);
+            $result = $what == 'artwork' ? gallery_publish_artwork_profile($siteObj, $this_id, $user_id) : gallery_publish_image_profile($siteObj, $this_id, $user_id);
+
+            if($error = $result->error) return json_error($error);
             if($message = $result->message ?: $result->messages) $messages = array_merge_smart($messages, $message);
             
             $changed = $what;
             $mapObj = $result->data;
             $artist_id = $mapObj->artist_id;
             if(!in_array($artist_id, $artist_ids)) $artist_ids[] = $artist_id;
-          }
-
-          /** update artist list: keep existing artists NOT in the list that were explicitly added */
-          $artist_ids = find_objects('profile_media_map', ['active' => 1, 'user_id' => $user_id, 'artwork_id' => ['>', 0]], ['fields' => 'distinct artist_id']);
-          if($artist_ids) {   
-            $existing_artist_ids = json_decode($collection->artist_ids) ?: [];
-            
-            print_log("map: artist ids: ".implode(',', $artist_ids), 'gallery', LOG_LEVEL_TEST);
-            print_log("existing artist ids: ".implode(',', $existing_artist_ids), 'gallery', LOG_LEVEL_TEST);
-            
-            $artist_ids = array_unique(array_merge($existing_artist_ids, $artist_ids)); // keep existing
-          
-            print_log("combined artist ids: ".implode(',', $artist_ids), 'gallery', LOG_LEVEL_TEST);
-            
-            $artists_json = $collection->artist_ids = json_encode($artist_ids);
-            print_log("combined artist json: {$artists_json}", 'gallery', LOG_LEVEL_TEST);
-            
-            update_object('media_collection', ['artist_id' => $artist_ids[0], 'artist_ids' => $artists_json], $collection->id);
           }
                     
           switch($changed) { // reload
@@ -4960,7 +4933,6 @@ function controller_gallery_backend($app, $options = []) {
         }
                  
         $scope->locations = $locations;
-        //dump($locations);
         $scope->events = $events = find_objects('event', ['active' => 1, 'parent_type' => 'media_collection', 'parent_id' => $id]); 
         
         $collection = get_object('media_collection', $id);
@@ -4989,7 +4961,6 @@ function controller_gallery_backend($app, $options = []) {
             //$collection = get_object('media_collection', $collection_id); // reload
           }
         }
-        //dump($collection_id);
         $artwork_ids = $_GET['add_art'];
         $media_ids = $_GET['add_media'];
         
@@ -5140,6 +5111,7 @@ function controller_gallery_artworks($app, $options = []) {
   
   $scope = $app->page->scope;
   $obj_id = $scope->obj_id = $scope->obj_id ?: $app->object_id;
+  $exh_id = $app->params['exh_id'];
   $obj_type = $scope->obj_type = $scope->obj_type ?: "artwork"; // $app->object_type;
   
   $parent_obj_type = $scope->parent_obj_type;
@@ -5221,7 +5193,6 @@ function controller_gallery_artworks($app, $options = []) {
         }
       }
       $scope->curator_artworks= $curator_artworks;
-      //dump($curator_artworks);
     }
 
     
@@ -5233,7 +5204,7 @@ function controller_gallery_artworks($app, $options = []) {
       //$scope->artist_exhibitions = $artist_exhibitions = find_objects('media_collection', array('user_id' => $curator_id, 'type' => MEDIA_COLLECTION_TYPE_EXHIBITION, 'active' => 1));;
 
       if($project_ids = array_find_key($artist_projects, 'id')) {
-        $scope->artist_artworks = gallery_unique_artworks($project_ids, ['start' => $start, 'limit' => $limit]);          
+        //$scope->artist_artworks = gallery_unique_artworks($project_ids, ['start' => $start, 'limit' => $limit]);          
         //$scope->artist_artworks = $artist_artworks = find_objects('media_collection_map', array('media_collection_id' => $project_ids, 'active' => 1));
       }
       
@@ -5243,6 +5214,11 @@ function controller_gallery_artworks($app, $options = []) {
       
       $scope->artist_exhibitions = find_objects('media_collection', 
         array('id' => $artist_exhibitions_ids, 'active' => 1), array('start' => $start, 'limit' => $limit));
+
+      $scope->other_exhibitions = find_objects('media_collection_map', 
+        array('media_collection_id' => $exh_id, 'active' => 1), array('start' => $start, 'limit' => $limit));
+
+
     }
     
     if($collectionObj) {
@@ -5452,7 +5428,6 @@ function controller_gallery_collections($app, $options = []) {
         }
       }
       $scope->curator_artworks= $curator_artworks;
-      //dump($curator_artworks);
     }
 
     $scope->url = site_full_url($siteObj).page_link(PAGE_GALLERY, 'media_collection', $collectionObj->type).slugify($collectionObj->title)."~".$obj_id;  

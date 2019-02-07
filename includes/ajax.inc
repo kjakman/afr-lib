@@ -5952,12 +5952,23 @@
           $mediaObjs[] = $mediaObj;
           
         }
-      } elseif($parent_type == 'artwork' && $parent_field == 'map_profile'){
-        $search = ['active' => 1, 'user_id' => $user_id];
-        $mapObjs = find_objects('media_collection_map', $search, ['sort' => 'rank']);
+      } elseif($parent_type == 'user' && $parent_field == 'map_profile'){
+        $search = ['active' => 1, 'user_id' => $parent_id];
+        //dump($search);
+        $mapObjs = find_objects('profile_media_map', $search);
+        //dump($mapObjs);
         $files = [];
         $edit_url = "edit-url";
-        //dump("in");
+        
+        foreach($mapObjs as $mapObj) { // expensive
+          $mediaObj = get_object('media', $mapObj->media_id);
+          $mediaObj->media_id = $mapObj->media_id;
+          $mediaObj->map_id = $mediaObj->obj_id = $mapObj->id;
+          $mediaObj->obj_type = 'profile_media_map';
+          $mediaObj->delete_url = "/ajax.php?oper=del&obj_type=profile_media_map&id=".$mapObj->id;
+          
+          $mediaObjs[] = $mediaObj;
+        }
 
       } elseif($inline) {
         $media = get_object($parent_type, $parent_id, $parent_field);

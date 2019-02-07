@@ -279,6 +279,8 @@ $(document).on("click", "#sel_add_profile", function() {
     var $link = $("#submit");
     console.log("Calling soft-load: href=" + href);
     soft_load($link, "#subview-container", href);
+    g_selections = [];
+    bstUpdateSelection([]);
   } else {
   }
 
