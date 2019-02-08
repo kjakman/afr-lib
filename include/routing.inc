@@ -56,7 +56,7 @@ function route($app) {
   $router->map( 'GET', '/mapping-guide', 'est_mapping_guide', 'ElasticTools Mapping Guide');
   
   
-  $router->map( 'GET', '/profile/([n:name]~)?[i:id]/[a:view]', 'user_profile', 'profile:id:view');
+  //$router->map( 'GET', '/profile/([n:name]~)?[i:id]', 'user_profile', 'profile:id');
   //$router->map( 'GET', '/edit-profile/([n:name]~)?[i:id]', 'edit_profile', 'edit-profile:id');
  
   $router->map( 'GET', '/api/[a:action]', 'api', 'api');

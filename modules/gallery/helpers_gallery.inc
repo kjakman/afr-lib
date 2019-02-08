@@ -3829,6 +3829,8 @@ function gallery_publish_artwork($siteObj, $artworkObj_or_id, $collection_id, $o
 
   print_log("gallery_publish_artwork: publish artwork {$artwork_id} to collection {$collection_id} stack:".caller_stack(), 'gallery', LOG_LEVEL_TEST);
 
+  list($id, $errors) = add_object('media_collection_map', $mapData);
+
   if(!$id) {
     $errors = array_merge_smart("Failed to add artwork $artwork_id to collection $collection_id", $errors);
     return json_error_object($errors); // Tried to add $image_title to $collection_type_name $collectionObj->title, but no id received");
