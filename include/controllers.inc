@@ -2116,7 +2116,8 @@ function controller_backend($app, $options = []) {
   $__header = $app->header; 
   $siteObj = $app->site;
   $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
-  $__header->scripts[] = "/afr/bower/table-export/jquery.base64.js";
+  //$__header->scripts[] = "/afr/bower/table-export/jquery.base64.js";
+  $__header->scripts[] = "/afr/js/jquery.base64.js"; /** Fix: https://github.com/wenzhixin/bootstrap-table/issues/189 */
   $__header->scripts[] = "/afr/bower/table-export/tableExport.js";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js"; /** todo: support other languages, use $app->locale  */
@@ -4436,6 +4437,7 @@ function controller_gallery_backend($app, $options = []) {
   $__header->styles[] = "/afr/bower/tag-it/css/jquery.tagit.css";
   $__header->styles[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.css?v=1.11";
   $__header->styles[] = "https://cdnjs.cloudflare.com/ajax/libs/bootstrap-timepicker/0.5.2/css/bootstrap-timepicker.min.css";
+  $__header->styles[] = "/afr/bower/bootstrap-datepicker/dist/css/bootstrap-datepicker.css";
   $__header->styles[] = "/afr/bower/bootstrap-tags/dist/css/bootstrap-tags.css";
   $__header->styles[] = "/afr/bower/bootstrap-toggle/css/bootstrap-toggle.min.css";
   $__header->styles[] = "/afr/bower/bootstrap-table/dist/extensions/filter-control/bootstrap-table-filter-control.min.css";
@@ -4458,13 +4460,15 @@ function controller_gallery_backend($app, $options = []) {
 
   $__header->scripts[] = "/afr/bower/tag-it/js/tag-it.min.js";
   $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
-  $__header->scripts[] = "/afr/bower/table-export/jquery.base64.js?v=1.11";
+  //$__header->scripts[] = "/afr/bower/table-export/jquery.base64.js?v=1.11";
+  $__header->scripts[] = "/afr/js/jquery.base64.js"; /** Fix: https://github.com/wenzhixin/bootstrap-table/issues/189 */
   $__header->scripts[] = "/afr/bower/table-export/tableExport.js?v=1.11";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js?v=1.11";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js?v=1.11"; /** todo: support other languages, use $app->locale  */
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/export/bootstrap-table-export.js?v=1.11";
   $__header->scripts[] = "https://cdnjs.cloudflare.com/ajax/libs/bootstrap-timepicker/0.5.2/js/bootstrap-timepicker.min.js";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/filter-control/bootstrap-table-filter-control.min.js";
+  $__header->scripts[] = "/afr/bower/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js";
   
   if(0) { // cloudinary direct upload
     require_once("xml/xml_cloudinary.inc");
