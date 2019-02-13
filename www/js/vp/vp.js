@@ -213,7 +213,7 @@ function vp_update_info(vpdata) {
   
   var artist_id = item.artist_id;
   var artist = vpdata.artists && artist_id ? vpdata.artists[artist_id] : {};
-  var curator = vpdata.curator;
+  var curator = vpdata.curator || {};
   var collection = vpdata.collection;
   var content = '';
   
@@ -682,10 +682,11 @@ var openPhotoSwipe = function(cid, index, galleryElement, disableAnimation, from
     return;
   }
 
+  console.log("openPhotoSwipe data=", json);
   var events = json.events || [];
   var event_count = events.length;
   
-  var curator = json.curator;
+  var curator = json.curator || {};
   var lat = curator.location_lat;
   var lng = curator.location_long;  
   
@@ -1225,7 +1226,7 @@ function vp_events(vpdata) {
   var event_count = events.length;
   var output = '';
   var evtString,event,button;
-  var curator = vpdata.curator;
+  var curator = vpdata.curator || {};
   output = '';
   
   for(var i=0;i<event_count;i++) {
@@ -1373,7 +1374,7 @@ function vp_infocalendar(cid) {
 
 function vp_infomap(json) {
   
-  var curator = json.curator;
+  var curator = json.curator || {};
 
   var details = '';                                     
   var hasmap = false;

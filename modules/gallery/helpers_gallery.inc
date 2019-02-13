@@ -351,6 +351,7 @@ function gallery_add_user_collection($siteObj_or_id, $userObj_or_id, $options=ar
 /** return list of mapObjs representing unique artwork for given collection ids */
 
 function gallery_unique_artworks($collection_ids, $options) {
+  //dump($collection_ids);
   $mapObjs = find_objects('media_collection_map', array('media_collection_id' => $collection_ids, 'active' => 1), $options);
   $media_ids = array();
   $objs = array();
@@ -358,6 +359,20 @@ function gallery_unique_artworks($collection_ids, $options) {
     $media_id = $mapObj->media_id;
     if($media_ids[$media_id]) continue;
     $media_ids[$media_id] = 1;
+    $objs[] = $mapObj;
+  }
+  
+  return $objs;  
+}
+
+
+/** return list of selected art*/
+
+function gallery_selected_artworks($user_id, $options) {
+  //dump($collection_ids);
+  $mapObjs = find_objects('profile_media_map', array('user_id' => $user_id), $options);
+  $objs = array();
+  foreach($mapObjs as $mapObj) {
     $objs[] = $mapObj;
   }
   
@@ -3813,7 +3828,7 @@ function gallery_publish_artwork($siteObj, $artworkObj_or_id, $collection_id, $o
   $image_title = $artworkObj->title ?: $artwork_id;
 
   print_log("gallery_publish_artwork: publish artwork {$artwork_id} to collection {$collection_id} stack:".caller_stack(), 'gallery', LOG_LEVEL_TEST);
-  
+
   list($id, $errors) = add_object('media_collection_map', $mapData);
 
   if(!$id) {
@@ -3833,6 +3848,107 @@ function gallery_publish_artwork($siteObj, $artworkObj_or_id, $collection_id, $o
   }
   return $result;                         
 }
+
+// function to add art to profile
+function gallery_publish_artwork_profile($siteObj, $artworkObj_or_id, $user_id, $options=array()) {
+  $artworkObj = any2obj('artwork', $artworkObj_or_id);
+
+  if(!$artworkObj) return json_error_object("Artwork {$artworkObj_or_id} not found");
+  $errors = $messages = array();
+  
+  $artwork_id = $artworkObj->id;
+  if(!$artwork_id) return json_error_object("Cannot publish: Missing id");
+  //$collection_user_id = get_object('media_collection', $collection_id, 'user_id');
+  if(find_object('profile_media_map', array('artwork_id' => $artwork_id, 'user_id' => $user_id))) {
+    $artwork_name = $artworkObj->title ?: phrase('this_image', CAPITALIZE);
+    return json_error_object("$artwork_name is already in this collection.");
+  }
+  
+  $mapData['user_id'] = $user_id;
+  $mapData['media_id'] = $artworkObj->title_image;
+  $mapData['site_id'] = $siteObj->id;
+  $mapData['artist_id'] = $artworkObj->artist_id;
+  $mapData['artwork_id'] = $artwork_id;
+  $mapData['name'] = $artworkObj->title;
+  $mapData['curator_id'] = $artworkObj->curator_id;
+  $mapData['artist_name'] = user_display_name($artworkObj->artist_id);
+  $mapData['original_technique'] = $artworkObj->technique;
+  $mapData['original_year'] = $artworkObj->year;
+   
+  $image_title = $artworkObj->title ?: $artwork_id;
+
+  print_log("gallery_publish_artwork_profile: publish artwork {$artwork_id} to collection {$collection_id} stack:".caller_stack(), 'gallery', LOG_LEVEL_TEST);
+  
+  if($mapData['media_id'])
+    list($id, $errors) = add_object('profile_media_map', $mapData);
+
+  if(!$id) {
+    $errors = array_merge_smart("Failed to add artwork $artworkObj->title to profile $user_id", $errors);
+    return json_error_object($errors); 
+  }
+  
+  $result->data = $id;
+  
+  if($messages) $result->messages = $messages;
+  if($errors) {                 
+    $result->errors = $errors;
+    $result->success = 0;
+  } else {
+    $result->success = 1;
+    $result->id = $id;
+  }
+  return $result;                         
+}
+
+// function to add media to profile
+function gallery_publish_image_profile($siteObj, $artworkObj_or_id, $user_id, $options=array()) {
+  $mediaObj = any2obj('media', $artworkObj_or_id);
+  if(!$mediaObj) return json_error_object("Media not found");
+  $errors = $messages = array();
+  
+  $media_id = $mediaObj->id;
+  if(!$media_id) return json_error_object("Cannot publish: Missing id");
+  //$collection_user_id = get_object('media_collection', $collection_id, 'user_id');
+  
+  print_log("gallery_publish_image: publish image {$media_id} to collection {$collection_id} stack:".caller_stack(), 'gallery', LOG_LEVEL_TEST);
+  
+  if(find_object('profile_media_map', array('media_id' => $media_id, 'user_id' => $user_id))) {
+    $media_name = $mediaObj->name ?: phrase('this_image', CAPITALIZE);
+    return json_error_object("$media_name is already in this collection.");
+  }
+  $mapData['user_id'] = $user_id;
+  $mapData['media_id'] = $media_id;
+  $mapData['site_id'] = $siteObj->id;
+  $mapData['artist_id'] = $mediaObj->artist_id;
+  $mapData['artwork_id'] = '';
+  $mapData['name'] = $mediaObj->title;
+  $mapData['curator_id'] = $mediaObj->curator_id;
+  $mapData['artist_name'] = user_display_name($mediaObj->artist_id);
+  $mapData['original_technique'] = $mediaObj->technique;
+  $mapData['original_year'] = $mediaObj->year;
+
+  
+  $image_title = $mediaObj->name ?: $media_id;
+  
+  list($id, $errors) = add_object('profile_media_map', $mapData);
+
+  if(!$id) {
+    $errors = array_merge_smart("Failed to add media $media_id to collection $collection_id", $errors);
+    return json_error_object($errors); // Tried to add $image_title to $collection_type_name $collectionObj->title, but no id received");
+  }
+
+  $result->data = $id;
+  if($messages) $result->messages = $messages;
+  if($errors) {                 
+    $result->errors = $errors;
+    $result->success = 0;
+  } else {
+    $result->success = 1;
+    $result->id = $id;
+  }
+  return $result;                         
+}
+
 // function to add media to collection 
 function gallery_publish_image($siteObj, $mediaObj_or_id, $collection_id, $options=array()) {
   $mediaObj = any2obj('media', $mediaObj_or_id);
@@ -3883,6 +3999,7 @@ function gallery_publish_image($siteObj, $mediaObj_or_id, $collection_id, $optio
   }
   return $result;                         
 }
+
                       
 // function to exhibit a collection 
 function gallery_exhibit_collection($siteObj, $collectionObj_or_id, $user_id, $options=array()) {

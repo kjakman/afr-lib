@@ -45,6 +45,9 @@ function route($app) {
   $router->map( 'GET', '/exhibition/([n:name]~)?[i:id]/[i:item]', 'gallery_collections', 'exhibition:id:item');
 
   $router->map( 'GET', '/artwork/([n:name]~)?[i:id]', 'gallery_artworks', 'artwork:id');
+  $router->map( 'GET', '/artwork/[i:exh_id]/([n:name]~)?[i:id]', 'gallery_artworks', 'artwork:exh_id:id');
+  //$router->map( 'GET', '/artwork/[exh:e_id]/([n:name]~)?[i:id]', 'gallery_artworks', 'exhibition:id:artwork:id');
+  
   $router->map( 'GET', '/item/([n:name]~)?[i:id]', 'gallery_item', 'item:id');
   $router->map( 'GET', '/media/([n:name]~)?[i:id]', 'gallery_media', 'media:id');
 

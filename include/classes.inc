@@ -46,6 +46,7 @@ $__CLASSES = array(
     'legal_entity' =>         array(USER_LEVEL_SYSTEM, 'system', '', '', 0, '', '', ''),
     'media' =>                array(USER_LEVEL_USER,   'system', '', '', NF_NO_LIST, '', '', ''),
     'db_sequence' =>          array(USER_LEVEL_SYSTEM, 'system', '', 'seq_name', 0, 'seq_name', 'seq_name', ''),
+    'profile_media_map' =>    array(USER_LEVEL_USER,   'system', '', '', NF_NO_LIST, '', '', ''),
 
 // site
     /** get rid of the next 2 - use config file */
@@ -71,6 +72,12 @@ $__CLASSES = array(
     'comment' =>              array(USER_LEVEL_USER,   'content', '', '', 0, 'title', 'created desc', ''),
     'newsletter' =>           array(USER_LEVEL_USER,   'content', '', '', 0, 'email_address', 'created desc', ''),
     'article_type' =>         array(USER_LEVEL_USER,   'content', '', '', NF_CACHE_ASSOC, '', '', ''),
+    'minisite' =>             array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'name', '', ''),
+    'minisite_page_type' =>   array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'name', '', ''),
+    'minisite_page' =>       array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'page_name', '', ''),
+    'minisite_layout' =>      array(USER_LEVEL_SYSTEM, 'site', '', '', NF_CACHE_ASSOC, 'name', 'id', ''),
+    'minisite_exhibition_layout' =>      array(USER_LEVEL_SYSTEM, 'site', '', '', NF_CACHE_ASSOC, 'name', 'id', ''),
+    'minisite_contact_layout' =>      array(USER_LEVEL_SYSTEM, 'site', '', '', NF_CACHE_ASSOC, 'name', 'id', ''),
                                                                              
 
 // user                            
@@ -2066,7 +2073,87 @@ $__CLASS_ATTRIBUTES = array(
               
      
   ),
+
+  "minisite" => 
+  array(
+     'id'=>                 array('ID',                 'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 3),
+     'created'=>            array('Created',            'datetime', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT),
+     'timestamp'=>          array('Timestamp',          'timestamp', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT, 14 ),
+     'active'  =>           array('Active?',            'bool',     1,  AF_HIDE_ADD, 0),
+     'site_id'=>            array('Site',               'link',  0, AF_SEARCHABLE|AF_HIDE, 'site'),
+     'client_id'=>          array('Client',             'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
+     'user_id' =>           array('User ID',            'link', ATT_DEFAULT_USER_ID, 0, 'user'),
+     'admin_users' =>       array('Admin Users',        'json', '', 0),
+     'type'=>               array('Type',               'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 32 ),
+     'name'=>               array('Name',               'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
+     'sub_title'=>          array('Sub Title',          'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
+     'description'=>        array('Description',          'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
+     'url'=>                array('Url',                'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 64 ),
+     'domain'=>             array('Domain',             'str',  '', AF_SEARCHABLE, 128 ),
+     'email_address'=>      array('Email',              'email',  '', AF_SEARCHABLE|AF_HIDE_LIST, 128),
+     'languages'=>          array('Languages',          'json', 'en', AF_OBLIGATORY, 'language', array('active' => 1)),
+     'default_language'=>   array('Language',               'valSelect', 'en', AF_OBLIGATORY|AF_SEARCHABLE, $langArray),
+     //'social' =>            array('Social',             'json', '', 0),
+     'data' =>              array('Data',               'json', '', 0),
+     'template' =>          array('Template',           'str', '', 128),
+     'logo'   =>            array('Logo',               'image',   '', AF_HIDE_LIST, 128),
+     'logo_small' =>        array('Logo - Small',       'image',   '', AF_HIDE_LIST, 128),
+
+     'text_color'=>         array('Text Color',         'color',    '', AF_HIDE_LIST, 6),
+     'bg_color'=>           array('BG Color',           'color',    '', AF_HIDE_LIST, 6),
+     'theme_color1'=>       array('Theme Color 1',      'color',    '', AF_HIDE_LIST, 6),
+     'theme_color2'=>       array('Theme Color 2',      'color',    '', AF_HIDE_LIST, 6),
+     'font'=>               array('Font',               'str',  '', 0, 64 ),
+     'css'=>                array('Css',                'str',  '', 0, 64 ),
+     'location_id'=>        array('Location',           'link',   0, AF_HIDE_ADD, 'location'),
+     'footer'=>             array('Footer',             'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
+     'show_title'  =>       array('Show title',         'bool',     1,  AF_HIDE_ADD, 0),
+     'show_subtitle'  =>    array('Show subtitle',      'bool',     1,  AF_HIDE_ADD, 0),
+     'show_timing'  =>      array('Show timing',        'bool',     1,  AF_HIDE_ADD, 0),
+     'show_social'  =>      array('Show social',        'bool',     1,  AF_HIDE_ADD, 0),
+   ),
+
+   "minisite_page_type" => 
+   array(
+      'id'=>            array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 4),
+      'name'=>          array('Name',              'str',   '', 1, 32 ),
+   ),
+
+    "minisite_page" => 
+   array(
+      'id'=>                 array('ID',               'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 8),
+      'created'=>            array('Created',          'datetime', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT),
+      'timestamp'=>          array('Timestamp',        'timestamp', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT, 14 ),
+      'active'  =>           array('Active?',          'bool',     1,  AF_HIDE_ADD, 0),
+      'minisite_id'=>        array('Minisite',         'link',  0, AF_SEARCHABLE|AF_HIDE, 'minisite'),
+      'site_id'=>            array('Site',             'link',  0, AF_SEARCHABLE|AF_HIDE, 'site'),
+      'client_id'=>          array('Client',           'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
+      'user_id' =>           array('User ID',          'link', ATT_DEFAULT_USER_ID, 0, 'user'),
+      'type' =>              array('Type',             'many2one', 0, AF_LOG|AF_SEARCHABLE , 'minisite_page_type'),
+      'menu_title'=>         array('Menu Title',  'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
+      'page_title'=>         array('Page Title',  'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
+      'slug'=>               array('Slug',             'str',   '', 0, 128 ),
+      'search'=>             array('Search',           'json',   ''),
+      'row_order'=>          array('Row Order',        'int',   '', 0, 11 ),
+   ),
+
+   "minisite_layout" => 
+   array(
+      'id'=>            array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 2),
+      'name'=>          array('Name',              'str',   '', 1, 20 ),
+   ),
+
+   "minisite_exhibition_layout" => 
+   array(
+      'id'=>            array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 2),
+      'name'=>          array('Name',              'str',   '', 1, 20 ),
+   ),
    
+   "minisite_contact_layout" => 
+   array(
+      'id'=>            array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 2),
+      'name'=>          array('Name',              'str',   '', 1, 20 ),
+   ),
 
   "site" => 
   array(
@@ -2607,8 +2694,27 @@ $__CLASS_ATTRIBUTES = array(
     'copyright_url'       => array('Copyright URL',      'url', '', AF_HIDE_LIST, 255),     
                                                                                 
     'cloud_url'       => array('Cloud URL',      'url', '', AF_HIDE_LIST),     
-    'cloud_data'       => array('Cloud Data',     'json', '', AF_HIDE_LIST),        
+    'cloud_data'       => array('Cloud Data',     'json', '', AF_HIDE_LIST),  
   ),
+
+  "profile_media_map" => 
+  array(
+    'id'                   => array('ID'            , 'id',   0, AF_PRIMARY|AF_HIDE_LIST|AF_AUTOINCREMENT, 11),   
+    'user_id'              => array('User Id'       , 'link', ATT_DEFAULT_USER_ID, AF_OBLIGATORY|AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY, 'user'),
+    'media_id'             => array('Media Id'     , 'link', ATT_DEFAULT_NULL, AF_HIDE_ADD, 'media'),
+    'site_id'              => array('Site Id'     ,    'link', ATT_DEFAULT_SITE_ID,  AF_OBLIGATORY|AF_HIDE_ADD|AF_HIDE_LIST|AF_READONLY, 'site'),
+    'artist_id'            => array('Artist Id'     , 'link', ATT_DEFAULT_NULL, AF_OBLIGATORY|AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY, 'user'),
+    'name'                 => array('Name'  , 'str', '', AF_SEARCHABLE, 128), 
+    'curator_id'           => array('Curator Id'    , 'link', ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY, 'user'), 
+    'original_year'        => array('Original year'     , 'str', '', AF_HIDE_LIST, 4),     
+    'original_technique'   => array('Original technique', 'str', '', AF_HIDE_LIST, 255),
+    'artist_name'          => array('Artist Name'  , 'str', '', AF_SEARCHABLE, 50), 
+    'curator_name'         => array('Curator Name'  , 'str', '', AF_SEARCHABLE, 50), 
+    'created'              => array('Created',          'datetime',   ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY, 6 ),
+    'artwork_id'           =>array('Artwork Id'     , 'link', ATT_DEFAULT_NULL, AF_HIDE_ADD, 'artwork'),
+    'active'               => array('Active'        , 'bool', 1, 0, 1),
+   ),
+  
   
   "artwork" => 
   array(
@@ -2685,7 +2791,6 @@ $__CLASS_ATTRIBUTES = array(
     'related_media_json'  => array('Media (json)',      'json',     '', 0),
         
   ),
-  
     
   "source" => 
   array(
@@ -2930,6 +3035,7 @@ $__CLASS_ATTRIBUTES = array(
      'photo_json'       => array('Photo (json)',        'json',     '', 0),
      
      'display_name'     => array('Display name'  ,     'str',      '', 0, 50 ),
+     'gallery_name'     => array('Gallery name'  ,     'str',      '', 0, 50 ),
      'first_name'       => array('First name'    ,     'str',      '', 0, 50 ),
      'infix'            => array('Infix'     ,         'str',      '', 0, 20 ),
      'last_name'        => array('Last name'     ,     'str',      '', 0, 50 ),
@@ -2981,14 +3087,24 @@ $__CLASS_ATTRIBUTES = array(
      'golf_home_course' => array('Home Course',        'link', 0, 0, 'golf_club'),
      'golf_favorite_course' => array('Favorite Course',        'link', 0, 0, 'golf_club'),
      'golf_handicap'        => array('Handicap'     ,     'int',      0, 0, 6),
-
      'location_lat'         => array('Latitude'         , 'str','', AF_HIDE_ADD|AF_HIDE_LIST, 24),
      'location_long'        => array('Longitude'        , 'str','', AF_HIDE_ADD|AF_HIDE_LIST, 24),
      'location_bounds'      => array('Bounds',            'json', '', AF_HIDE_ADD|AF_HIDE_LIST),
      'address_formatted'    => array('Formatted Address', 'text',   '', AF_HIDE_LIST),
      
-
+     'gallery_solo_shows'   => array('Solo Shows'  ,      'html',     '', 0),
+     'gallery_group_shows'  => array('Group Shows'  ,      'html',     '', 0),
+     'press'                => array('Press'  ,      'html',     '', 0),
+     'awards'=>        array('Awards',           'json',  '', AF_SEARCHABLE|AF_HIDE_ADD),
      'data'=>          array('Data',           'json',  '', AF_SEARCHABLE|AF_HIDE_ADD),
+     'working_hours'=>        array('Working Hours',           'json',  '', AF_SEARCHABLE|AF_HIDE_ADD),
+     'social'=>        array('Social',           'json',  '', AF_SEARCHABLE|AF_HIDE_ADD),
+     'artist'  =>       array('artist',      'bool',     1,  AF_HIDE_ADD, 1),
+     'contact'=>        array('More Contacts',           'json',  '', AF_SEARCHABLE|AF_HIDE_ADD),
+     'solo_shows_'          => array('Solo Shows'  ,      'html',     '', 0),
+     'group_shows_'         => array('Group Shows'  ,      'html',     '', 0),
+     'press_data'               => array('Press data'  ,      'html',     '', 0),
+     'show_data'            => array('Show Data'  ,      'html',     '', 0),
   ),
 
 

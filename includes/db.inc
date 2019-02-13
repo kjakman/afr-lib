@@ -393,6 +393,7 @@ function db_getRow($query_str, $values = array(), $options=array()) {
 
 function db_getAll($query_str, $values = array(), $options=array()) {
   global $db;
+  //dump($query_str);
   $logOptions = array();
   if($_SESSION['log_db']) $time_start = microtime(true);
 

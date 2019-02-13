@@ -102,7 +102,7 @@
     $db_ops = array('add', 'del', 'edit', 'list', 'view');
     $db_op = in_array($oper, $db_ops);
     $oper_auth = $oper == 'new_object_dialog' ? 'add' : $oper;
-
+    
     if($db_op) {
       if(!$obj_type) json_error("$oper object: missing object type");
       if($oper != 'add' && $oper != 'list' && !$id) json_error("$oper $obj_type: missing id");
@@ -350,6 +350,7 @@
      //dump($obj_data);
        $id = $obj_data[obj_id];
        $user_id = $obj_data[user_id];
+       $contact = $obj_data[contact];
        $obj_type = 'user_profile';
        
        if($obj_data[date_of_birth]){
@@ -359,7 +360,7 @@
         $age = $diff->format("%y");
         if ($age < 18) json_error("Age should be greater than 18");
        }
-       
+
        if($obj_data[opening_time]){
         $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
         $opening_time = $obj_data[opening_time];
@@ -388,18 +389,28 @@
 
        }
 
-       if($obj_data[contact]){
-        $more_contact = array_filter($obj_data[contact]);
-        $obj_data[contact] = json_encode($more_contact, True);
+       $datas = [];
+       $count = count($contact['title']);
+       if($contact){
+         for( $i=0; $i<$count; $i++){
+          if($contact['title'][$i] != ''){
+           $datas[$i]['title'] = $contact['title'][$i];
+           $datas[$i]['email'] = $contact['email'][$i];
+           $datas[$i]['phone'] = $contact['phone'][$i];
+          }
+         }
        }
-
-       //if($obj_data[social])  $obj_data[social] = json_encode($obj_data[social]);
+       
+       if($obj_data[contact]) $obj_data[contact] = json_encode($datas,True);
+       
+       if($obj_data[social])  $obj_data[social] = json_encode($obj_data[social]);
 
        if($id) {
          list($id, $errors) = update_object($obj_type, $obj_data, $id);       
        } else {
          list($id, $errors) = add_object($obj_type, $obj_data);
        } 
+       if($errors) json_error($errors);
 
        $obj = get_object($obj_type, $id);
        $obj->next_tab = $obj_data['next_tab'];
@@ -412,9 +423,111 @@
        exit;      
        break;
 
-      case 'save-cv':
+       
+      case 'save-details':
         extract($obj_data);
         //dump($obj_data);
+        $id = $obj_data[obj_id];
+        $user_id = $obj_data[user_id];
+        $contact = $obj_data[contact];
+        $obj_type = 'user_profile';
+
+        if($obj_data[opening_time]){
+         $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+         $opening_time = $obj_data[opening_time];
+         $closing_time = $obj_data[closing_time];
+         $holiday = $obj_data[holiday];
+         $time = [];
+         for($i=0; $i<=6; $i++){
+           $day = $days[$i];
+           $opening_times = $start = $opening_time[$day];
+           $closing_times = $end = $closing_time[$day];
+           if($holiday[$day] == '1' ){
+             $opening_times = '0:00';
+             $closing_times = '0:00';
+           }
+            
+           if( (strlen($start) != 5) ||  (strlen($end) != 5)){
+             $start = str_pad($start, 5, "0", STR_PAD_LEFT);
+             $end = str_pad($end, 5, "0", STR_PAD_LEFT);
+           }
+           if($start >= $end){
+             if(($start != '00:00') && ($end != '00:00')) json_error($day."- End time must be after start time");
+           } 
+           $time[$day] = $opening_times.'-'.$closing_times;        
+         }
+         $obj_data['working_hours'] = json_encode($time);
+
+        }
+
+        $datas = [];
+        $count = count($contact['title']);
+        if($contact){
+          for( $i=0; $i<$count; $i++){
+           if($contact['title'][$i] != ''){
+            $datas[$i]['title'] = $contact['title'][$i];
+            $datas[$i]['email'] = $contact['email'][$i];
+            $datas[$i]['phone'] = $contact['phone'][$i];
+           }
+          }
+          $obj_data[contact] = json_encode($datas,True);
+        }
+        
+        if($obj_data[social])  $obj_data[social] = json_encode($obj_data[social]);
+
+        if($id) {
+          list($id, $errors) = update_object($obj_type, $obj_data, $id);       
+        } 
+        if($errors) json_error($errors);
+
+        $obj = get_object($obj_type, $id);
+        $obj->next_tab = $obj_data['next_tab'];
+        
+        $result->success = 1;
+        $result->data = $obj;
+        $result->message = "OK. Saved profile details";
+
+        echo(json_encode($result));
+        exit;      
+      break;
+
+      case 'save-cv':
+        extract($obj_data);
+      //dump($obj_data);
+
+        $solo_shows_ = $obj_data[solo_shows_];
+        $count = count($solo_shows_['year']);
+        $solo = [];
+        for( $i=0; $i<$count; $i++){
+          if($solo_shows_['year'][$i] != ''){
+            $solo[$i]['year'] = $solo_shows_['year'][$i].'-'.$solo_shows_['month'][$i];
+            $solo[$i]['description'] = $solo_shows_['description'][$i];
+          }         
+        }        
+        $obj_data[solo_shows_] = json_encode($solo);
+
+        $group_shows_ = $obj_data[group_shows_];
+        $count = count($group_shows_['year']);
+        $group = [];
+        for( $i=0; $i<$count; $i++){
+          if($group_shows_['year'][$i] != ''){
+            $group[$i]['year'] = $group_shows_['year'][$i].'-'.$group_shows_['month'][$i];
+            $group[$i]['description'] = $group_shows_['description'][$i];
+          }         
+        }       
+        $obj_data[group_shows_] = json_encode($group);
+
+        $press_data = $obj_data[press_data];
+        $count = count($press_data['year']);
+        $press_arr = [];
+        for( $i=0; $i<$count; $i++){
+          if($press_data['year'][$i] != ''){
+            $press_arr[$i]['year'] = $press_data['year'][$i].'-'.$press_data['month'][$i];
+            $press_arr[$i]['description'] = $press_data['description'][$i];
+          }         
+        }        
+        $obj_data[press_data] = json_encode($press_arr);
+        
         $awards = $obj_data[awards];
         $count = count($awards['year']);
         $datas = [];
@@ -423,10 +536,11 @@
             $datas[$i]['year'] = $awards['year'][$i].'-'.$awards['month'][$i];
             $datas[$i]['description'] = $awards['description'][$i];
           }         
-        }
-        
+        }        
         $obj_data[awards] = json_encode($datas);
-       
+
+        if($obj_data[show_data])  $obj_data[show_data] = json_encode($obj_data[show_data],True);
+
         if($id){
           list($id, $errors) = update_object($obj_type, $obj_data, $id);
         }else{
@@ -438,7 +552,7 @@
         
         $result->success = 1;
         $result->data = $obj;
-        $result->message = "OK. Saved profile";
+        $result->message = "OK. Saved profile CV";
 
         echo(json_encode($result));
         exit;      
@@ -471,24 +585,30 @@
 
       case 'save-minisite-page':
         extract($obj_data);
-
+        //dump($obj_data);
         $obj_type = "minisite_page";
-        $obj_id = $obj_data[obj_id];        
-        $obj_data['slug'] = url_safe("/".$obj_data['menu_title']."/", true); // slashes allowed
+        $obj_id = $obj_data[obj_id];  
+        $user_id = $obj_data[user_id];
+        $minisite_id = $obj_data[minisite_id];    
+        $obj_data['menu_title'] = url_safe($obj_data['menu_title'], true);
+        $slug = $obj_data['slug'] = url_safe("/".$obj_data['menu_title']."/", true); // slashes allowed
         
         if(!$obj_id)
           $col = find_objects('minisite_page', ['user_id' => $obj_data[user_id], 'minisite_id' => $obj_data[minisite_id],'slug' => $obj_data['slug'] , 'active' => 1]);
         else
           $col = $data = db_getAll("select * from minisite_page where user_id= '$obj_data[user_id]' AND active= '1' AND slug= '$slug' AND id!= '$obj_id' AND minisite_id = '$obj_data[minisite_id]' ");
 
+        //$get_data = find_page_menus($obj_id, $user_id, $minisite_id, $slug);
+        //if($get_data){
+          //$obj_data['data'] = json_encode($get_data, True);
+        //}
+
         if($col)  json_error($obj_data['slug']." is already used, Please choose a unique menu title"); 
          
-        if($obj_data[type] == 10) json_error("Home page cannot be added");
+        if($obj_data[type] == 10) json_error("Home page cannot be added, its already present. You can edit it");
         
         if($obj_data[minisite_id]){
           if(!$obj_id){
-            $obj_data['page_title'] = $obj_data['menu_title'];
-
             list($id, $errors) = add_object($obj_type, $obj_data);
             print_log("save-minisite: added: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
           }else{
@@ -504,7 +624,7 @@
 
         $obj = get_object($obj_type, $id);
         $obj->next_tab = $obj_data['next_tab'];
-        
+        //dump($obj);
         $result->success = 1;
         $result->data = $obj;    
         $result->message = "OK. Minisite Pages Saved";       
@@ -527,13 +647,13 @@
           if($data_arr_encode){
             foreach($artist_ids as $artist_id){             //check If media exists for the artist
               $media = find_object('media_collection', ['user_id' => $user_id, 'artist_id' => $artist_id, 'type' => 120,'active' => 1]);
-              if(!$media){
+              /*if(!$media){
                 $user = get_user($artist_id);
                 $display_name = user_display_name($user);
                 json_error("No medias for ".$display_name);                
-              }else{
+              }else{ */
                 $obj_data[search] = json_encode(array_unique(array_merge(json_decode($data->search, true),json_decode($search, true))));
-              }
+              //}
             }
           }else{
             $obj_data[search] = $search;
@@ -1963,6 +2083,7 @@
   
         
       $val = trim($obj_data['search']);
+      $filter_data = trim($obj_data['filter']);
       
       $scope->searchvalue = $val;
       $_SESSION['searchvalue']=$val; 
@@ -1976,15 +2097,21 @@
       if(count($vals) > 1) {
         $search_options['associative'] = 1; /** return assoc. array */
         $assocArrays = [];
-        foreach($vals as $v) {          
-          $assocArrays[] = object_site_search($obj_type, $search, $v, $search_options);
+        foreach($vals as $v) { 
+          if(!$filter_data)         
+            $assocArrays[] = object_site_search($obj_type, $search, $v, $search_options);
+          else
+            $assocArrays[] = object_site_filter($obj_type, $search, $v, $search_options, $filter_data);
         }
         
         $objs = [];
         $result = call_user_func_array('array_intersect_key', $assocArrays);
         foreach($result as $id => $obj) $objs[] = $obj;
-      } else {        
-        $objs = object_site_search($obj_type, $search, $val, $search_options);
+      } else {   
+        if(!$filter_data)     
+          $objs = object_site_search($obj_type, $search, $val, $search_options);
+        else
+          $objs = object_site_filter($obj_type, $search, $val, $search_options, $filter_data);
       }
       
       if($mode = $obj_data['mode']) {  //TODO need to update the softdelete column using the ids
@@ -5804,6 +5931,7 @@
         echo json_encode($result);exit;
       }
       extract($obj_data);
+      //dump($obj_data);
       
       if($parent_type == 'media_collection' && $parent_field == 'map') { // special case
         //die("gh");
@@ -5824,6 +5952,24 @@
           $mediaObjs[] = $mediaObj;
           
         }
+      } elseif($parent_type == 'user' && $parent_field == 'map_profile'){
+        $search = ['active' => 1, 'user_id' => $parent_id];
+        //dump($search);
+        $mapObjs = find_objects('profile_media_map', $search);
+        //dump($mapObjs);
+        $files = [];
+        $edit_url = "edit-url";
+        
+        foreach($mapObjs as $mapObj) { // expensive
+          $mediaObj = get_object('media', $mapObj->media_id);
+          $mediaObj->media_id = $mapObj->media_id;
+          $mediaObj->map_id = $mediaObj->obj_id = $mapObj->id;
+          $mediaObj->obj_type = 'profile_media_map';
+          $mediaObj->delete_url = "/ajax.php?oper=del&obj_type=profile_media_map&id=".$mapObj->id;
+          
+          $mediaObjs[] = $mediaObj;
+        }
+
       } elseif($inline) {
         $media = get_object($parent_type, $parent_id, $parent_field);
         $mediaObjs = isJson($media) ? json_decode($media) : explode(',', $media);       
