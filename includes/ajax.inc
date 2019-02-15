@@ -493,51 +493,78 @@
 
       case 'save-cv':
         extract($obj_data);
-      //dump($obj_data);
 
-        $solo_shows_ = $obj_data[solo_shows_];
-        $count = count($solo_shows_['year']);
-        $solo = [];
-        for( $i=0; $i<$count; $i++){
-          if($solo_shows_['year'][$i] != ''){
-            $solo[$i]['year'] = $solo_shows_['year'][$i].'-'.$solo_shows_['month'][$i];
-            $solo[$i]['description'] = $solo_shows_['description'][$i];
-          }         
-        }        
-        $obj_data[solo_shows_] = json_encode($solo);
+        function sortyear($a, $b){
+          if ($a['year'] == $b['year']) return 0;
+          list($ay,$am,$ad) = explode('-', $a['year']);
+          list($by,$bm,$bd) = explode('-', $b['year']);
 
-        $group_shows_ = $obj_data[group_shows_];
-        $count = count($group_shows_['year']);
-        $group = [];
-        for( $i=0; $i<$count; $i++){
-          if($group_shows_['year'][$i] != ''){
-            $group[$i]['year'] = $group_shows_['year'][$i].'-'.$group_shows_['month'][$i];
-            $group[$i]['description'] = $group_shows_['description'][$i];
-          }         
-        }       
-        $obj_data[group_shows_] = json_encode($group);
+          if ($ay == $by){
+            $am = strtotime($am); 
+            $bm = strtotime($bm);
+            return ($am < $bm ? 1 : -1);
+          }              
+          else return ($a['year'] < $b['year'] ? 1 : -1);
+        }  
 
-        $press_data = $obj_data[press_data];
-        $count = count($press_data['year']);
-        $press_arr = [];
-        for( $i=0; $i<$count; $i++){
-          if($press_data['year'][$i] != ''){
-            $press_arr[$i]['year'] = $press_data['year'][$i].'-'.$press_data['month'][$i];
-            $press_arr[$i]['description'] = $press_data['description'][$i];
-          }         
-        }        
-        $obj_data[press_data] = json_encode($press_arr);
         
-        $awards = $obj_data[awards];
-        $count = count($awards['year']);
-        $datas = [];
-        for( $i=0; $i<$count; $i++){
-          if($awards['year'][$i] != ''){
-            $datas[$i]['year'] = $awards['year'][$i].'-'.$awards['month'][$i];
-            $datas[$i]['description'] = $awards['description'][$i];
-          }         
-        }        
-        $obj_data[awards] = json_encode($datas);
+        if($obj_data[solo_shows_]){
+          $solo_shows_ = $obj_data[solo_shows_];
+          $count = count($solo_shows_['year']);
+          $solo = [];
+          for( $i=0; $i<$count; $i++){
+            if($solo_shows_['year'][$i] != ''){
+              $solo[$i]['year'] = $solo_shows_['year'][$i].'-'.$solo_shows_['month'][$i];
+              $solo[$i]['description'] = $solo_shows_['description'][$i];
+            }         
+          } 
+          
+          uasort($solo, 'sortyear');
+          $obj_data[solo_shows_] = json_encode(array_values($solo));
+        }
+          
+        if($obj_data[group_shows_]){
+          $group_shows_ = $obj_data[group_shows_];
+          $count = count($group_shows_['year']);
+          $group = [];
+          for( $i=0; $i<$count; $i++){
+            if($group_shows_['year'][$i] != ''){
+              $group[$i]['year'] = $group_shows_['year'][$i].'-'.$group_shows_['month'][$i];
+              $group[$i]['description'] = $group_shows_['description'][$i];
+            }         
+          } 
+          uasort($group, 'sortyear');
+          $obj_data[group_shows_] = json_encode(array_values($group));
+        }
+          
+        if($obj_data[press_data]){
+          $press_data = $obj_data[press_data];
+          $count = count($press_data['year']);
+          $press_arr = [];
+          for( $i=0; $i<$count; $i++){
+            if($press_data['year'][$i] != ''){
+              $press_arr[$i]['year'] = $press_data['year'][$i].'-'.$press_data['month'][$i];
+              $press_arr[$i]['description'] = $press_data['description'][$i];
+            }         
+          }   
+          uasort($press_arr, 'sortyear');     
+          $obj_data[press_data] = json_encode(array_values($press_arr));
+        }
+          
+        if($obj_data[awards]){
+          $awards = $obj_data[awards];
+          $count = count($awards['year']);
+          $datas = [];
+          for( $i=0; $i<$count; $i++){
+            if($awards['year'][$i] != ''){
+              $datas[$i]['year'] = $awards['year'][$i].'-'.$awards['month'][$i];
+              $datas[$i]['description'] = $awards['description'][$i];
+            }         
+          } 
+          uasort($datas, 'sortyear');       
+          $obj_data[awards] = json_encode(array_values($datas));
+        }  
+        
 
         if($obj_data[show_data])  $obj_data[show_data] = json_encode($obj_data[show_data],True);
 

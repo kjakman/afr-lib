@@ -4807,6 +4807,7 @@ function controller_gallery_backend($app, $options = []) {
         $solo_shows = json_decode($profile_data->solo_shows_);
         $group_shows = json_decode($profile_data->group_shows_);
         $press_data = json_decode($profile_data->press_data);
+        //dump($solo_shows);
         
         function sortMonths($a, $b) {
           if ($a->year == $b->year) return 0;
@@ -4821,15 +4822,15 @@ function controller_gallery_backend($app, $options = []) {
           else return ($a->year < $b->year ? 1 : -1);
         } 
 
-        uasort($awards, 'sortMonths');
-        uasort($solo_shows, 'sortMonths');
-        uasort($group_shows, 'sortMonths');
-        uasort($press_data, 'sortMonths');
+        //uasort($awards, 'sortMonths');
+        //uasort($solo_shows, 'sortMonths');
+        //uasort($group_shows, 'sortMonths');
+        //uasort($press_data, 'sortMonths');
 
-        $scope->awards = json_encode($awards, TRUE);
-        $scope->solo_shows = json_encode($solo_shows, TRUE);
-        $scope->group_shows = json_encode($group_shows, TRUE);
-        $scope->press_data = json_encode($press_data, TRUE);
+        //$scope->awards = json_encode($awards, TRUE);
+        //$scope->solo_shows = json_encode($solo_shows, TRUE);
+        //$scope->group_shows = json_encode($group_shows, TRUE);
+        //$scope->press_data = json_encode($press_data, TRUE);
 
         controller_artist_profile($app);
         $profile = $scope->profile;
@@ -5416,7 +5417,7 @@ function controller_gallery_collections($app, $options = []) {
       else $b = (array)$data;
       $merge[] = array_merge($a, $b);
     }
-    $scope->artworks = $merge;
+    $scope->artworks = $artworks;
 
     if($collectionObj->type == MEDIA_COLLECTION_TYPE_EXHIBITION) {
       if($scope->curator_id = $curator_id = $collectionObj->user_id) $scope->curator = get_user($collectionObj->user_id);
