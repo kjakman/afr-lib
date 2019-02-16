@@ -4955,3 +4955,14 @@ function loop_exhibition($exhibitionObjs){
   }
   return $pre;
 }
+
+function update_artist_name($user_id, $artist_name){
+  $find_artworks = find_objects('artwork', ['artist_id' => $user_id, 'active' => 1]);
+  foreach($find_artworks as $artwork){
+    $artwork_id = $artwork->id;
+    $artwork->artist_name = $artist_name;
+    list($id, $errors) = update_object('artwork', $artwork, $artwork_id);  
+  }
+  if($errors) json_error($errors);
+  else return 1;
+}

@@ -404,13 +404,19 @@
        if($obj_data[contact]) $obj_data[contact] = json_encode($datas,True);
        
        if($obj_data[social])  $obj_data[social] = json_encode($obj_data[social]);
-
+       
+       $artist_name = $obj_data[display_name];
+        
        if($id) {
          list($id, $errors) = update_object($obj_type, $obj_data, $id);       
        } else {
          list($id, $errors) = add_object($obj_type, $obj_data);
-       } 
+       }
+
        if($errors) json_error($errors);
+       else {
+        if($artist_name) $artist_update = update_artist_name($user_id, $artist_name);
+       }
 
        $obj = get_object($obj_type, $id);
        $obj->next_tab = $obj_data['next_tab'];
@@ -790,7 +796,6 @@
     case 'save-collection':
       $obj_type = 'media_collection';
       extract($obj_data);
-
       $type_name = get_object('media_collection_type', $type, 'name');      
       
       $id = $obj_id;
@@ -815,7 +820,8 @@
           
           $loc_flds = ['location_lat','location_long','location_accuracy','address_street','address_number','address_state','address_postcode','address_city','address_country','address_formatted'];
           if($loc_id = $obj_data['location_id']) {
-            if(!$id) $obj_data['address_formatted'] = get_object('location', $loc_id, 'address_formatted');
+            //if(!$id) 
+            $obj_data['address_formatted'] = get_object('location', $loc_id, 'address_formatted');
           } else if($lat && $lng) {
             foreach($loc_flds as $fld) $locData[$fld] = $obj_data[$fld];
             list($loc_id, $loc_errors) = add_object('location', $locData);
@@ -896,7 +902,7 @@
           $address_changed = true;
           $obj_data['address_formatted'] = $address;
         }
-      }        
+      }     
       
       if($type == MEDIA_COLLECTION_TYPE_EXHIBITION) {
         
