@@ -3,8 +3,8 @@
           
           <form id="user_profile_form" class="ajax-submit" data-handler="save-profile" data-toggle="validator" data-reload_link="#user-verification-link">
             <!-- <input type="hidden" name="obj_type" value="user_profile" /> -->
-            <input type="hidden" name="obj_id"  value="{$scope.user.profile_id}" />
-            <input type="hidden" name="user_id" value="{$scope.user.user_id}" />
+            <input type="hidden" name="obj_id"  value="{$profile.profile_id}" />
+            <input type="hidden" name="user_id" value="{$profile.user_id}" />
             <input type="hidden" name="site_id" value="{$site.id}" />
             <input type="hidden" name="page"  value="profile" />
             <input type="hidden" name="artist" value="1" />

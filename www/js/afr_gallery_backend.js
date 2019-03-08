@@ -690,9 +690,8 @@ function bstArtistsFormatter(value, row, index) {
   for(var i=0; i<val.length; i++){
      new_val += g_artists[val[i]] + ",";
   }
-    return new_val.slice(0, -1);
-    
-  
+
+    return new_val.slice(0, -1); 
 }
 
 function gbe_confirm_callback() {

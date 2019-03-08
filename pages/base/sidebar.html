@@ -2,6 +2,7 @@
 
 {block name=top}
   {if ($user)}
+  {$p = '/backend'}
   <div class="dropdown abs_top_right user-avatar ztop">
     <a href="#" class="btn btn-default dropdown-toggle" id="dropdownMenu1" 
        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -10,12 +11,12 @@
     
     <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenu1">
       <li><span class="ml10"><b>{$user.display_name}</b></span></li>
-      <li><a href="{$smarty.const.PAGE_PROFILE|link}{$user.id}">View Profile</a></li>
-      <li><a href="{$smarty.const.PAGE_EDIT_PROFILE|link}{$user.id}">Edit Profile</a></li>
-      <li><a href="{$smarty.const.PAGE_ACCOUNT|link}{$user.id}">Account</a></li>
+      <!-- <li><a href="{$smarty.const.PAGE_PROFILE|link}{$user.id}">View Profile</a></li> -->
+      <li><a href="{$p}/profile/{$user.id}?_pv=1" class="ajax-loader" data-target="#subview-container">View Profile</a></li>
+      <li id="edit-profile"><a href="{$p}/ACsettings"> Edit Profile</a></li>
+      <!-- <li><a href="{$smarty.const.PAGE_ACCOUNT|link}{$user.id}">Account</a></li> -->
       <li><a href="?act=logout">Logout</a></li>
     </ul>
-    
   </div>
     
 
@@ -76,6 +77,7 @@
   			htmlbodyHeightUpdate()
 		});
 	});
+
 	</script>
   {/literal}
 {/block}

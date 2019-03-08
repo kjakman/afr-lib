@@ -313,7 +313,6 @@
     
     case 'save-artwork':
       extract($obj_data);
-        //dump($obj_data);
       print_log("save-artwork: type: {$obj_type} id: {$obj_id} data:".dump($obj_data,true), 'gallery', LOG_LEVEL_TEST);
       //if(isset($obj_data['type']) && !$type) json_error("Please select a category."); 
       //if(isset($obj_data['status']) && !$status) json_error("Please select a status."); 
@@ -347,7 +346,6 @@
 
        case 'save-profile':
        extract($obj_data);
-     //dump($obj_data);
        $id = $obj_data[obj_id];
        $user_id = $obj_data[user_id];
        $contact = $obj_data[contact];
@@ -657,7 +655,7 @@
 
         $obj = get_object($obj_type, $id);
         $obj->next_tab = $obj_data['next_tab'];
-        //dump($obj);
+
         $result->success = 1;
         $result->data = $obj;    
         $result->message = "OK. Minisite Pages Saved";       
@@ -796,6 +794,7 @@
     case 'save-collection':
       $obj_type = 'media_collection';
       extract($obj_data);
+      
       $type_name = get_object('media_collection_type', $type, 'name');      
       
       $id = $obj_id;
@@ -4080,7 +4079,9 @@
         $params = ['site_id' => $site_id, 'user_level' => 10, 'roles' => USER_ROLE_ARTIST, 'validate_email' => 0];
         
       } else {
-        $validate_email = true;      
+        $validate_email = true;
+        /*Automatically make a new user as curator - For Now*/  
+        $params = ['site_id' => $site_id, 'roles' => USER_ROLE_ARTIST, 'user_level' => 20];
       }
       
       list($user_id, $errors) = user_register($username, $pw1, $profileData, $params);
@@ -5307,9 +5308,9 @@
       //if($error = check_required($obj_data, array('site_id' => "Site ID", 'user_id' => "User ID"))) json_error("Missing: ".implode(', ', $error));
             
       if(!$app->user_id) json_error("not logged in");
-      
-      $artist_ids = ($app->user_level < USER_LEVEL_ADMIN) ? user_artist_list($app->user_id) : find_objects('user', ['user.site_id' => $app->site->id, 'roles & '.USER_ROLE_ARTIST => ['>', 0]], ['fields' => 'user.id']);  
-      
+     
+      $artist_ids = ($app->user_level < USER_LEVEL_ADMIN) ? user_artist_list($app->user_id) : find_objects('user', ['user.site_id' => $app->site->id, 'roles & '.USER_ROLE_ARTIST => ['>', 0]], ['fields' => 'user.id']); 
+
       print_log("find-artist ul={$app->user_level} ids:".dump($artist_ids,true), 'backend', LOG_LEVEL_TEST);
       $rows = [];
 
