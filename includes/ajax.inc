@@ -313,7 +313,6 @@
     
     case 'save-artwork':
       extract($obj_data);
-        //dump($obj_data);
       print_log("save-artwork: type: {$obj_type} id: {$obj_id} data:".dump($obj_data,true), 'gallery', LOG_LEVEL_TEST);
       //if(isset($obj_data['type']) && !$type) json_error("Please select a category."); 
       //if(isset($obj_data['status']) && !$status) json_error("Please select a status."); 
@@ -347,7 +346,6 @@
 
        case 'save-profile':
        extract($obj_data);
-     //dump($obj_data);
        $id = $obj_data[obj_id];
        $user_id = $obj_data[user_id];
        $contact = $obj_data[contact];
@@ -404,13 +402,19 @@
        if($obj_data[contact]) $obj_data[contact] = json_encode($datas,True);
        
        if($obj_data[social])  $obj_data[social] = json_encode($obj_data[social]);
-
+       
+       $artist_name = $obj_data[display_name];
+        
        if($id) {
          list($id, $errors) = update_object($obj_type, $obj_data, $id);       
        } else {
          list($id, $errors) = add_object($obj_type, $obj_data);
-       } 
+       }
+
        if($errors) json_error($errors);
+       else {
+        if($artist_name) $artist_update = update_artist_name($user_id, $artist_name);
+       }
 
        $obj = get_object($obj_type, $id);
        $obj->next_tab = $obj_data['next_tab'];
@@ -493,51 +497,78 @@
 
       case 'save-cv':
         extract($obj_data);
-      //dump($obj_data);
 
-        $solo_shows_ = $obj_data[solo_shows_];
-        $count = count($solo_shows_['year']);
-        $solo = [];
-        for( $i=0; $i<$count; $i++){
-          if($solo_shows_['year'][$i] != ''){
-            $solo[$i]['year'] = $solo_shows_['year'][$i].'-'.$solo_shows_['month'][$i];
-            $solo[$i]['description'] = $solo_shows_['description'][$i];
-          }         
-        }        
-        $obj_data[solo_shows_] = json_encode($solo);
+        function sortyear($a, $b){
+          if ($a['year'] == $b['year']) return 0;
+          list($ay,$am,$ad) = explode('-', $a['year']);
+          list($by,$bm,$bd) = explode('-', $b['year']);
 
-        $group_shows_ = $obj_data[group_shows_];
-        $count = count($group_shows_['year']);
-        $group = [];
-        for( $i=0; $i<$count; $i++){
-          if($group_shows_['year'][$i] != ''){
-            $group[$i]['year'] = $group_shows_['year'][$i].'-'.$group_shows_['month'][$i];
-            $group[$i]['description'] = $group_shows_['description'][$i];
-          }         
-        }       
-        $obj_data[group_shows_] = json_encode($group);
+          if ($ay == $by){
+            $am = strtotime($am); 
+            $bm = strtotime($bm);
+            return ($am < $bm ? 1 : -1);
+          }              
+          else return ($a['year'] < $b['year'] ? 1 : -1);
+        }  
 
-        $press_data = $obj_data[press_data];
-        $count = count($press_data['year']);
-        $press_arr = [];
-        for( $i=0; $i<$count; $i++){
-          if($press_data['year'][$i] != ''){
-            $press_arr[$i]['year'] = $press_data['year'][$i].'-'.$press_data['month'][$i];
-            $press_arr[$i]['description'] = $press_data['description'][$i];
-          }         
-        }        
-        $obj_data[press_data] = json_encode($press_arr);
         
-        $awards = $obj_data[awards];
-        $count = count($awards['year']);
-        $datas = [];
-        for( $i=0; $i<$count; $i++){
-          if($awards['year'][$i] != ''){
-            $datas[$i]['year'] = $awards['year'][$i].'-'.$awards['month'][$i];
-            $datas[$i]['description'] = $awards['description'][$i];
-          }         
-        }        
-        $obj_data[awards] = json_encode($datas);
+        if($obj_data[solo_shows_]){
+          $solo_shows_ = $obj_data[solo_shows_];
+          $count = count($solo_shows_['year']);
+          $solo = [];
+          for( $i=0; $i<$count; $i++){
+            if($solo_shows_['year'][$i] != ''){
+              $solo[$i]['year'] = $solo_shows_['year'][$i].'-'.$solo_shows_['month'][$i];
+              $solo[$i]['description'] = $solo_shows_['description'][$i];
+            }         
+          } 
+          
+          uasort($solo, 'sortyear');
+          $obj_data[solo_shows_] = json_encode(array_values($solo));
+        }
+          
+        if($obj_data[group_shows_]){
+          $group_shows_ = $obj_data[group_shows_];
+          $count = count($group_shows_['year']);
+          $group = [];
+          for( $i=0; $i<$count; $i++){
+            if($group_shows_['year'][$i] != ''){
+              $group[$i]['year'] = $group_shows_['year'][$i].'-'.$group_shows_['month'][$i];
+              $group[$i]['description'] = $group_shows_['description'][$i];
+            }         
+          } 
+          uasort($group, 'sortyear');
+          $obj_data[group_shows_] = json_encode(array_values($group));
+        }
+          
+        if($obj_data[press_data]){
+          $press_data = $obj_data[press_data];
+          $count = count($press_data['year']);
+          $press_arr = [];
+          for( $i=0; $i<$count; $i++){
+            if($press_data['year'][$i] != ''){
+              $press_arr[$i]['year'] = $press_data['year'][$i].'-'.$press_data['month'][$i];
+              $press_arr[$i]['description'] = $press_data['description'][$i];
+            }         
+          }   
+          uasort($press_arr, 'sortyear');     
+          $obj_data[press_data] = json_encode(array_values($press_arr));
+        }
+          
+        if($obj_data[awards]){
+          $awards = $obj_data[awards];
+          $count = count($awards['year']);
+          $datas = [];
+          for( $i=0; $i<$count; $i++){
+            if($awards['year'][$i] != ''){
+              $datas[$i]['year'] = $awards['year'][$i].'-'.$awards['month'][$i];
+              $datas[$i]['description'] = $awards['description'][$i];
+            }         
+          } 
+          uasort($datas, 'sortyear');       
+          $obj_data[awards] = json_encode(array_values($datas));
+        }  
+        
 
         if($obj_data[show_data])  $obj_data[show_data] = json_encode($obj_data[show_data],True);
 
@@ -624,7 +655,7 @@
 
         $obj = get_object($obj_type, $id);
         $obj->next_tab = $obj_data['next_tab'];
-        //dump($obj);
+
         $result->success = 1;
         $result->data = $obj;    
         $result->message = "OK. Minisite Pages Saved";       
@@ -763,7 +794,7 @@
     case 'save-collection':
       $obj_type = 'media_collection';
       extract($obj_data);
-
+      
       $type_name = get_object('media_collection_type', $type, 'name');      
       
       $id = $obj_id;
@@ -788,7 +819,8 @@
           
           $loc_flds = ['location_lat','location_long','location_accuracy','address_street','address_number','address_state','address_postcode','address_city','address_country','address_formatted'];
           if($loc_id = $obj_data['location_id']) {
-            if(!$id) $obj_data['address_formatted'] = get_object('location', $loc_id, 'address_formatted');
+            //if(!$id) 
+            $obj_data['address_formatted'] = get_object('location', $loc_id, 'address_formatted');
           } else if($lat && $lng) {
             foreach($loc_flds as $fld) $locData[$fld] = $obj_data[$fld];
             list($loc_id, $loc_errors) = add_object('location', $locData);
@@ -869,7 +901,7 @@
           $address_changed = true;
           $obj_data['address_formatted'] = $address;
         }
-      }        
+      }     
       
       if($type == MEDIA_COLLECTION_TYPE_EXHIBITION) {
         
@@ -4047,7 +4079,9 @@
         $params = ['site_id' => $site_id, 'user_level' => 10, 'roles' => USER_ROLE_ARTIST, 'validate_email' => 0];
         
       } else {
-        $validate_email = true;      
+        $validate_email = true;
+        /*Automatically make a new user as curator - For Now*/  
+        $params = ['site_id' => $site_id, 'roles' => USER_ROLE_ARTIST, 'user_level' => 20];
       }
       
       list($user_id, $errors) = user_register($username, $pw1, $profileData, $params);
@@ -5274,9 +5308,9 @@
       //if($error = check_required($obj_data, array('site_id' => "Site ID", 'user_id' => "User ID"))) json_error("Missing: ".implode(', ', $error));
             
       if(!$app->user_id) json_error("not logged in");
-      
-      $artist_ids = ($app->user_level < USER_LEVEL_ADMIN) ? user_artist_list($app->user_id) : find_objects('user', ['user.site_id' => $app->site->id, 'roles & '.USER_ROLE_ARTIST => ['>', 0]], ['fields' => 'user.id']);  
-      
+     
+      $artist_ids = ($app->user_level < USER_LEVEL_ADMIN) ? user_artist_list($app->user_id) : find_objects('user', ['user.site_id' => $app->site->id, 'roles & '.USER_ROLE_ARTIST => ['>', 0]], ['fields' => 'user.id']); 
+
       print_log("find-artist ul={$app->user_level} ids:".dump($artist_ids,true), 'backend', LOG_LEVEL_TEST);
       $rows = [];
 

@@ -905,12 +905,12 @@ function user_artist_list($userObj_or_id, $options = array()) {
   $userObj = any2obj('user', $userObj_or_id);
   $artist_ids = [];
   //if($userObj->user_level >= USER_LEVEL_CURATOR || !user_has_role($userObj, USER_ROLE_CURATOR)) return [];
-  
-  if($userObj->user_level >= USER_LEVEL_ARTIST || user_has_role($userObj, USER_ROLE_ARTIST)) $artist_ids[] = $userObj->id; // this user is a artist
+  if($userObj->user_level >= USER_LEVEL_ARTIST || user_has_role($userObj, USER_ROLE_ARTIST)){
+    $artist_ids[] = $userObj->id; // this user is a artist
+  } 
 
   if($mapObjs = find_objects('user_map', ['user_id' => $userObj->id, 'verified' => 1, 'active' => 1])) {
-    //dump($mapObjs);
-    $artist_ids = array();
+    //$artist_ids = array();
     foreach($mapObjs as $mapObj) {
       
       $perms = json_decode($mapObj->permissions);
