@@ -3219,7 +3219,7 @@ function controller_user_profile($app, $options = []) {
   
   $obj_type = $scope->obj_type = $app->page->object_type ?: 'user';
   $obj_id = $scope->obj_id = $app->page->object_id;
-                      
+
   //die("t={$obj_type} id={$obj_id}");
   $obj = $obj_type && $obj_id ? get_object($obj_type, $obj_id) : null;
   
@@ -3443,8 +3443,17 @@ function controller_artist_profile($app, $options = []) {
   }
   
   $scope->profile = $userObj;
+  //dump($userObj);
   $scope->auth_edit = $auth_edit = auth_user_profile($user_id);
   $scope->auth_login = auth_login($user_id);
+
+  //Mail For Time being in user profile page
+  if($obj_id){
+    $scope->mail_controller = 'gallery_artworks';
+    $scope->mail_template = 'mail/mail-profile.html';
+    
+    $scope->obj_id = $obj_id;
+  }
   
   $scope->auth_edit = $scope->auth_edit_user = $auth_edit; // scope auth_edit overrridden somewhere
   //die("AL=".$scope->auth_login." edit=".$auth_edit);
@@ -5193,12 +5202,14 @@ function controller_gallery_item($app, $options = []) {
 
 function controller_gallery_artworks($app, $options = []) {
   global $u_id;
+  
   $__header = $app->header; 
   $__header->styles[] = "/afr/css/gallery/afr_gallery.css?ver={$app->version}";
   $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
   $siteObj = $app->site;
   
   $scope = $app->page->scope;
+  $scope->user_id = $u_id;
   $obj_id = $scope->obj_id = $scope->obj_id ?: $app->object_id;
   $exh_id = $app->params['exh_id'];
   $obj_type = $scope->obj_type = $scope->obj_type ?: "artwork"; // $app->object_type;
@@ -5322,8 +5333,6 @@ function controller_gallery_artworks($app, $options = []) {
 
       $scope->other_exhibitions = find_objects('media_collection_map', 
         array('media_collection_id' => $exh_id, 'active' => 1), array('start' => $start, 'limit' => $limit));
-
-
     }
     
     if($collectionObj) {

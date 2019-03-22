@@ -497,7 +497,7 @@
 
       case 'save-cv':
         extract($obj_data);
-
+        //dump($obj_data);
         function sortyear($a, $b){
           if ($a['year'] == $b['year']) return 0;
           list($ay,$am,$ad) = explode('-', $a['year']);
@@ -7135,7 +7135,7 @@
     $jsonObj = gallery_get_json($collection_id);
     $jsonObj->container_id = $target;
     $jsonObj->plugin_id = $plugin_id;
-  
+    
     //dump($_GET);
     //dump($jsonObj);
     
