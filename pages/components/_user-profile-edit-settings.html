@@ -6,6 +6,7 @@
             <input type="hidden" name="obj_id"  value="{$profile.profile_id}" />
             <input type="hidden" name="user_id" value="{$profile.user_id}" />
             <input type="hidden" name="site_id" value="{$site.id}" />
+            <input type="hidden" name="client_id" value="{$profile.client_id}" />
             <input type="hidden" name="page"  value="profile" />
             <input type="hidden" name="artist" value="1" />
             <input hidden="1" name="next_tab" type="hidden" value="about">  
@@ -110,7 +111,18 @@
                   <div class="help-block with-errors">Full URL including http:// or https://</div>
               </div>      
               {/if}
-            </div>                             
+            </div>    
+
+            <!-- <input type="hidden" name="location_lat"  value="{$profile.location_lat}" />
+            <input type="hidden" name="location_long"  value="{$profile.location_long}" />
+            <input type="hidden" name="location_bounds"  value="{$profile.location_bounds}" />
+            <input type="hidden" name="location_center"  value="{$profile.location_center}" />
+            <input type="hidden" name="address_street"  value="{$profile.address_street}" />
+            <input type="hidden" name="address_number"  value="{$profile.address_number}" />
+            <input type="hidden" name="address_city"  value="{$profile.address_city}" />
+            <input type="hidden" name="address_state"  value="{$profile.address_state}" />
+            <input type="hidden" name="address_country"  value="{$profile.address_country}" />
+            <input type="hidden" name="address_formatted"  value="{$profile.address_formatted}" /> -->
 
             <div class="row mb20">
               <div class="col-xs-12">

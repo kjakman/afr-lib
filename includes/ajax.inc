@@ -346,6 +346,7 @@
 
        case 'save-profile':
        extract($obj_data);
+       //dump($obj_data);
        $id = $obj_data[obj_id];
        $user_id = $obj_data[user_id];
        $contact = $obj_data[contact];
@@ -794,7 +795,8 @@
     case 'save-collection':
       $obj_type = 'media_collection';
       extract($obj_data);
-      
+      //dump($obj_data);
+      $address_formatted = $obj_data['address_formatted'];
       $type_name = get_object('media_collection_type', $type, 'name');      
       
       $id = $obj_id;
@@ -869,6 +871,10 @@
             $obj_data['title_image'] = $title_image->id;
           }
         }
+        if($address_formatted){
+          $obj_data['address_formatted'] = $address_formatted;
+        }
+        
         list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
       } else {
         list($id, $errors) = add_object($obj_type, $obj_data);
@@ -901,8 +907,8 @@
           $address_changed = true;
           $obj_data['address_formatted'] = $address;
         }
-      }     
-      
+      }  
+
       if($type == MEDIA_COLLECTION_TYPE_EXHIBITION) {
         
         $in  = $data['start_date'] = date2sql($start_date);
