@@ -5560,8 +5560,7 @@ function controller_gallery_collections($app, $options = []) {
     }
 
     $scope->url = site_full_url($siteObj).page_link(PAGE_GALLERY, 'media_collection', $collectionObj->type).slugify($collectionObj->title)."~".$obj_id;  
-    dump($scope->url);
-
+    
     $curator_id = $collectionObj->user_id;
     
     $mid = isset($_GET['mid']) ? $_GET['mid'] : 0;

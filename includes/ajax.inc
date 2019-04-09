@@ -5422,9 +5422,7 @@
       $obj_type = 'user';
       $userData = $obj_data;
       extract($userData);
-      
       if($userData['artist']){
-
         if($error = check_required($obj_data, array('site_id' => "Site ID", 'first_name' => "First Name", 'last_name' => "Last Name"))) json_error("Missing: ".implode(', ', $error));
         $host_user_id = $obj_data['aff_id']?$obj_data['aff_id']:$u->id;
 
