@@ -3429,6 +3429,8 @@ function controller_artist_profile($app, $options = []) {
   $obj_type = $scope->obj_type = $scope->obj_type ?: $app->object_type;
   $obj_id = $scope->obj_id =  $scope->obj_id ?: $app->object_id;
   $obj = $obj_type && $obj_id ? get_object($obj_type, $obj_id) : null;
+  $siteObj = $app->site;
+  $scope->url = site_full_url($siteObj)."/profile/".$obj_id;
   
   if(!$obj_id) $obj_id = $u_id;
   
@@ -3470,8 +3472,6 @@ function controller_artist_profile($app, $options = []) {
 
   $start = 0;
   $limit = 12;
-  
-  $url = $scope->url ?: this_url();
   
   if($is_curator) {
     $scope->template = "user-profile-curator.html";
@@ -5560,6 +5560,7 @@ function controller_gallery_collections($app, $options = []) {
     }
 
     $scope->url = site_full_url($siteObj).page_link(PAGE_GALLERY, 'media_collection', $collectionObj->type).slugify($collectionObj->title)."~".$obj_id;  
+    dump($scope->url);
 
     $curator_id = $collectionObj->user_id;
     

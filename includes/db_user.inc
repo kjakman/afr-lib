@@ -56,12 +56,18 @@ function user_register($username, $password, $profileData=[], $params=[]) {
 
   print_log("New user:".dump($data,true), 'user', LOG_LEVEL_TEST);  
   list($profile_id, $errors) = add_object('user_profile', $profileData);
-  $userData = array('profile_id' => $profile_id);
+
+  $userData['profile_id'] = $profile_id;
   $flds = ['aff_id', 'user_level', 'roles', 'auto_password'];
   foreach($flds as $fld) {
     if(isset($profileData[$fld])) $userData[$fld] = $profileData[$fld];
   }
-  update_object('user', $userData, $user_id);
+  //dump($user_id);
+  $data = db_query("UPDATE user
+                    SET profile_id = ".$profile_id.",  user_level = ".$profileData['user_level'].", roles=".$profileData['roles'].", auto_password = ".$profileData['auto_password']."
+                    WHERE id = ".$user_id);
+  //list($update_id, $error) = update_object('user', $userData, $user_id);
+  //if($error) json_error($error);
   
   return array($user_id, $errors);
 }      

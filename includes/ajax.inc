@@ -5422,7 +5422,7 @@
       $obj_type = 'user';
       $userData = $obj_data;
       extract($userData);
-
+      
       if($userData['artist']){
 
         if($error = check_required($obj_data, array('site_id' => "Site ID", 'first_name' => "First Name", 'last_name' => "Last Name"))) json_error("Missing: ".implode(', ', $error));
