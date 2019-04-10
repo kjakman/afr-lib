@@ -54,8 +54,13 @@ function user_register($username, $password, $profileData=[], $params=[]) {
   $user_id = $result['id'];  
   $profileData['user_id'] = $user_id;
 
-  print_log("New user:".dump($data,true), 'user', LOG_LEVEL_TEST);  
+  print_log("New user:".dump($result,true), 'user', LOG_LEVEL_TEST);
+
+  print_log("New profile".dump($profileData,true), 'user', LOG_LEVEL_TEST);
+  
   list($profile_id, $errors) = add_object('user_profile', $profileData);
+  if($errors) return array(0, $errors); /** Failed to add user profile - but user was added - not good */ 
+  
   $userData = array('profile_id' => $profile_id);
   $flds = ['aff_id', 'user_level', 'roles', 'auto_password'];
   foreach($flds as $fld) {
@@ -71,15 +76,11 @@ function user_register($username, $password, $profileData=[], $params=[]) {
   if(!$user_level) $user_level = $params['user_level'];
   if(!$roles) $roles = $params['roles'];
   if(!$auto_password) $auto_password = 0;
+    
+  print_log("Edit user:".dump($userData,true), 'user', LOG_LEVEL_TEST);  
   
-  $data = db_query("UPDATE user
-                    SET profile_id = ".$profile_id.",  user_level = ".$user_level.", roles=".$roles.", auto_password = ".$auto_password."
-                    WHERE id = ".$user_id);
-
   // Existing code flow
-  //list($id, $errors) = update_object('user', $userData, $user_id);
-  //if($errors) json_error($errors);
-
+  list($id, $errors) = update_object('user', $userData, $user_id);
   return array($user_id, $errors);
 }      
 

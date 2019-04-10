@@ -957,7 +957,6 @@ function send_mail($siteObj_or_id, $subject, $body, $recipient, $options = array
     $from = [$sender => $siteObj->name];
   }
   
-  
   $message = Swift_Message::newInstance()
   ->setSubject($subject)
   ->setFrom($from)
