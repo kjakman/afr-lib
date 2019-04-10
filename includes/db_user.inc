@@ -56,19 +56,30 @@ function user_register($username, $password, $profileData=[], $params=[]) {
 
   print_log("New user:".dump($data,true), 'user', LOG_LEVEL_TEST);  
   list($profile_id, $errors) = add_object('user_profile', $profileData);
-
-  $userData['profile_id'] = $profile_id;
+  $userData = array('profile_id' => $profile_id);
   $flds = ['aff_id', 'user_level', 'roles', 'auto_password'];
   foreach($flds as $fld) {
     if(isset($profileData[$fld])) $userData[$fld] = $profileData[$fld];
   }
-  //dump($user_id);
-  $data = db_query("UPDATE user
-                    SET profile_id = ".$profile_id.",  user_level = ".$profileData['user_level'].", roles=".$profileData['roles'].", auto_password = ".$profileData['auto_password']."
-                    WHERE id = ".$user_id);
-  //list($update_id, $error) = update_object('user', $userData, $user_id);
-  //if($error) json_error($error);
   
+  // Temporary fix by dci
+  $user_level = $roles = $auto_password;
+  $user_level = $profileData['user_level'];
+  $roles = $profileData['roles'];
+
+  $auto_password = $profileData['auto_password'];
+  if(!$user_level) $user_level = $params['user_level'];
+  if(!$roles) $roles = $params['roles'];
+  if(!$auto_password) $auto_password = 0;
+  
+  $data = db_query("UPDATE user
+                    SET profile_id = ".$profile_id.",  user_level = ".$user_level.", roles=".$roles.", auto_password = ".$auto_password."
+                    WHERE id = ".$user_id);
+
+  // Existing code flow
+  //list($id, $errors) = update_object('user', $userData, $user_id);
+  //if($errors) json_error($errors);
+
   return array($user_id, $errors);
 }      
 
