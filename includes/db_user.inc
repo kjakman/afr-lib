@@ -79,8 +79,13 @@ function user_register($username, $password, $profileData=[], $params=[]) {
     
   print_log("Edit user:".dump($userData,true), 'user', LOG_LEVEL_TEST);  
   
+  // Pradeepa hack
+  $data = db_query("UPDATE user
+                    SET profile_id = ".$profile_id.",  user_level = ".$user_level.", roles=".$roles.", auto_password = ".$auto_password."
+                    WHERE id = ".$user_id);
+  
   // Existing code flow
-  list($id, $errors) = update_object('user', $userData, $user_id);
+  //list($id, $errors) = update_object('user', $userData, $user_id);
   return array($user_id, $errors);
 }      
 
