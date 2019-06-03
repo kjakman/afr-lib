@@ -882,31 +882,48 @@ function getobj_id($obj_type, $user_id, $page_id){
   return $obj_id;
 }
 
-//Pradeepa// Add default pages (Home, Artist, Exhibition, Contact)
+//Add default pages (Home, Artist, Exhibition, Contact)
 function add_default_page($id, $data, $options = array()) {
   if(!data['user_id']) mydie ("add_default_pages: missing id");
   $obj_type = 'minisite_page';
   $minisite_id = $id;
-  $type = ['10','20','30'];
+  $type = ['20','30'];
   
   foreach($type as $types){
-    if($types == '10'){
+    /*if($types == '10'){
       $page = 'home';
       $slug = url_safe("/".$page."/", true);
       $search['layout'] = 1; 
+      $search['show_recent'] = 1;
+      $search['show_past'] = 1;
+      $search['show_current'] = 1;
+      $search['show_future'] = 1;
+      $search['show_latest'] = 1;
+      $search['show_gallery'] = 1;
+      $search['show_artfair'] = 1;
+      $search['show_others'] = 1;
       $datas = json_encode($search);
-    } 
+    } */
     if($types == '20'){
       $page = 'artist';
       $slug = url_safe("/".$page."/", true);
+      $data['row_order'] = 2;
     } 
     if($types == '30'){
       $page = 'exhibition';
       $slug = url_safe("/".$page."/", true);
+      $search['show_recent'] = 1;
+      $search['show_past'] = 1;
+      $search['show_current'] = 1;
+      $search['show_future'] = 1;
       $search['show_latest'] = 1;
       $search['show_gallery'] = 1;
       $search['show_artfair'] = 1;
+      $search['show_others'] = 1;
       $datas = json_encode($search);
+      $data['page_layout'] = 1;
+      $data['exhibition_layout'] = 10;
+      $data['row_order'] = 1;
     } 
     $data['type'] = $types; 
     $data['menu_title'] = $page;
@@ -4965,4 +4982,89 @@ function update_artist_name($user_id, $artist_name){
   }
   if($errors) json_error($errors);
   else return 1;
+}
+
+function get_template($parts, $minisite_id){
+  $tpl_values = [];
+  if($parts){                                                     //to simplify paths
+    $page = find_object('minisite_page', ['minisite_id' => $minisite_id, 'menu_title' => $parts[0], 'active' => 1]);
+    
+    if(count($parts) == 1){
+      if($page->type == '20'){
+        $tpl_values['page'] = 'artists';
+        $tpl_values['tpl'] = 'artists';
+      } 
+      if($page->type == 30){
+        $tpl_values['page'] = 'exhibitions';
+        $tpl_values['tpl'] = 'exhibitions';
+      } 
+      if($page->type == 40){
+        $tpl_values['page'] = 'contact';
+        $tpl_values['tpl'] = 'contact';
+      }
+      if($page->type == 50){
+        $tpl_values['page'] = 'bio';
+        $tpl_values['tpl'] = 'bio';
+      } 
+    } else{
+      if($page->type == '20'){
+        $tpl_values['page'] = 'artist';
+        $tpl_values['tpl'] = 'artist';
+      } 
+      if($page->type == 30){
+        if($parts[1] == 'exhibitions'){
+          $tpl_values['page'] = 'exhibitions';
+          $tpl_values['tpl'] = 'exhibitions';
+        }else{
+          $tpl_values['page'] = 'exhibition';
+          $tpl_values['tpl'] = 'exhibition';
+        }       
+      }
+      if($page->type == 40){
+        $tpl_values['page'] = 'contact';
+        $tpl_values['tpl'] = 'contact';       
+      }  
+      if($page->type == 50){
+        $tpl_values['page'] = 'bio';
+        $tpl_values['tpl'] = 'bio';
+      }       
+    }
+  } else{
+    $get_home = find_object('minisite_page', ['minisite_id' => $minisite_id, 'row_order' => 1, 'active' => 1]);
+    if($get_home->type == 20){
+      $tpl_values['page'] = 'artists';
+      $tpl_values['tpl'] = 'artists';
+      $tpl_values['get_slug'] = str_replace('/', '', str_replace('/', '', $get_home->slug));
+    }
+    if($get_home->type == 30){
+      $tpl_values['page'] = 'exhibitions';
+      $tpl_values['tpl'] = 'exhibitions';
+      $tpl_values['get_slug'] = str_replace('/', '', str_replace('/', '', $get_home->slug));
+      $data = json_decode($get_home->data, True);
+      if($data['show_current'] == 1) $tpl_values['get_subviews'] = 'current'; 
+      elseif ($data['show_future'] == 1) $tpl_values['get_subviews'] = 'future';
+      elseif ($data['show_past'] == 1) $tpl_values['get_subviews'] = 'past';
+    }
+    if($get_home->type == 40){
+      $tpl_values['page'] = 'contact';
+      $tpl_values['tpl'] = 'contact';
+      $tpl_values['get_slug'] = str_replace('/', '', str_replace('/', '', $get_home->slug));
+    } 
+    if($get_home->type == 50){
+      $tpl_values['page'] = 'bio';
+      $tpl_values['tpl'] = 'bio';
+      $tpl_values['get_slug'] = str_replace('/', '', str_replace('/', '', $get_home->slug));
+    }    
+  }
+  return $tpl_values;
+}
+
+function get_collection($exhibitions, $page_slug){
+  $data = [];
+  foreach($exhibitions as $collectionObj){
+    $collectionObj->page_slug = $page_slug;
+    $collectionObj->slug = slugify($collectionObj->title);
+    $data[] = $collectionObj;
+  }
+  return $data;
 }

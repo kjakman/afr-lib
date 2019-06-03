@@ -42,7 +42,7 @@ function gbe_collection_handler(params, data) {
   console.log("gbe_collection_handler. next="+ data.next_tab + " data:", data);
   if(data.id) {
     var tab = data.next_tab || 'location';
-    if(data.subtype == 40 && tab == 'location') tab = 'media';
+    if(((data.subtype == 40) || (data.subtype == 50)) && (tab == 'location')) tab = 'media';
     var href = '/backend/exhibition/' + data.id + '/edit/' + tab;
     var $link = $("#submit");
     soft_load($link, "#subview-container", href);
@@ -512,11 +512,107 @@ $(document).on("focusout", ".edit_exhibition", function() {
   });  
 }); 
 
-//upload image hide on delete
-/*$(document).on("click", "#apply-delete", function(){
-  $(this).closest('li').hide();
-  console.log("deleted list");
-});*/
+//change font type
+$(document).on("change", ".font_type", function() {
+  var font_value = $('.font_type:checked').val();
+  var obj_id = $('.obj_id').val();
+  $.ajax({
+    url: "/ajax.php",
+    dataType: "json",
+    data: {
+      oper: "save-minisite-style",
+      obj_id: obj_id,
+      obj_type:'minisite',
+      font_type: font_value
+    }
+  }); 
+});
+
+//change menu layout
+$(document).on("change", ".menu_type", function() {
+  var menu_type = $('.menu_type:checked').val();
+  var obj_id = $('.obj_id').val();
+  $.ajax({
+    url: "/ajax.php",
+    dataType: "json",
+    data: {
+      oper: "save-minisite-style",
+      obj_id: obj_id,
+      obj_type:'minisite',
+      menu_type: menu_type
+    }
+  }); 
+});
+
+//change exhibition page layout
+$(document).on("change", ".page_layout", function() {
+  var page_layout = $('.page_layout:checked').val();
+  var obj_id = $('.obj_id').val();
+  $.ajax({
+    url: "/ajax.php",
+    dataType: "json",
+    data: {
+      oper: "save-minisite-style",
+      obj_id: obj_id,
+      obj_type:'minisite_page',
+      page_layout: page_layout
+    }
+  }); 
+});
+
+//change exhibition layout
+$(document).on("change", ".exhibition_layout", function() {
+  var exhibition_layout = $('.exhibition_layout:checked').val();
+  var obj_id = $('.obj_id').val();
+  $.ajax({
+    url: "/ajax.php",
+    dataType: "json",
+    data: {
+      oper: "save-minisite-style",
+      obj_id: obj_id,
+      obj_type:'minisite_page',
+      exhibition_layout: exhibition_layout
+    }
+  }); 
+});
+
+//change contact page layout
+$(document).on("change", ".contact_page_layout", function() {
+  var page_layout = $('.contact_page_layout:checked').val();
+  var obj_id = $('.obj_id').val();
+  $.ajax({
+    url: "/ajax.php",
+    dataType: "json",
+    data: {
+      oper: "save-minisite-style",
+      obj_id: obj_id,
+      obj_type:'minisite_page',
+      page_layout: page_layout
+    }
+  }); 
+});
+
+//change menu colour
+$(document).on("change", ".bg_colour, .colour", function() {
+  var exhi_colour = $('.bg_colour:checked').val();
+  var obj_id = $('.obj_id').val();
+  var minisite_id = $('.minisite_id').val();
+  var colour = null;
+
+  if(exhi_colour == 2)
+    var colour = $('#focus-demo').val();
+ 
+  $.ajax({
+    url: "/ajax.php",
+    dataType: "json",
+    data: {
+      oper: "save-minisite-page",
+      obj_id: obj_id,
+      minisite_id: minisite_id,
+      colour: colour
+    }
+  }); 
+});
 
 function bstMinisiteArtistFormatter(value, row, index) {
   if(!value) return '';
@@ -818,6 +914,9 @@ $(document).on("click", "apply-delete",function (e) {
       console.log("artwork media deleted");
     }
 });
+
+
+
 
 
 

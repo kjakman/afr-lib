@@ -593,6 +593,8 @@
       case 'save-minisite':
         extract($obj_data);
         $obj_type = 'minisite';
+        $obj_data['font_type'] = 1;
+        $obj_data['menu_type'] = 1;
 
         if(!$obj_id){
           list($id, $errors) = add_object($obj_type, $obj_data);
@@ -617,30 +619,44 @@
 
       case 'save-minisite-page':
         extract($obj_data);
-        //dump($obj_data);
         $obj_type = "minisite_page";
         $obj_id = $obj_data[obj_id];  
         $user_id = $obj_data[user_id];
-        $minisite_id = $obj_data[minisite_id];    
-        $obj_data['menu_title'] = url_safe($obj_data['menu_title'], true);
-        $slug = $obj_data['slug'] = url_safe("/".$obj_data['menu_title']."/", true); // slashes allowed
-        
+        $minisite_id = $obj_data[minisite_id]; 
+
+        if($obj_data['menu_title']){ 
+          $obj_data['menu_title'] = url_safe($obj_data['menu_title'], true);
+          $slug = $obj_data['slug'] = url_safe("/".$obj_data['menu_title']."/", true); // slashes allowed
+        }
         if(!$obj_id)
           $col = find_objects('minisite_page', ['user_id' => $obj_data[user_id], 'minisite_id' => $obj_data[minisite_id],'slug' => $obj_data['slug'] , 'active' => 1]);
         else
           $col = $data = db_getAll("select * from minisite_page where user_id= '$obj_data[user_id]' AND active= '1' AND slug= '$slug' AND id!= '$obj_id' AND minisite_id = '$obj_data[minisite_id]' ");
 
-        //$get_data = find_page_menus($obj_id, $user_id, $minisite_id, $slug);
-        //if($get_data){
-          //$obj_data['data'] = json_encode($get_data, True);
-        //}
-
         if($col)  json_error($obj_data['slug']." is already used, Please choose a unique menu title"); 
          
         if($obj_data[type] == 10) json_error("Home page cannot be added, its already present. You can edit it");
-        
+
         if($obj_data[minisite_id]){
           if(!$obj_id){
+            //Adding default values for each page
+            if($obj_data[type] == 30){
+                $search['show_recent'] = 1;
+                $search['show_past'] = 1;
+                $search['show_current'] = 1;
+                $search['show_future'] = 1;
+                $search['show_latest'] = 1;
+                $search['show_gallery'] = 1;
+                $search['show_artfair'] = 1;
+                $search['show_others'] = 1;
+                $obj_data['data'] = json_encode($search);
+            }
+            if($obj_data[type] == 40)            
+              $obj_data['page_layout'] = 1;
+
+            $rand_num = (rand(100,999));
+            $obj_data['row_order'] = $rand_num;
+
             list($id, $errors) = add_object($obj_type, $obj_data);
             print_log("save-minisite: added: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
           }else{
@@ -727,6 +743,24 @@
       echo(json_encode($result));exit;      
     break;
 
+    case 'save-minisite-style':
+      extract($obj_data);
+      
+      if($obj_id){
+        list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
+        print_log("save-ministe-style: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
+      }
+      if($errors) json_error($errors); 
+
+      $obj = get_object($obj_type, $id);
+      $obj->next_tab = $obj_data['next_tab'];
+
+      $result->success = 1;
+      $result->data = $obj;
+      $result->message = "OK. Saved minisite";
+      echo(json_encode($result));
+      exit;      
+    break;
 
     case 'save-event':
       $obj_type = 'event';
@@ -5340,18 +5374,18 @@
       break;
 
     case 'artist-delete':
-      $val = trim($obj_data['val']);
-      if($val){
-        $data = db_getAll("select * from page_map where host_user_id='$val'");
-        if($data){
-          foreach($data as $datas){
-            //$soft_delete = 1;
-            //$datas->soft_delete = $soft_delete;
-            $datas->active = '0';
-            $output= update_object('page_map', $datas, $datas->id);
-          }  
-        }
-      }
+      $artist_id = $obj_data['artist_id'];
+      $page_id = $obj_data['page_id'];
+      $datas = [];
+      if($page_id)
+        $getPage = find_object('minisite_page', ['id' => $page_id, 'active'=>1]);
+      $artistArr = json_decode($getPage->search, true);
+      $data->search = json_encode(array_diff($artistArr, array($artist_id)));
+      $data->id = $page_id;
+
+      if($data)  
+        $output= update_object('minisite_page', $data, $data->id);
+       
       if($errors) json_error($errors);
 
       $result->success = 1;

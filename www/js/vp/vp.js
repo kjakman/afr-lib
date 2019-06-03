@@ -169,8 +169,8 @@ function logStackTrace(levels) {
 
 var g_pswp = false;
 var g_pswp_index = -1;
-var g_site_url = 'http://new.vpatina.dci.in';
-//var g_site_url = 'https://www.vpatina.com';
+//var g_site_url = 'http://new.vpatina.dci.in';
+var g_site_url = 'https://www.vpatina.com';
 var g_aid = 10;
 var g_site_id = '247';
 var g_user_id = '';
