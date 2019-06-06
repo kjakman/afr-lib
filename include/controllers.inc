@@ -225,7 +225,7 @@ function controller_minisite($app, $options = []) {
       $search = ['user_id' => $user_id, 'type' => COLLECTION_TYPE_EXHIBITION, 'active' => 1, 'subtype' => [$gallery,$artfair,$others] ];
 
       //$host_user_ids = user_artist_list_display($user_id) ?: [];
-        if(($page == 'exhibitions') &&  ($data[layout] == '40') ){
+        if(($page == 'exhibitions') &&  ($minisite_pageObj->page_layout == '102') ){
           
           $when = $subviews ?: 'all';
           switch($when) {
@@ -261,43 +261,37 @@ function controller_minisite($app, $options = []) {
             default: // all or single
               break;
           }
-        
-        }elseif(($page == 'exhibitions') &&  ($minisite_pageObj->page_layout == '10')){
-          $tpl = $page = 'coverpage';          
-        }elseif(($page == 'exhibitions') &&  ($minisite_pageObj->page_layout == '20')){
-          $tpl = $page = 'landscape_time'; 
-        }elseif(($page == 'exhibitions') &&  ($minisite_pageObj->page_layout == '30')){
-          $tpl = $page = 'coverpage_landscape'; 
-        }elseif(($page == 'exhibitions') &&  ($minisite_pageObj->page_layout == '50')){
-          $tpl = $page = 'natural_time'; 
-        }elseif(($page == 'exhibitions') &&  ($minisite_pageObj->page_layout == '60')){
-          $tpl = $page = 'natural'; 
-        }elseif(($page == 'exhibitions') &&  ($minisite_pageObj->page_layout == '70')){
-          $tpl = $page = 'tiles'; 
-        }elseif(($page == 'exhibitions') &&  ($minisite_pageObj->page_layout == '80')){
-          $tpl = $page = 'landscape_3C_TS'; 
-        }elseif(($page == 'exhibitions') &&  ($minisite_pageObj->page_layout == '90')){
-          $tpl = $page = 'landscape_4C'; 
-        }elseif(($page == 'exhibitions') &&  ($minisite_pageObj->page_layout == '100')){
-          $tpl = $page = 'landscape_3C'; 
         }elseif(($page == 'exhibitions') &&  ($minisite_pageObj->page_layout == '101')){
-          $tpl = $page = 'timeline_view'; 
-        }elseif(($page == 'exhibitions') &&  ($minisite_pageObj->page_layout == '102')){
-          $tpl = $page = 'hangingline_3C_TS'; 
-        }elseif(($page == 'exhibitions') &&  ($minisite_pageObj->page_layout == '102')){
-          $tpl = $page = 'hangingline_3C_TS'; 
-        }elseif(($page == 'exhibitions') &&  ($minisite_pageObj->page_layout == '102')){
-          $tpl = $page = 'hangingline_3C_TS'; 
+          $tpl = $page = 'timeline_view';          
         }elseif(($page == 'exhibitions') &&  ($minisite_pageObj->page_layout == '103')){
-          $tpl = $page = 'masonry_3C'; 
+          $tpl = $page = 'masonry_3C';          
         }elseif(($page == 'exhibitions') &&  ($minisite_pageObj->page_layout == '104')){
-          $tpl = $page = 'masonry_4C'; 
+          $tpl = $page = 'masonry_4C';          
         }elseif(($page == 'exhibitions') &&  ($minisite_pageObj->page_layout == '105')){
-          $tpl = $page = 'masonry_3C_TS'; 
+          $tpl = $page = 'masonry_3C_TS';          
         }elseif(($page == 'exhibitions') &&  ($minisite_pageObj->page_layout == '106')){
-          $tpl = $page = 'masonry_4C_TS'; 
+          $tpl = $page = 'masonry_4C_TS';          
+        }elseif(($page == 'exhibitions') &&  ($minisite_pageObj->page_layout == '107')){
+          $tpl = $page = 'landscape_3C';          
+        }elseif(($page == 'exhibitions') &&  ($minisite_pageObj->page_layout == '108')){
+          $tpl = $page = 'landscape_4C';          
+        }elseif(($page == 'exhibitions') &&  ($minisite_pageObj->page_layout == '109')){
+          $tpl = $page = 'landscape_3C_TS';          
+        }elseif(($page == 'exhibitions') &&  ($minisite_pageObj->page_layout == '110')){ 
+          $tpl = $page = 'landscape_time';                                                //landscape_4C_TS   
+        }elseif(($page == 'exhibitions') &&  ($minisite_pageObj->page_layout == '111')){
+          $tpl = $page = 'natural';                                                       //Hanging Line - 3 Coiumn
+        }elseif(($page == 'exhibitions') &&  ($minisite_pageObj->page_layout == '112')){
+          $tpl = $page = 'tiles';                                                         //Hanging Line - 4 Coiumn
+        }elseif(($page == 'exhibitions') &&  ($minisite_pageObj->page_layout == '113')){
+          $tpl = $page = 'hangingline_3C_TS';          
+        }elseif(($page == 'exhibitions') &&  ($minisite_pageObj->page_layout == '114')){
+          $tpl = $page = 'natural_time';                                                  //hangingline_4C_TS 
+        }elseif(($page == 'exhibitions') &&  ($minisite_pageObj->page_layout == '115')){
+          $tpl = $page = 'coverpage';                                               
+        }elseif(($page == 'exhibitions') &&  ($minisite_pageObj->page_layout == '116')){
+          $tpl = $page = 'coverpage_landscape';                                               
         }
-
         else{
           unset($search['subtype']);
         }
@@ -335,7 +329,6 @@ function controller_minisite($app, $options = []) {
           $exhibitionObj->page_slug = $slugstr; 
           $exhibitions[$exhibitionObj->slug] = $exhibitionObj;
           $exhibition_ids[] = $exhibitionObj->id;
-
         }
         $scope->exhibitions = $exhibitions;
         $scope->data_exist = $data_exist;
@@ -369,20 +362,26 @@ function controller_minisite($app, $options = []) {
         $page_id = $find_page->id;
         $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'id' => $page_id, 'active' => 1]);
 
-        if($minisite_pageObj->page_layout == 2) 
-          $tpl = $page = 'contact1';
+        if($minisite_pageObj->page_layout == 117) 
+          $tpl = $page = 'contact';
         else
-          $tpl = $page = 'contact'; 
+          $tpl = $page = 'contact1'; 
       }   
       if ($page == 'bio'){
-        $tpl = $page = 'cv';
         $scope->page_slug = ($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
         $scope->sub_slug = $title= $subviews = $parts[2];
         $page_slug = ($parts[0] != '') ? "/".$parts[0]."/" :  "/".$get_tpl['get_slug']."/"; 
         $find_page = find_object('minisite_page', ['user_id' => $user_id, 'active' => 1, 'slug' => $page_slug]);
         $page_id = $find_page->id;
         $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'id' => $page_id, 'active' => 1]);
-        $data = json_decode($minisite_pageObj->data, True);
+        if($minisite_pageObj->page_layout == 120) 
+          $tpl = $page = 'cv';
+        elseif($minisite_pageObj->page_layout == 121)
+          $tpl = $page = 'cv1';
+        elseif($minisite_pageObj->page_layout == 122)
+          $tpl = $page = 'cv2';
+        elseif($minisite_pageObj->page_layout == 123)
+          $tpl = $page = 'cv3';
       }     
     break;
   }
@@ -395,14 +394,21 @@ function controller_minisite($app, $options = []) {
       $artist = $artists[$slug];
       $scope->artist = $artist;
 
-      if($collection_id = $artist->collection_id) {
+      /*if($collection_id = $artist->collection_id) {
         $jsonObj = gallery_get_json($collection_id);
         $scope->data = $jsonObj;
         $scope->collection_id = $collection_id;
         $search = ['media_collection_id' => $collection_id, 'active' => 1];
         $scope->artworks = $mapObjs = find_objects('media_collection_map', $search, ['sort' => 'rank']);
-      }        
-      
+      }*/
+     
+      $collection_data = find_object('media_collection', ['user_id' => $artist->id, 'type' => '150', 'active' => 1]);
+      $scope->collection_id = $collection_data->id;
+      if(collection_data) {
+        $search = ['media_collection_id' => $collection_data->id, 'active' => 1];
+        $scope->artworks = $mapObjs = find_objects('media_collection_map', $search);
+      } 
+   
       $se_title = $artist->display_name;
       $se_description = $artist->description;                          
       
@@ -612,6 +618,12 @@ function controller_minisite($app, $options = []) {
       $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'id' => $page_id ,'active' => 1]);
       $artist = find_object('user_profile', ['user_id' => $user_id]);
       $scope->artist = get_object_vars($artist);
+      $collection_data = find_object('media_collection', ['user_id' => $user_id, 'type' => '150', 'active' => 1]);
+      $scope->collection_id = $collection_data->id;
+      if(collection_data) {
+        $search = ['media_collection_id' => $collection_data->id, 'active' => 1];
+        $scope->artworks = $mapObjs = find_objects('media_collection_map', $search);
+      } 
     break;
     case 'contact1':
       $page_slug = ($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];     
@@ -627,7 +639,48 @@ function controller_minisite($app, $options = []) {
       $scope->profileobj = $profileobj = find_object('user_profile', ['user_id' => $user_id]);
       $scope->timings = $timings = db_getAll("select * from opening_hours where user_id='$user_id' ORDER BY `id` ASC");     
     break;
-
+    case 'cv1':
+      $subview = $parts[1]; 
+      $scope->mObj = $mObj = find_object('minisite', ['user_id' => $user_id, 'active' => 1]);
+      $scope->menuObj = $menuObj = find_objects('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'active' => 1], ['sort' => 'row_order asc']); 
+      $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'id' => $page_id ,'active' => 1]);
+      $artist = find_object('user_profile', ['user_id' => $user_id]);
+      $scope->artist = get_object_vars($artist);
+      $collection_data = find_object('media_collection', ['user_id' => $user_id, 'type' => '150', 'active' => 1]);
+      $scope->collection_id = $collection_data->id;
+      if(collection_data) {
+        $search = ['media_collection_id' => $collection_data->id, 'active' => 1];
+        $scope->artworks = $mapObjs = find_objects('media_collection_map', $search);
+      } 
+    break;
+    case 'cv2':
+      $subview = $parts[1]; 
+      $scope->mObj = $mObj = find_object('minisite', ['user_id' => $user_id, 'active' => 1]);
+      $scope->menuObj = $menuObj = find_objects('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'active' => 1], ['sort' => 'row_order asc']); 
+      $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'id' => $page_id ,'active' => 1]);
+      $artist = find_object('user_profile', ['user_id' => $user_id]);
+      $scope->artist = get_object_vars($artist);
+      $collection_data = find_object('media_collection', ['user_id' => $user_id, 'type' => '150', 'active' => 1]);
+      $scope->collection_id = $collection_data->id;
+      if(collection_data) {
+        $search = ['media_collection_id' => $collection_data->id, 'active' => 1];
+        $scope->artworks = $mapObjs = find_objects('media_collection_map', $search);
+      } 
+    break;
+    case 'cv3':
+      $subview = $parts[1]; 
+      $scope->mObj = $mObj = find_object('minisite', ['user_id' => $user_id, 'active' => 1]);
+      $scope->menuObj = $menuObj = find_objects('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'active' => 1], ['sort' => 'row_order asc']); 
+      $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'id' => $page_id ,'active' => 1]);
+      $artist = find_object('user_profile', ['user_id' => $user_id]);
+      $scope->artist = get_object_vars($artist);
+      $collection_data = find_object('media_collection', ['user_id' => $user_id, 'type' => '150', 'active' => 1]);
+      $scope->collection_id = $collection_data->id;
+      if(collection_data) {
+        $search = ['media_collection_id' => $collection_data->id, 'active' => 1];
+        $scope->artworks = $mapObjs = find_objects('media_collection_map', $search);
+      } 
+    break;
     case 'about':
       break;
     case 'news':
@@ -4507,6 +4560,12 @@ function controller_gallery_backend($app, $options = []) {
   $scope->obj_id = $id = $obj_id = $app->page->object_id;
   $scope->add_to = $add_to = $_GET['add_to'] ?: 0;
   $scope->add_to_profile = $add_to_profile = $_GET['add_to_profile'] ?: 0;
+  if($_GET['_pv'] == 'viewartistpage'){
+    $scope->getpv = $getpv = ($_GET['_pv'] == 'viewartistpage');
+    $scope->page_id = $_GET['page_id'];
+    $scope->user_id = $_GET['user_id'];
+    $scope->site_id = $_GET['site_id'];
+  }
 
   $scope->hide_related = 1; /** don't show related images in preview */
   $scope->artist_id = user_has_role($userObj, USER_ROLE_ARTIST) ? $userObj->id : 0;
@@ -4722,6 +4781,14 @@ function controller_gallery_backend($app, $options = []) {
       $colSearch = ['minisite_id' => $id ,'user_id' => $obj->user_id, 'active' => 1];
       $scope->pagelist = $pagelist = find_objects('minisite_page', $colSearch, ['sort' => 'row_order asc']);
 
+      $scope->exhibition_layout = $exhibition_layout = find_objects('minisite_layout', ['type' => 30, 'active' => 1], ['sort' => 'row_order asc']);
+
+      $scope->artist_layout = $exhibition_layout = find_objects('minisite_layout', ['type' => 20, 'active'=>1], ['sort' => 'row_order asc']);
+
+      $scope->contact_layout = $exhibition_layout = find_objects('minisite_layout', ['type' => 40, 'active'=>1], ['sort' => 'row_order asc']);
+
+      $scope->bio_layout = $exhibition_layout = find_objects('minisite_layout', ['type' => 50, 'active'=>1], ['sort' => 'row_order asc']);
+
       $col = ['id' => $page_id, 'user_id' => $obj->user_id, 'active' => 1];
       $scope->minisitepage = $minisitepage = find_object('minisite_page', $col);
 
@@ -4861,17 +4928,30 @@ function controller_gallery_backend($app, $options = []) {
         $artwork_ids = $_GET['add_art'];
         $media_ids = $_GET['add_media'];
 
-
         if($artwork_ids || $media_ids) { // cannot be both
           $ids = $artwork_ids ?: $media_ids; 
           $what = $artwork_ids ? 'artwork' : 'media'; 
+          $getExhibition = find_object('media_collection', ['user_id' => $user_id, 'type' => 150, 'active' =>1 ]);
+          $exhibition =[];
+          if(!$getExhibition->id){
+            $exhibition['user_id'] = $user_id;
+            $exhibition['type'] = 150;
+            $exhibition['title'] = 'Selected Artwork';
+            $exhibition['curator_id'] = $user_id;
+            list($exhi_id, $errors) = add_object('media_collection', $exhibition);
+            if($errors) json_error($errors);
+          }
+          $collection_id = ($getExhibition->id) ? $getExhibition->id : $exhi_id;
+
           $ids = explode(',', $ids);
           $changed = '';
           foreach($ids as $this_id) {
             $existing = $what == 'artwork' ? $art_ids : $media_ids;
             if(in_array($this_id, $existing)) continue; // already exists
 
-            $result = $what == 'artwork' ? gallery_publish_artwork_profile($siteObj, $this_id, $user_id) : gallery_publish_image_profile($siteObj, $this_id, $user_id);
+            /* $result = $what == 'artwork' ? gallery_publish_artwork_profile($siteObj, $this_id, $user_id) : gallery_publish_image_profile($siteObj, $this_id, $user_id); */
+
+            $result = $what == 'artwork' ? gallery_publish_artwork($siteObj, $this_id, $collection_id, $user_id) : gallery_publish_image($siteObj, $this_id, $collection_id ,$user_id);
 
             if($error = $result->error) return json_error($error);
             if($message = $result->message ?: $result->messages) $messages = array_merge_smart($messages, $message);

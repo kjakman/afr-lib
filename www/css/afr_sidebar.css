@@ -148,6 +148,9 @@
 	nav:hover .forAnimate{
 		opacity: 1;
 	}
-	section{
-		padding-left: 15px;
-	}                                                    
+	                                               
+/** 6-5-2019 **/
+      body{
+          overflow-x:hidden;
+      }
+      

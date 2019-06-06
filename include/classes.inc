@@ -74,10 +74,7 @@ $__CLASSES = array(
     'article_type' =>         array(USER_LEVEL_USER,   'content', '', '', NF_CACHE_ASSOC, '', '', ''),
     'minisite' =>             array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'name', '', ''),
     'minisite_page_type' =>   array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'name', '', ''),
-    'minisite_page' =>       array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'page_name', '', ''),
-    'minisite_layout' =>      array(USER_LEVEL_SYSTEM, 'site', '', '', NF_CACHE_ASSOC, 'name', 'id', ''),
-    'minisite_exhibition_layout' =>      array(USER_LEVEL_SYSTEM, 'site', '', '', NF_CACHE_ASSOC, 'name', 'id', ''),
-    'minisite_contact_layout' =>      array(USER_LEVEL_SYSTEM, 'site', '', '', NF_CACHE_ASSOC, 'name', 'id', ''),
+    'minisite_page' =>        array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'page_name', '', ''),
                                                                              
 
 // user                            
@@ -2095,7 +2092,6 @@ $__CLASS_ATTRIBUTES = array(
      'email_address'=>      array('Email',              'email',  '', AF_SEARCHABLE|AF_HIDE_LIST, 128),
      'languages'=>          array('Languages',          'json', 'en', AF_OBLIGATORY, 'language', array('active' => 1)),
      'default_language'=>   array('Language',               'valSelect', 'en', AF_OBLIGATORY|AF_SEARCHABLE, $langArray),
-     //'social' =>            array('Social',             'json', '', 0),
      'data' =>              array('Data',               'json', '', 0),
      'template' =>          array('Template',           'str', '', 128),
      'logo'   =>            array('Logo',               'image',   '', AF_HIDE_LIST, 128),
@@ -2137,24 +2133,6 @@ $__CLASS_ATTRIBUTES = array(
       'slug'=>               array('Slug',             'str',   '', 0, 128 ),
       'search'=>             array('Search',           'json',   ''),
       'row_order'=>          array('Row Order',        'int',   '', 0, 11 ),
-   ),
-
-   "minisite_layout" => 
-   array(
-      'id'=>            array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 2),
-      'name'=>          array('Name',              'str',   '', 1, 20 ),
-   ),
-
-   "minisite_exhibition_layout" => 
-   array(
-      'id'=>            array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 2),
-      'name'=>          array('Name',              'str',   '', 1, 20 ),
-   ),
-   
-   "minisite_contact_layout" => 
-   array(
-      'id'=>            array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 2),
-      'name'=>          array('Name',              'str',   '', 1, 20 ),
    ),
 
   "site" => 

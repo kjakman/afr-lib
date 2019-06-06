@@ -560,9 +560,9 @@ $(document).on("change", ".page_layout", function() {
   }); 
 });
 
-//change exhibition layout
+//change Second page layout
 $(document).on("change", ".exhibition_layout", function() {
-  var exhibition_layout = $('.exhibition_layout:checked').val();
+  var second_layout = $('.exhibition_layout:checked').val();
   var obj_id = $('.obj_id').val();
   $.ajax({
     url: "/ajax.php",
@@ -571,23 +571,7 @@ $(document).on("change", ".exhibition_layout", function() {
       oper: "save-minisite-style",
       obj_id: obj_id,
       obj_type:'minisite_page',
-      exhibition_layout: exhibition_layout
-    }
-  }); 
-});
-
-//change contact page layout
-$(document).on("change", ".contact_page_layout", function() {
-  var page_layout = $('.contact_page_layout:checked').val();
-  var obj_id = $('.obj_id').val();
-  $.ajax({
-    url: "/ajax.php",
-    dataType: "json",
-    data: {
-      oper: "save-minisite-style",
-      obj_id: obj_id,
-      obj_type:'minisite_page',
-      page_layout: page_layout
+      second_layout: second_layout
     }
   }); 
 });

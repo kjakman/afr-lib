@@ -600,7 +600,7 @@
           list($id, $errors) = add_object($obj_type, $obj_data);
           print_log("save-minisite: added: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
         }
-        //if($errors) json_error($errors); 
+        if($errors) json_error($errors); 
 
         if($id){
           $data = add_default_page($id, $obj_data);
@@ -695,13 +695,7 @@
           if($data_arr_encode){
             foreach($artist_ids as $artist_id){             //check If media exists for the artist
               $media = find_object('media_collection', ['user_id' => $user_id, 'artist_id' => $artist_id, 'type' => 120,'active' => 1]);
-              /*if(!$media){
-                $user = get_user($artist_id);
-                $display_name = user_display_name($user);
-                json_error("No medias for ".$display_name);                
-              }else{ */
                 $obj_data[search] = json_encode(array_unique(array_merge(json_decode($data->search, true),json_decode($search, true))));
-              //}
             }
           }else{
             $obj_data[search] = $search;
@@ -745,7 +739,7 @@
 
     case 'save-minisite-style':
       extract($obj_data);
-      
+
       if($obj_id){
         list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
         print_log("save-ministe-style: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
@@ -753,13 +747,10 @@
       if($errors) json_error($errors); 
 
       $obj = get_object($obj_type, $id);
-      $obj->next_tab = $obj_data['next_tab'];
 
       $result->success = 1;
       $result->data = $obj;
-      $result->message = "OK. Saved minisite";
-      echo(json_encode($result));
-      exit;      
+      $result->message = "OK. Saved minisite";    
     break;
 
     case 'save-event':
@@ -6025,10 +6016,9 @@
           
         }
       } elseif($parent_type == 'user' && $parent_field == 'map_profile'){
-        $search = ['active' => 1, 'user_id' => $parent_id];
-        //dump($search);
-        $mapObjs = find_objects('profile_media_map', $search);
-        //dump($mapObjs);
+        $getMedia = find_object('media_collection', ['user_id' => $parent_id, 'active'=>1, 'type'=>150]);
+        $search = ['active' => 1, 'media_collection_id' => $getMedia->id];
+        $mapObjs = find_objects('media_collection_map', $search);
         $files = [];
         $edit_url = "edit-url";
         
@@ -6037,7 +6027,7 @@
           $mediaObj->media_id = $mapObj->media_id;
           $mediaObj->map_id = $mediaObj->obj_id = $mapObj->id;
           $mediaObj->obj_type = 'profile_media_map';
-          $mediaObj->delete_url = "/ajax.php?oper=del&obj_type=profile_media_map&id=".$mapObj->id;
+          $mediaObj->delete_url = "/ajax.php?oper=del&obj_type=media_collection_map&id=".$mapObj->id;
           
           $mediaObjs[] = $mediaObj;
         }
