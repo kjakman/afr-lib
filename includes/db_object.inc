@@ -890,23 +890,10 @@ function add_default_page($id, $data, $options = array()) {
   $type = ['20','30'];
   
   foreach($type as $types){
-    /*if($types == '10'){
-      $page = 'home';
-      $slug = url_safe("/".$page."/", true);
-      $search['layout'] = 1; 
-      $search['show_recent'] = 1;
-      $search['show_past'] = 1;
-      $search['show_current'] = 1;
-      $search['show_future'] = 1;
-      $search['show_latest'] = 1;
-      $search['show_gallery'] = 1;
-      $search['show_artfair'] = 1;
-      $search['show_others'] = 1;
-      $datas = json_encode($search);
-    } */
     if($types == '20'){
       $page = 'artist';
       $slug = url_safe("/".$page."/", true);
+      $data['page_layout'] = 119;
       $data['row_order'] = 2;
     } 
     if($types == '30'){
@@ -921,7 +908,7 @@ function add_default_page($id, $data, $options = array()) {
       $search['show_artfair'] = 1;
       $search['show_others'] = 1;
       $datas = json_encode($search);
-      $data['page_layout'] = 1;
+      $data['page_layout'] = 101;
       $data['exhibition_layout'] = 10;
       $data['row_order'] = 1;
     } 

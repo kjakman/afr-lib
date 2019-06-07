@@ -188,6 +188,26 @@ function controller_minisite($app, $options = []) {
       $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'id' => $page_id ,'active' => 1]);
       $scope->profileobj = $profileobj = find_object('user_profile', ['user_id' => $user_id]);
       $scope->timings = $timings = db_getAll("select * from opening_hours where user_id='$user_id' ORDER BY `id` ASC");
+      
+      if(($page == 'artists') &&  ($minisite_pageObj->page_layout == '119') ){
+        $tpl = $page = 'artists'; 
+      }elseif(($page == 'artists') &&  ($minisite_pageObj->page_layout == '124')){
+        $tpl = $page = 'artists_layout1'; 
+      }elseif(($page == 'artists') &&  ($minisite_pageObj->page_layout == '125')){
+        $tpl = $page = 'artists_layout2'; 
+      }elseif(($page == 'artists') &&  ($minisite_pageObj->page_layout == '126')){
+        $tpl = $page = 'artists_layout3'; 
+      }
+
+      if(($page == 'artist') &&  ($minisite_pageObj->second_layout == '10') ){
+        $tpl = $page = 'artist'; 
+      }elseif(($page == 'artist') &&  ($minisite_pageObj->second_layout == '20')){
+        $tpl = $page = 'artist_layout1'; 
+      }elseif(($page == 'artist') &&  ($minisite_pageObj->second_layout == '30')){
+        $tpl = $page = 'artist_layout2'; 
+      }elseif(($page == 'artist') &&  ($minisite_pageObj->second_layout == '40')){
+        $tpl = $page = 'artist_layout3'; 
+      }
     }
     
     if($page == 'exhibitions' || $page == 'exhibition') {
@@ -368,12 +388,25 @@ function controller_minisite($app, $options = []) {
           $tpl = $page = 'contact1'; 
       }   
       if ($page == 'bio'){
+        $subview = $parts[1]; 
         $scope->page_slug = ($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
         $scope->sub_slug = $title= $subviews = $parts[2];
         $page_slug = ($parts[0] != '') ? "/".$parts[0]."/" :  "/".$get_tpl['get_slug']."/"; 
         $find_page = find_object('minisite_page', ['user_id' => $user_id, 'active' => 1, 'slug' => $page_slug]);
         $page_id = $find_page->id;
         $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'id' => $page_id, 'active' => 1]);
+
+        $scope->mObj = $mObj = find_object('minisite', ['user_id' => $user_id, 'active' => 1]);
+        $scope->menuObj = $menuObj = find_objects('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'active' => 1], ['sort' => 'row_order asc']); 
+        $artist = find_object('user_profile', ['user_id' => $user_id]);
+        $scope->artist = get_object_vars($artist);
+        $collection_data = find_object('media_collection', ['user_id' => $user_id, 'type' => '150', 'active' => 1]);
+        $scope->collection_id = $collection_data->id;
+        if(collection_data) {
+          $search = ['media_collection_id' => $collection_data->id, 'active' => 1];
+          $scope->artworks = $mapObjs = find_objects('media_collection_map', $search);
+        }
+        
         if($minisite_pageObj->page_layout == 120) 
           $tpl = $page = 'cv';
         elseif($minisite_pageObj->page_layout == 121)
@@ -419,7 +452,96 @@ function controller_minisite($app, $options = []) {
       $scope->show_bio = $scope->show_solo || $scope->show_group || $scope->show_press ? 1 : 0;
       $scope->show_pub = 0; // strlen(strip_blank($artist->publications)) > 0;
       break;
+    case 'artist_layout1': 
+      $slug = $parts[1];
+      $artist = $artists[$slug];
+      $scope->artist = $artist;
+      //dump($artist);
+     
+      $collection_data = find_object('media_collection', ['user_id' => $artist->id, 'type' => '150', 'active' => 1]);
+      $scope->collection_id = $collection_data->id;
+      if(collection_data) {
+        $search = ['media_collection_id' => $collection_data->id, 'active' => 1];
+        $scope->artworks = $mapObjs = find_objects('media_collection_map', $search);
+      } 
+    
+      $se_title = $artist->display_name;
+      $se_description = $artist->description;                          
+      
+      $scope->show_images = 1;
+      $scope->show_solo = strlen(strip_blank($artist->gallery_solo_shows)) > 0 ? 1 : 0;
+      $scope->show_group = strlen(strip_blank($artist->gallery_group_shows)) > 0 ? 1 : 0;
+      $scope->show_press = strlen(strip_blank($artist->press)) > 0 ? 1 : 0;
+      $scope->show_bio = $scope->show_solo || $scope->show_group || $scope->show_press ? 1 : 0;
+      $scope->show_pub = 0; // strlen(strip_blank($artist->publications)) > 0;
+      break;
+    case 'artist_layout2': 
+      $slug = $parts[1];
+      $artist = $artists[$slug];
+      $scope->artist = $artist;
+
+      /*if($collection_id = $artist->collection_id) {
+        $jsonObj = gallery_get_json($collection_id);
+        $scope->data = $jsonObj;
+        $scope->collection_id = $collection_id;
+        $search = ['media_collection_id' => $collection_id, 'active' => 1];
+        $scope->artworks = $mapObjs = find_objects('media_collection_map', $search, ['sort' => 'rank']);
+      }*/
+     
+      $collection_data = find_object('media_collection', ['user_id' => $artist->id, 'type' => '150', 'active' => 1]);
+      $scope->collection_id = $collection_data->id;
+      if(collection_data) {
+        $search = ['media_collection_id' => $collection_data->id, 'active' => 1];
+        $scope->artworks = $mapObjs = find_objects('media_collection_map', $search);
+      } 
+    
+      $se_title = $artist->display_name;
+      $se_description = $artist->description;                          
+      
+      $scope->show_images = 1;
+      $scope->show_solo = strlen(strip_blank($artist->gallery_solo_shows)) > 0 ? 1 : 0;
+      $scope->show_group = strlen(strip_blank($artist->gallery_group_shows)) > 0 ? 1 : 0;
+      $scope->show_press = strlen(strip_blank($artist->press)) > 0 ? 1 : 0;
+      $scope->show_bio = $scope->show_solo || $scope->show_group || $scope->show_press ? 1 : 0;
+      $scope->show_pub = 0; // strlen(strip_blank($artist->publications)) > 0;
+      break;
+    case 'artist_layout3': 
+      $slug = $parts[1];
+      $artist = $artists[$slug];
+      $scope->artist = $artist;
+
+      /*if($collection_id = $artist->collection_id) {
+        $jsonObj = gallery_get_json($collection_id);
+        $scope->data = $jsonObj;
+        $scope->collection_id = $collection_id;
+        $search = ['media_collection_id' => $collection_id, 'active' => 1];
+        $scope->artworks = $mapObjs = find_objects('media_collection_map', $search, ['sort' => 'rank']);
+      }*/
+     
+      $collection_data = find_object('media_collection', ['user_id' => $artist->id, 'type' => '150', 'active' => 1]);
+      $scope->collection_id = $collection_data->id;
+      if(collection_data) {
+        $search = ['media_collection_id' => $collection_data->id, 'active' => 1];
+        $scope->artworks = $mapObjs = find_objects('media_collection_map', $search);
+      } 
+    
+      $se_title = $artist->display_name;
+      $se_description = $artist->description;                          
+      
+      $scope->show_images = 1;
+      $scope->show_solo = strlen(strip_blank($artist->gallery_solo_shows)) > 0 ? 1 : 0;
+      $scope->show_group = strlen(strip_blank($artist->gallery_group_shows)) > 0 ? 1 : 0;
+      $scope->show_press = strlen(strip_blank($artist->press)) > 0 ? 1 : 0;
+      $scope->show_bio = $scope->show_solo || $scope->show_group || $scope->show_press ? 1 : 0;
+      $scope->show_pub = 0; // strlen(strip_blank($artist->publications)) > 0;
+      break;
     case 'artists':
+      break;
+    case 'artists_layout1':
+      break;
+    case 'artists_layout2':
+      break;
+    case 'artists_layout3':
       break;
     
     case 'exhibition':
@@ -554,7 +676,6 @@ function controller_minisite($app, $options = []) {
       $scope->exhibitions = $data;
       $scope->latest = $latestexhibitions;
     break;   
-
     case 'tiles':
       $page_slug = ($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
       $data = get_collection($exhibitions, $page_slug);
@@ -611,20 +732,7 @@ function controller_minisite($app, $options = []) {
       $scope->profileobj = $profileobj = find_object('user_profile', ['user_id' => $user_id]);
       $scope->timings = $timings = db_getAll("select * from opening_hours where user_id='$user_id' ORDER BY `id` ASC");      
     break;
-    case 'cv':
-      $subview = $parts[1]; 
-      $scope->mObj = $mObj = find_object('minisite', ['user_id' => $user_id, 'active' => 1]);
-      $scope->menuObj = $menuObj = find_objects('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'active' => 1], ['sort' => 'row_order asc']); 
-      $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'id' => $page_id ,'active' => 1]);
-      $artist = find_object('user_profile', ['user_id' => $user_id]);
-      $scope->artist = get_object_vars($artist);
-      $collection_data = find_object('media_collection', ['user_id' => $user_id, 'type' => '150', 'active' => 1]);
-      $scope->collection_id = $collection_data->id;
-      if(collection_data) {
-        $search = ['media_collection_id' => $collection_data->id, 'active' => 1];
-        $scope->artworks = $mapObjs = find_objects('media_collection_map', $search);
-      } 
-    break;
+    
     case 'contact1':
       $page_slug = ($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];     
       $search = find_object('minisite_page', ['user_id' => $user_id, 'active' => 1, 'minisite_id' => $minisite_id,'slug' => $page_slug]);
@@ -639,47 +747,13 @@ function controller_minisite($app, $options = []) {
       $scope->profileobj = $profileobj = find_object('user_profile', ['user_id' => $user_id]);
       $scope->timings = $timings = db_getAll("select * from opening_hours where user_id='$user_id' ORDER BY `id` ASC");     
     break;
+    case 'cv':
+    break;
     case 'cv1':
-      $subview = $parts[1]; 
-      $scope->mObj = $mObj = find_object('minisite', ['user_id' => $user_id, 'active' => 1]);
-      $scope->menuObj = $menuObj = find_objects('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'active' => 1], ['sort' => 'row_order asc']); 
-      $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'id' => $page_id ,'active' => 1]);
-      $artist = find_object('user_profile', ['user_id' => $user_id]);
-      $scope->artist = get_object_vars($artist);
-      $collection_data = find_object('media_collection', ['user_id' => $user_id, 'type' => '150', 'active' => 1]);
-      $scope->collection_id = $collection_data->id;
-      if(collection_data) {
-        $search = ['media_collection_id' => $collection_data->id, 'active' => 1];
-        $scope->artworks = $mapObjs = find_objects('media_collection_map', $search);
-      } 
     break;
     case 'cv2':
-      $subview = $parts[1]; 
-      $scope->mObj = $mObj = find_object('minisite', ['user_id' => $user_id, 'active' => 1]);
-      $scope->menuObj = $menuObj = find_objects('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'active' => 1], ['sort' => 'row_order asc']); 
-      $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'id' => $page_id ,'active' => 1]);
-      $artist = find_object('user_profile', ['user_id' => $user_id]);
-      $scope->artist = get_object_vars($artist);
-      $collection_data = find_object('media_collection', ['user_id' => $user_id, 'type' => '150', 'active' => 1]);
-      $scope->collection_id = $collection_data->id;
-      if(collection_data) {
-        $search = ['media_collection_id' => $collection_data->id, 'active' => 1];
-        $scope->artworks = $mapObjs = find_objects('media_collection_map', $search);
-      } 
     break;
     case 'cv3':
-      $subview = $parts[1]; 
-      $scope->mObj = $mObj = find_object('minisite', ['user_id' => $user_id, 'active' => 1]);
-      $scope->menuObj = $menuObj = find_objects('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'active' => 1], ['sort' => 'row_order asc']); 
-      $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'id' => $page_id ,'active' => 1]);
-      $artist = find_object('user_profile', ['user_id' => $user_id]);
-      $scope->artist = get_object_vars($artist);
-      $collection_data = find_object('media_collection', ['user_id' => $user_id, 'type' => '150', 'active' => 1]);
-      $scope->collection_id = $collection_data->id;
-      if(collection_data) {
-        $search = ['media_collection_id' => $collection_data->id, 'active' => 1];
-        $scope->artworks = $mapObjs = find_objects('media_collection_map', $search);
-      } 
     break;
     case 'about':
       break;

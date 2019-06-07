@@ -650,9 +650,14 @@
                 $search['show_artfair'] = 1;
                 $search['show_others'] = 1;
                 $obj_data['data'] = json_encode($search);
+                $obj_data['page_layout'] = 101;
             }
-            if($obj_data[type] == 40)            
-              $obj_data['page_layout'] = 1;
+            if($obj_data[type] == 40 )        
+              $obj_data['page_layout'] = 117;
+            if($obj_data[type] == 50)
+              $obj_data['page_layout'] = 120;
+            if($obj_data[type] == 20)
+              $obj_data['page_layout'] = 119;
 
             $rand_num = (rand(100,999));
             $obj_data['row_order'] = $rand_num;
@@ -739,7 +744,7 @@
 
     case 'save-minisite-style':
       extract($obj_data);
-
+      dump($obj_data);
       if($obj_id){
         list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
         print_log("save-ministe-style: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
