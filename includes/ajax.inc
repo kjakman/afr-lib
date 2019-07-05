@@ -593,19 +593,30 @@
       case 'save-minisite':
         extract($obj_data);
         $obj_type = 'minisite';
+        $obj_data['url'] = str_replace(' ', '', $obj_data['url']);
         $obj_data['font_type'] = 1;
         $obj_data['menu_type'] = 1;
+        $user_id = $obj_data['user_id'];
+        $duplicate = 0;
+
+        $check_dups = find_objects('minisite', ['user_id'=> $user_id, 'active'=>1]);
+        foreach($check_dups as $check_dup){
+          if($check_dup->url == $obj_data['url'])
+            $duplicate = 1;
+        }
 
         if(!$obj_id){
-          list($id, $errors) = add_object($obj_type, $obj_data);
-          print_log("save-minisite: added: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
+          if(!$duplicate){
+            list($id, $errors) = add_object($obj_type, $obj_data);
+            print_log("save-minisite: added: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
+            if($id){
+              $data = add_default_page($id, $obj_data);
+            } 
+          }else{
+            $errors = "Unfortunately '".$obj_data['url']."' is already taken by another user, Please try again to choose a unique vpatina URL (hint, you can use numbers as well as letters)";
+          }
         }
-        if($errors) json_error($errors); 
-
-        if($id){
-          $data = add_default_page($id, $obj_data);
-        } 
-        if($errors) json_error($errors); 
+        if($errors) json_error($errors);  
 
         $obj = get_object($obj_type, $id);
         $obj->next_tab = $obj_data['next_tab'];
@@ -638,29 +649,23 @@
         if($obj_data[type] == 10) json_error("Home page cannot be added, its already present. You can edit it");
 
         if($obj_data[minisite_id]){
-          if(!$obj_id){
-            //Adding default values for each page
-            if($obj_data[type] == 30){
-                $search['show_recent'] = 1;
-                $search['show_past'] = 1;
-                $search['show_current'] = 1;
-                $search['show_future'] = 1;
-                $search['show_latest'] = 1;
-                $search['show_gallery'] = 1;
-                $search['show_artfair'] = 1;
-                $search['show_others'] = 1;
-                $obj_data['data'] = json_encode($search);
-                $obj_data['page_layout'] = 101;
+          if(!$obj_id){                                                       //Adding default values for each page
+            if($obj_data[type] == 20){                                        //artist page
+              $obj_data['page_layout'] = get_layout($obj_data[type], 1);
+              $obj_data['second_layout'] = get_layout($obj_data[type], 2);
+            }elseif($obj_data[type] == 30){                                   //exhibition
+              $obj_data['data'] = get_exhibitionJson();
+              $obj_data['page_layout'] = get_layout($obj_data[type], 1);
+              $obj_data['second_layout'] = get_layout($obj_data[type], 2);
+            }elseif($obj_data[type] == 40 )                                   //contact 
+              $obj_data['page_layout'] = get_layout($obj_data[type], 1);
+            elseif($obj_data[type] == 50)                                     //bio
+              $obj_data['page_layout'] = get_layout(20,2);
+            elseif($obj_data[type] == 60){                                    //Single Exhibition
+              $obj_data['data'] = get_sExhibitionJson();
+              $obj_data['page_layout'] = get_layout($obj_data[type], 1);
             }
-            if($obj_data[type] == 40 )        
-              $obj_data['page_layout'] = 117;
-            if($obj_data[type] == 50)
-              $obj_data['page_layout'] = 120;
-            if($obj_data[type] == 20)
-              $obj_data['page_layout'] = 119;
-
-            $rand_num = (rand(100,999));
-            $obj_data['row_order'] = $rand_num;
+            $obj_data['row_order'] = get_rowOrder($minisite_id);
 
             list($id, $errors) = add_object($obj_type, $obj_data);
             print_log("save-minisite: added: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
@@ -725,6 +730,9 @@
       extract($obj_data);
       $obj_type = $obj_data[obj_type];
 
+      if($obj_data[icon_type] == 1)
+        $obj_data[icon_size] = 1;
+
       if($obj_id) {
         list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
         print_log("save-ministe: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
@@ -732,19 +740,18 @@
         list($id, $errors) = add_object($obj_type, $obj_data);
         print_log("save-minisite: added: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
       }              
-          
       if($errors) json_error($errors);
-      
+
+      $obj = get_object($obj_type, $id);
       $result->success = 1;
       $result->data = $obj;
       $result->message = "OK. Minisite Saved";
-      
       echo(json_encode($result));exit;      
     break;
 
     case 'save-minisite-style':
       extract($obj_data);
-      dump($obj_data);
+      //dump($obj_data);
       if($obj_id){
         list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
         print_log("save-ministe-style: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
@@ -758,6 +765,41 @@
       $result->message = "OK. Saved minisite";    
     break;
 
+    case 'save-minisite-layout':
+      extract($obj_data);
+      dump($obj_data);
+      
+      if($obj_id){
+        list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
+        print_log("save-ministe-style: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
+      }
+      if($errors) json_error($errors); 
+
+      $obj = get_object($obj_type, $id);
+
+      $result->success = 1;
+      $result->data = $obj;
+      $result->message = "OK. Saved minisite";    
+    break;
+
+    case 'save-minisite-single-exhibition':
+      extract($obj_data);
+      $data = [];
+      $data[etype] = $obj_data[eType];
+      $data[showtype] = $obj_data[showtype];
+      $obj_data['data'] = json_encode($data);
+      dump($obj_data);
+      if($obj_id){
+        list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
+      }
+      if($errors) json_error($errors); 
+
+      $obj = get_object($obj_type, $id);
+
+      $result->success = 1;
+      $result->data = $obj;
+      $result->message = "OK. Saved minisite"; 
+    break;
     case 'save-event':
       $obj_type = 'event';
       print_log("save-event: data:".dump($obj_data,true), 'collection', LOG_LEVEL_TEST);
@@ -5408,7 +5450,6 @@
     break;
 
     case 'event-delete':
-
       $id = trim($obj_data['val']);
       $obj_type = 'event';
 
@@ -5423,26 +5464,48 @@
       break;
 
     case 'page-delete':
-
       $id = trim($obj_data['val']);
       $obj_type = 'minisite_page';
-      
-      if($id){
-        list($delete_count, $errors) = delete_object($obj_type, $id);
-      }
-      if($errors) json_error($errors);
+      $obj = get_object($obj_type, $id);
+      $minisite_id = $obj->minisite_id;
+      $del_row = $obj->row_order;
 
-      $pagemap = db_getAll("select * from page_map where page_id='$id'");
-      if($pagemap){
-        foreach($pagemap as $pagemaps){
-          $map_id = $pagemaps->id;
-          $pagemaps->active = '0';
-          list($pagemaps, $errors) = update_object('page_map', $pagemaps, $map_id);
+      if($id)
+        list($d_id, $errors) = delete_object($obj_type, $id);
+
+      if($errors) 
+        json_error($errors);
+      else{
+        $change_rows = find_objects('minisite_page', ['minisite_id'=> $minisite_id, 'active'=>1]);
+        $count = count($change_rows);
+        foreach($change_rows as $change_row){
+          $row_order = $change_row->row_order;
+          if($row_order > $del_row)
+            $change_row->row_order = $row_order-1;
+          $update_row = update_object('minisite_page', $change_row, $change_row->id);
+          if($errors) json_error($errors);
         }
       }
+      
+      $result->success = 1;
+      $result->message = "Pages Deleted";
+      echo (json_encode($result));
+      exit;
+      break;
+
+    case 'single_image':
+      $page_id = trim($obj_data['page_id']);
+      $obj_type = 'exhibition_map';
+      $get_exhibition = find_object($obj_type, ['page_id' =>$page_id, 'active' =>1]);
+      if($page_id){
+        list($delete_id, $errors) = delete_object($obj_type, $get_exhibition->id);
+      }
       if($errors) json_error($errors);
 
-      $result->message = "Pages Deleted";
+      $obj = get_object($obj_type, $delete_id);
+      $result->success = 1;
+      $result->data = $obj;
+      $result->message = "Exhibition Deleted";
       echo (json_encode($result));
       exit;
       break;
@@ -6036,6 +6099,22 @@
           
           $mediaObjs[] = $mediaObj;
         }
+
+      }elseif($parent_type == 'exhibition_map' && $parent_field == 'map'){
+        $get_media = find_object('exhibition_map', ['page_id' => $parent_id, 'active'=>1]);
+        dump($parent_id);
+        dump($get_media);
+     
+        $files = [];
+        $edit_url = "edit-url";
+
+          $mediaObj = get_object('media', $mapObj->title_image);
+          $mediaObj->media_id = $mapObj->title_image;
+          $mediaObj->map_id = $mediaObj->obj_id = $mapObj->id;
+          $mediaObj->obj_type = 'profile_media_map';
+          $mediaObj->delete_url = "/ajax.php?oper=del&obj_type=media_collection_map&id=".$mapObj->id;
+          
+          $mediaObjs[] = $mediaObj;  
 
       } elseif($inline) {
         $media = get_object($parent_type, $parent_id, $parent_field);

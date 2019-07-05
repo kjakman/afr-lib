@@ -43,7 +43,7 @@
 
 		/*lets nav bar to be showed on mouseover*/
 		nav.sidebar:hover + .main{
-			margin-left: 200px;
+			margin-left: 220px;/** VVPR 18-6-2019 **/
 		}
 
 		/*Center Brand*/
@@ -126,7 +126,7 @@
 		/*Allow main to be next to Nav*/
 		.main{
 			width: calc(100% - 220px); /*keeps 100% minus nav size*/
-			margin-left: 200px;
+			margin-left: 220px; /** VVPR 18-6-2019 **/
 		}
 
 		/*Show all nav*/

@@ -1167,6 +1167,7 @@ function get_media_sources($list, $size='small') {
 function get_media_source($mediaObj_or_id, $size='small', $options=[]) {
   $options['size'] = $size;
   $options['source_only'] = true;
+  $options['full'] = true;
   return print_media($mediaObj_or_id, $options);
 }
 

@@ -274,6 +274,7 @@ $(document).on("click", "#sel_add_profile", function() {
   console.log("sel add ids=", g_selections);
   var artist_id = $link.data('target_id');
   console.log("target_id=", artist_id);
+
   if(artist_id && g_selections.length) {
     var href = '/backend/profile/' + artist_id + '/edit/art?' + add_what + '=' + g_selections.join();
     var $link = $("#submit");
@@ -283,9 +284,29 @@ $(document).on("click", "#sel_add_profile", function() {
     bstUpdateSelection([]);
   } else {
   }
-
 });
 
+$(document).on("click", "#sel_add_website", function() {
+  $link = $(this);
+  console.log("pradeepa link"+$link);
+  console.log("sel add ids=", g_selections);
+  var artist_id = $link.data('target_id');
+  var page_id = $link.data('page');
+  var user_id = $link.data('user');
+  console.log("target_id=", artist_id);
+  console.log("g_selections.length=", g_selections.length);
+  if((artist_id) && (g_selections.length == 1)) {
+    var href = '/backend/website/' + artist_id + '/edit/singleExhibition?_pv=1&page_id='+ page_id +'&user_id='+user_id + '&' + add_what + '=' + g_selections.join();
+    var $link = $("#submit");
+    console.log("Calling soft-load: href=" + href);
+    soft_load($link, "#subview-container", href);
+    g_selections = [];
+    bstUpdateSelection([]);
+  } else {
+    alert('Failed to add exhibition - Cannot add Multiple exhibitions');
+  }
+
+});
 $(document).on("click", "#sel_show", function() {
   console.log("sel show ids=", g_selections);
   $("#table").bootstrapTable('refresh', {query: {id: g_selections}, pageSize: 100});  
@@ -319,16 +340,25 @@ $(document).on("click", '#soft_delete', function(){
 
 //Delete minisite pages
 $(document).on("click", '#page_delete', function(){
+  $(this).closest("tr").remove();
   var id = $(this).data('value');
+  var count = $(this).val();
   var obj_type = "minisite_page";
-  $.ajax({
-    url: "/ajax.php",
-    dataType: "json",
-    data: {
-      oper: "page-delete",
-      val: id
-    },     
-  });     
+  if(count == 1)
+    $("#gbe_page_link").trigger('click').one();
+  else{
+    $.ajax({
+      url: "/ajax.php",
+      dataType: "json",
+      data: {
+        oper: "page-delete",
+        val: id
+      }, 
+      success:function(response_data_json) {
+        $("#gbe_page_link").trigger('click').one();
+      }     
+    });     
+  } 
 });
 
 //Delete events
@@ -561,8 +591,8 @@ $(document).on("change", ".page_layout", function() {
 });
 
 //change Second page layout
-$(document).on("change", ".exhibition_layout", function() {
-  var second_layout = $('.exhibition_layout:checked').val();
+$(document).on("change", ".second_layout", function() {
+  var second_layout = $('.second_layout:checked').val();
   var obj_id = $('.obj_id').val();
   $.ajax({
     url: "/ajax.php",
@@ -899,7 +929,34 @@ $(document).on("click", "apply-delete",function (e) {
     }
 });
 
-
+function show_tabs(tab) {
+  if ((tab == 'artist') || (tab == 'artistcontent') || (tab == 'artistpagelayout') || (tab == 'artistsecondpage') || (tab == 'artistcolour')){
+    $("#gbe_exhibition_link").hide();  
+    $("#gbe_contact_link").hide(); 
+    $("#gbe_bio_link").hide();   
+    $("#gbe_singleExhibition_link").hide(); 
+  }else if((tab == 'exhibition') || (tab == 'exhibitioncontent') || (tab == 'exhibitioncolour') || (tab == 'exhibitionpage') || (tab == 'exhibitionlayout')){ 
+    $("#gbe_contact_link").hide(); 
+    $("#gbe_bio_link").hide();
+    $("#gbe_artist_link").hide();
+    $("#gbe_singleExhibition_link").hide(); 
+  }else if((tab == 'contact') || (tab == 'contactcontent') || (tab == 'contactcolour') || (tab == 'contactpagelayout') ){
+    $("#gbe_exhibition_link").hide();  
+    $("#gbe_artist_link").hide(); 
+    $("#gbe_bio_link").hide();
+    $("#gbe_singleExhibition_link").hide(); 
+  }else if((tab == 'bio') || (tab == 'biocontent') || (tab == 'biocolour') || (tab == 'biolayout')){
+    $("#gbe_exhibition_link").hide();  
+    $("#gbe_artist_link").hide(); 
+    $("#gbe_contact_link").hide();
+    $("#gbe_singleExhibition_link").hide(); 
+  }else if((tab == 'singleExhibition') || (tab == 'singleExhibitioncontent') || (tab == 'singleExhibitionLayout') || (tab == 'singleExhibitioncolor') ){
+    $("#gbe_exhibition_link").hide();  
+    $("#gbe_artist_link").hide(); 
+    $("#gbe_contact_link").hide();
+    $("#gbe_bio_link").hide(); 
+  }
+}
 
 
 

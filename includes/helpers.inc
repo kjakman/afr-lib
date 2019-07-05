@@ -44,13 +44,15 @@ function env_log_level($deployment) { // logging level
 function env_minisite($domain, $uri) {
   if(!is_class('minisite')) return null;
   $parts = array_filter(explode('/', $uri));
-  $path = array_shift($parts);
+  //$path = array_shift($parts);
+  $path = $parts[2];
   print_log("Looking for minisite wih uri: {$uri} domain: {$domain}", 'minisite', LOG_LEVEL_TEST);
-  
+
   if($msObj = find_object('minisite', ['domain' => $domain])) {
     print_log("Found minisite domain: {$domain}", 'minisite', LOG_LEVEL_TEST);
     return $msObj;
-  } else if($msObj = find_object('minisite', ['url' => $path])) {
+  } //else if($msObj = find_object('minisite', ['url' => $path])) {
+  else if($msObj = find_object('minisite', ['url' => $path, 'user_id' => $parts[1]])) {
     print_log("Found minisite uri {$path}", 'minisite', LOG_LEVEL_TEST);
     $msObj->internal = 1;
     return $msObj;

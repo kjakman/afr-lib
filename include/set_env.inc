@@ -170,13 +170,11 @@ if($no_app) {
     $site_id = $_SESSION['site_id'] = env_site_id($site_domain); /** inline switch */
   }
     
-  
   /** this allows for vpatina.com/kerrygroneng or treat www.kerrygroneng.com as vpatina */
   if($msObj = env_minisite($site_domain, $uri)) {
     if($msObj->internal) $uri = substr($uri, strlen($minisite_basepath));
     $site_id = $msObj->site_id;
   }
-  
   
   if(!$site_id) die("Don't know {$site_domain}");
   
@@ -245,9 +243,10 @@ if($no_app) {
   if($msObj) {  
     $int = $msObj->internal;
     $minisite = $msObj->url;
+    $user_id = $msObj->user_id;
     
     print_log("SetEnv1: Minisite: {$minisite} Int:{$int} Path={$uri}", 'minisite', LOG_LEVEL_TEST);
-    if($int) $uri = str_replace("/{$minisite}", '', $uri);
+    if($int) $uri = str_replace("/{$user_id}/{$minisite}", '', $uri);
     print_log("SetEnv2: Minisite: {$minisite} Int:{$int} Path={$uri}", 'minisite', LOG_LEVEL_TEST);
     
     $pageObj = new stdClass;

@@ -41,23 +41,23 @@ function route($app) {
   $router->map( 'GET', '/backend/profile/[i:id]/edit', 'gallery_backend', 'backend:edit-profile:id');
   
   $router->map( 'GET', '/exhibitions', 'gallery_collections', 'exhibitions');
-  $router->map( 'GET', '/exhibition/([n:name]~)?[i:id]', 'gallery_collections', 'exhibition:id');
-  $router->map( 'GET', '/exhibition/([n:name]~)?[i:id]/[i:item]', 'gallery_collections', 'exhibition:id:item');
+  $router->map( 'GET', '/exhibition/([n:name]-)?[i:id]', 'gallery_collections', 'exhibition:id');
+  $router->map( 'GET', '/exhibition/([n:name]-)?[i:id]/[i:item]', 'gallery_collections', 'exhibition:id:item');
 
-  $router->map( 'GET', '/artwork/([n:name]~)?[i:id]', 'gallery_artworks', 'artwork:id');
-  $router->map( 'GET', '/artwork/[i:exh_id]/([n:name]~)?[i:id]', 'gallery_artworks', 'artwork:exh_id:id');
-  //$router->map( 'GET', '/artwork/[exh:e_id]/([n:name]~)?[i:id]', 'gallery_artworks', 'exhibition:id:artwork:id');
+  $router->map( 'GET', '/artwork/([n:name]-)?[i:id]', 'gallery_artworks', 'artwork:id');
+  $router->map( 'GET', '/artwork/[i:exh_id]/([n:name]-)?[i:id]', 'gallery_artworks', 'artwork:exh_id:id');
+  //$router->map( 'GET', '/artwork/[exh:e_id]/([n:name]-)?[i:id]', 'gallery_artworks', 'exhibition:id:artwork:id');
   
-  $router->map( 'GET', '/item/([n:name]~)?[i:id]', 'gallery_item', 'item:id');
-  $router->map( 'GET', '/media/([n:name]~)?[i:id]', 'gallery_media', 'media:id');
+  $router->map( 'GET', '/item/([n:name]-)?[i:id]', 'gallery_item', 'item:id');
+  $router->map( 'GET', '/media/([n:name]-)?[i:id]', 'gallery_media', 'media:id');
 
   /** Elastic Tools */
   $router->map( 'GET', '/mapping', 'est_mapping', 'ElasticTools Mapping');
   $router->map( 'GET', '/mapping-guide', 'est_mapping_guide', 'ElasticTools Mapping Guide');
   
   
-  //$router->map( 'GET', '/profile/([n:name]~)?[i:id]', 'user_profile', 'profile:id');
-  //$router->map( 'GET', '/edit-profile/([n:name]~)?[i:id]', 'edit_profile', 'edit-profile:id');
+  //$router->map( 'GET', '/profile/([n:name]-)?[i:id]', 'user_profile', 'profile:id');
+  //$router->map( 'GET', '/edit-profile/([n:name]-)?[i:id]', 'edit_profile', 'edit-profile:id');
  
   $router->map( 'GET', '/api/[a:action]', 'api', 'api');
   $app->router = $router;

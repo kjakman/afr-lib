@@ -83,7 +83,6 @@ $__CLASSES = array(
     'user_level' =>           array(USER_LEVEL_SYSTEM, 'user', '', 'user_level', NF_CACHE_ASSOC, 'user_type', '', ''),
     'user_role' =>            array(USER_LEVEL_SYSTEM, 'user', '', '', NF_CACHE_ASSOC|NF_NO_ACTIONS, '', '', ''),
     'user_map' =>             array(USER_LEVEL_SYSTEM, 'user', '', '', 0, '', '', ''),
-    'page_map' =>             array(USER_LEVEL_SYSTEM, 'user', '', '', 0, '', '', ''),
     'auth_log' =>             array(USER_LEVEL_SYSTEM, 'user', '', '', NF_NO_DELETE, 'display_name', '', ''),
     'user_profile' =>         array(USER_LEVEL_STAFF,  'user', '', '', 0, 'display_name', '', ''),
     'opening_hours' =>        array(USER_LEVEL_STAFF,  'user', '', '', 0, '', '', ''),
@@ -1451,17 +1450,7 @@ $__CLASS_ATTRIBUTES = array(
      //'page_id'=>       array('Page ID',         'text',  0, AF_OBLIGATORY, 'minisite_page'),
      'host_user_id'=>  array('Host',           'link',  0, AF_OBLIGATORY, 'user'),
      'permissions' =>  array('Permissions',    'json', '', 0),
-     ), 
-
-    "page_map" => 
-    array(
-       'id'=>            array('ID',             'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 11),
-       'created'=>       array('Created',        'datetime',  ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY),
-       'user_id'=>       array('User',           'int',  0, AF_OBLIGATORY),
-       'host_user_id'=>  array('User',           'int',  0, AF_OBLIGATORY),
-       'page_id'=>       array('Page ID',        'int',  0, AF_OBLIGATORY),
-       'active'=>        array('Active',         'bool',  1, 0),
-       ),               
+     ),               
 
   "auth_log" => 
   array(

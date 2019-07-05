@@ -893,30 +893,23 @@ function add_default_page($id, $data, $options = array()) {
     if($types == '20'){
       $page = 'artist';
       $slug = url_safe("/".$page."/", true);
-      $data['page_layout'] = 119;
+      $data['page_layout'] = get_layout($types, 1);
+      $data['second_layout'] = get_layout($types, 2);
       $data['row_order'] = 2;
     } 
     if($types == '30'){
       $page = 'exhibition';
       $slug = url_safe("/".$page."/", true);
-      $search['show_recent'] = 1;
-      $search['show_past'] = 1;
-      $search['show_current'] = 1;
-      $search['show_future'] = 1;
-      $search['show_latest'] = 1;
-      $search['show_gallery'] = 1;
-      $search['show_artfair'] = 1;
-      $search['show_others'] = 1;
-      $datas = json_encode($search);
-      $data['page_layout'] = 101;
-      $data['exhibition_layout'] = 10;
+      $datas = get_exhibitionJson();
+      $data['page_layout'] = get_layout($types, 1);
+      $data['second_layout'] = get_layout($types, 2);
       $data['row_order'] = 1;
     } 
     $data['type'] = $types; 
     $data['menu_title'] = $page;
     $data['page_title'] = $page;
     $data['slug'] = $slug;
-    $data['data'] = ($page == 'home' || $page == 'exhibition')?$datas:'';
+    $data['data'] = ($page == 'exhibition')?$datas:'';
     $data['minisite_id'] = $minisite_id;
     if($data){
       list($page_id, $errors) = add_object($obj_type, $data);
@@ -4980,25 +4973,24 @@ function get_template($parts, $minisite_id){
       if($page->type == '20'){
         $tpl_values['page'] = 'artists';
         $tpl_values['tpl'] = 'artists';
-      } 
-      if($page->type == 30){
+      }elseif($page->type == 30){
         $tpl_values['page'] = 'exhibitions';
         $tpl_values['tpl'] = 'exhibitions';
-      } 
-      if($page->type == 40){
+      }elseif($page->type == 40){
         $tpl_values['page'] = 'contact';
         $tpl_values['tpl'] = 'contact';
-      }
-      if($page->type == 50){
+      }elseif($page->type == 50){
         $tpl_values['page'] = 'bio';
         $tpl_values['tpl'] = 'bio';
+      }elseif($page->type == 60){
+        $tpl_values['page'] = 'singleExhibitions';
+        $tpl_values['tpl'] = 'singleExhibitions';
       } 
     } else{
       if($page->type == '20'){
         $tpl_values['page'] = 'artist';
         $tpl_values['tpl'] = 'artist';
-      } 
-      if($page->type == 30){
+      }elseif($page->type == 30){
         if($parts[1] == 'exhibitions'){
           $tpl_values['page'] = 'exhibitions';
           $tpl_values['tpl'] = 'exhibitions';
@@ -5006,15 +4998,16 @@ function get_template($parts, $minisite_id){
           $tpl_values['page'] = 'exhibition';
           $tpl_values['tpl'] = 'exhibition';
         }       
-      }
-      if($page->type == 40){
+      }elseif($page->type == 40){
         $tpl_values['page'] = 'contact';
         $tpl_values['tpl'] = 'contact';       
-      }  
-      if($page->type == 50){
+      }elseif($page->type == 50){
         $tpl_values['page'] = 'bio';
         $tpl_values['tpl'] = 'bio';
-      }       
+      }elseif($page->type == 60){
+        $tpl_values['page'] = 'singleExhibitions';
+        $tpl_values['tpl'] = 'singleExhibitions';
+      }
     }
   } else{
     $get_home = find_object('minisite_page', ['minisite_id' => $minisite_id, 'row_order' => 1, 'active' => 1]);
@@ -5022,8 +5015,7 @@ function get_template($parts, $minisite_id){
       $tpl_values['page'] = 'artists';
       $tpl_values['tpl'] = 'artists';
       $tpl_values['get_slug'] = str_replace('/', '', str_replace('/', '', $get_home->slug));
-    }
-    if($get_home->type == 30){
+    }elseif($get_home->type == 30){
       $tpl_values['page'] = 'exhibitions';
       $tpl_values['tpl'] = 'exhibitions';
       $tpl_values['get_slug'] = str_replace('/', '', str_replace('/', '', $get_home->slug));
@@ -5031,17 +5023,19 @@ function get_template($parts, $minisite_id){
       if($data['show_current'] == 1) $tpl_values['get_subviews'] = 'current'; 
       elseif ($data['show_future'] == 1) $tpl_values['get_subviews'] = 'future';
       elseif ($data['show_past'] == 1) $tpl_values['get_subviews'] = 'past';
-    }
-    if($get_home->type == 40){
+    }elseif($get_home->type == 40){
       $tpl_values['page'] = 'contact';
       $tpl_values['tpl'] = 'contact';
       $tpl_values['get_slug'] = str_replace('/', '', str_replace('/', '', $get_home->slug));
-    } 
-    if($get_home->type == 50){
+    }elseif($get_home->type == 50){
       $tpl_values['page'] = 'bio';
       $tpl_values['tpl'] = 'bio';
       $tpl_values['get_slug'] = str_replace('/', '', str_replace('/', '', $get_home->slug));
-    }    
+    }elseif($get_home->type == 60){
+      $tpl_values['page'] = 'singleExhibitions';
+      $tpl_values['tpl'] = 'singleExhibitions';
+      $tpl_values['get_slug'] = str_replace('/', '', str_replace('/', '', $get_home->slug));
+    }   
   }
   return $tpl_values;
 }
@@ -5054,4 +5048,37 @@ function get_collection($exhibitions, $page_slug){
     $data[] = $collectionObj;
   }
   return $data;
+}
+
+function get_rowOrder($id){
+  $get_row = find_objects('minisite_page', ['minisite_id' => $id, 'active' => 1]);
+  $row_order = count($get_row)+1;
+  return $row_order;
+}
+
+function get_exhibitionJson(){
+  $search = [];
+  $search['show_recent'] = 1;
+  $search['show_past'] = 1;
+  $search['show_current'] = 1;
+  $search['show_future'] = 1;
+  $search['show_latest'] = 1;
+  $search['show_gallery'] = 1;
+  $search['show_artfair'] = 1;
+  $search['show_others'] = 1;
+  return (json_encode($search));
+}
+
+function get_sExhibitionJson(){
+  $search = [];
+  $search[eType] = 1;
+  $search[gallery] = 10;
+  $search[artfair] = 20;
+  $search[others] = 30;
+  return (json_encode($search));
+}
+
+function get_layout($type, $subtype){
+  $data = find_object('minisite_layout', ['type' => $type, 'subtype' => $subtype ,'active' => 1, 'row_order' => 1]);
+  return $data->id;
 }
