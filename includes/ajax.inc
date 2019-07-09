@@ -6094,7 +6094,7 @@
           $mediaObj = get_object('media', $mapObj->media_id);
           $mediaObj->media_id = $mapObj->media_id;
           $mediaObj->map_id = $mediaObj->obj_id = $mapObj->id;
-          $mediaObj->obj_type = 'profile_media_map';
+          $mediaObj->obj_type = 'media_collection_map';
           $mediaObj->delete_url = "/ajax.php?oper=del&obj_type=media_collection_map&id=".$mapObj->id;
           
           $mediaObjs[] = $mediaObj;
@@ -6102,17 +6102,15 @@
 
       }elseif($parent_type == 'exhibition_map' && $parent_field == 'map'){
         $get_media = find_object('exhibition_map', ['page_id' => $parent_id, 'active'=>1]);
-        dump($parent_id);
-        dump($get_media);
-     
+
         $files = [];
         $edit_url = "edit-url";
 
           $mediaObj = get_object('media', $mapObj->title_image);
           $mediaObj->media_id = $mapObj->title_image;
           $mediaObj->map_id = $mediaObj->obj_id = $mapObj->id;
-          $mediaObj->obj_type = 'profile_media_map';
-          $mediaObj->delete_url = "/ajax.php?oper=del&obj_type=media_collection_map&id=".$mapObj->id;
+          $mediaObj->obj_type = 'exhibition_map';
+          $mediaObj->delete_url = "/ajax.php?oper=del&obj_type=exhibition_map&id=".$mapObj->id;
           
           $mediaObjs[] = $mediaObj;  
 

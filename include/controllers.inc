@@ -162,6 +162,9 @@ function controller_minisite($app, $options = []) {
         elseif($minisite_pageObj->second_layout == 156)       $tpl = $page = 'artist_layout5';
         elseif($minisite_pageObj->second_layout == 157)       $tpl = $page = 'artist_layout6';
         elseif($minisite_pageObj->second_layout == 164)       $tpl = $page = 'artist_masonry';
+        elseif($minisite_pageObj->second_layout == 165)       $tpl = $page = 'artist_hanging';
+        elseif($minisite_pageObj->second_layout == 166)       $tpl = $page = 'artist_standing';
+        elseif($minisite_pageObj->second_layout == 167)       $tpl = $page = 'artist_masonryExt';
       }
     }
     
@@ -372,6 +375,9 @@ function controller_minisite($app, $options = []) {
         elseif($minisite_pageObj->page_layout == 156)   $tpl = $page = 'artist_layout5';
         elseif($minisite_pageObj->page_layout == 157)   $tpl = $page = 'artist_layout6';
         elseif($minisite_pageObj->page_layout == 164)   $tpl = $page = 'artist_masonry';
+        elseif($minisite_pageObj->page_layout == 165)   $tpl = $page = 'artist_hanging';
+        elseif($minisite_pageObj->page_layout == 166)   $tpl = $page = 'artist_standing';
+        elseif($minisite_pageObj->page_layout == 167)   $tpl = $page = 'artist_masonryExt';
       }
       if($page == 'singleExhibitions'){
         $scope->subview = $subview = $parts[2];
@@ -389,7 +395,7 @@ function controller_minisite($app, $options = []) {
   /** todo: 404 if slug/subview not allowed or not found */
   
   switch($page) {
-    case ($page == 'artist' || $page == 'artist_layout1' || $page == 'artist_layout2' || $page == 'artist_layout3' || $page == 'artist_layout4' || $page == 'artist_layout5' || $page == 'artist_layout6' || $page == 'artist_masonry'): 
+    case ($page == 'artist' || $page == 'artist_layout1' || $page == 'artist_layout2' || $page == 'artist_layout3' || $page == 'artist_layout4' || $page == 'artist_layout5' || $page == 'artist_layout6' || $page == 'artist_masonry' || $page == 'artist_hanging' || $page == 'artist_standing' || $page == 'artist_masonryExt'): 
       $artist = "";
       if($bioartist){
         $scope->artist = $artist = $bioartist;
@@ -4538,7 +4544,7 @@ function controller_gallery_backend($app, $options = []) {
             $existing = $what == 'artwork' ? $art_ids : $media_ids;
             if(in_array($this_id, $existing)) continue; // already exists
 
-            $result = $what == 'artwork' ? gallery_publish_artwork_profile($siteObj, $this_id, $user_id) : gallery_publish_image_profile($siteObj, $this_id, $user_id);
+            $result = $what == 'artwork' ? gallery_publish_artwork($siteObj, $this_id, $user_id) : gallery_publish_image($siteObj, $this_id, $user_id);
 
             if($error = $result->error) return json_error($error);
             if($message = $result->message ?: $result->messages) $messages = array_merge_smart($messages, $message);
@@ -4551,10 +4557,10 @@ function controller_gallery_backend($app, $options = []) {
                     
           switch($changed) { // reload
             case 'artwork':
-              $art = find_objects('profile_media_map', ['user_id' => $user_id, 'artwork_id' => ['>', 0]]);
+              $art = find_objects('media_collection_map', ['user_id' => $user_id, 'artwork_id' => ['>', 0]]);
               break;
             case 'media':
-              $media = find_objects('profile_media_map', ['user_id' => $user_id, 'artwork_id' => ATT_DEFAULT_NULL]);
+              $media = find_objects('media_collection_map', ['user_id' => $user_id, 'artwork_id' => ATT_DEFAULT_NULL]);
               break;
             default:
               break;
@@ -4945,10 +4951,10 @@ function controller_gallery_backend($app, $options = []) {
                     
           switch($changed) { // reload
             case 'artwork':
-              $art = find_objects('profile_media_map', ['user_id' => $user_id, 'artwork_id' => ['>', 0]]);
+              $art = find_objects('media_collection_map', ['user_id' => $user_id, 'artwork_id' => ['>', 0]]);
               break;
             case 'media':
-              $media = find_objects('profile_media_map', ['user_id' => $user_id, 'artwork_id' => ATT_DEFAULT_NULL]);
+              $media = find_objects('media_collection_map', ['user_id' => $user_id, 'artwork_id' => ATT_DEFAULT_NULL]);
               break;
             default:
               break;

@@ -369,13 +369,12 @@ function gallery_unique_artworks($collection_ids, $options) {
 /** return list of selected art*/
 
 function gallery_selected_artworks($user_id, $options) {
-  //dump($collection_ids);
-  $mapObjs = find_objects('profile_media_map', array('user_id' => $user_id), $options);
+  $get_id = find_object('media_collection', array('user_id' => $user_id, 'type' =>150, 'active' =>1));
+  $mapObjs = find_objects('media_collection_map', array('media_collection_id' => $get_id->id));
   $objs = array();
   foreach($mapObjs as $mapObj) {
     $objs[] = $mapObj;
-  }
-  
+  }  
   return $objs;  
 }
 
