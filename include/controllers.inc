@@ -51,7 +51,7 @@ function controller_minisite($app, $options = []) {
   if(strstr($slug, '~')) {
     list($name, $obj_id) = explode('~', $slug);
   }
-  
+
   $subview = count($parts) > 1 ? strtolower($parts[2]) : '';
 
   $scope->artworks = [];
@@ -74,8 +74,9 @@ function controller_minisite($app, $options = []) {
   
   $se_title = $minisite;
   $se_description = $minisite;
-  
+
   switch($type) {
+  /**
   case 'artist':
     $search = ['user_id' => $user_id, 'active' => 1, 'type' => COLLECTION_TYPE_EXHIBITION, 'subtype' => 40, 'show_website' => 1];
     $scope->artist = $artist = get_user($user_id);
@@ -85,7 +86,6 @@ function controller_minisite($app, $options = []) {
     $artist->slug = slugify($uObj->display_name);
     $artist->collections = $exhibitionObjs = find_objects('media_collection', $search);
 
-    /**
     $collectionObjs = find_objects('media_collection', ['user_id' => $user_id, 'active' => 1, 'type' => COLLECTION_TYPE_PROJECT]);    
     $collectionObj = $collectionObjs[0];
     $collection_count = count($collectionObjs);
@@ -96,13 +96,13 @@ function controller_minisite($app, $options = []) {
     $artist->collection_id = $collectionObj->id;
     $artist->title_image = $uObj->photo ?: collection_title_image($collectionObj, 'ig');
     $artist->collections = $exhibitionObjs;
-    */   
+ 
     
     //die("type={$type} path: {$path} page:{$page} slug:{$slug} sub:{$subview} options".dump($options,true));
     
     break;
-    
-  case 'gallery':
+  **/  
+  case ($type == 'gallery' || $type == 'artist'):
   default:
     if($page == 'artists' || $page == 'artist') {
       $scope->page_slug = ($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
@@ -169,6 +169,7 @@ function controller_minisite($app, $options = []) {
     }
     
     if($page == 'exhibitions' || $page == 'exhibition') {
+
       $scope->page_slug = $slugstr =($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
       $scope->sub_slug = $subviews = ($parts[2] != '') ?  $parts[2] : $get_tpl['get_subviews'];
       $page_slug =  ($parts[0] != '') ? "/".$parts[0]."/" : "/".$get_tpl['get_slug']."/"; 
@@ -282,7 +283,11 @@ function controller_minisite($app, $options = []) {
       else{
         unset($search['subtype']);
         if($minisite_pageObj->second_layout == '132')      $tpl = $page = 'exhibition';
-        elseif($minisite_pageObj->second_layout == '133')  $tpl = $page = 'exhibition1'; 
+        elseif($minisite_pageObj->second_layout == '133')  $tpl = $page = 'exhibition1';
+        elseif($minisite_pageObj->second_layout == '168')  $tpl = $page = 'exh_masonry';
+        elseif($minisite_pageObj->second_layout == '169')  $tpl = $page = 'exh_hanging'; 
+        elseif($minisite_pageObj->second_layout == '170')  $tpl = $page = 'exh_standing'; 
+        elseif($minisite_pageObj->second_layout == '171')  $tpl = $page = 'exh_masonryExt'; 
       }
         
         /** Filter by gallery, Art, Other events */
@@ -435,7 +440,7 @@ function controller_minisite($app, $options = []) {
     case 'artists_layout4':
       break;
     
-    case ($page == 'exhibition' || $page == exhibition1):
+    case ($page == 'exhibition' || $page == exhibition1 || $page == exh_masonry || $page == exh_hanging || $page == exh_standing || $page == exh_masonryExt):
       if($parts[1]) $slug = $parts[1];
       if(!$slug) return scope_error($app, "Missing slug", '404');
       $collectionObj = $obj_id ? get_object('media_collection', $obj_id) : $exhibitions[$slug];
