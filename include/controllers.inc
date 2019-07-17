@@ -4448,6 +4448,7 @@ function controller_gallery_backend($app, $options = []) {
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/filter-control/bootstrap-table-filter-control.min.js";
   $__header->scripts[] = "/afr/bower/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js";
   $__header->scripts[] = "/afr/js/evol-colorpicker.min.js";  //Colour picker
+  $__header->scripts[] = "/afr/js/service-worker.js";
   
   if(0) { // cloudinary direct upload
     require_once("xml/xml_cloudinary.inc");
