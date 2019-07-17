@@ -390,8 +390,13 @@ function controller_minisite($app, $options = []) {
 
         $page_slug = ($parts[0] != '') ? "/".$parts[0]."/" :  "/".$get_tpl['get_slug']."/"; 
         $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'active' => 1, 'slug' => $page_slug]);
-        if($minisite_pageObj->page_layout == 135)       $tpl = $page = 'singleExhibitions';
-        elseif($minisite_pageObj->page_layout == 136)   $tpl = $page = 'singleExhibitions_1';
+
+        if($minisite_pageObj->page_layout == 135)       $tpl = $page = 'singleExh';
+        elseif($minisite_pageObj->page_layout == 136)   $tpl = $page = 'singleExh_1';
+        elseif($minisite_pageObj->page_layout == 172)   $tpl = $page = 'singleExh_2';
+        elseif($minisite_pageObj->page_layout == 173)   $tpl = $page = 'singleExh_3';
+        elseif($minisite_pageObj->page_layout == 174)   $tpl = $page = 'singleExh_4';
+        elseif($minisite_pageObj->page_layout == 175)   $tpl = $page = 'singleExh_5';
       } 
       
     break;
@@ -470,7 +475,7 @@ function controller_minisite($app, $options = []) {
       $scope->artworks = $mapObjs = find_objects('media_collection_map', $search, ['sort' => 'rank']);
       break;
 
-    case ($page == 'singleExhibitions' || $page == singleExhibitions_1):
+    case ($page == 'singleExh' || $page == singleExh_1 || $page == singleExh_2 || $page == singleExh_3 || $page == singleExh_4 || $page == singleExh_5):
       $slugstr =($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
       $gallery = $artfair = $others = '0';
       $data = json_decode($minisite_pageObj->data, True);
@@ -3100,6 +3105,9 @@ function controller_user_profile($app, $options = []) {
   $u_id = $app->user->id;
   $__header = $app->header; 
   $__header->scripts[] = "/afr/bower/lightslider/dist/js/lightslider.min.js";
+  $__header->styles[] = "/afr/js/vp/vp.min.css{$cachebust}";
+
+  $__header->scripts[] = "/afr/js/vp/vp.js{$cachebust}";
   $__header->styles[] = "/afr/bower/lightslider/dist/css/lightslider.min.css";
   $siteObj = $app->site;
     
@@ -3315,6 +3323,9 @@ function controller_artist_profile($app, $options = []) {
   global $u_id;
   $__header = $app->header; 
   $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
+  $__header->styles[] = "/afr/js/vp/vp.min.css{$cachebust}";
+
+  $__header->scripts[] = "/afr/js/vp/vp.js{$cachebust}";
   $__header->styles[] = "/afr/css/gallery/afr_gallery.css?ver={$app->version}";
 
   $scope = $app->page->scope;
@@ -3365,7 +3376,7 @@ function controller_artist_profile($app, $options = []) {
   $scope->curator_ids = $curator_ids =find_objects('media_collection_map', array('artist_id' => $user_id, 'curator_id' => array('>', 0)), array('fields' => 'distinct curator_id', 'debug_query' => 0));
 
   $start = 0;
-  $limit = 12;
+  $limit = 40;
   
   if($is_curator) {
     $scope->template = "user-profile-curator.html";
@@ -4395,7 +4406,7 @@ function controller_gallery_backend($app, $options = []) {
   if($u_level < USER_LEVEL_ARTIST) return scope_error($app, "Unauthorized", '403');
   $userObj = $app->user;
   $siteObj = $app->site;
-  
+
   $__header = $app->header; 
   $__header->styles[] = "/afr/css/afr_sidebar.css?ver={$app->version}";
   $__header->styles[] = "/afr/css/gallery/afr_gallery.css?ver={$app->version}";
@@ -4407,6 +4418,7 @@ function controller_gallery_backend($app, $options = []) {
   $__header->styles[] = "/afr/bower/bootstrap-toggle/css/bootstrap-toggle.min.css";
   $__header->styles[] = "/afr/bower/bootstrap-table/dist/extensions/filter-control/bootstrap-table-filter-control.min.css";
   $__header->styles[] = "/afr/css/evol-colorpicker.min.css";
+  $__header->styles[] = "/afr/json/manifest.json";
 
   $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
 
@@ -4466,7 +4478,6 @@ function controller_gallery_backend($app, $options = []) {
   $artist_count = count($artist_ids);
   $user_ids = array_unique(array_merge($artist_ids, [$u_id]));
   
-  
   $subview = $app->page->subview = $app->page->subview ?: 'artworks';
   //$subview = $app->page->subview ?: 'artworks';
   $partial = isset($_GET['_pv']) && $_GET['_pv'];
@@ -4513,7 +4524,7 @@ function controller_gallery_backend($app, $options = []) {
   $auth_edit = 0;
   $edit = $action == 'edit' ? 1 : 0;
   $add = $action == 'add' ? 1 : 0;
- 
+
   switch($subview) {
     case "settings":
       $scope->section = 'settings';
@@ -4572,8 +4583,7 @@ function controller_gallery_backend($app, $options = []) {
           }
         }
 
-      }
-     
+      }     
 
       $data = db_getAll("select * from opening_hours where user_id='$id'");
       $scope->timing = $data;
@@ -4621,6 +4631,51 @@ function controller_gallery_backend($app, $options = []) {
       $filter_json = count($filters) ? json_encode($filters) : '';
       $scope->list_url = "/ajax.php?oper=get-rows&obj_type=artwork".($filter_json ? "&filters=".urlencode($filter_json) : '');
       break;
+
+    case "vault":
+      $scope->section = 'vault';
+      $scope->obj_type = $obj_type = "gallery";
+      $app->page->itemview = 'vault';
+      $app->page->listview = 'vault';
+      if($id) {
+        $scope->folder = $folder = get_object($obj_type, $id);
+        $title = $folder->title ?: "Untitled folder";
+        $up_link = $folder->parent_id ? 
+          reverse_route($app, 'backend:subview:id', ['subview' => 'vault', 'id' => $folder->parent_id]) : 
+          reverse_route($app, 'backend:subview', ['subview' => 'vault']);
+        $title .= " <a href='{$up_link}'><i class='fa fa-level-up'></i></a>";
+        $scope->title = "<i class='fa fa-folder'></i> ".$title;
+      }
+
+      $filters = ['active' => 1, 'user_id' => $u_id];
+      $filters['parent_id'] = $id ?: 0;
+      //$filters[DB_LOGICAL_OR2] = ['user_id' => $app->user_id, 'artist_id' => $artist_ids]; 
+      $filter_json = count($filters) ? json_encode($filters) : '';
+      $scope->list_url = "/ajax.php?oper=get-rows&obj_type=gallery".($filter_json ? "&filters=".urlencode($filter_json) : '');
+      break;
+
+    case "vaults":
+      $scope->section = 'vault';
+      $scope->obj_type = $obj_type = "gallery";
+      $app->page->itemview = 'vault';
+      $app->page->listview = 'vault';
+      if($id) {
+        $scope->folder = $folder = get_object($obj_type, $id);
+        $title = $folder->title ?: "Untitled folder";
+        $up_link = $folder->parent_id ? 
+          reverse_route($app, 'backend:subview:id', ['subview' => 'vault', 'id' => $folder->parent_id]) : 
+          reverse_route($app, 'backend:subview', ['subview' => 'vault']);
+        $title .= " <a href='{$up_link}'><i class='fa fa-level-up'></i></a>";
+        $scope->title = "<i class='fa fa-folder'></i> ".$title;
+      }
+
+      $filters = ['active' => 1, 'user_id' => $u_id];
+      $filters['parent_id'] = $id ?: 0;
+      //$filters[DB_LOGICAL_OR2] = ['user_id' => $app->user_id, 'artist_id' => $artist_ids]; 
+      $filter_json = count($filters) ? json_encode($filters) : '';
+      $scope->list_url = "/ajax.php?oper=get-rows&obj_type=gallery".($filter_json ? "&filters=".urlencode($filter_json) : '');
+      break;
+
     case "plugin":
       $scope->section = 'plugin';
       $scope->obj_type = $obj_type = "plugin";
@@ -4659,6 +4714,7 @@ function controller_gallery_backend($app, $options = []) {
             
       $scope->images = $images = find_objects('media_collection_map', ['media_collection_id' => $pid, 'active' => 1], ['sort' => 'rank']);
       break;
+
     case "plugins":
       $scope->section = 'plugin';
       $scope->obj_type = $obj_type = "plugin";
@@ -4752,8 +4808,7 @@ function controller_gallery_backend($app, $options = []) {
           switch($changed) { // reload
             case 'exb':
               $art = find_object('exhibition_map', ['active' => 1, 'page_id' => ['>', 0]]);
-              break;
-           
+              break;           
           }
           if($error) return json_error($error);   
         }
@@ -4762,6 +4817,7 @@ function controller_gallery_backend($app, $options = []) {
       }      
       $colSearch = ['id' =>$id, 'user_id' => $obj->user_id, 'active' => 1];
       $scope->minisiteobj = $minisiteobj = find_object('minisite', $colSearch);
+      $scope->site_title = $sitetitle = $minisiteobj->name;
       $scope->fonts = $fonts = find_objects('minisite_font', ['active' => 1]);
       $colSearch = ['minisite_id' => $id ,'user_id' => $obj->user_id, 'active' => 1];
       $scope->pagelist = $pagelist = find_objects('minisite_page', $colSearch, ['sort' => 'row_order asc']);
@@ -4773,41 +4829,30 @@ function controller_gallery_backend($app, $options = []) {
 
       $scope->artist_layout = $artist_layout = find_objects('minisite_parent_layout', ['type' => 20, 'active'=>1], ['sort' => 'row_order asc']);
       $scope->artist_sub_layout = $artist_sub_layout = find_objects('minisite_layout', ['type' => 20,'subtype' => 1, 'active' => 1]);
-
-      /*$scope->artist_layout = $artist_layout = find_objects('minisite_layout', ['type' => 20, 'subtype' => 1, 'active'=>1], ['sort' => 'row_order asc']);*/
       $scope->artist_layout1 = $artist_layout1 = find_objects('minisite_layout', ['type' => 20, 'subtype' => 2, 'active'=>1], ['sort' => 'row_order asc']);
-
       $scope->contact_layout = $contact_layout = find_objects('minisite_layout', ['type' => 40, 'subtype' => 1, 'active'=>1], ['sort' => 'row_order asc']);
-
       $scope->single_exb_layout = $single_exb_layout = find_objects('minisite_layout', ['type' => 60, 'subtype' => 1, 'active'=>1], ['sort' => 'row_order asc']);
 
       $col = ['id' => $page_id, 'user_id' => $obj->user_id, 'active' => 1];
       $scope->minisitepage = $minisitepage = find_object('minisite_page', $col);
-
       $scope->userprofile = $userprofile = get_user($obj->user_id);
-
       $awards = json_decode($userprofile->awards);
       $solo_shows = json_decode($userprofile->solo_shows_);
       $group_shows = json_decode($userprofile->group_shows_);
       $press_data = json_decode($userprofile->press_data);
       
       function sortMonths($a, $b) {
-        if ($a->year == $b->year)
-            return 0;
-
+        if ($a->year == $b->year)     return 0;
         list($ay,$am,$ad) = explode('-', $a->year);
         list($by,$bm,$bd) = explode('-', $b->year);
-
         if ($ay == $by){
           $am = strtotime($am); 
           $bm = strtotime($bm);
           return ($am < $bm ? 1 : -1);
         }
-            
         else
             return ($a->year < $b->year ? 1 : -1);
       } 
-
       uasort($awards, 'sortMonths');
       uasort($solo_shows, 'sortMonths');
       uasort($group_shows, 'sortMonths');
@@ -4833,8 +4878,8 @@ function controller_gallery_backend($app, $options = []) {
         $scope->url = $url = "https://{$_SERVER['SERVER_NAME']}/$obj->user_id/{$obj->url}"; 
       }
       $scope->title = "URL: <a href='{$url}' target='website'>{$url}</a>";
-
       break;
+
     case "websites":
       $scope->section = 'website';
       $scope->obj_type = $obj_type = "minisite";
@@ -4870,27 +4915,8 @@ function controller_gallery_backend($app, $options = []) {
       $filter_json = count($filters) ? json_encode($filters) : '';
       $scope->list_url = "/ajax.php?oper=get-rows&obj_type=media".($filter_json ? "&filters=".urlencode($filter_json) : '');
       break;
-    case "vault":
-      $scope->section = 'vault';
-      $scope->obj_type = $obj_type = "gallery";
-      if($id) {
-        $scope->folder = $folder = get_object($obj_type, $id);
-        $title = $folder->title ?: "Untitled folder";
-        $up_link = $folder->parent_id ? 
-          reverse_route($app, 'backend:subview:id', ['subview' => 'vault', 'id' => $folder->parent_id]) : 
-          reverse_route($app, 'backend:subview', ['subview' => 'vault']);
-        $title .= " <a href='{$up_link}'><i class='fa fa-level-up'></i></a>";
-        $scope->title = "<i class='fa fa-folder'></i> ".$title;
-      }
-      $app->page->itemview = 'vault';
-      $app->page->listview = 'vault';
 
-      $filters = ['active' => 1, 'user_id' => $u_id];
-      $filters['parent_id'] = $id ?: 0;
-      //$filters[DB_LOGICAL_OR2] = ['user_id' => $app->user_id, 'artist_id' => $artist_ids]; 
-      $filter_json = count($filters) ? json_encode($filters) : '';
-      $scope->list_url = "/ajax.php?oper=get-rows&obj_type=gallery".($filter_json ? "&filters=".urlencode($filter_json) : '');
-      break;
+    
 
     case "network":
       $scope->section = 'network';
@@ -5207,6 +5233,9 @@ function controller_gallery_artworks($app, $options = []) {
   
   $__header = $app->header; 
   $__header->styles[] = "/afr/css/gallery/afr_gallery.css?ver={$app->version}";
+  $__header->styles[] = "/afr/js/vp/vp.min.css{$cachebust}";
+
+  $__header->scripts[] = "/afr/js/vp/vp.js{$cachebust}";
   $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
   $siteObj = $app->site;
   
@@ -5218,8 +5247,9 @@ function controller_gallery_artworks($app, $options = []) {
   
   $parent_obj_type = $scope->parent_obj_type;
   $parent_obj_id = $scope->parent_obj_id;
-  
-  
+  $path = explode('/',$app->page->path);
+  if($path[1] == 'selectedart') $scope->selectedartpage = 1;
+
   $tpl = $app->page->template;
   //die("tpl=$tpl");
   print_log("controller_gallery_artworks: $obj_type/$obj_id parent: $parent_obj_type/$parent_obj_id", 'gallery', LOG_LEVEL_TEST);
@@ -5281,7 +5311,7 @@ function controller_gallery_artworks($app, $options = []) {
     if(!$curator_id) $curator_id = $related->curator_id;
     
     $start = 0;
-    $limit = 12;
+    $limit = 40;
     if($curator_id) {
       $curator_exhibitions = find_objects('media_collection', 
           array('user_id' => $curator_id, 'type' => MEDIA_COLLECTION_TYPE_EXHIBITION, 'active' => 1, 'subtype' => [10,20,30,40] ), 
@@ -5333,10 +5363,12 @@ function controller_gallery_artworks($app, $options = []) {
       $scope->artist_exhibition = find_objects('media_collection', 
         array('id' => $artist_exhibitions_ids, 'active' => 1), array('start' => $start, 'limit' => $limit));
       $get_exh = get_object('media_collection', $exh_id);
-      $scope->other_exh_name = $get_exh;
+      $scope->other_exh_name = $other_exh_name = $get_exh;
       $scope->other_exhibitions = find_objects('media_collection_map', 
         array('media_collection_id' => $exh_id, 'active' => 1), array('start' => $start, 'limit' => $limit));
 
+      $scope->artist_artwork = gallery_selected_artworks($artist_id, ['start' => $start, 'limit' => $limit]);
+      //dump($scope->artist_artwork);
     }
     
     if($collectionObj) {
@@ -5491,6 +5523,9 @@ function controller_gallery_collections($app, $options = []) {
   global $u_id;
   $__header = $app->header; 
   $__header->styles[] = "/afr/css/gallery/afr_gallery.css?ver={$app->version}";
+  $__header->styles[] = "/afr/js/vp/vp.min.css{$cachebust}";
+
+  $__header->scripts[] = "/afr/js/vp/vp.js{$cachebust}";
   $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
   $siteObj = $app->site;
   
@@ -5504,7 +5539,7 @@ function controller_gallery_collections($app, $options = []) {
   $obj_type = $scope->obj_type = $scope->obj_type ?: $app->object_type;
   
   $start = 0;
-  $limit = 12;
+  $limit = 40;
   
   print_log("sot: {$scope->obj_type} tos {$app->object_type} => {$obj_type}", 'gallery', LOG_LEVEL_TEST);
   $scope->my_collection_id = $scope->user_collection_id = $user_collection_id = $u_id ? gallery_find_user_collection($siteObj, $u_id, array('return' => 'id')) : 0;

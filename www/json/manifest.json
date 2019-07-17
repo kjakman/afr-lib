@@ -1,0 +1,22 @@
+{
+    "name": "Vpatina Progressive Web App",
+    "short_name": "Vpatina",
+    "description": "Progressive Web App that lists art gallery.",
+    "icons": [
+        {
+            "src": "img/vpatina-logo-334.jpg",
+            "sizes": "32x32",
+            "type": "img/jpg"
+        },
+        // ...
+        {
+            "src": "img/vpatina-logo-334.jpg",
+            "sizes": "512x512",
+            "type": "image/jpg"
+        }
+    ],
+    "start_url": "https://www.vpatina.com/backend",
+    "display": "fullscreen",
+    "theme_color": "#B12A34",
+    "background_color": "#B12A34"
+}
