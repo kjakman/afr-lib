@@ -169,8 +169,8 @@ function logStackTrace(levels) {
 
 var g_pswp = false;
 var g_pswp_index = -1;
-//var g_site_url = 'http://new.vpatina.dci.in';
-var g_site_url = 'https://www.vpatina.com';
+var g_site_url = 'https://new.vpatina.dci.in';
+//var g_site_url = 'https://www.vpatina.com';
 var g_aid = 10;
 var g_site_id = '247';
 var g_user_id = '';
@@ -1478,6 +1478,7 @@ function vp_search() {
     var plugin_ids = g_keys[key];
 
     console.log("Found plugin id:" +  plugin_id + " cid:" + cid + " key: " + key + " status:" + status + " g_keys:", g_keys);
+    console.log("pradee data "+JSON.stringify(data) );
     if(0 && plugin_ids.length) {
       
       console.log("Already loading data for plugin id:" +  plugin_id + " cid:" + cid + " status:" + status + " key:" + key + " plugin ids=", plugin_ids);

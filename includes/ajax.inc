@@ -313,6 +313,7 @@
     
     case 'save-artwork':
       extract($obj_data);
+
       print_log("save-artwork: type: {$obj_type} id: {$obj_id} data:".dump($obj_data,true), 'gallery', LOG_LEVEL_TEST);
       //if(isset($obj_data['type']) && !$type) json_error("Please select a category."); 
       //if(isset($obj_data['status']) && !$status) json_error("Please select a status."); 
@@ -344,9 +345,33 @@
       exit;      
       break;
 
-       case 'save-profile':
+    case 'save-artwork-related':
+      extract($obj_data);
+
+      if(!$obj_data[dedit])
+        if($error = check_required($obj_data, 
+            ['type' => "Type", 'description' => "description"])) 
+            json_error("Missing: ".implode(', ', $error));
+      if($obj_id) {
+        list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
+      }else{
+        list($id, $errors) = add_object($obj_type, $obj_data);
+      }            
+      if($errors) json_error($errors);
+      
+      $obj = get_object($obj_type, $id);
+      
+      $result->success = 1;
+      $result->data = $obj;
+      $result->message = "OK. Saved related artwork";
+      
+      echo(json_encode($result));
+      exit;      
+      break;
+
+
+    case 'save-profile':
        extract($obj_data);
-       //dump($obj_data);
        $id = $obj_data[obj_id];
        $user_id = $obj_data[user_id];
        $contact = $obj_data[contact];
@@ -385,7 +410,6 @@
           $time[$day] = $opening_times.'-'.$closing_times;        
         }
         $obj_data['working_hours'] = json_encode($time);
-
        }
 
        $datas = [];
@@ -401,9 +425,7 @@
        }
        
        if($obj_data[contact]) $obj_data[contact] = json_encode($datas,True);
-       
        if($obj_data[social])  $obj_data[social] = json_encode($obj_data[social]);
-       
        $artist_name = $obj_data[display_name];
         
        if($id) {
@@ -431,7 +453,7 @@
        
       case 'save-details':
         extract($obj_data);
-        //dump($obj_data);
+        
         $id = $obj_data[obj_id];
         $user_id = $obj_data[user_id];
         $contact = $obj_data[contact];
@@ -487,23 +509,20 @@
 
         $obj = get_object($obj_type, $id);
         $obj->next_tab = $obj_data['next_tab'];
-        
         $result->success = 1;
         $result->data = $obj;
         $result->message = "OK. Saved profile details";
-
         echo(json_encode($result));
         exit;      
       break;
 
       case 'save-cv':
         extract($obj_data);
-        //dump($obj_data);
+        
         function sortyear($a, $b){
           if ($a['year'] == $b['year']) return 0;
           list($ay,$am,$ad) = explode('-', $a['year']);
           list($by,$bm,$bd) = explode('-', $b['year']);
-
           if ($ay == $by){
             $am = strtotime($am); 
             $bm = strtotime($bm);
@@ -512,7 +531,6 @@
           else return ($a['year'] < $b['year'] ? 1 : -1);
         }  
 
-        
         if($obj_data[solo_shows_]){
           $solo_shows_ = $obj_data[solo_shows_];
           $count = count($solo_shows_['year']);
@@ -523,7 +541,6 @@
               $solo[$i]['description'] = $solo_shows_['description'][$i];
             }         
           } 
-          
           uasort($solo, 'sortyear');
           $obj_data[solo_shows_] = json_encode(array_values($solo));
         }
@@ -569,10 +586,8 @@
           uasort($datas, 'sortyear');       
           $obj_data[awards] = json_encode(array_values($datas));
         }  
-        
 
         if($obj_data[show_data])  $obj_data[show_data] = json_encode($obj_data[show_data],True);
-
         if($id){
           list($id, $errors) = update_object($obj_type, $obj_data, $id);
         }else{
@@ -581,11 +596,9 @@
 
         $obj = get_object($obj_type, $id);
         $obj->next_tab = $obj_data['next_tab'];
-        
         $result->success = 1;
         $result->data = $obj;
         $result->message = "OK. Saved profile CV";
-
         echo(json_encode($result));
         exit;      
       break;
@@ -620,7 +633,6 @@
 
         $obj = get_object($obj_type, $id);
         $obj->next_tab = $obj_data['next_tab'];
-
         $result->success = 1;
         $result->data = $obj;
         $result->message = "OK. Saved minisite";
@@ -630,14 +642,15 @@
 
       case 'save-minisite-page':
         extract($obj_data);
+        //dump($obj_data);
         $obj_type = "minisite_page";
         $obj_id = $obj_data[obj_id];  
         $user_id = $obj_data[user_id];
         $minisite_id = $obj_data[minisite_id]; 
 
         if($obj_data['menu_title']){ 
-          $obj_data['menu_title'] = url_safe($obj_data['menu_title'], true);
-          $slug = $obj_data['slug'] = url_safe("/".$obj_data['menu_title']."/", true); // slashes allowed
+          $menu_title = url_safe($obj_data['menu_title'], true);
+          $slug = $obj_data['slug'] = url_safe("/".$menu_title."/", true); // slashes allowed
         }
         if(!$obj_id)
           $col = find_objects('minisite_page', ['user_id' => $obj_data[user_id], 'minisite_id' => $obj_data[minisite_id],'slug' => $obj_data['slug'] , 'active' => 1]);
@@ -645,9 +658,7 @@
           $col = $data = db_getAll("select * from minisite_page where user_id= '$obj_data[user_id]' AND active= '1' AND slug= '$slug' AND id!= '$obj_id' AND minisite_id = '$obj_data[minisite_id]' ");
 
         if($col)  json_error($obj_data['slug']." is already used, Please choose a unique menu title"); 
-         
-        if($obj_data[type] == 10) json_error("Home page cannot be added, its already present. You can edit it");
-
+        
         if($obj_data[minisite_id]){
           if(!$obj_id){                                                       //Adding default values for each page
             if($obj_data[type] == 20){                                        //artist page
@@ -670,6 +681,11 @@
             list($id, $errors) = add_object($obj_type, $obj_data);
             print_log("save-minisite: added: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
           }else{
+            $minisite = get_object('minisite_page', $obj_id);
+            if(($minisite->type == 70) && ($obj_data[data])){
+              if (filter_var($obj_data[data], FILTER_VALIDATE_URL) == false)  json_error("Invalid URL");
+            }
+
             list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
             print_log("save-ministe: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
           }
@@ -682,7 +698,6 @@
 
         $obj = get_object($obj_type, $id);
         $obj->next_tab = $obj_data['next_tab'];
-
         $result->success = 1;
         $result->data = $obj;    
         $result->message = "OK. Minisite Pages Saved";       
@@ -692,30 +707,35 @@
 
       case 'save-minisite-artist':
         extract($obj_data); 
-          
+
         $user_id = $obj_data[user_id];      
         $page_id = $obj_data[page_id];
-        $new_arr_encode = $obj_data[search];
-        $artist_ids = json_decode($new_arr_encode, True);
-        
+        if($obj_data[artist_ids])
+          $artist_ids = json_decode($obj_data[artist_ids], True);
+        if($obj_data[artist_ids1])
+          $artist_ids1 = json_decode($obj_data[artist_ids1], True);
+
         if($page_id){
           $data = find_object($obj_type, ['id' => $page_id, 'user_id' => $user_id, 'active' => '1']);
-          $data_arr_encode = $data->search;
-          $data_arr_decode = json_decode($data_arr_encode, True);
-          if($data_arr_encode){
-            foreach($artist_ids as $artist_id){             //check If media exists for the artist
-              $media = find_object('media_collection', ['user_id' => $user_id, 'artist_id' => $artist_id, 'type' => 120,'active' => 1]);
-                $obj_data[search] = json_encode(array_unique(array_merge(json_decode($data->search, true),json_decode($search, true))));
-            }
-          }else{
-            $obj_data[search] = $search;
-          }
-          if($obj_data[search] != 'null'){
+
+          if($artist_ids){
+            if($data->search)
+              $obj_data[search] = json_encode(array_values(array_unique(array_merge(json_decode($data->search, true),json_decode($obj_data[artist_ids], true)))));
+            else
+              $obj_data[search] = $obj_data[artist_ids];
+          }elseif($artist_ids1){
+            if($data->search1)
+              $obj_data[search1] = json_encode(array_values(array_unique(array_merge(json_decode($data->search1, true),json_decode($obj_data[artist_ids1], true)))));
+            else
+              $obj_data[search1] = $obj_data[artist_ids1];
+          }else
+            json_error("Missing Artist ID");
+
+          if(($obj_data[search] != 'null') || ($obj_data[search1] != 'null')){
             list($id, $errors) = update_object($obj_type, $obj_data, $page_id);
             print_log("save-ministe: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
-          }else{
+          }else
             json_error("Missing Artist ID");
-          }
         }else{
           json_error("Missing page ID");
         }
@@ -728,11 +748,24 @@
 
     case 'save-minisite-basic':
       extract($obj_data);
+      
       $obj_type = $obj_data[obj_type];
-
       if($obj_data[icon_type] == 1)
         $obj_data[icon_size] = 1;
 
+      if($obj_data[show_mail]){
+        if(!$obj_data[mailtype] || !$obj_data[u_key] || !$obj_data[u_id] || !$obj_data[b_id])
+          json_error("Please enter the required fields");
+      }
+      $data = [];
+      $data[show_mail] = $obj_data[show_mail] ? $obj_data[show_mail] : 0;
+      $data[mailtype] = $obj_data[mailtype] ? $obj_data[mailtype] : 0;
+      $data[u_key] = $obj_data[u_key] ? $obj_data[u_key] : 0;
+      $data[u_id] = $obj_data[u_id] ? $obj_data[u_id] : 0;
+      $data[b_id] = $obj_data[b_id] ? $obj_data[b_id] : 0;
+
+      $obj_data['footer_data'] = json_encode($data);
+      
       if($obj_id) {
         list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
         print_log("save-ministe: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
@@ -745,29 +778,12 @@
       $obj = get_object($obj_type, $id);
       $result->success = 1;
       $result->data = $obj;
-      $result->message = "OK. Minisite Saved";
+      $result->message = "OK. Minisite basic Saved";
       echo(json_encode($result));exit;      
     break;
 
     case 'save-minisite-style':
       extract($obj_data);
-      //dump($obj_data);
-      if($obj_id){
-        list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
-        print_log("save-ministe-style: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
-      }
-      if($errors) json_error($errors); 
-
-      $obj = get_object($obj_type, $id);
-
-      $result->success = 1;
-      $result->data = $obj;
-      $result->message = "OK. Saved minisite";    
-    break;
-
-    case 'save-minisite-layout':
-      extract($obj_data);
-      dump($obj_data);
       
       if($obj_id){
         list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
@@ -776,10 +792,23 @@
       if($errors) json_error($errors); 
 
       $obj = get_object($obj_type, $id);
-
       $result->success = 1;
       $result->data = $obj;
-      $result->message = "OK. Saved minisite";    
+      $result->message = "OK. Saved minisite style";    
+    break;
+
+    case 'save-minisite-layout':
+      extract($obj_data);
+      if($obj_id){
+        list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
+        print_log("save-ministe-style: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
+      }
+      if($errors) json_error($errors); 
+
+      $obj = get_object($obj_type, $id);
+      $result->success = 1;
+      $result->data = $obj;
+      $result->message = "OK. Saved minisite layout";    
     break;
 
     case 'save-minisite-single-exhibition':
@@ -788,29 +817,98 @@
       $data[etype] = $obj_data[eType];
       $data[showtype] = $obj_data[showtype];
       $obj_data['data'] = json_encode($data);
-      dump($obj_data);
       if($obj_id){
         list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
       }
       if($errors) json_error($errors); 
 
       $obj = get_object($obj_type, $id);
-
       $result->success = 1;
       $result->data = $obj;
-      $result->message = "OK. Saved minisite"; 
+      $result->message = "OK. Saved minisite exhibition"; 
     break;
+
+    case 'save-minisite-mailform':
+      extract($obj_data);
+
+      if($obj_data[show_mail]){
+        if(!$obj_data[mailtype] || !$obj_data[u_key] || !$obj_data[u_id] || !$obj_data[b_id])
+          json_error("Please enter the required fields");
+      }
+      $data = [];
+      $data[show_mail] = $obj_data[show_mail] ? $obj_data[show_mail] : 0;
+      $data[mailtype] = $obj_data[mailtype] ? $obj_data[mailtype] : 0;
+      $data[u_key] = $obj_data[u_key] ? $obj_data[u_key] : 0;
+      $data[u_id] = $obj_data[u_id] ? $obj_data[u_id] : 0;
+      $data[b_id] = $obj_data[b_id] ? $obj_data[b_id] : 0;
+
+      $obj_datas['data'] = json_encode($data);
+      
+      if($obj_id){
+        list($id, $errors) = update_object($obj_type, $obj_datas, $obj_id);
+      }
+      if($errors) json_error($errors); 
+
+      $obj = get_object($obj_type, $id);
+      $result->success = 1;
+      $result->data = $obj;
+      $result->message = "OK. Saved Mail Form"; 
+    break;
+
+    case 'save-folder':
+      extract($obj_data);
+      $obj_data[type] = "folder";
+      $user_id = $obj_data[user_id];
+      $filename = $obj_data[filename];
+      $obj_data[tags] = $obj_data[tags] ? json_encode($obj_data[tags]) : '';
+        
+      if(!$obj_id){
+        $get_duplicate = find_object($obj_type, ['user_id'=> $user_id, 'filename'=> $filename, 'active'=>1 ]);
+        if(!$get_duplicate){
+          list($id, $errors) = add_object($obj_type, $obj_data);
+        }else{
+          json_error("Duplicate Folder Name");
+        }
+      }else{
+        list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
+      }
+      if($errors) json_error($errors); 
+      $obj = get_object($obj_type, $id);
+
+      if($obj){
+        $obj->path = "/user/".$obj_data[user_id]."/vault/".$id;
+        list($id1, $errors) = update_object($obj_type, $obj, $id);
+      }
+      $obj1 = get_object($obj_type, $id1);
+      $result->success = 1;
+      $result->data = $obj1;
+      $result->message = "OK. Saved folder"; 
+    break;
+
+    case 'save-media':
+      extract($obj_data);
+      $obj_data[tags] = $obj_data[tags] ? json_encode($obj_data[tags]) : '';
+        
+      if($obj_id){
+       list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
+      }
+      if($errors) json_error($errors);
+
+      $obj = get_object($obj_type, $id);
+      $result->success = 1;
+      $result->data = $obj;
+      $result->message = "OK. Saved media"; 
+    break;
+
     case 'save-event':
       $obj_type = 'event';
       print_log("save-event: data:".dump($obj_data,true), 'collection', LOG_LEVEL_TEST);
 
       extract($obj_data);
-     
       if($error = check_required($obj_data, 
           ['parent_type' => "Parent Type", 'parent_id' => "parent_id", 'title' => "Title", 'event_date' => "Date", 'event_start_time' => "Start Time", 'event_end_time' => "End Time"]
         )) json_error("Missing: ".implode(', ', $error));
       
-
       $parentObj = get_object($parent_type, $parent_id);
       $sql_date = date2sql($obj_data['event_date']);
       if(!is_date($sql_date)) json_error("{$obj_data['event_date']} is not a valid date");
@@ -867,7 +965,7 @@
     case 'save-collection':
       $obj_type = 'media_collection';
       extract($obj_data);
-      //dump($obj_data);
+      
       $address_formatted = $obj_data['address_formatted'];
       $type_name = get_object('media_collection_type', $type, 'name');      
       
@@ -2175,9 +2273,8 @@
     /** more secure version of 'list' below, with implicit filters and security checks, used by bootstrap-table */
     case 'get-rows':
       extract($obj_data);
-       
       $allowed_types = ['invoice', 'inv_lineitem', 'payment', 'withdrawal', 'user', 'shortstay', 'dictionary', 'reservation', 
-                        'artwork', 'gallery', 'media_collection', 'media', 'plugin', 'minisite', 'uhuru_registration', 'uhuru_trial_lesson'];
+                        'artwork', 'gallery', 'media_collection', 'media', 'media_folder' ,'plugin', 'minisite', 'uhuru_registration', 'uhuru_trial_lesson'];
       if(!in_array($obj_type, $allowed_types)) json_error("Listing $obj_type not supported");
       $options = array();
       foreach(array('offset', 'limit', 'sort', 'order', 'fields') as $fld) $options[$fld] = $obj_data[$fld];
@@ -2204,10 +2301,12 @@
       
       $vals = explode(' ', $val);
       $objs = [];
+      
       if(count($vals) > 1) {
         $search_options['associative'] = 1; /** return assoc. array */
         $assocArrays = [];
         foreach($vals as $v) { 
+
           if(!$filter_data)         
             $assocArrays[] = object_site_search($obj_type, $search, $v, $search_options);
           else
@@ -2218,14 +2317,18 @@
         $result = call_user_func_array('array_intersect_key', $assocArrays);
         foreach($result as $id => $obj) $objs[] = $obj;
       } else {   
-        if(!$filter_data)     
+        if(!$filter_data){
           $objs = object_site_search($obj_type, $search, $val, $search_options);
-        else
+          if(count($objs)>1){
+            $extra_count = $objs[1];
+            $objs = $objs[0];
+          }
+        }else{
           $objs = object_site_filter($obj_type, $search, $val, $search_options, $filter_data);
+        }
       }
-      
-      if($mode = $obj_data['mode']) {  //TODO need to update the softdelete column using the ids
-        //dump($obj_type);   
+
+      if($mode = $obj_data['mode']) {  //TODO need to update the softdelete column using the ids  
        delete_objects($obj_type,$id); // need to update the softdelete db_object.inc file
        unset($id);
       }
@@ -2233,7 +2336,6 @@
       if($obj_data['return'] == 'rows') { // return array, not object (required when using javascript URL instead of data-url, for some reason */
         echo(json_encode($objs));exit;
       }
-      
       //$response->total = intVal(count_objects($obj_type, $search));
   
       // get count and totals
@@ -2246,20 +2348,37 @@
           $terms[] = "sum($field) as $field";
         }
       }
+
       $totalRows = find_objects($obj_type, $search, array('fields' => $terms));
       $totalRow = $totalRows[0];
       $response->total = $totalRow->total_count + $extra_count;
-  
       unset($totalRow->total_count);
+      
       $sums = array();
       foreach($totalRow as $k => $v) {
         $sums[$k] = $v;
       }
       if(count($sums)) $response->totals = $sums;
+
       $response->rows = $objs;
       echo(json_encode($response, JSON_PRETTY_PRINT));exit;
       
       break;
+
+    case 'get-vault':
+      extract($obj_data);
+      
+      if($obj_data[parent_id]){
+        $search = ['user_id'=>$obj_data[user_id], 'folder_id'=>$obj_data[parent_id] ,'active'=>1];
+        $data = find_objects($obj_type, $search );
+      }else{
+        $media = find_objects($obj_type, array('user_id'=>$obj_data[user_id], 'active'=>1, 'folder_id'=> 0) );
+        $folder = find_objects('media_folder', array('user_id'=>$obj_data[user_id], 'active'=>1), ['sort' => 'created DESC'] );
+        $data = array_merge($folder,$media);
+      }
+      $response->rows  = $data;
+      echo(json_encode($response));exit;
+    break;
      
     case 'list':
       if($u_level < USER_LEVEL_STAFF) json_error("list is disabled for non-admins");
@@ -4091,7 +4210,7 @@
         'remote_agent' => $_SERVER['HTTP_USER_AGENT'],
         'message' => $result['message'],
         'status' => $result['status']];
-      
+
       if($user_id = $result['user_id']) {
         $userObj = get_object('user', $user_id);
         $authData['user_id'] = $user_id;
@@ -4100,14 +4219,17 @@
       }
       
       list($log_id, $log_errors) = add_object('auth_log', $authData);
-      
+
       if($error = $result['error']) {
         print_log(dump($result, true), "auth", LOG_LEVEL_TEST);        
         json_error($result['message']);
-      }
-              
+      }      
       $_SESSION['hash'] = $hash;
-      
+
+      if($log_id && $user_id){
+        $update = create_manifest($user_id);
+      } 
+
       $response = new stdClass;
       $response->success = 1;
       $response->redirect = pick_first($data->redirect, $data->uri, '/');
@@ -5414,17 +5536,22 @@
     case 'artist-delete':
       $artist_id = $obj_data['artist_id'];
       $page_id = $obj_data['page_id'];
-      $datas = [];
-      if($page_id)
-        $getPage = find_object('minisite_page', ['id' => $page_id, 'active'=>1]);
-      $artistArr = json_decode($getPage->search, true);
-      $data->search = json_encode(array_diff($artistArr, array($artist_id)));
-      $data->id = $page_id;
+      $primary = $obj_data['primary'];
 
-      if($data)  
-        $output= update_object('minisite_page', $data, $data->id);
-       
-      if($errors) json_error($errors);
+      if($page_id){
+        $getPage = find_object('minisite_page', ['id' => $page_id, 'active'=>1]);
+        if($primary){
+          $artistArr = json_decode($getPage->search, true);
+          $getPage->search = json_encode(array_diff($artistArr, array($artist_id)));
+        }else{
+          $artistArr = json_decode($getPage->search1, true);
+          $getPage->search1 = json_encode(array_diff($artistArr, array($artist_id)));
+        }
+        $output= update_object('minisite_page', $getPage, $getPage->id);
+        if($errors) json_error($errors);
+      }else{
+        json_error("Missing Page Id");
+      }
 
       $result->success = 1;
       $result->message = "Artist will be removed from website";
@@ -5433,18 +5560,19 @@
       break;
 
     case 'submit-order':
-      $row = $_POST['val'];
+      $row = $obj_data['val'];
+      $obj_type = $obj_data['obj_type'];
       $i = 1;
       foreach($row as $rows) {
-        $data = find_object('minisite_page', ['id' => $rows]);
+        $data = find_object($obj_type, ['id' => $rows]);
         $data->row_order = $i;
-        $output = update_object('minisite_page', $data, $data->id);
+        $output = update_object($obj_type, $data, $data->id);
         $i++;
       }
       if($errors) json_error($errors);
 
       $result->success = 1;
-      $result->message = "Re-ordered in the website";
+      $result->message = "Re-ordered Successfully";
       echo(json_encode($result));
       exit;
     break;
@@ -5452,13 +5580,27 @@
     case 'event-delete':
       $id = trim($obj_data['val']);
       $obj_type = 'event';
-
       if($id){
         list($delete_count, $errors) = delete_object($obj_type, $id);
         if($errors) write_file($log_file, "Delete errors:".dump($errors, true), 'a'); // "\n------------\n\n"
       }
-
       $result->message = "Event Deleted";
+      echo (json_encode($result));
+      exit;
+      break;
+
+    case 'artwork-media-delete':
+      $id = trim($obj_data['obj_id']);
+      $obj_type = trim($obj_data['obj_type']);
+      if($id){
+        $data = find_object($obj_type, ['id' => $id]);
+        $media_id = $data->media;
+        if($media_id)
+          list($delete_media, $errors) = delete_object('media', $media_id);
+          list($delete_artwork, $errors) = delete_object($obj_type, $id);
+        if($errors) write_file($log_file, "Delete errors:".dump($errors, true), 'a'); // "\n------------\n\n"
+      }
+      $result->message = "Media Deleted";
       echo (json_encode($result));
       exit;
       break;
@@ -5469,12 +5611,10 @@
       $obj = get_object($obj_type, $id);
       $minisite_id = $obj->minisite_id;
       $del_row = $obj->row_order;
-
       if($id)
         list($d_id, $errors) = delete_object($obj_type, $id);
 
-      if($errors) 
-        json_error($errors);
+      if($errors) json_error($errors);
       else{
         $change_rows = find_objects('minisite_page', ['minisite_id'=> $minisite_id, 'active'=>1]);
         $count = count($change_rows);
@@ -6062,8 +6202,8 @@
         echo json_encode($result);exit;
       }
       extract($obj_data);
-      //dump($obj_data);
-      
+
+      $files = [];
       if($parent_type == 'media_collection' && $parent_field == 'map') { // special case
         //die("gh");
         $search = ['active' => 1, 'media_collection_id' => $parent_id];
@@ -6079,41 +6219,93 @@
           //if($mapObj->artwork_id) {
           //  $file->title = get_object('artwork', $mapObjs->artwork_id, 'title');            
           //}
-          
-          $mediaObjs[] = $mediaObj;
-          
+          $mediaObjs[] = $mediaObj; 
         }
       } elseif($parent_type == 'user' && $parent_field == 'map_profile'){
         $getMedia = find_object('media_collection', ['user_id' => $parent_id, 'active'=>1, 'type'=>150]);
-        $search = ['active' => 1, 'media_collection_id' => $getMedia->id];
-        $mapObjs = find_objects('media_collection_map', $search);
-        $files = [];
+        $mapObjs = db_getAll("select * from media_collection_map where media_collection_id= '$getMedia->id' OR media_collection_id= '1' AND active= '1' AND user_id= '$parent_id' ");
         $edit_url = "edit-url";
-        
+        $files = [];
         foreach($mapObjs as $mapObj) { // expensive
           $mediaObj = get_object('media', $mapObj->media_id);
           $mediaObj->media_id = $mapObj->media_id;
           $mediaObj->map_id = $mediaObj->obj_id = $mapObj->id;
           $mediaObj->obj_type = 'media_collection_map';
           $mediaObj->delete_url = "/ajax.php?oper=del&obj_type=media_collection_map&id=".$mapObj->id;
-          
           $mediaObjs[] = $mediaObj;
         }
 
       }elseif($parent_type == 'exhibition_map' && $parent_field == 'map'){
         $get_media = find_object('exhibition_map', ['page_id' => $parent_id, 'active'=>1]);
-
-        $files = [];
         $edit_url = "edit-url";
-
+        $files = [];
           $mediaObj = get_object('media', $mapObj->title_image);
           $mediaObj->media_id = $mapObj->title_image;
           $mediaObj->map_id = $mediaObj->obj_id = $mapObj->id;
           $mediaObj->obj_type = 'exhibition_map';
           $mediaObj->delete_url = "/ajax.php?oper=del&obj_type=exhibition_map&id=".$mapObj->id;
-          
           $mediaObjs[] = $mediaObj;  
 
+      }elseif($parent_type == 'user_profile' && $parent_field == 'photo'){
+        $get_user = get_object('user_profile', $parent_id);
+        if($get_user->photo){
+          $mapObj =get_object('media', $get_user->photo);
+          $files = [];
+          $mediaObj = get_object('media', $mapObj->id);
+          $mediaObj->media_id = $mapObj->id;
+          $mediaObj->map_id = $mediaObj->obj_id = $get_user->id;
+          $mediaObj->obj_type = 'user_profile';
+          $mediaObj->delete_url = "/ajax.php?oper=del_title&obj_type=user_profile&id=".$parent_id;  
+          $mediaObjs[] = $mediaObj; 
+        }
+      }elseif($parent_type == 'artwork' && $parent_field == 'title_image'){
+        $artwork = get_object('artwork', $parent_id);
+        if($artwork->title_image){
+          $mapObj = get_object('media', $artwork->title_image);
+          $files = [];
+          $mediaObj = get_object('media', $mapObj->id);
+          $mediaObj->media_id = $mapObj->id;
+          $mediaObj->map_id = $mediaObj->obj_id = $artwork->id;
+          $mediaObj->obj_type = 'artwork';
+          $mediaObj->delete_url = "/ajax.php?oper=del_title&obj_type=artwork&id=".$parent_id;  
+          $mediaObjs[] = $mediaObj; 
+        }
+      }elseif($parent_type == 'artwork_media' && $parent_field == 'media'){
+        $artwork = get_object('artwork_media', $parent_id);
+        if($artwork->media){
+          $mapObj = get_object('media', $artwork->media);
+          $files = [];
+          $mediaObj = get_object('media', $mapObj->id);
+          $mediaObj->media_id = $mapObj->id;
+          $mediaObj->map_id = $mediaObj->obj_id = $artwork->id;
+          $mediaObj->obj_type = 'artwork_media';
+          $mediaObj->delete_url = "/ajax.php?oper=del_title&obj_type=artwork_media&id=".$parent_id;  
+          $mediaObjs[] = $mediaObj; 
+        }
+      }elseif($parent_type == 'minisite' && $parent_field == 'logo'){
+        $minisite = get_object('minisite', $parent_id);
+        if($minisite->logo){
+          $mapObj = get_object('media', $minisite->logo);
+          $files = [];
+          $mediaObj = get_object('media', $mapObj->id);
+          $mediaObj->media_id = $mapObj->id;
+          $mediaObj->map_id = $mediaObj->obj_id = $minisite->id;
+          $mediaObj->obj_type = 'minisite';
+          $mediaObj->delete_url = "/ajax.php?oper=del_title&obj_type=minisite&id=".$parent_id;  
+          $mediaObjs[] = $mediaObj; 
+        }
+      }elseif($parent_type == 'media_collection' && $parent_field == 'title_image'){
+        $collection = get_object('media_collection', $parent_id);
+        if($collection->title_image){
+          $mapObj = get_object('media', $collection->title_image);
+          $files = [];
+          $mediaObj = get_object('media', $mapObj->id);
+          $mediaObj->media_id = $mapObj->id;
+          $mediaObj->map_id = $mediaObj->obj_id = $collection->id;
+          $mediaObj->obj_type = 'media_collection';
+          $mediaObj->delete_url = "/ajax.php?oper=del_title&obj_type=media_collection&id=".$parent_id;  
+          $mediaObjs[] = $mediaObj; 
+        }
       } elseif($inline) {
         $media = get_object($parent_type, $parent_id, $parent_field);
         $mediaObjs = isJson($media) ? json_decode($media) : explode(',', $media);       
@@ -6149,6 +6341,7 @@
       $start_time = microtime(true); 
       global $__SITE_ID, $__CLIENT_ID;
       if($mediaData = $_GET['mediaData']) $mediaData = (array) json_decode($mediaData);
+      
       if($options = $_GET['options']) $options = (array) json_decode($options);
 
       $file_keys = array_keys($_FILES);
@@ -6161,8 +6354,7 @@
       /** handled by defaults 
       if(!$mediaData['site_id']) $mediaData['site_id'] = $__SITE_ID;
       if(!$mediaData['client_id']) $mediaData['client_id'] = $__CLIENT_ID;
-      */
-      
+      */     
       $result = object_media_upload($fileArray, $mediaData, $options);
 
       $result = (array) $result;
@@ -7314,6 +7506,35 @@
       $key = get_object_key($obj_type);
       unset($obj_data[$key]); // jqgrid sends _empty in key
       list($id, $errors) = add_object($obj_type, $obj_data);
+      break;
+    case 'del_title':      
+      if($id){
+        $get_profile = find_object($obj_type, ['id'=>$id]);
+        if(($get_profile) && ($obj_type=='user_profile')){
+          $get_profile->photo = '';  
+          $get_profile->photo_json = '';        
+        }elseif(($get_profile) && ($obj_type=='minisite')){
+          $get_profile->logo = '';
+        }elseif(($get_profile) && ($obj_type=='artwork_media')){
+          $get_profile->media = '';
+        }else{
+          $get_profile->title_image = '';
+          $get_profile->title_image_json = '';   
+        }
+        list($delete_count, $errors) = update_object($obj_type, $get_profile, $get_profile->id);
+        if($errors) write_file($log_file, "Delete errors:".dump($errors, true), 'a'); // "\n------------\n\n"
+      }
+      break;
+          
+      case 'del_soft':      
+      if($id){
+        $get_profile = find_object('media_collection_map', ['id'=>$id]);
+        if($get_profile){
+          $get_profile->photo = '';
+          list($delete_count, $errors) = update_object($obj_type, $get_profile, $get_profile->id);
+          if($errors) write_file($log_file, "Delete errors:".dump($errors, true), 'a'); // "\n------------\n\n"
+        }
+      }
       break;
     case 'del':      
       if(strpos($id, ',')) { // delete multiple

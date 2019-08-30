@@ -1024,3 +1024,62 @@ function fix_profile_location($app, $options) {
   $output .= html_table($rows, ['class' => 'web20']);
   return $output;
 }
+
+function update_manifestId($user_id){
+  $filename = "./afr/json/manifest_".$user_id.".json";
+  $jsonString = file_get_contents($filename);
+  $datas = json_decode($jsonString, true);
+  $site_url = site_full_url($siteObj->id)."/profile/".$user_id;
+  if($datas['start_url']){
+    $datas['start_url'] = $site_url;
+    $newJsonString = json_encode($datas);
+    $putdata = file_put_contents($filename, $newJsonString);
+  }
+}
+
+function clear_manifestId($user_id){
+  $filename = "./afr/json/manifest_".$user_id.".json";
+  $jsonString = file_get_contents($filename);
+  $datas = json_decode($jsonString, true);
+  if($datas['start_url']){
+    $remove_uid = explode('/', $datas['start_url']);
+    array_pop($remove_uid);
+    $url =  implode('/', $remove_uid); 
+    $datas['start_url'] = $url;
+    $newJsonString = json_encode($datas);
+    $putdata = file_put_contents($filename, $newJsonString);
+  }
+}
+
+function create_manifest($user_id){
+  $filename = "./afr/json/manifest_".$user_id.".json";
+  if (file_exists($filename)){
+    $update = update_manifestId($user_id);
+  }else{
+    $txt = '{
+      "name": "Vpatina",
+      "short_name": "Vpatina",
+      "description": "Progressive Web App that lists art gallery.",
+      "icons": [
+          {
+              "src": "/img/vpatina-logo-48.png",
+              "sizes": "48x48",
+              "type": "img/png"
+          },
+          {
+              "src": "/img/vpatina-logo-512.png",
+              "sizes": "512x512",
+              "type": "image/png"
+          }
+      ],
+      "start_url": "https://new.vpatina.dci.in/profile",
+      "display": "fullscreen",
+      "theme_color": "#333",
+      "background_color": "#333"
+    }';
+    $myfile = fopen($filename, "w") or die("Unable to open file!");
+    fwrite($myfile, $txt);
+    fclose($myfile);
+    chmod($filename, 0777);
+  } 
+} 

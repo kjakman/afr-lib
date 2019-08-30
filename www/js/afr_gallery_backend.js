@@ -82,6 +82,13 @@ function gbe_website_handler(params, data) { //pradeepa
   }
 }
 
+function gbe_vault_handler(params, data) {
+  console.log("gbe_vault_handler. params:");
+    var href = '/backend/vaults?_pv=1';
+    var $link = $("#submit");
+    soft_load($link, "#subview-container", href);
+}
+
 function gbe_artists_tagit() {
   console.log("gbe_artists_tagit");
   $("#artistTags").tagit({
@@ -255,6 +262,23 @@ $(document).on("click", "#sel_clear", function() {
   $("#table").bootstrapTable('refresh', {pageSize: 20});
 });
 
+$(document).on("click", "#sel_show", function() {
+  console.log("sel show ids=", g_selections);
+  $("#table").bootstrapTable('refresh', {query: {id: g_selections}, pageSize: 100});  
+});
+
+$(document).on("click", "#sel_del_success", function() { //Bala
+  console.log("sel Del ids=", g_selections);
+    $('#table').bootstrapTable('remove', {
+                field: 'id',
+                //~ values: g_selections
+            });
+  $("#table").bootstrapTable('refresh', {query: {id: g_selections, mode: 'del'}, pageSize: 10});
+  $("#table").bootstrapTable('refresh', {pageSize: 20});
+  g_selections = [];
+  bstUpdateSelection([]);
+});
+
 
 $(document).on("click", "#sel_add", function() {
   $link = $(this);
@@ -265,6 +289,8 @@ $(document).on("click", "#sel_add", function() {
     var $link = $("#submit");
     console.log("Calling soft-load: href=" + href);
     soft_load($link, "#subview-container", href);
+    g_selections = [];
+    bstUpdateSelection([]);
   } else {
   }
 });
@@ -276,7 +302,30 @@ $(document).on("click", "#sel_add_profile", function() {
   console.log("target_id=", artist_id);
 
   if(artist_id && g_selections.length) {
-    var href = '/backend/profile/' + artist_id + '/edit/art?' + add_what + '=' + g_selections.join();
+    if(add_what == 'add_folderimg')
+      var href = '/backend/profile/' + artist_id + '/edit/art?' + add_what + '=' + g_selections.join()+'&selected_art=1';
+    else
+      var href = '/backend/profile/' + artist_id + '/edit/art?' + add_what + '=' + g_selections.join();
+    var $link = $("#submit");
+    console.log("Calling soft-load: href=" + href);
+    soft_load($link, "#subview-container", href);
+    g_selections = [];
+    bstUpdateSelection([]);
+  } else {
+  }
+});
+
+$(document).on("click", "#sel_add_profile1", function() {
+  $link = $(this);
+  console.log("sel add ids=", g_selections);
+  var artist_id = $link.data('target_id');
+  console.log("target_id=", artist_id);
+
+  if(artist_id && g_selections.length) {
+    if(add_what == 'add_folderimg')
+      var href = '/backend/profile/' + artist_id + '/edit/art?' + add_what + '=' + g_selections.join()+'&selected_art=1';
+    else
+      var href = '/backend/profile/' + artist_id + '/edit/art?' + add_what + '=' + g_selections.join();
     var $link = $("#submit");
     console.log("Calling soft-load: href=" + href);
     soft_load($link, "#subview-container", href);
@@ -305,27 +354,148 @@ $(document).on("click", "#sel_add_website", function() {
   } else {
     alert('Failed to add exhibition - Cannot add Multiple exhibitions');
   }
-
-});
-$(document).on("click", "#sel_show", function() {
-  console.log("sel show ids=", g_selections);
-  $("#table").bootstrapTable('refresh', {query: {id: g_selections}, pageSize: 100});  
 });
 
-$(document).on("click", "#sel_del_success", function() { //Bala
-  console.log("sel Del ids=", g_selections);
-    $('#table').bootstrapTable('remove', {
-                field: 'id',
-                //~ values: g_selections
-            });
-  $("#table").bootstrapTable('refresh', {query: {id: g_selections, mode: 'del'}, pageSize: 10});
-  $("#table").bootstrapTable('refresh', {pageSize: 20});
+$(document).on("click", "#sel_add_folder", function() {
+  $link = $(this);
+  console.log("sel add ids=", g_selections);
+  var folder_id = $link.data('target_id');
+  if(folder_id && g_selections.length) {
+    var href = '/backend/vaults/' + folder_id + '?' +add_what + '=' + g_selections.join()+ '&folder_id=' +folder_id;
+    var $link = $("#submit");
+    console.log("Calling soft-load: href=" + href);
+    soft_load($link, "#subview-container", href);
+    g_selections = [];
+    bstUpdateSelection([]);
+  } else {
+  }
+});
+
+$(document).on("click", "#sel_add_logo", function() {
+  $link = $(this);
+  console.log("sel add ids=", g_selections);
+  var artist_id = $link.data('target_id');
+  console.log("target_id=", artist_id);
+
+  if(artist_id && g_selections.length) {
+    var href = '/backend/profile/' + artist_id + '/edit/about?add_logo' + '=' + g_selections.join();
+    var $link = $("#submit");
+    console.log("Calling soft-load: href=" + href);
+    soft_load($link, "#subview-container", href);
+    g_selections = [];
+    bstUpdateSelection([]);
+  } else {
+  }
+});
+
+$(document).on("click", "#sel_add_logo1", function() {
+  $link = $(this);
+  console.log("sel add ids=", g_selections);
+  var artist_id = $link.data('target_id');
+  console.log("target_id=", artist_id);
+
+  if(artist_id && g_selections.length) {
+    var href = '/backend/ACsettings/' + artist_id + '/edit/bio?add_logo' + '=' + g_selections.join();
+    var $link = $("#submit");
+    console.log("Calling soft-load: href=" + href);
+    soft_load($link, "#subview-container", href);
+    g_selections = [];
+    bstUpdateSelection([]);
+  } else {
+  }
+});
+
+$(document).on("click", "#sel_add_artwork", function() {
+  $link = $(this);
+  console.log("sel add ids=", g_selections);
+  var artwork_id = $link.data('target_id');
+  console.log("target_id=", artwork_id);
+
+  if(artwork_id && g_selections.length) {
+    var href = '/backend/artwork/' + artwork_id + '/edit/image?add_artwork' + '=' + g_selections.join();
+    var $link = $("#submit");
+    console.log("Calling soft-load: href=" + href);
+    soft_load($link, "#subview-container", href);
+    g_selections = [];
+    bstUpdateSelection([]);
+  } else {
+  }
+});
+
+$(document).on("click", "#sel_add_relatedart", function() {
+  $link = $(this);
+  console.log("sel add ids=", g_selections);
+  var artwork_id = $link.data('target_id');
+  var id = artwork_id.split("|");
+  console.log("target_id=", id);
+
+  if(id && g_selections.length) {
+    var href = '/backend/artwork/' + id[0] + '/edit/media?artwork_media='+id[1]+'&add_relatedart' + '=' + g_selections.join();
+    var $link = $("#submit");
+    console.log("Calling soft-load: href=" + href);
+    soft_load($link, "#subview-container", href);
+    g_selections = [];
+    bstUpdateSelection([]);
+  } else {
+  }
+});
+
+$(document).on("click", "#sel_add_websiteimg", function() {
+  $link = $(this);
+  console.log("sel add ids=", g_selections);
+  var website_id = $link.data('target_id');
+  console.log("target_id=", website_id);
+
+  if(website_id && g_selections.length) {
+    var href = '/backend/website/' + website_id + '/edit/basic?add_weblogo' + '=' + g_selections.join();
+    var $link = $("#submit");
+    console.log("Calling soft-load: href=" + href);
+    soft_load($link, "#subview-container", href);
+    g_selections = [];
+    bstUpdateSelection([]);
+  } else {
+  }
+});
+
+$(document).on("click", "#sel_add_exbart", function() {
+  $link = $(this);
+  console.log("sel add ids=", g_selections);
+  var exb_id = $link.data('target_id');
+  console.log("target_id=", exb_id);
+
+  if(exb_id && g_selections.length) {
+    var href = '/backend/exhibition/' + exb_id + '/edit/media?add_exbart' + '=' + g_selections.join();
+    var $link = $("#submit");
+    console.log("Calling soft-load: href=" + href);
+    soft_load($link, "#subview-container", href);
+    g_selections = [];
+    bstUpdateSelection([]);
+  } else {
+  }
+});
+
+$(document).on("click", "#sel_add_exbtitle", function() {
+  $link = $(this);
+  console.log("sel add ids=", g_selections);
+  var exb_id = $link.data('target_id');
+  console.log("target_id=", exb_id);
+
+  if(exb_id && g_selections.length) {
+    var href = '/backend/exhibition/' + exb_id + '/edit/title?exbtitle' + '=' + g_selections.join();
+    var $link = $("#submit");
+    console.log("Calling soft-load: href=" + href);
+    soft_load($link, "#subview-container", href);
+    g_selections = [];
+    bstUpdateSelection([]);
+  } else {
+  }
 });
 
 //Delete artist in minisite
 $(document).on("click", '#soft_delete', function(){
   var artist_id = $(this).data('value');
   var page_id = $(this).data('page');
+  var primary = $(this).data('primary');
   var obj_type = "minisite";
   $.ajax({
     url: "/ajax.php",
@@ -333,7 +503,8 @@ $(document).on("click", '#soft_delete', function(){
     data: {
       oper: "artist-delete",
       artist_id: artist_id,
-      page_id: page_id
+      page_id: page_id, 
+      primary: primary,
     },     
   });     
 });
@@ -373,6 +544,22 @@ $(document).on("click", '#event_delete', function(){
     },
     success:function(response_data_json) {
       $("#gbe_events_link").trigger('click');
+    }     
+  });     
+});
+
+//Delete related artwork media
+$(document).on("click", '#delete-artwork-media', function(){
+  var id = $(this).data('value');
+  $.ajax({
+    url: "/ajax.php",
+    data: {
+      oper: "artwork-media-delete",
+      obj_id: id,
+      obj_type: 'artwork_media'
+    },
+    success:function(response_data_json) {
+      $("#gbe_related_link").trigger('click');
     }     
   });     
 });
@@ -447,13 +634,10 @@ $(document).on("click", "#phide", function() {
         success:function(response_data_json) {
           var value2='Hide Price';
           $('#shows'+value1).hide();
-          if(value==0)       
-             value2="Hide Price";
-          if(value==1)       
-             value2="Show Price";
-          if(value==-1)       
-            value2="Price on enquiry";
-            $('.phide'+value1).text(value2);
+          if(value==0)       value2="Hide Price";
+          if(value==1)       value2="Show Price";
+          if(value==-1)       value2="Price on enquiry";
+          $('.phide'+value1).text(value2);
           $('.phide'+value1).show();
         }
       });    
@@ -494,17 +678,12 @@ $(document).on("click", "#status", function() {
         success:function(response_data_json) {
           var value2='Available';
            $('#cstatus'+value1).hide();
-           if(value==10)       
-             value2="Available";
-           if(value==20)       
-             value2="Reserved";
-           if(value==30)       
-            value2="Sold";
-           if(value==40)       
-            value2="Inactive";
-           if(value==50)       
-            value2="On loan, etc.";
-            $('.status'+value1).text(value2);
+           if(value==10)       value2="Available";
+           if(value==20)       value2="Reserved";
+           if(value==30)       value2="Sold";
+           if(value==40)       value2="Inactive";
+           if(value==50)       value2="On loan, etc.";
+          $('.status'+value1).text(value2);
           $('.status'+value1).show();
         }
       });    
@@ -541,6 +720,74 @@ $(document).on("focusout", ".edit_exhibition", function() {
   
   });  
 }); 
+
+
+$(document).on("click", ".edit_date", function() { 
+  console.log("clicked");
+  $(this).datepicker({
+      dateFormat: 'dd-mm-yy',
+      onSelect: function(dateText) {
+          $(this).val(dateText);
+          console.log(dateText);
+      }
+  });
+});
+
+// For type drop down in related artwork
+$(document).on("click", "#edit-media-type", function() { 
+  $('.status'+id).show();
+  var id = $(this).data('id');
+
+  $('.status'+id).hide();
+  $('#cstatus'+id).show();
+  $('#select').remove();      
+  $('#cstatus'+id).append('<select id= "select" class="select'+id+'"><option>Select</option><option id= "option" value="10">Blank - leave blank</option><option  id= "option" value="20">Detail </option><option  id= "option" value="30">Installation</option><option  id= "option" value="40">Studio</option><option  id= "option" value="50">Inspiration</option><option  id= "option" value="60">Influences</option><option  id= "option" value="70">Event</option></select>');
+
+  $(document).on("change", "#select", function() {
+    var value1 = $(this).parent().prop('id');
+    value1 = value1.replace('cstatus','');
+    var value = $('#cstatus'+value1+' #select').val();
+    var col = $('#status').data('col');
+    $('.select'+value1).show(value);
+    $.ajax({ url: "/ajax.php",
+      data: {
+        oper: "save-artwork-related",
+        obj_type : "artwork_media",
+        type : value,
+        obj_id : value1,
+        dedit: "1",
+      },
+      success:function(response_data_json) {
+        var value2='';
+         $('#cstatus'+value1).hide();
+         if(value==10)       value2="Blank - leave blank";
+         if(value==20)       value2="Detail";
+         if(value==30)       value2="Installation";
+         if(value==40)       value2="Studio";
+         if(value==50)       value2="Inspiration";
+         if(value==60)       value2="Influences";
+         if(value==70)       value2="Event";
+        $('.status'+value1).text(value2);
+        $('.status'+value1).show();
+      }
+    });    
+  });           
+});
+
+$(document).on("focusout", ".edit-media-description", function() { 
+  $(this).prop('contenteditable', false);
+  var id = $(this).data('id');
+  var data = $(this).text();
+  $.ajax({ url: "/ajax.php?obj_type=" + obj_type,
+    data: {
+      oper : "save-artwork-related",
+      obj_type : "artwork_media",
+      obj_id : id,
+      description : data,   
+      dedit: "1",   
+    }
+  });  
+});
 
 //change font type
 $(document).on("change", ".font_type", function() {
@@ -774,7 +1021,7 @@ function bstPublishedFormatter(value, row, index) {
 
 function bstStartDateFormatter(value, row, index) {
   if(!row.start_date) return '';
-  return sql2human_short(row.start_date);
+  return '<span contentEditable="true" class="edit_date">'+sql2human_short(row.start_date)+'</span>';
 }
 
 function bstEndDateFormatter(value, row, index) {
@@ -916,6 +1163,22 @@ $(document).on("click", ".clone_modal_icon", function() {
   $("#clone_dialog_form input[name=obj_id]").val($(this).attr('id'));
 });
 
+$(document).on("click", ".related_image_add", function() { 
+  var description =  $(this).data('description');
+  $("#gbe_related_artwork_edit_dialog input[name=obj_id]").val($(this).attr('id'));
+  $("#gbe_related_artwork_edit_dialog select").val($(this).data('typeid'));
+  //$("#gbe_related_artwork_dialog .summernote.description").summernote('code',description);
+  $("#gbe_related_artwork_edit_dialog textarea.description").val(description);
+});
+
+$(document).on("click", ".related_image_edit", function() { 
+  var description =  $(this).data('description');
+  $("#gbe_related_artwork_dialog input[name=obj_id]").val($(this).attr('id'));
+  $("#gbe_related_artwork_dialog select").val($(this).data('typeid'));
+  //$("#gbe_related_artwork_dialog .summernote.description").summernote('code',description);
+  $("#gbe_related_artwork_dialog textarea.description").val(description);
+});
+
 $(document).on("click", "apply-delete",function (e) {
    // Hide image on click delete
     e.preventDefault();
@@ -931,35 +1194,122 @@ $(document).on("click", "apply-delete",function (e) {
 
 function show_tabs(tab) {
   if ((tab == 'artist') || (tab == 'artistcontent') || (tab == 'artistpagelayout') || (tab == 'artistsecondpage') || (tab == 'artistcolour')){
-    $("#gbe_exhibition_link").hide();  
-    $("#gbe_contact_link").hide(); 
-    $("#gbe_bio_link").hide();   
-    $("#gbe_singleExhibition_link").hide(); 
+    $("#gbe_artist_link").show();
   }else if((tab == 'exhibition') || (tab == 'exhibitioncontent') || (tab == 'exhibitioncolour') || (tab == 'exhibitionpage') || (tab == 'exhibitionlayout')){ 
-    $("#gbe_contact_link").hide(); 
-    $("#gbe_bio_link").hide();
-    $("#gbe_artist_link").hide();
-    $("#gbe_singleExhibition_link").hide(); 
+    $("#gbe_exhibition_link").show();
   }else if((tab == 'contact') || (tab == 'contactcontent') || (tab == 'contactcolour') || (tab == 'contactpagelayout') ){
-    $("#gbe_exhibition_link").hide();  
-    $("#gbe_artist_link").hide(); 
-    $("#gbe_bio_link").hide();
-    $("#gbe_singleExhibition_link").hide(); 
+    $("#gbe_contact_link").show();
   }else if((tab == 'bio') || (tab == 'biocontent') || (tab == 'biocolour') || (tab == 'biolayout')){
-    $("#gbe_exhibition_link").hide();  
-    $("#gbe_artist_link").hide(); 
-    $("#gbe_contact_link").hide();
-    $("#gbe_singleExhibition_link").hide(); 
+    $("#gbe_bio_link").show();
   }else if((tab == 'singleExhibition') || (tab == 'singleExhibitioncontent') || (tab == 'singleExhibitionLayout') || (tab == 'singleExhibitioncolor') ){
-    $("#gbe_exhibition_link").hide();  
-    $("#gbe_artist_link").hide(); 
-    $("#gbe_contact_link").hide();
-    $("#gbe_bio_link").hide(); 
+    $("#gbe_singleExhibition_link").show();
+  }else if(tab == 'extSite'){
+    $('#gbe_extSite_link').show();
+  }else if(tab == 'extMail'){
+    $('#gbe_extMail_link').show();
   }
 }
 
+function hidetabs(){
+  $("#gbe_artist_link").hide();
+  $("#gbe_exhibition_link").hide();
+  $("#gbe_contact_link").hide();
+  $("#gbe_bio_link").hide();
+  $("#gbe_singleExhibition_link").hide();
+  $("#gbe_extSite_link").hide(); 
+  $('#gbe_extMail_link').hide();
+}
 
+$(document).on("click", ".thumbCont IMG", function() { 
+  if($(document).find(".blueimp-gallery-display")){
+    $(document).find("body").addClass("popup_open");
+  }
+  $("body").on("click", function () {
+    $(document).find("body").removeClass("popup_open");
+  });
+});
 
+function validateData(){
+  var type = $("#type").val();
+  var desc = $("#desc").val();
+  var obj_type = $("#obj_type").val();
+  var artwork_id = $("#artwork_id").val();
+  if(!type){
+    $(".type-err").show();
+    $(".desc-err").hide();
+  }
+  else if(!desc){ 
+    $(".type-err").hide();
+    $(".desc-err").show();
+  }
+  else{
+    $(".type-err").hide();
+    $(".desc-err").hide();
+    $.ajax({
+      url: "/ajax.php",
+      data: {
+        oper: "save-artwork-related",
+        obj_type: obj_type,
+        artwork_id: artwork_id,
+        type: type,
+        description: desc
+      },   
+      success:function(response_data_json) {
+        var val = JSON.parse(response_data_json);
+        var id = val.data.id;
+        $("#gbe_related_artwork_dialog input[name=obj_id]").val(id);
+        var dataId = "artwork_media-"+id+"-related_media";
+        var media = {
+                      "parent_id": id,
+                      "parent_type":"artwork_media",
+                      "parent_field":"media"
+                    };
+        console.log("media_array "+JSON.stringify(media));
+
+        $(".jquery-fileupload").attr("data-id", dataId);
+        $(".jquery-fileupload").attr("id", dataId);
+        $(".jquery-fileupload").attr("data-media_data", JSON.stringify(media));
+        //console.log("data id "+dataId);
+        $(".modal-block").hide();
+        $(".modal-none").show();
+      }     
+    });   
+  }
+}
+
+function validateDatas(){
+  var type = $("#type").val();
+  var desc = $("#desc").val();
+  var obj_type = $("#obj_type").val();
+  var artwork_id = $("#artwork_id").val();
+  if(!type){
+    $(".type-err").show();
+    $(".desc-err").hide();
+  }
+  else if(!desc){ 
+    $(".type-err").hide();
+    $(".desc-err").show();
+  }
+  else{
+    $(".type-err").hide();
+    $(".desc-err").hide();
+    $.ajax({
+      url: "/ajax.php",
+      data: {
+        oper: "save-artwork-related",
+        obj_type: obj_type,
+        artwork_id: artwork_id,
+        type: type,
+        description: desc
+      },   
+      success:function(response_data_json) {
+         setTimeout(function() { 
+          $("#gbe_related_link").trigger('click');
+        }, 1500);
+      }     
+    });   
+  }
+}
 
 
 /**

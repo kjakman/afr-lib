@@ -713,13 +713,13 @@ function post_delete_media_collection_map($obj_type, $obj) {
   $id = $obj->id;
   $media_id = $obj->media_id;
   $artwork_id = $obj->artwork_id;
-  
-  if($artwork_id) {
+  $collection_type = $obj->collection_type;
+  if($artwork_id || ($collection_type == 150)) {
     print_log("not deleting media {$media_id} for {$obj_type} {$id} b/c artwork_id={$artwork_id}", 'collection', LOG_LEVEL_TEST);
     return;
   } elseif($media_id) {
     print_log("deleting media {$media_id} for {$obj_type} {$id} b/c artwork_id={$artwork_id}", 'collection', LOG_LEVEL_TEST);
-    return delete_object('media', $media_id);
+    //return delete_object('media', $media_id);   //For now disabled
   }
   rank_update('media_collection_map', array('media_collection_id' => $obj->media_collection_id, 'active' => 1)); // update rank of source folder media
 }
@@ -730,8 +730,9 @@ function pre_add_media_collection_map($obj_type, $data) {
   $media_id = $data['media_id'];
   $media_collection_id = $data['media_collection_id'];
   $collection_type = $data['collection_type'];
+  $user_id = $data['user_id'];
 
-  $mapSearch = array('media_collection_id' =>$media_collection_id, 'media_id' => $media_id);
+  $mapSearch = array('media_collection_id' =>$media_collection_id, 'media_id' => $media_id, 'collection_type' => $collection_type, 'user_id'=>$user_id);
   //if($product_id = $data['product_id']) $mapSearch
   $variant_id = $data['variant_id'];
   if($mapObj = find_object($obj_type, $mapSearch)) {
@@ -916,6 +917,24 @@ function pre_edit_user_profile($obj_type, $data, $orgObj) {
 }
                                                                     
 function post_add_user_profile($id) {
+  $obj = get_object('user_profile', $id);
+  if($obj->user_id){
+    $add_folder['user_id'] = $obj->user_id;
+    $add_folder['filename'] = 'Uploads';
+    $add_folder['type'] = 'folder';
+    $add_folder['rank'] = 1;
+    list($add_id, $errors) = add_object('media_folder', $add_folder);
+  }
+  if($errors) json_error($errors); 
+  $get_obj = get_object('media_folder', $add_id);
+  if($get_obj){
+    $get_obj->path = "/user/".$get_obj->user_id."/vault/".$get_obj->id;
+    list($update_id, $errors) = update_object('media_folder', $get_obj, $get_obj->id);
+  }
+  if($errors) {
+   dump($errors); 
+   mydie("post_add_user_profile: failed to add media");
+  }
   return;
   
   $obj = get_object('user_profile', $id);
@@ -1637,6 +1656,23 @@ function pre_delete_media($obj_type, $obj) {
   }
   */
   return array($data, $errors);  
+}
+
+function pre_delete_media_folder($obj_type, $obj) {
+  $errors = array();
+  if($mapObj = find_object('media_folder', ['id' => $obj->id])) {
+    $folder_id = $mapObj->id;
+    if($mapObj->rank == 1){
+      die("Cannot delete");
+    }else{
+      $medias = find_objects('media', ['folder_id'=>$folder_id]);
+      foreach($medias as $media){
+        list($del_id, $errors) = delete_object('media', $media->id);
+      }
+      if($errors) json_error($errors);
+    }
+  }
+   return array($mapObj, $errors);   
 }
   
 

@@ -150,7 +150,37 @@
 	}
 	                                               
 /** 6-5-2019 **/
-      body{
-          overflow-x:hidden;
-      }
-      
+body{
+	overflow-x:hidden;
+}
+
+/** 29/7/2019 **/
+.common_row, .commonin_row .row{
+    margin-right: -15px !important;
+    margin-left: -15px !important;
+}
+.table_nomarg .table{
+	margin-bottom: 0px !important; 
+} 
+.custom_button_cover{
+	position: relative;
+    width: 100%;
+}
+.custom_button_float{
+	position: absolute;
+    bottom: 26px;
+    left: 125px;
+    z-index: 999;
+}
+.popup_open .custom_button_float, .popup_open .note-toolbar{
+    z-index: 9;
+}
+.fileupload-buttonbar:before{
+	content:'Upload an image OR attach an image already uploaded to your "Media Drive"';
+	display:block;
+	width:100%;
+    padding: 0px 15px 20px;
+}
+.selected_art .fileupload-buttonbar:before{
+	display:none;
+}

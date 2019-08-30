@@ -48,7 +48,22 @@ set_include_path(get_include_path().PATH_SEPARATOR."{$doc_root}afr-lib".PATH_SEP
 session_start();       
 $cookie_hash = $_COOKIE['authID'];
 $session_hash = $_SESSION['hash']; /** need this for phpauth logout below, before session is destroyed */
+
 if(strpos($_SERVER['REQUEST_URI'], 'act=logout')) {
+  $user_id = $_SESSION['u_id'];
+  $filename = "./afr/json/manifest_".$user_id.".json";
+  if (file_exists($filename)){
+    $jsonString = file_get_contents($filename);
+    $datas = json_decode($jsonString, true);
+    if($datas['start_url']){
+      $remove_uid = explode('/', $datas['start_url']);
+      array_pop($remove_uid);
+      $url =  implode('/', $remove_uid); 
+      $datas['start_url'] = $url;
+      $newJsonString = json_encode($datas);
+      $putdata = file_put_contents($filename, $newJsonString);
+    }
+  }
   session_unset(); // Destroy session on log out
 }
 

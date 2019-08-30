@@ -2580,6 +2580,7 @@ $__CLASS_ATTRIBUTES = array(
     'site_id'            => array('Site Id'     ,     'link', ATT_DEFAULT_SITE_ID, AF_OBLIGATORY|AF_HIDE_ADD|AF_HIDE_LIST|AF_READONLY, 'site'),
     'client_id'            =>array('Client Id'     , 'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_HIDE_ADD|AF_HIDE_LIST|AF_READONLY, 'client'),
     'parent_id'            =>array('Parent Id'     , 'parent_id', 0, AF_HIDE_ADD|AF_HIDE_LIST|AF_READONLY, 11),
+    'folder_id'            =>array('Folder Id'     , 'folder_id', 0, AF_HIDE_ADD|AF_HIDE_LIST|AF_READONLY, 11),
     'parent_type'          =>array('Parent Type'   , 'parent_type', '', AF_HIDE_LIST|AF_READONLY, 30),
     'parent_field'         =>array('Parent Field'  , 'str', 0, AF_HIDE_LIST|AF_READONLY, 100),
     'property_type'        =>array('Property Type' , 'parent_type', 0, AF_HIDE_ADD|AF_HIDE_LIST|AF_READONLY, 30),
@@ -2664,6 +2665,7 @@ $__CLASS_ATTRIBUTES = array(
                                                                                 
     'cloud_url'       => array('Cloud URL',      'url', '', AF_HIDE_LIST),     
     'cloud_data'       => array('Cloud Data',     'json', '', AF_HIDE_LIST),  
+    'tags'                 =>array('tags'          , 'json', 0, AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY, 2),
   ),
 
   "profile_media_map" => 

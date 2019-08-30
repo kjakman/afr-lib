@@ -1400,14 +1400,11 @@ function find_object($obj_type, $search, $field='', $options = array()) {
 //function find_objects($obj_type, $searchArray='', $sort=0, $order=0, $start=0, $limit=0, $selected_fields='') {  
 function find_objects($obj_type, $search=array(), $options = array()) {
   $debug = $options['debug_query'];
-  //dump($search);
   if($search && count($search) == 1 && (array_keys($search))[0] == 'id') {
     $tbl = get_object_table($obj_type);
     $search = ["{$tbl}.id" => (array_values($search))[0]]; // we need tablename.id to avoid ambigiuity
   }
   list($filters, $values) = search2pdo($search);
-  //dump($filters);
-  //dump($values);
   $options['values'] = $values;
   
   if($options['debug_query'] || $_SESSION['debug_db']) {
@@ -1427,8 +1424,6 @@ function find_objects($obj_type, $search=array(), $options = array()) {
 //function get_objects($obj_type, $filters='', $sort=0, $order=0, $start=0, $limit=0, $selected_fields='') {
 // for more than one fields, use array('field1', 'field2')
 function get_objects($obj_type, $filters=array(), $options = array()) {
-  //dump($filters);
-  //dump($options);
   $sort  = $options['sort'] ?: get_object_sort_clause($obj_type);
   $order = $options['order'] ?: 0;
   $start = $options['start'] ?: $options['offset'];
@@ -4556,15 +4551,13 @@ function search2pdo($array, $level=0) {
     if(count($filter) > 1) $filters[] = $filter[1];
     //dump($filters);
   } 
-  
-  //dump($filters);
-  //dump($values);
+
   //foreach($values as $k => $v) if(!strlen($v)) $values[$k] = ''; // not null
   return array($filters, $values);
 }
 
 
-function object_site_search($obj_type, $search, $val, $options = []) {      
+function object_site_search($obj_type, $search, $val, $options = []) {     
   switch($obj_type) {
     case 'minisite':
       if($val) $search[DB_LOGICAL_OR] = 
@@ -4582,14 +4575,21 @@ function object_site_search($obj_type, $search, $val, $options = []) {
     case 'media':
       if($val) $search[DB_LOGICAL_OR] = 
         array('media.id' => "*$val*", 
-              'name' => "*$val*", 
+              'name' => "*$val*",
+              'filename' => "*$val*", 
+              'tags' => "*$val*", 
               'comment' => "*$val*");              
+      break;
+    case 'media_folder':
+      if($val) $search[DB_LOGICAL_OR] = 
+        array('media_folder.id' => "*$val*", 
+              'filename' => "*$val*", 
+              'tags' => "*$val*");              
       break;
     case 'media_collection':
       if($val) $search[DB_LOGICAL_OR] = 
         array('media_collection.id' => "*$val*", 
-              'title' => "*$val*", 
-              'description' => "*$val*");              
+              'title' => "*$val*");              
       break;
     case 'artwork':
       if($val) $search[DB_LOGICAL_OR] = 
@@ -4661,7 +4661,7 @@ function object_site_search($obj_type, $search, $val, $options = []) {
     default:
       break;
   }
-  //dump($search); 
+
   if($filters = $options['filters']) {
     $filters = json_decode($filters, true);
     if(is_array($filters)) {
@@ -4676,10 +4676,10 @@ function object_site_search($obj_type, $search, $val, $options = []) {
   print_log("get-rows {$obj_type} GET: ".dump($_GET, true), 'debug', LOG_LEVEL_TEST);
   print_log("get-rows {$obj_type} filters: ".dump($filters, true), 'debug', LOG_LEVEL_TEST);
   print_log("get-rows {$obj_type} search: ".dump($search, true), 'debug', LOG_LEVEL_TEST);
-  
+
   $key = get_object_key($obj_type);      
   if(!$options['sort']) $options['sort'] = get_object_sort($obj_type) ?: "{$key} desc";
-  
+
   $objs = find_objects($obj_type, $search, $options);
 
   $count = count($objs);
@@ -4709,14 +4709,14 @@ function object_site_search($obj_type, $search, $val, $options = []) {
   default:
     break;
   }
-  
   $result = [];
-  if(!$options['associative']) return $objs;
+  if(!$options['associative']) return array($objs, $extra_count);
   
   foreach($objs as $obj) {
     $id = get_object_id($obj_type, $obj);
     $result[$id] = $obj;
   }
+
   return $result;
 }
 
@@ -4811,30 +4811,6 @@ class db
 	}
 }
 */
-
-// function to add art to collection in profile module
-function gallery_publish_artwork1($siteObj, $artwork_id, $options=array()) {
-  $find_media = find_object('media', array('parent_id' => $artwork_id, 'active' => 1));
-  if($find_media){
-    $find_media->show_artwork = 1;
-    list($id, $errors) = update_object('media', $find_media, $find_media->id);
-    print_log("save-ministe: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
-  }
-  if($errors) json_error($errors);
-
-  $obj = get_object('media', $id);
-  $result->data = $obj;
-  
-  if($messages) $result->messages = $messages;
-  if($errors) {                 
-    $result->errors = $errors;
-    $result->success = 0;
-  } else {
-    $result->success = 1;
-    $result->id = $id;
-  }
-  return $result;  
-}
 
 function find_page_menus($obj_id, $user_id, $minisite_id, $slug){
 
@@ -4966,76 +4942,46 @@ function update_artist_name($user_id, $artist_name){
 
 function get_template($parts, $minisite_id){
   $tpl_values = [];
-  if($parts){                                                     //to simplify paths
-    $page = find_object('minisite_page', ['minisite_id' => $minisite_id, 'menu_title' => $parts[0], 'active' => 1]);
-    
+  $parts1_tpls = find_objects('minisite_tpl', ['parts' => 1]);
+  $parts2_tpls = find_objects('minisite_tpl', ['parts' => 2]);
+
+  if($parts){ 
+    $slug = '/'.$parts[0].'/';                                                    //to simplify paths
+    $page = find_object('minisite_page', ['minisite_id' => $minisite_id, 'slug' => $slug, 'active' => 1]); 
     if(count($parts) == 1){
-      if($page->type == '20'){
-        $tpl_values['page'] = 'artists';
-        $tpl_values['tpl'] = 'artists';
-      }elseif($page->type == 30){
-        $tpl_values['page'] = 'exhibitions';
-        $tpl_values['tpl'] = 'exhibitions';
-      }elseif($page->type == 40){
-        $tpl_values['page'] = 'contact';
-        $tpl_values['tpl'] = 'contact';
-      }elseif($page->type == 50){
-        $tpl_values['page'] = 'bio';
-        $tpl_values['tpl'] = 'bio';
-      }elseif($page->type == 60){
-        $tpl_values['page'] = 'singleExhibitions';
-        $tpl_values['tpl'] = 'singleExhibitions';
-      } 
-    } else{
-      if($page->type == '20'){
-        $tpl_values['page'] = 'artist';
-        $tpl_values['tpl'] = 'artist';
-      }elseif($page->type == 30){
-        if($parts[1] == 'exhibitions'){
-          $tpl_values['page'] = 'exhibitions';
-          $tpl_values['tpl'] = 'exhibitions';
-        }else{
-          $tpl_values['page'] = 'exhibition';
-          $tpl_values['tpl'] = 'exhibition';
-        }       
-      }elseif($page->type == 40){
-        $tpl_values['page'] = 'contact';
-        $tpl_values['tpl'] = 'contact';       
-      }elseif($page->type == 50){
-        $tpl_values['page'] = 'bio';
-        $tpl_values['tpl'] = 'bio';
-      }elseif($page->type == 60){
-        $tpl_values['page'] = 'singleExhibitions';
-        $tpl_values['tpl'] = 'singleExhibitions';
+      foreach($parts1_tpls as $parts1_tpl){
+        if($page->type == $parts1_tpl->type){
+          $tpl_values['page'] = $parts1_tpl->template;
+          $tpl_values['tpl'] = $parts1_tpl->page;
+        }
+      }
+    }else{
+      foreach($parts2_tpls as $parts2_tpl){
+        if($page->type == $parts2_tpl->type){
+          if($page->type == 30){
+            if($parts[1] == 'exhibitions'){
+              $tpl_values['page'] = 'exhibitions';
+              $tpl_values['tpl'] = 'exhibitions';
+            }else{
+              $tpl_values['page'] = 'exhibition';
+              $tpl_values['tpl'] = 'exhibition';
+            }
+          }else{
+            $tpl_values['page'] = $parts2_tpl->template;
+            $tpl_values['tpl'] = $parts2_tpl->page;
+          }
+        }
       }
     }
-  } else{
+  }else{
     $get_home = find_object('minisite_page', ['minisite_id' => $minisite_id, 'row_order' => 1, 'active' => 1]);
-    if($get_home->type == 20){
-      $tpl_values['page'] = 'artists';
-      $tpl_values['tpl'] = 'artists';
-      $tpl_values['get_slug'] = str_replace('/', '', str_replace('/', '', $get_home->slug));
-    }elseif($get_home->type == 30){
-      $tpl_values['page'] = 'exhibitions';
-      $tpl_values['tpl'] = 'exhibitions';
-      $tpl_values['get_slug'] = str_replace('/', '', str_replace('/', '', $get_home->slug));
-      $data = json_decode($get_home->data, True);
-      if($data['show_current'] == 1) $tpl_values['get_subviews'] = 'current'; 
-      elseif ($data['show_future'] == 1) $tpl_values['get_subviews'] = 'future';
-      elseif ($data['show_past'] == 1) $tpl_values['get_subviews'] = 'past';
-    }elseif($get_home->type == 40){
-      $tpl_values['page'] = 'contact';
-      $tpl_values['tpl'] = 'contact';
-      $tpl_values['get_slug'] = str_replace('/', '', str_replace('/', '', $get_home->slug));
-    }elseif($get_home->type == 50){
-      $tpl_values['page'] = 'bio';
-      $tpl_values['tpl'] = 'bio';
-      $tpl_values['get_slug'] = str_replace('/', '', str_replace('/', '', $get_home->slug));
-    }elseif($get_home->type == 60){
-      $tpl_values['page'] = 'singleExhibitions';
-      $tpl_values['tpl'] = 'singleExhibitions';
-      $tpl_values['get_slug'] = str_replace('/', '', str_replace('/', '', $get_home->slug));
-    }   
+    foreach($parts1_tpls as $parts1_tpl){
+      if($get_home->type == $parts1_tpl->type){
+        $tpl_values['page'] = $parts1_tpl->template;
+        $tpl_values['tpl'] = $parts1_tpl->page;
+        $tpl_values['get_slug'] = str_replace('/', '', str_replace('/', '', $get_home->slug));
+      }
+    }
   }
   return $tpl_values;
 }
@@ -5081,4 +5027,33 @@ function get_sExhibitionJson(){
 function get_layout($type, $subtype){
   $data = find_object('minisite_layout', ['type' => $type, 'subtype' => $subtype ,'active' => 1, 'row_order' => 1]);
   return $data->id;
+}
+
+function get_artist($user_id, $artist_ids, $page_slug){
+    /** Artists - only do when needed */  
+    foreach($artist_ids as $artist_id) {
+      $uObj = get_user($artist_id);    
+      
+      $colSearch = ['user_id' => $user_id, 'artist_id' => $artist_id, 'active' => 1, 'type' => COLLECTION_TYPE_EXHIBITION];
+      $collectionObj = find_object('media_collection', $colSearch);
+
+      print_log("artist {$uObj->display_name} ({$artist_id}) id={$collectionObj->id} type={$collectionObj->type} title={$collectionObj->title}", 'debug', LOG_LEVEL_TEST);
+      
+      if(!$collectionObj) {         
+        //echo("{$uObj->display_name} has no projects<br>");
+        //continue; /** Show atleast biography */
+      }
+      $uObj->collection = $collectionObj;
+      $uObj->collection_id = $collectionObj->id;
+      $uObj->slug = $this_slug = slugify($uObj->display_name);
+      $uObj->page_slug = $page_slug;
+      
+      $uObj->title_image = $title_image = $uObj->photo ?: collection_title_image($collectionObj, 'ig');        
+      //$uObj->title_image = collection_title_image($collectionObj, 'ig') ?: $uObj->photo; /** (David asked for this */
+
+      print_log("{$this_slug} ({$artist_id}) u_photo: {$uObj->photo} title: {$title_image} collection: {$collectionObj->title} ({$collectionObj->id})", "minisite", LOG_LEVEL_TEST);
+      
+      $artistAr[] = $uObj;
+    }
+    return $artistAr;
 }
