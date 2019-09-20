@@ -1,4 +1,3 @@
-{* automatically generated on 2018-07-06 05:08:06 from /var/www/html/test.vpatina.com/pages/components/_page-top.html. DO NOT EDIT *}
 
       <div class="header-top navbar navbar-default {$nav_class}">
         <div class="container">
@@ -31,7 +30,7 @@
                   {else}
                   <li><a class="popup-text" href="#login-dialog" data-effect="mfp-3d-unfold">Log In / Sign Up</a></li>                  
                   <div id="login-dialog" class="mfp-with-anim mfp-hide mfp-dialog">                      
-                    {include file="/var/www/html/test.vpatina.com/smarty/templates/components/_login-register.html" }
+                    {{"include":"_login-register.html"}}
                   </div>
                   {/if}
                   {if (!$admin_template)}
@@ -44,5 +43,4 @@
           <!--/div-->
         </div>
       </div>
-
 

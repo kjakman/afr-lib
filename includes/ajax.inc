@@ -352,6 +352,7 @@
         if($error = check_required($obj_data, 
             ['type' => "Type", 'description' => "description"])) 
             json_error("Missing: ".implode(', ', $error));
+
       if($obj_id) {
         list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
       }else{
@@ -369,6 +370,31 @@
       exit;      
       break;
 
+    case 'save-media-related':
+      extract($obj_data);
+      //dump($obj_data);
+
+      if(!$obj_data[dedit])
+        if($error = check_required($obj_data, 
+            ['type' => "Type", 'description' => "Description"])) 
+            json_error("Missing: ".implode(', ', $error));
+
+      if($obj_id) {
+        list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
+      }else{
+        list($id, $errors) = add_object($obj_type, $obj_data);
+      }            
+      if($errors) json_error($errors);
+      
+      $obj = get_object($obj_type, $id);
+      
+      $result->success = 1;
+      $result->data = $obj;
+      $result->message = "OK. Saved related artwork";
+      
+      echo(json_encode($result));
+      exit;      
+      break;
 
     case 'save-profile':
        extract($obj_data);
@@ -1028,9 +1054,9 @@
           if($obj_data['title_image']){         //Json encode artwork image path
             $title_image = $obj_data['title_image']; 
             $find_media = find_object('media', ['id' => $title_image]);
-            $title_image_arr['filename'] = $find_media->path.$find_media->src;
-            $title_image_arr['id'] = $find_media->id;
-            $title_image_arr['type'] = $find_media->type;
+            $title_image_arr[]['filename'] = $find_media->path.'medium/'.$find_media->src;
+            $title_image_arr[]['id'] = $find_media->id;
+            $title_image_arr[]['type'] = $find_media->type;
             $obj_data['title_image_json'] = json_encode($title_image_arr);
           }
 
@@ -5565,7 +5591,11 @@
       $i = 1;
       foreach($row as $rows) {
         $data = find_object($obj_type, ['id' => $rows]);
-        $data->row_order = $i;
+        if($obj_type == 'media_collection_map')
+          $data->rank = $i;
+        else
+          $data->row_order = $i;
+
         $output = update_object($obj_type, $data, $data->id);
         $i++;
       }
@@ -5590,6 +5620,22 @@
       break;
 
     case 'artwork-media-delete':
+      $id = trim($obj_data['obj_id']);
+      $obj_type = trim($obj_data['obj_type']);
+      if($id){
+        $data = find_object($obj_type, ['id' => $id]);
+        $media_id = $data->media;
+        if($media_id)
+          list($delete_media, $errors) = delete_object('media', $media_id);
+          list($delete_artwork, $errors) = delete_object($obj_type, $id);
+        if($errors) write_file($log_file, "Delete errors:".dump($errors, true), 'a'); // "\n------------\n\n"
+      }
+      $result->message = "Media Deleted";
+      echo (json_encode($result));
+      exit;
+      break;
+
+    case 'collection-media-delete':
       $id = trim($obj_data['obj_id']);
       $obj_type = trim($obj_data['obj_type']);
       if($id){
@@ -5655,88 +5701,37 @@
       $obj_type = 'user';
       $userData = $obj_data;
       extract($userData);
-      if($userData['artist']){
-        if($error = check_required($obj_data, array('site_id' => "Site ID", 'first_name' => "First Name", 'last_name' => "Last Name"))) json_error("Missing: ".implode(', ', $error));
-        $host_user_id = $obj_data['aff_id']?$obj_data['aff_id']:$u->id;
 
-        $ts = time();
-        $userData['display_name'] = $name = trim($first_name.(trim($infix) ? " ".trim($infix)." " : " ").$last_name);
-        $userData['username'] = $username = slugify($name)."_{$ts}"; /** ensure uniqueness */
-        $userData['user_level'] = 1;
-        $userData['auto_password'] = 1;
-        $userData['roles'] = USER_ROLE_ARTIST;
-        $userData['phone'] = $phone;        
-        $password = "Auto_".random_int(1000,9999);; // generate random password
-        
-        list($user_id, $errors) = user_register($username, $password, $userData);
-        if($errors) json_error($errors);
-                
-        $action = 'Added';
-        
-        if($errors) json_error($errors);
-        //$redirect = site_page_link($siteObj, $page_type).$id;
+      if($error = check_required($obj_data, array('site_id' => "Site ID", 'first_name' => "First Name", 'last_name' => "Last Name"))) json_error("Missing: ".implode(', ', $error));
+      $host_user_id = $obj_data['aff_id']?$obj_data['aff_id']:$u->id;
 
-        /** link users */
-        $perms = '{"vault":"edit","profile":"edit","account":"edit","login":"full"}';
-        $mapData = ['site_id' => $site_id, 
-                    'verified' => 1, 
-                    'host_user_id' => $user_id, 
-                    'user_id' => $host_user_id, 
-                    'permissions' => $perms];
-        list($id, $errors) = add_object('user_map', $mapData);
-        if($errors) json_error($errors);
-
-      }else{
-        $opening_times = $obj_data[opening_time];
-        $closing_times = $obj_data[closing_time];
-        $holiday = $obj_data[holiday];
-
-        if($error = check_required($obj_data, array('site_id' => "Site ID", 'first_name' => "First Name", 'last_name' => "Last Name"))) json_error("Missing: ".implode(', ', $error));
-        $host_user_id = $obj_data['aff_id']?$obj_data['aff_id']:$u->id;
-
-        $business_time = validate_business_hours($opening_times, $closing_times, $holiday);
-        $count = count($business_time);
-
-        $ts = time();
-        $userData['display_name'] = $name = trim($first_name.(trim($infix) ? " ".trim($infix)." " : " ").$last_name);
-        $userData['username'] = $username = slugify($name)."_{$ts}"; /** ensure uniqueness */
-        $userData['user_level'] = 1;
-        $userData['auto_password'] = 1;
-        $userData['roles'] = USER_ROLE_ARTIST;
-        $userData['phone'] = $phone;        
-        $password = "Auto_".random_int(1000,9999);; // generate random password
-        
-        list($user_id, $errors) = user_register($username, $password, $userData);
-        if($errors) json_error($errors);
-                
-        $action = 'Added';
-        
-        if($errors) json_error($errors);
-        //$redirect = site_page_link($siteObj, $page_type).$id;
-
-        /** link users */
-        $perms = '{"vault":"edit","profile":"edit","account":"edit","login":"full"}';
-        $mapData = ['site_id' => $site_id, 
-                    'verified' => 1, 
-                    'host_user_id' => $user_id, 
-                    'user_id' => $host_user_id, 
-                    'permissions' => $perms];
-        list($id, $errors) = add_object('user_map', $mapData);
-        if($errors) json_error($errors);
-
-        $times_type = 'opening_hours';
-        if($count == 7){
-          foreach($business_time as $times){
-            $times[user_id] = $user_id;         
-            list($id, $errors) = add_object($times_type, $times);  
-          }         
-        }else{
-          json_error("Time array not found");
-        }
-         
-        if($errors) json_error($errors);
-      }
+      $ts = time();
+      $userData['display_name'] = $name = trim($first_name.(trim($infix) ? " ".trim($infix)." " : " ").$last_name);
+      $userData['username'] = $username = slugify($name)."_{$ts}"; /** ensure uniqueness */
+      $userData['user_level'] = 1;
+      $userData['auto_password'] = 1;
+      $userData['roles'] = USER_ROLE_ARTIST;
+      $userData['phone'] = $phone;        
+      $password = "Auto_".random_int(1000,9999);; // generate random password
       
+      list($user_id, $errors) = user_register($username, $password, $userData);
+      if($errors) json_error($errors);
+              
+      $action = 'Added';
+      
+      if($errors) json_error($errors);
+      //$redirect = site_page_link($siteObj, $page_type).$id;
+
+      /** link users */
+      $perms = '{"vault":"edit","profile":"edit","account":"edit","login":"full"}';
+      $mapData = ['site_id' => $site_id, 
+                  'verified' => 1, 
+                  'host_user_id' => $user_id, 
+                  'user_id' => $host_user_id, 
+                  'permissions' => $perms];
+      list($id, $errors) = add_object('user_map', $mapData);
+      if($errors) json_error($errors);
+
       $result->data = get_user($user_id);
       $result->success = 1;
       $result->message = "$action artist {$name} ($user_id)";
@@ -6204,22 +6199,25 @@
       extract($obj_data);
 
       $files = [];
-      if($parent_type == 'media_collection' && $parent_field == 'map') { // special case
+      if($parent_type == 'media_collection_map' && $parent_field == 'map') { // special case
         //die("gh");
-        $search = ['active' => 1, 'media_collection_id' => $parent_id];
+        $search = ['active' => 1, 'id' => $parent_id];
         $mapObjs = find_objects('media_collection_map', $search, ['sort' => 'rank']);
         $files = [];
         $edit_url = "edit-url";
         foreach($mapObjs as $mapObj) { // expensive
-          $mediaObj = get_object('media', $mapObj->media_id);
-          $mediaObj->media_id = $mapObj->media_id;
-          $mediaObj->map_id = $mediaObj->obj_id = $mapObj->id;
-          $mediaObj->obj_type = 'media_collection_map';
-          $mediaObj->delete_url = "/ajax.php?oper=del&obj_type=media_collection_map&id=".$mapObj->id;
-          //if($mapObj->artwork_id) {
-          //  $file->title = get_object('artwork', $mapObjs->artwork_id, 'title');            
-          //}
-          $mediaObjs[] = $mediaObj; 
+          if($mapObj->media_id){
+            $mediaObj = get_object('media', $mapObj->media_id);
+            $mediaObj->media_id = $mapObj->media_id;
+            $mediaObj->map_id = $mediaObj->obj_id = $mapObj->id;
+            $mediaObj->obj_type = 'media_collection_map';
+            $mediaObj->delete_url = "/ajax.php?oper=del_custom&obj_type=media_collection_map&id=".$mapObj->id;
+            //if($mapObj->artwork_id) {
+            //  $file->title = get_object('artwork', $mapObjs->artwork_id, 'title');            
+            //}
+            $mediaObjs[] = $mediaObj; 
+          }
+          
         }
       } elseif($parent_type == 'user' && $parent_field == 'map_profile'){
         $getMedia = find_object('media_collection', ['user_id' => $parent_id, 'active'=>1, 'type'=>150]);
@@ -6255,7 +6253,7 @@
           $mediaObj->media_id = $mapObj->id;
           $mediaObj->map_id = $mediaObj->obj_id = $get_user->id;
           $mediaObj->obj_type = 'user_profile';
-          $mediaObj->delete_url = "/ajax.php?oper=del_title&obj_type=user_profile&id=".$parent_id;  
+          $mediaObj->delete_url = "/ajax.php?oper=del_custom&obj_type=user_profile&id=".$parent_id;  
           $mediaObjs[] = $mediaObj; 
         }
       }elseif($parent_type == 'artwork' && $parent_field == 'title_image'){
@@ -6267,7 +6265,7 @@
           $mediaObj->media_id = $mapObj->id;
           $mediaObj->map_id = $mediaObj->obj_id = $artwork->id;
           $mediaObj->obj_type = 'artwork';
-          $mediaObj->delete_url = "/ajax.php?oper=del_title&obj_type=artwork&id=".$parent_id;  
+          $mediaObj->delete_url = "/ajax.php?oper=del_custom&obj_type=artwork&id=".$parent_id;  
           $mediaObjs[] = $mediaObj; 
         }
       }elseif($parent_type == 'artwork_media' && $parent_field == 'media'){
@@ -6279,7 +6277,7 @@
           $mediaObj->media_id = $mapObj->id;
           $mediaObj->map_id = $mediaObj->obj_id = $artwork->id;
           $mediaObj->obj_type = 'artwork_media';
-          $mediaObj->delete_url = "/ajax.php?oper=del_title&obj_type=artwork_media&id=".$parent_id;  
+          $mediaObj->delete_url = "/ajax.php?oper=del_custom&obj_type=artwork_media&id=".$parent_id;  
           $mediaObjs[] = $mediaObj; 
         }
       }elseif($parent_type == 'minisite' && $parent_field == 'logo'){
@@ -6291,7 +6289,7 @@
           $mediaObj->media_id = $mapObj->id;
           $mediaObj->map_id = $mediaObj->obj_id = $minisite->id;
           $mediaObj->obj_type = 'minisite';
-          $mediaObj->delete_url = "/ajax.php?oper=del_title&obj_type=minisite&id=".$parent_id;  
+          $mediaObj->delete_url = "/ajax.php?oper=del_custom&obj_type=minisite&id=".$parent_id;  
           $mediaObjs[] = $mediaObj; 
         }
       }elseif($parent_type == 'media_collection' && $parent_field == 'title_image'){
@@ -6303,7 +6301,7 @@
           $mediaObj->media_id = $mapObj->id;
           $mediaObj->map_id = $mediaObj->obj_id = $collection->id;
           $mediaObj->obj_type = 'media_collection';
-          $mediaObj->delete_url = "/ajax.php?oper=del_title&obj_type=media_collection&id=".$parent_id;  
+          $mediaObj->delete_url = "/ajax.php?oper=del_custom&obj_type=media_collection&id=".$parent_id;  
           $mediaObjs[] = $mediaObj; 
         }
       } elseif($inline) {
@@ -7422,6 +7420,7 @@
 
   case 'get-gallery':
     extract($_GET);
+
     $user = [];
     if(!$site_id) $site_id = 247;
     if($id && !$obj_id) $obj_id = $id; // legacy - prefer obj_id
@@ -7433,13 +7432,16 @@
       echo $jsonp ? $_GET['jsoncallback']."($output)" : $output;exit();
     }
 
-    $collection_id = $obj_id;   
-    $jsonObj = gallery_get_json($collection_id);
+    $collection_id = $obj_id;
+
+    if($obj_type == 'artwork_media')   
+      $jsonObj = gallery_getartwork_json($obj_id);
+    elseif($obj_type == 'related_images')
+      $jsonObj = gallery_getrelated_json($obj_id);
+    else
+      $jsonObj = gallery_get_json($collection_id);
     $jsonObj->container_id = $target;
     $jsonObj->plugin_id = $plugin_id;
-    
-    //dump($_GET);
-    //dump($jsonObj);
     
     $output = json_encode($jsonObj);
     
@@ -7507,7 +7509,8 @@
       unset($obj_data[$key]); // jqgrid sends _empty in key
       list($id, $errors) = add_object($obj_type, $obj_data);
       break;
-    case 'del_title':      
+
+    case 'del_custom':      
       if($id){
         $get_profile = find_object($obj_type, ['id'=>$id]);
         if(($get_profile) && ($obj_type=='user_profile')){
@@ -7517,6 +7520,10 @@
           $get_profile->logo = '';
         }elseif(($get_profile) && ($obj_type=='artwork_media')){
           $get_profile->media = '';
+        }elseif(($get_profile) && ($obj_type == 'media_collection_map') ){
+          if($get_profile->media_id){
+            $get_profile->media_id = '';
+          }
         }else{
           $get_profile->title_image = '';
           $get_profile->title_image_json = '';   

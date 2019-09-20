@@ -924,44 +924,6 @@ function add_default_page($id, $data, $options = array()) {
   return array($data, $errors, $messages);
 }
 
-function validate_business_hours($opening_time, $closing_time, $holiday) {
-  if(!$opening_time && !$closing_time && !$holiday) mydie ("validate_business_hours: missing hours");
-  $opening_times = $opening_time;
-  $closing_times = $closing_time;
-  $holiday = $holiday;
-
-  $times = [];
-  $i= 0;
-  $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-  foreach($days as $day){
-    $times_data[day] = $day;
-    $times_data[opening_time] = $opening_times[$i];
-    $times_data[closing_time] = $closing_times[$i];
-    if(!$holiday[$i]) $holiday[$i] = '0';
-
-    $times_data[holiday] = $holiday[$i];
-    
-    if( $times_data[holiday] == '1'){
-      $times_data[opening_time] = '00:00';
-      $times_data[closing_time] = '00:00';
-    }
-    $times_data[opening_time] = $start = "{$times_data[opening_time]}:00";
-    $times_data[closing_time]  = $end = "{$times_data[closing_time]}:00";
-
-    if( (strlen($start) != 8) ||  (strlen($end) != 8)){
-      $start = str_pad($start, 8, "0", STR_PAD_LEFT);
-      $end = str_pad($end, 8, "0", STR_PAD_LEFT);
-    }
-    
-    if( (($start != '00:00:00') && ($end != '00:00:00')) &&  ($start >= $end)){
-      json_error("End time must be after start time");
-    } 
-    $i++;
-    $business_time[] = $times_data;    
-  }
-  return $business_time;
-}
-
 // update one object
 function update_object($obj_type, $data, $id, $options = array()) {
 
@@ -5057,3 +5019,15 @@ function get_artist($user_id, $artist_ids, $page_slug){
     }
     return $artistAr;
 }
+
+function related_images_type($type){
+  if($type == 10)      $val= 'Blank - leave blank';
+  elseif($type == 20)  $val= 'Detail';
+  elseif($type == 30)  $val= 'Installation';
+  elseif($type == 40)  $val= 'Studio';
+  elseif($type == 50)  $val= 'Inspiration';
+  elseif($type == 60)  $val= 'Influences';
+  elseif($type == 70)  $val= 'Event';
+  return $val;
+}
+

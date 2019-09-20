@@ -724,7 +724,7 @@ function post_delete_media_collection_map($obj_type, $obj) {
   rank_update('media_collection_map', array('media_collection_id' => $obj->media_collection_id, 'active' => 1)); // update rank of source folder media
 }
 
-
+/*
 function pre_add_media_collection_map($obj_type, $data) {
   $errors = array();
   $media_id = $data['media_id'];
@@ -760,6 +760,7 @@ function pre_add_media_collection_map($obj_type, $data) {
   
   return array($data, $errors);
 }
+*/
   
 function pre_edit_user($obj_type, $data, $orgObj) {
   if($site_id = $data['site_id'] ?: $orgObj->site_id) $search['site_id'] = $site_id; // todo: sketchy
@@ -1079,6 +1080,22 @@ function post_edit_media($id, $changes=NULL) {
     
 }
 
+function pre_edit_media_collection_map($obj_type, $data, $orgObj) {
+  $media_id = $data[media_id];
+  $mapObj = get_object('media', $media_id);
+
+  $title = $mapObj->filename;
+  $type_val = related_images_type($data[type]);
+  $artist_name = user_display_name($data[artist_id]);
+  if($title && $artist_name && $type_val && !$data[artwork_id]){
+    $data[name] = $title;
+    $name =$title." (".$type_val."), ".$data[description];
+    $mapObj->comment = $name;
+    update_object('media', $mapObj, $mapObj->id); 
+  }
+  return array($data, $errors);
+}
+
 // pre add
 // download file from client computer or URL
 // if success, set the required src and filename attributes
@@ -1096,6 +1113,13 @@ function post_edit_media($id, $changes=NULL) {
 */
 
 function pre_add_media($obj_type, $data) {
+  $get_data = get_object($data['parent_type'], $data['parent_id']);
+  $user_id = $get_data->user_id;
+  $get_media = find_objects('media', ['user_id'=> $user_id]);
+  $user = get_user($app->user_id);
+  if((count($get_media) >= 100) && ($user->roles != 256))
+    return array($data, array('Cannot upload more than 100 images'));
+  
   $debug = true;
   $search = array();
   $site_id = $data['site_id'] ?: $_SESSION['site_id'];  
@@ -1597,9 +1621,19 @@ function post_add_media($id) {
   $mediaObj = get_object('media', $id);
 
   /** add to media_collection_map */
-  if($mediaObj->parent_type == 'media_collection' && in_array($mediaObj->parent_field, ['map', 'media']) && $mediaObj->parent_id > 0) {
+  if($mediaObj->parent_type == 'media_collection_map' && in_array($mediaObj->parent_field, ['map', 'media']) && $mediaObj->parent_id > 0) {
+    $collection_data = get_object('media_collection_map', $mediaObj->parent_id);
+    if($collection_data){
+      $collection_data->media_id = $mediaObj->id;
+      $collection_data->name = $mediaObj->filename;
+      $collection_data->artist_id = $mediaObj->artist_id;
+      $collection_data->artist_name = user_display_name($mediaObj->artist_id);
+      $collection_data->curator_id = $mediaObj->user_id;
+      $collection_data->curator_name = user_display_name($mediaObj->user_id);
+      list($map_id, $errors) = update_object('media_collection_map', $collection_data, $collection_data->id);
+    }
     print_log("Publishing Media {$mediaObj->id} to {$mediaObj->parent_id}", 'media', LOG_LEVEL_ALWAYS);
-    gallery_publish_image($mediaObj->site_id, $mediaObj->id, $mediaObj->parent_id);
+    gallery_publish_images($mediaObj->site_id, $mediaObj->id, $mediaObj->parent_id);
   } else {
     print_log("NOT Publishing Media pt={$mediaObj->parent_type} pf={$mediaObj->parent_field} pid={$mediaObj->parent_id}", 'media', LOG_LEVEL_ALWAYS);
   }

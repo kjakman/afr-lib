@@ -383,12 +383,12 @@ function vp_caption(vpdata, item, context) {
 
   // year
   if(inArray('year', g_popup_title) && item.original_year) {
-    element1 = element1 + ' (' +  item.original_year + ')';
+    //element1 = element1 + ' (' +  item.original_year + ')';
   }  
 
   // technique
   if(inArray('technique', g_popup_title) && item.original_technique) {
-    element1 = element1 + ' ' + item.original_technique;
+    //element1 = element1 + ' ' + item.original_technique;
   }
   
   if(element1) elAr.push(element1);
@@ -396,7 +396,7 @@ function vp_caption(vpdata, item, context) {
   
   // artist name
   if(inArray('artist', g_popup_title) && artist_name) {
-    elAr.push('by ' + artist_name);
+    //elAr.push('by ' + artist_name); hidden for tym being
   }
 
 
@@ -1326,8 +1326,8 @@ function vp_follow_link(user_id, item) {
 
 function vp_contact_link(cid) {
   //modalEl.data.owner = "contact";
-  
-  
+
+  var get_obj = cid.split('_')[0];
   var vpdata = g_pswp.getCurrentData(cid) || {};
   var item = vpdata.item;
 
@@ -1344,8 +1344,11 @@ function vp_contact_link(cid) {
   
   
   var recipient = email ? curator_name + " <" + email + ">" : '';
-  var obj_type = 'media_collection_map';
-  var obj_id = item.map_id;
+  if(get_obj == 'artworkmedia')
+  	var obj_type = 'artwork_media';
+  else
+  	var obj_type = 'media_collection_map';
+  var obj_id = item.map_id ? item.map_id:  cid.split('_')[1];
   
   var link = "/share/?recipient=" + encodeURIComponent(recipient) + "&subject=" + encodeURIComponent(subject);
   link = link + "&obj_type=" + obj_type + "&obj_id=" + obj_id;
@@ -1478,9 +1481,7 @@ function vp_search() {
     var plugin_ids = g_keys[key];
 
     console.log("Found plugin id:" +  plugin_id + " cid:" + cid + " key: " + key + " status:" + status + " g_keys:", g_keys);
-    console.log("pradee data "+JSON.stringify(data) );
     if(0 && plugin_ids.length) {
-      
       console.log("Already loading data for plugin id:" +  plugin_id + " cid:" + cid + " status:" + status + " key:" + key + " plugin ids=", plugin_ids);
       if(!inArray(plugin_id, g_keys[key])) g_keys[key].push(plugin_id);
       

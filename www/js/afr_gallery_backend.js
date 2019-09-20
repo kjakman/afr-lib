@@ -461,10 +461,12 @@ $(document).on("click", "#sel_add_exbart", function() {
   $link = $(this);
   console.log("sel add ids=", g_selections);
   var exb_id = $link.data('target_id');
+  var id = exb_id.split("|");
+  console.log("target_id=", id);
   console.log("target_id=", exb_id);
 
   if(exb_id && g_selections.length) {
-    var href = '/backend/exhibition/' + exb_id + '/edit/media?add_exbart' + '=' + g_selections.join();
+    var href = '/backend/exhibition/' + id[0] + '/edit/medias?add_media='+ id[1] + '&add_exbart=' + g_selections.join();
     var $link = $("#submit");
     console.log("Calling soft-load: href=" + href);
     soft_load($link, "#subview-container", href);
@@ -560,6 +562,22 @@ $(document).on("click", '#delete-artwork-media', function(){
     },
     success:function(response_data_json) {
       $("#gbe_related_link").trigger('click');
+    }     
+  });     
+});
+
+//Delete related artwork media
+$(document).on("click", '#delete-collection-media', function(){
+  var id = $(this).data('value');
+  $.ajax({
+    url: "/ajax.php",
+    data: {
+      oper: "collection-media-delete",
+      obj_id: id,
+      obj_type: 'media_collection_map'
+    },
+    success:function(response_data_json) {
+      $("#gbe_medias_link").trigger('click');
     }     
   });     
 });
@@ -782,6 +800,62 @@ $(document).on("focusout", ".edit-media-description", function() {
     data: {
       oper : "save-artwork-related",
       obj_type : "artwork_media",
+      obj_id : id,
+      description : data,   
+      dedit: "1",   
+    }
+  });  
+});
+
+// For type drop down in related collection
+$(document).on("click", "#edit-collection-type", function() { 
+  $('.status'+id).show();
+  var id = $(this).data('id');
+
+  $('.status'+id).hide();
+  $('#cstatus'+id).show();
+  $('#select').remove();      
+  $('#cstatus'+id).append('<select id= "select" class="select'+id+'"><option>Select</option><option id= "option" value="10">Blank - leave blank</option><option  id= "option" value="20">Detail </option><option  id= "option" value="30">Installation</option><option  id= "option" value="40">Studio</option><option  id= "option" value="50">Inspiration</option><option  id= "option" value="60">Influences</option><option  id= "option" value="70">Event</option></select>');
+
+  $(document).on("change", "#select", function() {
+    var value1 = $(this).parent().prop('id');
+    value1 = value1.replace('cstatus','');
+    var value = $('#cstatus'+value1+' #select').val();
+    var col = $('#status').data('col');
+    $('.select'+value1).show(value);
+    $.ajax({ url: "/ajax.php",
+      data: {
+        oper: "save-media-related",
+        obj_type : "media_collection_map",
+        type : value,
+        obj_id : value1,
+        dedit: "1",
+      },
+      success:function(response_data_json) {
+        var value2='';
+         $('#cstatus'+value1).hide();
+         if(value==10)       value2="Blank - leave blank";
+         if(value==20)       value2="Detail";
+         if(value==30)       value2="Installation";
+         if(value==40)       value2="Studio";
+         if(value==50)       value2="Inspiration";
+         if(value==60)       value2="Influences";
+         if(value==70)       value2="Event";
+        $('.status'+value1).text(value2);
+        $('.status'+value1).show();
+      }
+    });    
+  });           
+});
+
+$(document).on("focusout", ".edit-collection-description", function() { 
+  //$(this).prop('contenteditable', false);
+  var id = $(this).data('id');
+  var data = $(this).text();
+  $.ajax({ url: "/ajax.php?obj_type=" + obj_type,
+    data: {
+      oper : "save-media-related",
+      obj_type : "media_collection_map",
       obj_id : id,
       description : data,   
       dedit: "1",   
@@ -1163,7 +1237,7 @@ $(document).on("click", ".clone_modal_icon", function() {
   $("#clone_dialog_form input[name=obj_id]").val($(this).attr('id'));
 });
 
-$(document).on("click", ".related_image_add", function() { 
+$(document).on("click", ".related_image_add, .collection_image_add", function() { 
   var description =  $(this).data('description');
   $("#gbe_related_artwork_edit_dialog input[name=obj_id]").val($(this).attr('id'));
   $("#gbe_related_artwork_edit_dialog select").val($(this).data('typeid'));
