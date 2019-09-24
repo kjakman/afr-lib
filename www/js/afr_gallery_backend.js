@@ -291,6 +291,7 @@ $(document).on("click", "#sel_add", function() {
     soft_load($link, "#subview-container", href);
     g_selections = [];
     bstUpdateSelection([]);
+    soft_load($link, "#subview-container", '/backend/exhibition/' + collection_id + '/edit/media?_pv=1');
   } else {
   }
 });
