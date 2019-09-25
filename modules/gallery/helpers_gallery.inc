@@ -168,7 +168,11 @@ function gallery_get_json($collection_id, $site_id=247) {
     }else{
       if($get_media->original_year)
         $year = '('.$get_media->original_year.'),';
-      $name = "$get_media->name $year $get_media->original_technique";
+        $artist = user_display_name($get_media->artist_id);
+        if($artist)
+          $name = "$get_media->name $year $get_media->original_technique, by $artist";
+        else
+          $name = "$get_media->name $year $get_media->original_technique";
     }
     $get_media->comment = $name;
     list($id, $errors) = update_object('media', $get_media, $get_media->id);
