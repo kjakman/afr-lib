@@ -166,10 +166,11 @@ function logStackTrace(levels) {
 /*! vPatina JS: 0.1.3 2017-03-19
 * https://www.vpatina.com
 * Copyright (c) 2016 vPatina BV; */
-
+var getUrl = window.location;
+var baseUrl = getUrl .protocol + "//" + getUrl.host;
 var g_pswp = false;
 var g_pswp_index = -1;
-var g_site_url = 'https://new.vpatina.dci.in';
+var g_site_url = baseUrl;
 //var g_site_url = 'https://www.vpatina.com';
 var g_aid = 10;
 var g_site_id = '247';
@@ -197,7 +198,7 @@ var g_popup_tabs = '';
 var g_cids = {};
 var g_json_data = {};
 var g_list = {};
-var g_keys = {};     
+var g_keys = {};   
 
 // add-ons: move to separate file
 // ATC Calendar
