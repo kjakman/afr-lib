@@ -292,6 +292,11 @@ function smarty_function_json($params, &$smarty)
 }
 
 
+# Git merge dev with master
+(on branch development)$ git merge master
+(resolve any merge conflicts if there are any)
+git checkout master
+git merge development (there won't be any conflicts now)
 
 
 # Git Hub recipies - don't run
@@ -310,3 +315,4 @@ git push -f
 
 # delete obsolete remote branches
 git push origin :deprecated-branch
+
