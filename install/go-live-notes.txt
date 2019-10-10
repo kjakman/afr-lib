@@ -11,8 +11,6 @@ git merge master
 git checkout master
 git merge dci
 
-bfeb73804338ab7abaf8f1503b2dfc0d5d1addc1
-
 mkdir /backup/sites/vpatina/2009-10-10
 dbdump.sh
 mv /backup/db/vpatina.sql /backup/sites/vpatina/2009-10-10
