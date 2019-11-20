@@ -1,10 +1,10 @@
-console.log("afr_gallery_backend.js v2.11");
+console.log("afr_gallery_backend.js 201911200225");
 
 if(typeof g_section == "undefined") {
   var g_section = '';
-  console.log("\n\n\nafr_gallery_bakend, no g_section defined..");
+  //console.log("\n\n\nafr_gallery_bakend, no g_section defined..");
 } else {
-  console.log("\n\n\n afr_gallery_bakend: ok, g_section is defined... val=" + g_section);
+  //console.log("\n\n\n afr_gallery_bakend: ok, g_section is defined... val=" + g_section);
   $(".navbar-nav li").removeClass('active');    
   $("#nav_section_" + g_section).addClass('active');
 }
@@ -15,7 +15,7 @@ g_ready_scripts.push('gallery_backend_ready');
 var g_section = 'undef';
 
 function gbe_plugin_handler(params, data) {
-  console.log("gbe_plugin_handler data=", data);
+  //console.log("gbe_plugin_handler data=", data);
   window.location.href = "/backend/plugin/" + data.id;
 }
 
@@ -31,15 +31,15 @@ function gbe_title_image_handler(params, data) {
   window.console && console.log("property_photo_handler file=", file, " type=" + (file ? file.type : 'none'));
   if(file && file.type == 'image') {
     var src = file.url;
-    console.log("src=" + src + " target len=" + $("#collection_title_image").length);
+    //console.log("src=" + src + " target len=" + $("#collection_title_image").length);
     $("#collection_title_image").attr('src', src);
   }
   return true;
 }
   
 function gbe_collection_handler(params, data) {
-  console.log("gbe_collection_handler. data=", data);
-  console.log("gbe_collection_handler. next="+ data.next_tab + " data:", data);
+  //console.log("gbe_collection_handler. data=", data);
+  //console.log("gbe_collection_handler. next="+ data.next_tab + " data:", data);
   if(data.id) {
     var tab = data.next_tab || 'location';
     if(((data.subtype == 40) || (data.subtype == 50)) && (tab == 'location')) tab = 'media';
@@ -50,8 +50,8 @@ function gbe_collection_handler(params, data) {
 }
 
 function gbe_artwork_handler(params, data) {
-  console.log("gbe_artwork_handler. params:", params);
-  console.log("gbe_artwork_handler. next="+ data.next_tab + " data:", data);
+  //console.log("gbe_artwork_handler. params:", params);
+  //console.log("gbe_artwork_handler. next="+ data.next_tab + " data:", data);
   if(data.id) {    
     var tab = data.next_tab || 'details';
     var href = '/backend/artwork/' + data.id + '/edit/' + tab;
@@ -61,8 +61,8 @@ function gbe_artwork_handler(params, data) {
 }
 
 function gbe_network_handler(params, data) { //pradeepa
-  console.log("gbe_network_handler. data", data);
-  console.log("gbe_network_handler. next="+ data.next_tab + " data:", data);
+  //console.log("gbe_network_handler. data", data);
+  //console.log("gbe_network_handler. next="+ data.next_tab + " data:", data);
   if(data.id) {    
     var tab = data.next_tab || 'about';
     var href = '/backend/profile/' + data.id + '/edit/' + tab;
@@ -72,8 +72,8 @@ function gbe_network_handler(params, data) { //pradeepa
 }
 
 function gbe_website_handler(params, data) { //pradeepa
-  console.log("gbe_website_handler. data", data);
-  console.log("gbe_website_handler. next="+ data.next_tab + " data:", data);
+  //console.log("gbe_website_handler. data", data);
+  //console.log("gbe_website_handler. next="+ data.next_tab + " data:", data);
   if(data.id) {    
     var tab = data.next_tab || 'exhibition';
     var href = '/backend/website/' + data.id + '/edit/' + tab;
@@ -83,14 +83,14 @@ function gbe_website_handler(params, data) { //pradeepa
 }
 
 function gbe_vault_handler(params, data) {
-  console.log("gbe_vault_handler. params:");
+  //console.log("gbe_vault_handler. params:");
     var href = '/backend/vaults?_pv=1';
     var $link = $("#submit");
     soft_load($link, "#subview-container", href);
 }
 
 function gbe_artists_tagit() {
-  console.log("gbe_artists_tagit");
+  //console.log("gbe_artists_tagit");
   $("#artistTags").tagit({
     allowSpaces: true,
     placeholderText: "Type artist name",
@@ -111,7 +111,7 @@ function gbe_artists_tagit() {
         },
         success: function( result ) {
           if(result.success) {
-            console.log("OK, data:", result);
+            //console.log("OK, data:", result);
             response( $.map( result.data, function( item ) {
               var name = (item.display_name ? item.display_name : (item.first_name + ' ' + item.last_name));
               return {
@@ -145,7 +145,7 @@ function gbe_artists_tagit() {
     var ar = text.split('|');
     var name = ar[0];
     var id = parseInt(ar[1]);
-    console.log('adding tag text=' + text);
+    //console.log('adding tag text=' + text);
     
     //if(id && ar.length < 2) return true; // not from form
     
@@ -171,7 +171,7 @@ function gbe_artists_tagit() {
     
     $span.html(name);
     $tag.data('id', id);
-    console.log("Added tag id='" + id + "' name=" + name);
+    //console.log("Added tag id='" + id + "' name=" + name);
     var ids = $("#artist_ids").val() ? $.parseJSON($("#artist_ids").val()) : [];
     if($.inArray(id, ids) == -1) ids.push(id);
     $("#artist_ids").val(JSON.stringify(ids));
@@ -180,7 +180,7 @@ function gbe_artists_tagit() {
     var $tag = $(ui.tag);
     // do something special
     var id = parseInt($tag.data('id'));
-    console.log("Removed id=" + id);
+    //console.log("Removed id=" + id);
     var ids = $("#artist_ids").val() ? $.parseJSON($("#artist_ids").val()) : [];
     var index = ids.indexOf(id);
     if (index > -1) ids.splice(index, 1);
@@ -197,7 +197,7 @@ $(document).on("click", "#gbe_use_default_settings", function() {
     return false;
   }
   var default_settings = jQuery.parseJSON(default_settings_json);
-  console.log("Settings defaults:", default_settings);
+  //console.log("Settings defaults:", default_settings);
   var keys = ['title', 'full', 'buttons', 'tabs'];
   var ar, settings, target,key,$div, $cbs, $cb, checked, default_val,name;
 
@@ -216,7 +216,7 @@ $(document).on("click", "#gbe_use_default_settings", function() {
       default_val = $.inArray(name, settings) > -1;
       //console.log(key + ":" + name + " checked " + checked + " default=" + default_val);         
       if(checked != default_val) {
-        console.log("Changing " + key + ":" + name);
+        //console.log("Changing " + key + ":" + name);
         $cb.bootstrapToggle('toggle');
       }
       //$cb.prop('checked', default_val);
@@ -241,7 +241,7 @@ $(document).on("change", ".gbe-settings input", function() {
     if(checked) ar.push(key);  
   });
   json = JSON.stringify(ar);
-  console.log(target + "=" + json);
+  //console.log(target + "=" + json);
   $(target).val(json);  
   
   var options_json = $("#gallery_options").val();
@@ -254,7 +254,7 @@ $(document).on("change", ".gbe-settings input", function() {
 
 $(document).on("click", "#sel_clear", function() {
   var $target = $(this); // fires when hidden for some reason
-  console.log("sel clear target=",$target);
+  //console.log("sel clear target=",$target);
   $("INPUT[name='btSelectAll']").trigger('click');
 
   g_selections = [];
@@ -263,12 +263,12 @@ $(document).on("click", "#sel_clear", function() {
 });
 
 $(document).on("click", "#sel_show", function() {
-  console.log("sel show ids=", g_selections);
+  //console.log("sel show ids=", g_selections);
   $("#table").bootstrapTable('refresh', {query: {id: g_selections}, pageSize: 100});  
 });
 
 $(document).on("click", "#sel_del_success", function() { //Bala
-  console.log("sel Del ids=", g_selections);
+  //console.log("sel Del ids=", g_selections);
     $('#table').bootstrapTable('remove', {
                 field: 'id',
                 //~ values: g_selections
@@ -282,12 +282,12 @@ $(document).on("click", "#sel_del_success", function() { //Bala
 
 $(document).on("click", "#sel_add", function() {
   $link = $(this);
-  console.log("sel add ids=", g_selections);
+  //console.log("sel add ids=", g_selections);
   var collection_id = $link.data('target_id');
   if(collection_id && g_selections.length) {
     var href = '/backend/exhibition/' + collection_id + '/edit/media?' + add_what + '=' + g_selections.join();
     var $link = $("#submit");
-    console.log("Calling soft-load: href=" + href);
+    //console.log("Calling soft-load: href=" + href);
     soft_load($link, "#subview-container", href);
     g_selections = [];
     bstUpdateSelection([]);
@@ -298,9 +298,9 @@ $(document).on("click", "#sel_add", function() {
 
 $(document).on("click", "#sel_add_profile", function() {
   $link = $(this);
-  console.log("sel add ids=", g_selections);
+  //console.log("sel add ids=", g_selections);
   var artist_id = $link.data('target_id');
-  console.log("target_id=", artist_id);
+  //console.log("target_id=", artist_id);
 
   if(artist_id && g_selections.length) {
     if(add_what == 'add_folderimg')
@@ -308,7 +308,7 @@ $(document).on("click", "#sel_add_profile", function() {
     else
       var href = '/backend/profile/' + artist_id + '/edit/art?' + add_what + '=' + g_selections.join();
     var $link = $("#submit");
-    console.log("Calling soft-load: href=" + href);
+    //console.log("Calling soft-load: href=" + href);
     soft_load($link, "#subview-container", href);
     g_selections = [];
     bstUpdateSelection([]);
@@ -318,9 +318,9 @@ $(document).on("click", "#sel_add_profile", function() {
 
 $(document).on("click", "#sel_add_profile1", function() {
   $link = $(this);
-  console.log("sel add ids=", g_selections);
+  //console.log("sel add ids=", g_selections);
   var artist_id = $link.data('target_id');
-  console.log("target_id=", artist_id);
+  //console.log("target_id=", artist_id);
 
   if(artist_id && g_selections.length) {
     if(add_what == 'add_folderimg')
@@ -328,7 +328,7 @@ $(document).on("click", "#sel_add_profile1", function() {
     else
       var href = '/backend/profile/' + artist_id + '/edit/art?' + add_what + '=' + g_selections.join();
     var $link = $("#submit");
-    console.log("Calling soft-load: href=" + href);
+    //console.log("Calling soft-load: href=" + href);
     soft_load($link, "#subview-container", href);
     g_selections = [];
     bstUpdateSelection([]);
@@ -338,17 +338,17 @@ $(document).on("click", "#sel_add_profile1", function() {
 
 $(document).on("click", "#sel_add_website", function() {
   $link = $(this);
-  console.log("pradeepa link"+$link);
-  console.log("sel add ids=", g_selections);
+  //console.log("pradeepa link"+$link);
+  //console.log("sel add ids=", g_selections);
   var artist_id = $link.data('target_id');
   var page_id = $link.data('page');
   var user_id = $link.data('user');
-  console.log("target_id=", artist_id);
-  console.log("g_selections.length=", g_selections.length);
+  //console.log("target_id=", artist_id);
+  //console.log("g_selections.length=", g_selections.length);
   if((artist_id) && (g_selections.length == 1)) {
     var href = '/backend/website/' + artist_id + '/edit/singleExhibition?_pv=1&page_id='+ page_id +'&user_id='+user_id + '&' + add_what + '=' + g_selections.join();
     var $link = $("#submit");
-    console.log("Calling soft-load: href=" + href);
+    //console.log("Calling soft-load: href=" + href);
     soft_load($link, "#subview-container", href);
     g_selections = [];
     bstUpdateSelection([]);
@@ -359,12 +359,12 @@ $(document).on("click", "#sel_add_website", function() {
 
 $(document).on("click", "#sel_add_folder", function() {
   $link = $(this);
-  console.log("sel add ids=", g_selections);
+  //console.log("sel add ids=", g_selections);
   var folder_id = $link.data('target_id');
   if(folder_id && g_selections.length) {
     var href = '/backend/vaults/' + folder_id + '?' +add_what + '=' + g_selections.join()+ '&folder_id=' +folder_id;
     var $link = $("#submit");
-    console.log("Calling soft-load: href=" + href);
+    //console.log("Calling soft-load: href=" + href);
     soft_load($link, "#subview-container", href);
     g_selections = [];
     bstUpdateSelection([]);
@@ -374,14 +374,14 @@ $(document).on("click", "#sel_add_folder", function() {
 
 $(document).on("click", "#sel_add_logo", function() {
   $link = $(this);
-  console.log("sel add ids=", g_selections);
+  //console.log("sel add ids=", g_selections);
   var artist_id = $link.data('target_id');
-  console.log("target_id=", artist_id);
+  //console.log("target_id=", artist_id);
 
   if(artist_id && g_selections.length) {
     var href = '/backend/profile/' + artist_id + '/edit/about?add_logo' + '=' + g_selections.join();
     var $link = $("#submit");
-    console.log("Calling soft-load: href=" + href);
+    //console.log("Calling soft-load: href=" + href);
     soft_load($link, "#subview-container", href);
     g_selections = [];
     bstUpdateSelection([]);
@@ -391,14 +391,14 @@ $(document).on("click", "#sel_add_logo", function() {
 
 $(document).on("click", "#sel_add_logo1", function() {
   $link = $(this);
-  console.log("sel add ids=", g_selections);
+  //console.log("sel add ids=", g_selections);
   var artist_id = $link.data('target_id');
-  console.log("target_id=", artist_id);
+  //console.log("target_id=", artist_id);
 
   if(artist_id && g_selections.length) {
     var href = '/backend/ACsettings/' + artist_id + '/edit/bio?add_logo' + '=' + g_selections.join();
     var $link = $("#submit");
-    console.log("Calling soft-load: href=" + href);
+    //console.log("Calling soft-load: href=" + href);
     soft_load($link, "#subview-container", href);
     g_selections = [];
     bstUpdateSelection([]);
@@ -408,14 +408,14 @@ $(document).on("click", "#sel_add_logo1", function() {
 
 $(document).on("click", "#sel_add_artwork", function() {
   $link = $(this);
-  console.log("sel add ids=", g_selections);
+  //console.log("sel add ids=", g_selections);
   var artwork_id = $link.data('target_id');
-  console.log("target_id=", artwork_id);
+  //console.log("target_id=", artwork_id);
 
   if(artwork_id && g_selections.length) {
     var href = '/backend/artwork/' + artwork_id + '/edit/image?add_artwork' + '=' + g_selections.join();
     var $link = $("#submit");
-    console.log("Calling soft-load: href=" + href);
+    //console.log("Calling soft-load: href=" + href);
     soft_load($link, "#subview-container", href);
     g_selections = [];
     bstUpdateSelection([]);
@@ -425,15 +425,15 @@ $(document).on("click", "#sel_add_artwork", function() {
 
 $(document).on("click", "#sel_add_relatedart", function() {
   $link = $(this);
-  console.log("sel add ids=", g_selections);
+  //console.log("sel add ids=", g_selections);
   var artwork_id = $link.data('target_id');
   var id = artwork_id.split("|");
-  console.log("target_id=", id);
+  //console.log("target_id=", id);
 
   if(id && g_selections.length) {
     var href = '/backend/artwork/' + id[0] + '/edit/media?artwork_media='+id[1]+'&add_relatedart' + '=' + g_selections.join();
     var $link = $("#submit");
-    console.log("Calling soft-load: href=" + href);
+    //console.log("Calling soft-load: href=" + href);
     soft_load($link, "#subview-container", href);
     g_selections = [];
     bstUpdateSelection([]);
@@ -443,14 +443,14 @@ $(document).on("click", "#sel_add_relatedart", function() {
 
 $(document).on("click", "#sel_add_websiteimg", function() {
   $link = $(this);
-  console.log("sel add ids=", g_selections);
+  //console.log("sel add ids=", g_selections);
   var website_id = $link.data('target_id');
-  console.log("target_id=", website_id);
+  //console.log("target_id=", website_id);
 
   if(website_id && g_selections.length) {
     var href = '/backend/website/' + website_id + '/edit/basic?add_weblogo' + '=' + g_selections.join();
     var $link = $("#submit");
-    console.log("Calling soft-load: href=" + href);
+    //console.log("Calling soft-load: href=" + href);
     soft_load($link, "#subview-container", href);
     g_selections = [];
     bstUpdateSelection([]);
@@ -460,16 +460,16 @@ $(document).on("click", "#sel_add_websiteimg", function() {
 
 $(document).on("click", "#sel_add_exbart", function() {
   $link = $(this);
-  console.log("sel add ids=", g_selections);
+  //console.log("sel add ids=", g_selections);
   var exb_id = $link.data('target_id');
   var id = exb_id.split("|");
-  console.log("target_id=", id);
-  console.log("target_id=", exb_id);
+  //console.log("target_id=", id);
+  //console.log("target_id=", exb_id);
 
   if(exb_id && g_selections.length) {
     var href = '/backend/exhibition/' + id[0] + '/edit/medias?add_media='+ id[1] + '&add_exbart=' + g_selections.join();
     var $link = $("#submit");
-    console.log("Calling soft-load: href=" + href);
+    //console.log("Calling soft-load: href=" + href);
     soft_load($link, "#subview-container", href);
     g_selections = [];
     bstUpdateSelection([]);
@@ -479,14 +479,14 @@ $(document).on("click", "#sel_add_exbart", function() {
 
 $(document).on("click", "#sel_add_exbtitle", function() {
   $link = $(this);
-  console.log("sel add ids=", g_selections);
+  //console.log("sel add ids=", g_selections);
   var exb_id = $link.data('target_id');
-  console.log("target_id=", exb_id);
+  //console.log("target_id=", exb_id);
 
   if(exb_id && g_selections.length) {
     var href = '/backend/exhibition/' + exb_id + '/edit/title?exbtitle' + '=' + g_selections.join();
     var $link = $("#submit");
-    console.log("Calling soft-load: href=" + href);
+    //console.log("Calling soft-load: href=" + href);
     soft_load($link, "#subview-container", href);
     g_selections = [];
     bstUpdateSelection([]);
@@ -742,12 +742,12 @@ $(document).on("focusout", ".edit_exhibition", function() {
 
 
 $(document).on("click", ".edit_date", function() { 
-  console.log("clicked");
+  //console.log("clicked");
   $(this).datepicker({
       dateFormat: 'dd-mm-yy',
       onSelect: function(dateText) {
           $(this).val(dateText);
-          console.log(dateText);
+          //console.log(dateText);
       }
   });
 });
@@ -967,14 +967,14 @@ $(document).on("change", "#gbe_collection_active", function() {
   
 $(document).on('dirty.areYouSure', 'form', function() {
   // Enable save button only as the form is dirty.
-  console.log("Form dirty form=" + $(this).attr('id'));
+  //console.log("Form dirty form=" + $(this).attr('id'));
   //$(this).find('input[type="submit"]').removeAttr('disabled');
   g_form_dirty = 1;
 });
 
 $(document).on('clean.areYouSure', 'form', function() {
   // Form is clean so nothing to save - disable the save button.
-  console.log("Form clean");
+  //console.log("Form clean");
   //$(this).find('input[type="submit"]').attr('disabled', 'disabled');
   g_form_dirty = 0;
 });
@@ -984,30 +984,30 @@ $(document).on('click', 'a', function(e) {
   var href = $link.attr('href');
   
   if($link.hasClass('ajax-loader') || $link.hasClass('subview-nav-link')) {
-    console.log("click on A ajax-loader or subview-nav-link, delegate");
+    //console.log("click on A ajax-loader or subview-nav-link, delegate");
     return;
   }
 
   if(href == '#' || !href) {
-    console.log("click on A w/o href, do nothing");
+    //console.log("click on A w/o href, do nothing");
     return;
   }
     
   if(g_form_dirty) {
     return; /** disabled for now */
     e.preventDefault();
-    console.log("click on A - form dirty a href=" + $(this).attr('href'));
+    //console.log("click on A - form dirty a href=" + $(this).attr('href'));
     // return confirm_modal($link);
     //return false;      
   } else {
-    console.log("click on A - form clean");
+    //console.log("click on A - form clean");
   }    
 });
                                   
 function confirm_modal($link) {
   return confirm('You have unsaved changes. Are you sure you want to leave?');
   
-  console.log("Showing confirm modal");
+  //console.log("Showing confirm modal");
   $link.confirmModal({
     confirmTitle     : 'Custom please confirm',
     confirmMessage   : 'Custom are you sure you want to perform this action ?',
@@ -1022,11 +1022,11 @@ function confirm_modal($link) {
 }
 
 function bstUpdateSelection(selections) {
-  console.log("Selections = ",selections);
+  //console.log("Selections = ",selections);
   if(selections.length) {
     g_selections = selections.concat(g_selections).unique();  
   }  
-  console.log("GSelections = ",g_selections);
+  //console.log("GSelections = ",g_selections);
   var count = g_selections.length;
   $("#sel_count").text(count);
   if(count) {
@@ -1127,11 +1127,11 @@ function bstArtistsFormatter(value, row, index) {
 }
 
 function gbe_confirm_callback() {
-  console.log("Confirmed...");
+  //console.log("Confirmed...");
 }
 
 function gallery_backend_ready() {
-  console.log("gallery_backend_ready v2.1 ARE YOU SURE");
+  //console.log("gallery_backend_ready v2.1 ARE YOU SURE");
 
   $('form').areYouSure( {'silent':true} );
   
@@ -1146,27 +1146,26 @@ function gallery_backend_ready() {
     } else {
       $("#gbe_location").hide();
     }
-    console.log("loc type change val=" + val);
+    //console.log("loc type change val=" + val);
   });
   
   var $table = $('#table');
   $remove = $('#remove');
     
   if(typeof g_section == "undefined") var g_section = '?';
-  console.log("Backend Ready... section=" + g_section);
+  //console.log("Backend Ready... section=" + g_section);
   if($table.length) {
-    console.log("Backend Ready, loading table...");
+    //console.log("Backend Ready, loading table...");
     $table.bootstrapTable().on('load-success.bs.table', function(e, data) {
       if(g_selections.length) {
         var rows = data.rows;
         $.each(rows, function(k, v) {
-
-           console.log("id=" + v.id);
+           //console.log("id=" + v.id);
            if($.inArray(v.id, g_selections) > -1) $table.bootstrapTable('check', k);
         });
       }
 
-      console.log("load sel=" + g_selections.length + " data=", data);      
+      // console.log("load sel=" + g_selections.length + " data=", data);      
     });  
     
     $table.on('uncheck.bs.table', function (e, row) {
@@ -1175,7 +1174,7 @@ function gallery_backend_ready() {
           g_selections.splice(index, 1);
         }
       });
-      console.log("Ok, removed " + row.id + " sel=",g_selections);
+      //console.log("Ok, removed " + row.id + " sel=",g_selections);
       bstUpdateSelection([]);
     });
     
@@ -1193,30 +1192,30 @@ function gallery_backend_ready() {
       var ids = $.map(rows, function (row) {
         return row.id
       });
-      console.log("uncheck all rows:", ids);
-      console.log("sel:", selections);
+      //console.log("uncheck all rows:", ids);
+      //console.log("sel:", selections);
       $.each(selections, function(index, id) {
         if($.inArray(id, ids) > -1) {
           g_selections.shift();
-          console.log(index + ": Remove id=" + id + " sel:", g_selections);
+          //console.log(index + ": Remove id=" + id + " sel:", g_selections);
         } else {
-          console.log(index + ": Do not remove id=" + id + " not in:", g_selections);
+          //console.log(index + ": Do not remove id=" + id + " not in:", g_selections);
         }
       });
-      console.log("local sel:", selections);
+      //console.log("local sel:", selections);
       
       bstUpdateSelection([]);
     });
     
     $(document).on("click", "#remove", function() {
       var ids = getIdSelections();
-      console.log("Remove click: ids=",ids);
+      //console.log("Remove click: ids=",ids);
       if(ids) {
         $("#table").bootstrapTable('remove', {
           field: 'id',
           values: ids
         });
-        console.log("Removed:",ids);
+        //console.log("Removed:",ids);
         $remove.prop('disabled', true);
       }
     });
@@ -1259,11 +1258,11 @@ $(document).on("click", "apply-delete",function (e) {
     e.preventDefault();
     if($(this).closest('li').length){
       $(this).closest('li').hide();
-      console.log("media deleted");
+      //console.log("media deleted");
     }             
     else{
       $(this).closest('tr').hide();
-      console.log("artwork media deleted");
+      //console.log("artwork media deleted");
     }
 });
 
@@ -1339,7 +1338,7 @@ function validateData(){
                       "parent_type":"artwork_media",
                       "parent_field":"media"
                     };
-        console.log("media_array "+JSON.stringify(media));
+        //console.log("media_array "+JSON.stringify(media));
 
         $(".jquery-fileupload").attr("data-id", dataId);
         $(".jquery-fileupload").attr("id", dataId);
@@ -1398,7 +1397,7 @@ $(document).ready(function() {
       if(v) {
         v = parseFloat(v);
         v = v.toFixed(2);
-        var $target = $("TH[data-total-field='" + k + "']");
+        var $target = $("TH[data-total-field='"   + k + "']");
         if(v && $target.length) {
           $target.html(v);
         }

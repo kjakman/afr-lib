@@ -1116,7 +1116,7 @@ function pre_add_media($obj_type, $data) {
   $get_data = get_object($data['parent_type'], $data['parent_id']);
   $user_id = $get_data->user_id;
   $get_media = find_objects('media', ['user_id'=> $user_id]);
-  $user = get_user($app->user_id);
+  $user = get_user($user_id);
   if((count($get_media) >= 100) && ($user->roles != 256))
     return array($data, array('Cannot upload more than 100 images'));
   
