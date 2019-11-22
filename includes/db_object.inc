@@ -4994,6 +4994,22 @@ function get_sExhibitionJson(){
   return (json_encode($search));
 }
 
+function get_artwork_type($type){
+  if($type == 10) $text = "Photography";
+  elseif($type == 11) $text = "Print";
+  elseif($type == 20) $text = "Painting";
+  elseif($type == 21) $text = "Drawing";
+  elseif($type == 22) $text = "Mixed Media on paper/canvas";
+  elseif($type == 30) $text = "Sculpture";
+  elseif($type == 40) $text = "Cast (Bronze, etc)";
+  elseif($type == 50) $text = "Film & Video";
+  elseif($type == 60) $text = "Installation";
+  elseif($type == 70) $text = "Performance";
+  elseif($type == 99) $text = "Other";
+
+  return $text;
+}
+
 function get_layout($type, $subtype){
   $data = find_object('minisite_layout', ['type' => $type, 'subtype' => $subtype ,'active' => 1, 'row_order' => 1]);
   return $data->id;
@@ -5037,6 +5053,246 @@ function related_images_type($type){
   elseif($type == 60)  $val= 'Influences';
   elseif($type == 70)  $val= 'Event';
   return $val;
+}
+
+function sortMonths($a, $b) {
+  if ($a->year == $b->year)     return 0;
+  list($ay,$am,$ad) = explode('-', $a->year);
+  list($by,$bm,$bd) = explode('-', $b->year);
+  if ($ay == $by){
+    $am = strtotime($am); 
+    $bm = strtotime($bm);
+    return ($am < $bm ? 1 : -1);
+  }
+  else
+    return ($a->year < $b->year ? 1 : -1);
+}
+
+function get_page_type($type_id){
+  $page_types = get_objects('minisite_page_type');
+  
+  foreach($page_types as $page_type){
+    if ($type_id == $page_type->id){
+      $type[tab] = $page_type->tab;
+      $type[page_type] = $page_type->name;
+    }
+  }
+  return $type;
+}
+
+function get_exhibition_tpl1($layout_id){
+  if($layout_id == '101')       $template = 'timeline_view';          
+  elseif($layout_id == '103')   $template = 'masonry_3C';          
+  elseif($layout_id == '104')   $template = 'masonry_4C';          
+  elseif($layout_id == '105')   $template = 'masonry_3C_TS';          
+  elseif($layout_id == '106')  $template = 'masonry_4C_TS';
+  elseif($layout_id == '137')  $template = 'masonry_3CY';
+  elseif($layout_id == '138')  $template = 'masonry_4CY';
+
+  elseif($layout_id == '186')  $template = 'landscape_2C';          
+  elseif($layout_id == '187')  $template = 'landscape_2C_TS';          
+  elseif($layout_id == '188')  $template = 'landscape_2CY';          
+  elseif($layout_id == '107')  $template = 'landscape_3C';          
+  elseif($layout_id == '108')  $template = 'landscape_4C';          
+  elseif($layout_id == '109')  $template = 'landscape_3C_TS';          
+  elseif($layout_id == '110')  $template = 'landscape_time'; //landscape_4C_TS 
+  elseif($layout_id == '139')  $template = 'landscape_3CY';
+  elseif($layout_id == '140')  $template = 'landscape_4CY';
+
+  elseif($layout_id == '111')  $template = 'natural';      //Hanging Line - 3 Column
+  elseif($layout_id == '112')  $template = 'tiles';        //Hanging Line - 4 Column
+  elseif($layout_id == '113')  $template = 'hangingline_3C_TS';          
+  elseif($layout_id == '114')  $template = 'natural_time';    //hangingline_4C_TS 
+  elseif($layout_id == '141')  $template = 'hangingline_3CY';
+  elseif($layout_id == '142')  $template = 'hangingline_4CY';
+
+  elseif($layout_id == '180')  $template = '16ratio9_2C';
+  elseif($layout_id == '181')  $template = '16ratio9_2CT';
+  elseif($layout_id == '182')  $template = '16ratio9_2CY';
+  elseif($layout_id == '143')  $template = '16ratio9_3C';
+  elseif($layout_id == '144')  $template = '16ratio9_4C';
+  elseif($layout_id == '145')  $template = '16ratio9_3CT';
+  elseif($layout_id == '146')  $template = '16ratio9_4CT';
+  elseif($layout_id == '147')  $template = '16ratio9_3CY';
+  elseif($layout_id == '148')  $template = '16ratio9_4CY';
+
+  elseif($layout_id == '183')  $template = '4ratio3_2C';
+  elseif($layout_id == '185')  $template = '4ratio3_2CY';
+  elseif($layout_id == '184')  $template = '4ratio3_2CT';
+  elseif($layout_id == '149')  $template = '4ratio3_3C';
+  elseif($layout_id == '150')  $template = '4ratio3_4C';
+  elseif($layout_id == '151')  $template = '4ratio3_3CT';
+  elseif($layout_id == '152')  $template = '4ratio3_4CT';
+  elseif($layout_id == '153')  $template = '4ratio3_3CY';
+  elseif($layout_id == '154')  $template = '4ratio3_4CY';
+
+  elseif($layout_id == '158')  $template = 'standing_3C';
+  elseif($layout_id == '159')  $template = 'standing_4C';
+  elseif($layout_id == '160')  $template = 'standing_3CT';          
+  elseif($layout_id == '161')  $template = 'standing_4CT';
+  elseif($layout_id == '162')  $template = 'standing_3CY';
+  elseif($layout_id == '163')  $template = 'standing_4CY';
+
+  elseif($layout_id == '115')  $template = 'coverpage'; 
+  elseif($layout_id == '116')  $template = 'coverpage_landscape';   
+
+  elseif($layout_id == '189')  $template = '3ratio2_2C';
+  elseif($layout_id == '190')  $template = '3ratio2_2CT';
+  elseif($layout_id == '191')  $template = '3ratio2_2CY';
+  elseif($layout_id == '192')  $template = '3ratio2_3C';
+  elseif($layout_id == '193')  $template = '3ratio2_3CT';
+  elseif($layout_id == '194')  $template = '3ratio2_3CY';
+  elseif($layout_id == '195')  $template = '3ratio2_4C';
+  elseif($layout_id == '196')  $template = '3ratio2_4CT';
+  elseif($layout_id == '197')  $template = '3ratio2_4CY'; 
+
+  elseif($layout_id == '178')  $template = 'banner';
+  elseif($layout_id == '176')  $template = 'banner_time';
+  elseif($layout_id == '177')  $template = 'banner_year';
+  
+  elseif($layout_id == 198 || $layout_id == 222 || $layout_id == 239 || $layout_id == 263 || $layout_id == 279)  
+    $template = '16X9_2C'; //balti
+  elseif($layout_id == 199 || $layout_id == 223 || $layout_id == 240 || $layout_id == 264 || $layout_id == 280)  
+    $template = '16X9_3C';
+  elseif($layout_id == 200 || $layout_id == 224 || $layout_id == 241 || $layout_id == 265 || $layout_id == 281)  
+    $template = '16X9_4C';
+  elseif($layout_id == 201 || $layout_id == 225 || $layout_id == 242 || $layout_id == 266 || $layout_id == 282)  
+    $template = '4X3_2C'; //casa
+  elseif($layout_id == 202 || $layout_id == 226 || $layout_id == 243 || $layout_id == 267 || $layout_id == 283)  
+    $template = '4X3_3C';
+  elseif($layout_id == 203 || $layout_id == 227 || $layout_id == 244 || $layout_id == 268 || $layout_id == 284)  
+    $template = '4X3_4C';
+  elseif($layout_id == 204 || $layout_id == 228 || $layout_id == 245 || $layout_id == 269 || $layout_id == 285)  
+    $template = '3X2_2C'; //nor
+  elseif($layout_id == 205 || $layout_id == 229 || $layout_id == 246 || $layout_id == 270 || $layout_id == 286)  
+    $template = '3X2_3C';
+  elseif($layout_id == 206 || $layout_id == 230 || $layout_id == 247 || $layout_id == 271 || $layout_id == 287)  
+    $template = '3X2_4C';
+
+  elseif($layout_id == 212 || $layout_id == 232 || $layout_id == 251 || $layout_id == 273 || $layout_id == 289)  
+    $template = 'niagra_1'; //casa
+  elseif($layout_id == 213 || $layout_id == 233 || $layout_id == 254 || $layout_id == 274 || $layout_id == 290)  
+    $template = 'niagra_2'; //nor
+  elseif($layout_id == 214 || $layout_id == 231 || $layout_id == 248 || $layout_id == 272 || $layout_id == 288)  
+    $template = 'niagra_3'; //balti
+  
+  elseif($layout_id == '215')  $template = 'parallax_1';
+
+  elseif($layout_id == 216 || $layout_id == 235 || $layout_id == 258)  $template = 'granada_1'; //casa
+  elseif($layout_id == 217 || $layout_id == 236 || $layout_id == 259)  $template = 'granada_2';
+  elseif($layout_id == 218 || $layout_id == 234 || $layout_id == 257)  $template = 'granada_3';
+  elseif($layout_id == 219 || $layout_id == 237 || $layout_id == 260)  $template = 'granada_4';
+
+  elseif($layout_id == 220 || $layout_id == 238 || $layout_id == 261)  $template = 'zig-zag';
+
+  elseif($layout_id == 262)  $template = 'life';
+  elseif($layout_id == 221)  $template = 'parallax';
+  elseif($layout_id == 275)  $template = 'g_baltimore';
+  elseif($layout_id == 276)  $template = 'g_casablanca';
+  elseif($layout_id == 277)  $template = 'g_normandy';
+  elseif($layout_id == 278)  $template = 'g_combo';
+  
+  elseif($layout_id == 291)  $template = 'niagara_169';
+  elseif($layout_id == 292)  $template = 'niagara_43';
+  elseif($layout_id == 293)  $template = 'niagara_32';
+
+  return $template;
+}
+
+function get_exhibition_tpl2($layout_id){
+  if($layout_id == '132')      $template = 'exhibition';
+  elseif($layout_id == '133')  $template = 'exhibition1';
+  elseif($layout_id == '168')  $template = 'exh_masonry';
+  elseif($layout_id == '169')  $template = 'exh_hanging'; 
+  elseif($layout_id == '170')  $template = 'exh_standing'; 
+  elseif($layout_id == '171')  $template = 'exh_masonryExt'; 
+  elseif($layout_id == '210')  $template = 'kyoto_WLoc'; 
+  elseif($layout_id == '211')  $template = 'seoul_WLoc'; 
+
+  return $template;
+}
+
+function add_manual_exb($ids, $page_id){
+  $ids = explode(',',$ids);
+  
+  $minisitePage = get_object('minisite_page', $page_id);
+  foreach($ids as $id){
+    $get_media = find_object('media_collection', ['id'=>$id, 'active'=>1]);
+    if($get_media){
+      $duplicate = find_object('exhibition_map', ['media_collection_id'=>$id, 'page_id'=>$page_id, 'active'=>1]);
+      if(!$duplicate){
+        $data['media_collection_id'] = $id;
+        $data['page_id'] = $page_id;
+        $data['media_id'] = $get_media->title_image;
+        $data['active'] = 1;
+        $data['user_id'] = $minisitePage->user_id;
+        $data['name'] = $get_media->title;
+        $data['type'] = 'manual';
+        $data['page_id'] = $page_id;
+        $data['curator_id'] =  $get_media->curator_id;
+        list($newid, $errors) = add_object('exhibition_map', $data);
+        $obj[] = get_object('exhibition_map', $newid);
+      }else{
+        $error = array_merge_smart("Failed - Exhibition already added to the list", $errors);
+      }
+    }else{
+        $error = array_merge_smart("Failed - Exhibition is not published", $errors);
+    }
+  }
+  if($error) return json_error($error);
+  return $obj;
+}
+
+function add_single_exb($exhibition_ids, $page_id){
+  $exhibition_id = explode(',',$exhibition_ids);
+  $length = count($exhibition_id);
+  $changed = 'exb';
+  if(count($exhibition_id)>1) 
+    $error = array_merge_smart("Failed to add multiple exhibitions", $errors);
+
+  $get_media = find_object('media_collection', ['id'=> $exhibition_id[0], 'active'=> 1]);
+  if(($get_media) && ($get_media->title_image)){
+    $get_collection = find_object('exhibition_map', ['page_id'=> $page_id, 'active' =>1]);
+    if($get_collection){
+      $collection_id = $get_collection->id;
+      $get_collection->media_collection_id = $get_media->id;
+      $get_collection->media_id = $get_media->title_image;
+      $get_collection->artist_id = $get_media->artist_id;
+      $get_collection->name = $get_media->title;
+      list($id, $errors) = update_object('exhibition_map', $get_collection, $collection_id);
+    }else{
+      $data = [];
+      $data['media_collection_id'] =  $get_media->id;
+      $data['media_id']            =  $get_media->title_image;
+      $data['user_id']             =  $user_id;
+      $data['site_id']             =  $get_media->site_id;
+      $data['artist_id']           =  $get_media->artist_id;
+      $data['name']                =  $get_media->title;
+      $data['curator_id']          =  $get_media->curator_id;
+      $data['type']                =  'single';
+      $data['page_id']             =  $page_id;
+      list($id, $errors) = add_object('exhibition_map', $data);
+      if($errors) json_error($errors);
+    }
+  }else
+    $error = "Failed to add exhibition - Missing Media";
+  
+  switch($changed) { // reload
+    case 'exb':
+      $art = find_object('exhibition_map', ['active' => 1, 'page_id' => ['>', 0]]);
+      break;           
+  }
+  if($error) return json_error($error);
+  $obj = get_object('exhibition_map', $id);
+  return $obj;
+}
+
+function create_ngnix(){
+  $filename = "./etc/ngnix/sites-enabled/testfile.txt";
+  $txt = "test content";
+  $myfile = fopen($filename, "w") or die("Unable to open file!");
+  fwrite($myfile, $txt);
+  fclose($myfile);
 }
 
 

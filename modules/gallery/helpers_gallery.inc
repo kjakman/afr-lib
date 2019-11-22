@@ -155,70 +155,71 @@ function gallery_get_json($collection_id, $site_id=247) {
 
   $media_ids = [];
   $mapObjs = find_objects('media_collection_map', array('media_collection_id' => $collection_id, 'active' => 1), array('fields' => ['id', 'media_id', 'type', 'description', 'artwork_id'], 'sort' => 'rank'));
-  foreach($mapObjs as $mapObj) {
-    $mapArray[$mapObj->media_id] = $mapObj->id; 
-    $get_media = get_object('media', $mapObj->media_id);
-    
-    if(!$mapObj->artwork_id){
-      $title = $collectionObj->title; 
-      $type_val = related_images_type($mapObj->type);
-      if($type_val)
-        $type = ' ('.$type_val.') ';
-        $name = "$title $type $mapObj->description";
-    }else{
-      if($get_media->original_year)
-        $year = '('.$get_media->original_year.'),';
-        $artist = user_display_name($get_media->artist_id);
-        if($artist)
-          $name = "$get_media->name $year $get_media->original_technique, by $artist";
-        else
-          $name = "$get_media->name $year $get_media->original_technique";
+  if($mapObjs){
+    foreach($mapObjs as $mapObj) {
+      $mapArray[$mapObj->media_id] = $mapObj->id; 
+      $get_media = get_object('media', $mapObj->media_id);
+      
+      if(!$mapObj->artwork_id){
+        $title = $collectionObj->title; 
+        $type_val = related_images_type($mapObj->type);
+        if($type_val)
+          $type = ' ('.$type_val.') ';
+          $name = "$title $type $mapObj->description";
+      }else{
+        if($get_media->original_year)
+          $year = '('.$get_media->original_year.'),';
+          $artist = user_display_name($get_media->artist_id);
+          if($artist)
+            $name = "$get_media->name $year $get_media->original_technique, by $artist";
+          else
+            $name = "$get_media->name $year $get_media->original_technique";
+      }
+      $get_media->comment = $name;
+      list($id, $errors) = update_object('media', $get_media, $get_media->id);
+      if($errors) json_error($errors);
+      
     }
-    $get_media->comment = $name;
-    list($id, $errors) = update_object('media', $get_media, $get_media->id);
-    if($errors) json_error($errors);
+    //$media_ids = find_objects('media_collection_map', array('media_collection_id' => $collection_id, 'active' => 1), array('fields' => 'distinct media_id', 'sort' => 'rank'));
+    $media_ids = array_keys($mapArray);
     
-  }
-  
-  //$media_ids = find_objects('media_collection_map', array('media_collection_id' => $collection_id, 'active' => 1), array('fields' => 'distinct media_id', 'sort' => 'rank'));
-  $media_ids = array_keys($mapArray);
-  
-  $artwork_link = site_full_url($siteObj)."/item/";
-  $obj_id_list = implode(',', $media_ids);
-  $base_url = $_SERVER['HTTP_HOST'];  
-  $protocol = "https";
-  $fields = array(
-    'id as media_id', 
-    'src', 
-    'path', 
-    'comment as title', 
-    'comment',
-    "concat ('$protocol', '://', '$base_url', path, 'full/', src) as href",
-    "concat ('$protocol', '://', '$base_url', path, 'small/', src) as href_small",
-    'original_currency' ,
-    'original_price'    ,
-    'original_height'   ,
-    'original_width'    ,
-    'original_url'      ,
-    'original_count'    ,
-    'original_available',
-    'original_year'     ,
-    'original_technique',
-    'digital_price'     ,
-    'digital_height'    ,
-    'digital_width'     ,
-    'height as h'    ,
-    'width as w'     ,
-    'artist_id');
-  
-  $items = find_objects('media', array('id' => $media_ids), array('sort' => "FIELD(id, $obj_id_list)", 'fields' => $fields));
-  foreach($items as &$item) {
-    $item->map_id = $map_id = $mapArray[$item->media_id];
+    $artwork_link = site_full_url($siteObj)."/item/";
+    $obj_id_list = implode(',', $media_ids);
+    $base_url = $_SERVER['HTTP_HOST'];  
+    $protocol = "https";
+    $fields = array(
+      'id as media_id', 
+      'src', 
+      'path', 
+      'comment as title', 
+      'comment',
+      "concat ('$protocol', '://', '$base_url', path, 'full/', src) as href",
+      "concat ('$protocol', '://', '$base_url', path, 'small/', src) as href_small",
+      'original_currency' ,
+      'original_price'    ,
+      'original_height'   ,
+      'original_width'    ,
+      'original_url'      ,
+      'original_count'    ,
+      'original_available',
+      'original_year'     ,
+      'original_technique',
+      'digital_price'     ,
+      'digital_height'    ,
+      'digital_width'     ,
+      'height as h'    ,
+      'width as w'     ,
+      'artist_id');
     
-    $slug = slugify($item->title);
-    $item->link = "{$artwork_link}{$slug}~{$map_id}";
+    $items = find_objects('media', array('id' => $media_ids), array('sort' => "FIELD(id, $obj_id_list)", 'fields' => $fields));
+    foreach($items as &$item) {
+      $item->map_id = $map_id = $mapArray[$item->media_id];
+      
+      $slug = slugify($item->title);
+      $item->link = "{$artwork_link}{$slug}~{$map_id}";
 
-    $item->comment = safe_text($item->comment);
+      $item->comment = safe_text($item->comment);
+    }
   }
   
   //dump($media_ids);

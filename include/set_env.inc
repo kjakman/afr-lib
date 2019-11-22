@@ -51,7 +51,7 @@ $session_hash = $_SESSION['hash']; /** need this for phpauth logout below, befor
 
 if(strpos($_SERVER['REQUEST_URI'], 'act=logout')) {
   $user_id = $_SESSION['u_id'];
-  $filename = "./afr/json/manifest_".$user_id.".json";
+  $filename = "./user/manifest/manifest_".$user_id.".json";
   if (file_exists($filename)){
     $jsonString = file_get_contents($filename);
     $datas = json_decode($jsonString, true);

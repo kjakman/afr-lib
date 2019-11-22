@@ -338,7 +338,6 @@ $(document).on("click", "#sel_add_profile1", function() {
 
 $(document).on("click", "#sel_add_website", function() {
   $link = $(this);
-  console.log("pradeepa link"+$link);
   console.log("sel add ids=", g_selections);
   var artist_id = $link.data('target_id');
   var page_id = $link.data('page');
@@ -354,6 +353,23 @@ $(document).on("click", "#sel_add_website", function() {
     bstUpdateSelection([]);
   } else {
     alert('Failed to add exhibition - Cannot add Multiple exhibitions');
+  }
+});
+
+$(document).on("click", "#sel_add_manualexb", function() {
+  $link = $(this);
+  console.log("sel add ids=", g_selections);
+  var artist_id = $link.data('target_id');
+  var page_id = $link.data('page');
+  var user_id = $link.data('user');
+  console.log("target_id=", artist_id);
+  if((artist_id)) {
+    var href = '/backend/website/' + artist_id + '/edit/manualexb?_pv=1&page_id='+ page_id +'&user_id='+user_id + '&add_manual=' + g_selections.join();
+    var $link = $("#submit");
+    console.log("Calling soft-load: href=" + href);
+    soft_load($link, "#subview-container", href);
+    g_selections = [];
+    bstUpdateSelection([]);
   }
 });
 
@@ -896,6 +912,54 @@ $(document).on("change", ".menu_type", function() {
   }); 
 });
 
+//change Hover effects
+$(document).on("change", ".hover_type", function() {
+  var hover_type = $('.hover_type:checked').val();
+  var obj_id = $('.obj_id').val();
+  $.ajax({
+    url: "/ajax.php",
+    dataType: "json",
+    data: {
+      oper: "save-minisite-style",
+      obj_id: obj_id,
+      obj_type:'minisite',
+      hover_type: hover_type
+    }
+  }); 
+});
+
+//change Hover effects
+$(document).on("change", ".art_hover", function() {
+  var art_hover = $('.art_hover:checked').val();
+  var obj_id = $('.obj_id').val();
+  $.ajax({
+    url: "/ajax.php",
+    dataType: "json",
+    data: {
+      oper: "save-minisite-style",
+      obj_id: obj_id,
+      obj_type:'minisite',
+      art_animation: art_hover
+    }
+  }); 
+});
+
+//change Hover effects
+$(document).on("change", ".hover_text", function() {
+  var hover_text = $('.hover_text:checked').val();
+  var obj_id = $('.obj_id').val();
+  $.ajax({
+    url: "/ajax.php",
+    dataType: "json",
+    data: {
+      oper: "save-minisite-style",
+      obj_id: obj_id,
+      obj_type:'minisite',
+      hover_text: hover_text
+    }
+  }); 
+});
+
 //change exhibition page layout
 $(document).on("change", ".page_layout", function() {
   var page_layout = $('.page_layout:checked').val();
@@ -1282,6 +1346,8 @@ function show_tabs(tab) {
     $('#gbe_extSite_link').show();
   }else if(tab == 'extMail'){
     $('#gbe_extMail_link').show();
+  }else if((tab == 'manualexb') || (tab == 'manualexbcontent') || (tab == 'manualexbpage') ){
+    $('#gbe_manualexb_link').show();
   }
 }
 
@@ -1293,6 +1359,7 @@ function hidetabs(){
   $("#gbe_singleExhibition_link").hide();
   $("#gbe_extSite_link").hide(); 
   $('#gbe_extMail_link').hide();
+  $("#gbe_manualexb_link").hide();
 }
 
 $(document).on("click", ".thumbCont IMG", function() { 

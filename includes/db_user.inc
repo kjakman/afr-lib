@@ -1025,11 +1025,12 @@ function fix_profile_location($app, $options) {
   return $output;
 }
 
-function update_manifestId($user_id){
-  $filename = "./afr/json/manifest_".$user_id.".json";
+function update_manifestId($user_id, $site_url){
+  //$filename = "./afr/json/manifest_".$user_id.".json";
+  $filename = "./user/manifest/manifest_".$user_id.".json";
   $jsonString = file_get_contents($filename);
   $datas = json_decode($jsonString, true);
-  $site_url = site_full_url($siteObj->id)."/profile/".$user_id;
+  $site_url = "https://new.vpatina.dci.in/profile/".$user_id;
   if($datas['start_url']){
     $datas['start_url'] = $site_url;
     $newJsonString = json_encode($datas);
@@ -1037,24 +1038,10 @@ function update_manifestId($user_id){
   }
 }
 
-function clear_manifestId($user_id){
-  $filename = "./afr/json/manifest_".$user_id.".json";
-  $jsonString = file_get_contents($filename);
-  $datas = json_decode($jsonString, true);
-  if($datas['start_url']){
-    $remove_uid = explode('/', $datas['start_url']);
-    array_pop($remove_uid);
-    $url =  implode('/', $remove_uid); 
-    $datas['start_url'] = $url;
-    $newJsonString = json_encode($datas);
-    $putdata = file_put_contents($filename, $newJsonString);
-  }
-}
-
-function create_manifest($user_id){
-  $filename = "./afr/json/manifest_".$user_id.".json";
+function create_manifest($user_id, $site_url){
+  $filename = "./user/manifest/manifest_".$user_id.".json";
   if (file_exists($filename)){
-    $update = update_manifestId($user_id);
+    $update = update_manifestId($user_id, $url);
   }else{
     $txt = '{
       "name": "Vpatina",
@@ -1072,7 +1059,7 @@ function create_manifest($user_id){
               "type": "image/png"
           }
       ],
-      "start_url": "https://new.vpatina.dci.in/profile",
+      "start_url": "'.$site_url.'/profile",
       "display": "fullscreen",
       "theme_color": "#333",
       "background_color": "#333"
@@ -1080,6 +1067,5 @@ function create_manifest($user_id){
     $myfile = fopen($filename, "w") or die("Unable to open file!");
     fwrite($myfile, $txt);
     fclose($myfile);
-    chmod($filename, 0777);
   } 
 } 

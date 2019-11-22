@@ -701,6 +701,9 @@
             elseif($obj_data[type] == 60){                                    //Single Exhibition
               $obj_data['data'] = get_sExhibitionJson();
               $obj_data['page_layout'] = get_layout($obj_data[type], 1);
+            }elseif($obj_data[type] == 80){                                    //Manual Exhibition
+              $obj_data['page_layout'] = get_layout(30, 1);
+              $obj_data['second_layout'] = get_layout(30, 2);
             }
             $obj_data['row_order'] = get_rowOrder($minisite_id);
 
@@ -926,6 +929,56 @@
       $result->message = "OK. Saved media"; 
     break;
 
+    case 'get_layout_id':
+      extract($obj_data);
+      $obj_type = $obj_data['obj_type'];
+      $obj=[];
+      if($obj_data['level_2']) $level_2 = $obj_data['level_2'] ;
+      else      $level_2 = 0;
+      if($obj_data['parent_id']){
+        if(($obj_data['level'] == 1) || ($obj_data['level'] == 3) ){
+          $get_datas = find_objects($obj_type, ['parent_id' => $parent_id], ['sort' => 'row_order asc']);
+        }elseif($obj_data['level'] == 2){
+          $get_datas = find_objects($obj_type, ['parent_id' => $parent_id, 'level1_id'=>$obj_data['level1_id']]);
+        }
+        if($get_datas){
+         $i = 0;
+         foreach($get_datas as $get_data){
+           $obj[$i]['id'] = $get_data->id; 
+           $obj[$i]['name'] = $get_data->name; 
+           $i = $i+1;
+         }
+        }
+      }
+      $result = $obj;
+    break;
+
+    case 'get_billboard_level':
+      extract($obj_data);
+
+      $obj_type = $obj_data['obj_type'];
+      $obj=[];
+
+      if($obj_data['parent_id']){
+        if($obj_data['level'] == 1){
+          $get_datas = find_objects($obj_type, ['parent_id' => $parent_id, 'level_2'=>0], ['sort' => 'row_order asc']);
+        }elseif($obj_data['level'] == 2){
+          $get_datas = find_objects($obj_type, ['parent_id' => $parent_id, 'level_2'=>$obj_data['level1_id']], ['sort' => 'row_order asc']);
+        }elseif($obj_data['level'] == 3){
+          $get_datas = find_objects('minisite_layout', ['parent_id' => $parent_id, 'level1_id' =>$obj_data['level1_id']], ['sort' => 'row_order asc']);
+        }
+        if($get_datas){
+         $i = 0;
+         foreach($get_datas as $get_data){
+           $obj[$i]['id'] = $get_data->id; 
+           $obj[$i]['name'] = $get_data->name; 
+           $i = $i+1;
+         }
+        }
+      }
+      $result = $obj;
+    break;
+
     case 'save-event':
       $obj_type = 'event';
       print_log("save-event: data:".dump($obj_data,true), 'collection', LOG_LEVEL_TEST);
@@ -991,7 +1044,7 @@
     case 'save-collection':
       $obj_type = 'media_collection';
       extract($obj_data);
-      
+      //dump($obj_data);
       $address_formatted = $obj_data['address_formatted'];
       $type_name = get_object('media_collection_type', $type, 'name');      
       
@@ -1000,7 +1053,6 @@
         if($error = check_required($obj_data, 
             ['title' => "Title", 'subtype' => "Type"]
           )) json_error("Missing: ".implode(', ', $error));
-
       } else { // later tab, gotta be an ID
         if(!$obj_id) json_error("Missing ID, not first tab");
         $obj = get_object('media_collection', $obj_id);
@@ -1070,7 +1122,10 @@
         if($address_formatted){
           $obj_data['address_formatted'] = $address_formatted;
         }
-        
+        if(($obj_data['subtype'] == 40) || ($obj_data['subtype']== 50)){
+          $obj_data['start_date'] = '';
+          $obj_data['end_date'] = '';
+        }
         list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
       } else {
         list($id, $errors) = add_object($obj_type, $obj_data);
@@ -4253,7 +4308,8 @@
       $_SESSION['hash'] = $hash;
 
       if($log_id && $user_id){
-        $update = create_manifest($user_id);
+        $url = site_full_url($siteObj->id);
+        $update = create_manifest($user_id, $url);
       } 
 
       $response = new stdClass;
@@ -5591,7 +5647,7 @@
       $i = 1;
       foreach($row as $rows) {
         $data = find_object($obj_type, ['id' => $rows]);
-        if($obj_type == 'media_collection_map')
+        if(($obj_type == 'media_collection_map') || ($obj_type == 'exhibition_map') )
           $data->rank = $i;
         else
           $data->row_order = $i;
@@ -5682,7 +5738,11 @@
     case 'single_image':
       $page_id = trim($obj_data['page_id']);
       $obj_type = 'exhibition_map';
-      $get_exhibition = find_object($obj_type, ['page_id' =>$page_id, 'active' =>1]);
+      if($obj_data['type'] == 'single')
+        $get_exhibition = find_object($obj_type, ['page_id' =>$page_id, 'active' =>1, 'type'=>'single']);
+      else
+        $get_exhibition = find_object($obj_type, ['id' =>$page_id, 'active' =>1, 'type'=>'manual']);
+
       if($page_id){
         list($delete_id, $errors) = delete_object($obj_type, $get_exhibition->id);
       }
@@ -6197,7 +6257,6 @@
         echo json_encode($result);exit;
       }
       extract($obj_data);
-
       $files = [];
       if($parent_type == 'media_collection_map' && $parent_field == 'map') { // special case
         //die("gh");
@@ -6232,9 +6291,8 @@
           $mediaObj->delete_url = "/ajax.php?oper=del&obj_type=media_collection_map&id=".$mapObj->id;
           $mediaObjs[] = $mediaObj;
         }
-
       }elseif($parent_type == 'exhibition_map' && $parent_field == 'map'){
-        $get_media = find_object('exhibition_map', ['page_id' => $parent_id, 'active'=>1]);
+        $get_media = find_object('exhibition_map', ['page_id' => $parent_id, 'active'=>1, 'type'=>'single']);
         $edit_url = "edit-url";
         $files = [];
           $mediaObj = get_object('media', $mapObj->title_image);
@@ -7510,7 +7568,7 @@
       list($id, $errors) = add_object($obj_type, $obj_data);
       break;
 
-    case 'del_custom':      
+    case 'del_custom':
       if($id){
         $get_profile = find_object($obj_type, ['id'=>$id]);
         if(($get_profile) && ($obj_type=='user_profile')){
@@ -7523,6 +7581,14 @@
         }elseif(($get_profile) && ($obj_type == 'media_collection_map') ){
           if($get_profile->media_id){
             $get_profile->media_id = '';
+          }
+        }elseif(($get_profile) && ($obj_type == 'minisite_page') ){
+          $exb_id = $_GET[exb_id];
+          if($get_profile->search){
+            $exhibition_ids = json_decode($get_profile->search, True);
+            unset( $exhibition_ids[array_search($exb_id, $exhibition_ids )] );
+            $exhibition_ids = array_values($exhibition_ids);
+            $get_profile->search = json_encode($exhibition_ids, TRUE);
           }
         }else{
           $get_profile->title_image = '';

@@ -47,11 +47,12 @@
   <link rel="StyleSheet" href="/traveler/css/styles.css?v={$version}" type="text/css" media="screen"/>
   <link rel="StyleSheet" href="/traveler/css/mystyles.css?v={$version}" type="text/css" media="screen"/>
   <link rel="StyleSheet" href="/css/site.css?ver={$version}" type="text/css" media="screen"/>
+  <link rel="StyleSheet" href="/css/hover.css?ver={$version}" type="text/css" media="screen"/>
 
   <link rel="canonical" href="{$full_path}" />
   {if ($app.user.id)}
       {$create = create_manifest($app.user.id)}
-      {$path = "/afr/json/manifest_`$app.user.id`.json"}
+      {$path = "/user/manifest/manifest_`$app.user.id`.json"}
     <link rel="manifest" href= "{$path}" />
   {/if}
 

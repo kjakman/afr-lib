@@ -672,6 +672,7 @@ var openPhotoSwipe = function(cid, index, galleryElement, disableAnimation, from
     items;
 
   var data = vp_element_data(cid);
+  console.log("pradeepa "+data);
   var plugin_id = data.plugin_id;
   var key = vp_element_key(data);
   
@@ -1469,7 +1470,9 @@ function vp_search() {
   for (var i = 0; i < len; i++) {
     var vpElement = vpElements[i];
     var data = vpElement && vpElement.getAttribute('data-data');
+
     data = JSON.parse(data);
+    console.log("Pradeepa Plugin Id "+data);
     var key = vp_element_key(data);
     
     var cid = vpElement.getAttribute('id');
