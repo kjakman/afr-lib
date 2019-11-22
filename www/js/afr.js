@@ -1,4 +1,4 @@
-console.log("loading afr.js v4");
+console.log("loading afr.js 201911200225");
 
 if(typeof g_ready_scripts == "undefined") var g_ready_scripts = [];
 g_ready_scripts.push('afr_ready');
@@ -7154,8 +7154,6 @@ function ajaxSubmit(params) {
 
           ajaxSubmit(params);
           
-          //ajaxSubmit({"form": form_id,"url": script + "?oper=" + operation,"type":"POST", "keep_messages" : true, "data":  JSON.stringify(data)});
-          //if(message) $messages.append("<br>" + message).parent().show(); // append
         } else { // no operation or redirect, last step if multi-step
           enableForm(form_id);
           //var controller = "inbox";
@@ -7164,9 +7162,15 @@ function ajaxSubmit(params) {
           
           if(reload_link && $(reload_link).length) {
             console.log('ajaxSubmit: last step, success: reload-link=' + reload_link + " len=" + $(reload_link).length);
+            
+            bootstrap_modal_hide($form); // hack to force hiding bootstrap overlay due to unknown bug
+
             $(reload_link).trigger("click"); // link which will trigger soft reload
           } else if(soft_reload && controller && $("#content_container").length) {
             console.log('ajaxSubmit: soft reload tpl=' + soft_reload + " ctrl=" + controller);
+            
+            bootstrap_modal_hide($form); // hack to force hiding bootstrap overlay due to unknown bug
+            
             template_load("#content_container", soft_reload, controller, params, {});
             
             //$(reload_link).trigger("click"); // link which will trigger soft reload
@@ -7365,6 +7369,37 @@ function close_parent($el) {
    
   return true; // will cause normal link to be handled
 }
+
+function bootstrap_modal_hide($el) {
+  var len = 0;
+  var $backdrop = $('.modal-backdrop');
+  
+  if(len = $backdrop.length) {
+    console.log("afr.js bootstrap_modal_hide() called, found " + len + " backdrops");
+
+    $backdrop.removeClass('in').addClass('out');
+    
+  }
+
+  if(!$el || $el.length) {
+    console.log("afr.js: bootstrap_modal_hide() called, but $el parameter was empty");
+    return;
+  }
+  
+  $modal = $el.closest('.modal');
+
+  console.log("afr.js: bootstrap_modal_hide() called");
+
+  if(len = $modal.length) {
+    console.log("afr.js: bootstrap_modal_hide(): found " + len + " modals, hiding modals");
+
+    $modal.modal('hide');
+    
+  } else {
+    console.log("afr.js: bootstrap_modal_hide(): no modal found");
+  }
+}
+
 
 // Begin fileuploader
 // copy relevant options from our uploader options to those for jquery-fileupload

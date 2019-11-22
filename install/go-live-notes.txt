@@ -1,0 +1,35 @@
+cd /web/sites/vpatina/test/
+rm /web/sites/vpatina/test/afr-lib/www/json/manifest_*
+
+cd /web/sites/vpatina/test/afr-lib
+git merge master
+git checkout master
+git merge dci
+
+cd /web/sites/vpatina/test/afr-app-gallery
+git merge master
+git checkout master
+git merge dci
+
+mkdir /backup/sites/vpatina/2009-10-10
+dbdump.sh
+mv /backup/db/vpatina.sql /backup/sites/vpatina/2009-10-10
+
+cd /web/sites/vpatina
+mv master /backup/sites/vpatina/2009-10-10/; mv test master
+
+
+rsync -az master/ test/
+cd /web/sites/vpatina/test/afr-lib
+git checkout dci
+
+cd /web/sites/vpatina/test/afr-app-gallery
+git checkout dci
+
+sudo chown -R vpatina:www-data /web/sites/vpatina/test/afr-lib/www/json/  
+sudo chown -R vpatina:www-data /web/sites/vpatina/test/afr-lib/smarty/
+sudo chown -R vpatina:www-data /web/sites/vpatina/test/afr-app-gallery/smarty/
+
+sudo chmod -R ug+rw /web/sites/vpatina/test/afr-lib/www/json/
+sudo chmod -R ug+rw /web/sites/vpatina/test/afr-lib/smarty/
+sudo chmod -R ug+rw /web/sites/vpatina/test/afr-app-gallery/smarty/

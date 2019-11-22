@@ -1,0 +1,8 @@
+Todo:
+
+20 November 2019:
+
+ - Contact form: to-address is always site-address (should be minisite email address for minisites)
+ 
+ 
+ 
