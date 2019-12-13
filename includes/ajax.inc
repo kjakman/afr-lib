@@ -372,11 +372,10 @@
 
     case 'save-media-related':
       extract($obj_data);
-      //dump($obj_data);
 
       if(!$obj_data[dedit])
         if($error = check_required($obj_data, 
-            ['type' => "Type", 'description' => "Description"])) 
+            ['type' => "Type"])) 
             json_error("Missing: ".implode(', ', $error));
 
       if($obj_id) {
@@ -633,8 +632,17 @@
         extract($obj_data);
         $obj_type = 'minisite';
         $obj_data['url'] = str_replace(' ', '', $obj_data['url']);
+        $obj_data['show_title'] = 1;
+        $obj_data['show_subtitle'] = 1;
+        $obj_data['show_timing'] = 0;
+        $obj_data['show_social'] = 0;
         $obj_data['font_type'] = 1;
-        $obj_data['menu_type'] = 1;
+        $obj_data['menu_type'] = 2;
+        $obj_data['hover_type'] = 1003;
+        $obj_data['art_animation'] = 1003;
+        $obj_data['icon_size'] = 10;
+        $obj_data['fixed_header'] = 0;
+        $obj_data['show_homemenu'] = 0;
         $user_id = $obj_data['user_id'];
         $duplicate = 0;
 
@@ -704,6 +712,8 @@
             }elseif($obj_data[type] == 80){                                    //Manual Exhibition
               $obj_data['page_layout'] = get_layout(30, 1);
               $obj_data['second_layout'] = get_layout(30, 2);
+            }elseif($obj_data[type] == 90){                                    //Manual Exhibition
+              $obj_data['template'] = 10;
             }
             $obj_data['row_order'] = get_rowOrder($minisite_id);
 
@@ -777,7 +787,7 @@
 
     case 'save-minisite-basic':
       extract($obj_data);
-      
+
       $obj_type = $obj_data[obj_type];
       if($obj_data[icon_type] == 1)
         $obj_data[icon_size] = 1;
@@ -5615,7 +5625,7 @@
       echo json_encode($result);exit();
       break;
 
-    case 'artist-delete':
+    case 'remove-artist':
       $artist_id = $obj_data['artist_id'];
       $page_id = $obj_data['page_id'];
       $primary = $obj_data['primary'];
@@ -5637,6 +5647,31 @@
 
       $result->success = 1;
       $result->message = "Artist will be removed from website";
+      echo(json_encode($result));
+      exit;
+      break;
+
+    case 'delete-artist':
+      $artist_id = $obj_data['artist_id'];
+      
+      if($artist_id){
+        $getUser = get_user($artist_id);
+        if($getUser){
+          $getUser->active = 0;
+          $output= update_object('user', $getUser, $getUser->id);
+        }
+
+        $getProfile = find_object('user_profile', ['user_id' => $artist_id]);
+        if($getProfile)
+          list($delete_profile, $errors)  = delete_object('user_profile', $getProfile->id);
+
+        if($errors) json_error($errors);
+      }else{
+        json_error("Missing Artist Id");
+      }
+
+      $result->success = 1;
+      $result->message = "Artist will be deleted";
       echo(json_encode($result));
       exit;
       break;

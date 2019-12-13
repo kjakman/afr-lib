@@ -2735,6 +2735,7 @@ $__CLASS_ATTRIBUTES = array(
     'technique'  => array('technique', 'str', '', AF_HIDE_LIST, 255),     
     'passepartout' =>array('passepartout' , 'yesno', 0, AF_HIDE_ADD|AF_HIDE_LIST),
     'frame'        =>array('frame'        , 'yesno', 0, AF_HIDE_ADD|AF_HIDE_LIST),
+    'presentation' => array('presentation'    , 'int', 0, AF_HIDE_LIST, 5), 
 
     'editions'      => array('editions'    , 'int', 0, AF_HIDE_LIST, 4),    
     'edition'      => array('edition'    , 'int', 0, AF_HIDE_LIST, 4),    
@@ -2749,6 +2750,7 @@ $__CLASS_ATTRIBUTES = array(
     'copyright_url'       => array('Copyright URL',      'url', '', AF_HIDE_LIST, 255),     
 
     'video_time'          => array('Video time'    ,      'time', '', AF_HIDE_LIST),
+    'video_director'      => array('Video director',      'str', '', AF_HIDE_LIST, 128),
     'video_producer'      => array('Video producer',      'str', '', AF_HIDE_LIST, 128),
     'video_narrator'      => array('Video narrator',      'str', '', AF_HIDE_LIST, 128), 
     'video_sound'         => array('Video sound'  ,       'str', '', AF_HIDE_LIST, 128), 

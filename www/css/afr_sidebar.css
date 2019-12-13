@@ -176,7 +176,7 @@ body{
     z-index: 9;
 }
 .fileupload-buttonbar:before{
-	content:'Upload an image OR attach an image already uploaded to your "Media Drive"';
+	content:'Upload an image OR attach an image already uploaded to your "Media Drive" (Maximum file size 10mb - supported file types jpg, jpeg, png)';
 	display:block;
 	width:100%;
     padding: 0px 15px 20px;

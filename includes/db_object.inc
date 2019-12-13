@@ -882,48 +882,6 @@ function getobj_id($obj_type, $user_id, $page_id){
   return $obj_id;
 }
 
-//Add default pages (Home, Artist, Exhibition, Contact)
-function add_default_page($id, $data, $options = array()) {
-  if(!data['user_id']) mydie ("add_default_pages: missing id");
-  $obj_type = 'minisite_page';
-  $minisite_id = $id;
-  $type = ['20','30'];
-  
-  foreach($type as $types){
-    if($types == '20'){
-      $page = 'artist';
-      $slug = url_safe("/".$page."/", true);
-      $data['page_layout'] = get_layout($types, 1);
-      $data['second_layout'] = get_layout($types, 2);
-      $data['row_order'] = 2;
-    } 
-    if($types == '30'){
-      $page = 'exhibition';
-      $slug = url_safe("/".$page."/", true);
-      $datas = get_exhibitionJson();
-      $data['page_layout'] = get_layout($types, 1);
-      $data['second_layout'] = get_layout($types, 2);
-      $data['row_order'] = 1;
-    } 
-    $data['type'] = $types; 
-    $data['menu_title'] = $page;
-    $data['page_title'] = $page;
-    $data['slug'] = $slug;
-    $data['data'] = ($page == 'exhibition')?$datas:'';
-    $data['minisite_id'] = $minisite_id;
-    if($data){
-      list($page_id, $errors) = add_object($obj_type, $data);
-    }else{
-      json_error("No datas found for default pages");
-    }
-    if($errors){
-      json_error($errors);
-    } 
-  }
-  
-  return array($data, $errors, $messages);
-}
-
 // update one object
 function update_object($obj_type, $data, $id, $options = array()) {
 
@@ -4985,6 +4943,19 @@ function get_exhibitionJson(){
   return (json_encode($search));
 }
 
+function gethome_exhibitionJson(){
+  $search = [];
+  $search['show_recent'] = 1;
+  $search['show_past'] = 0;
+  $search['show_current'] = 0;
+  $search['show_future'] = 0;
+  $search['show_latest'] = 1;
+  $search['show_gallery'] = 1;
+  $search['show_artfair'] = 1;
+  $search['show_others'] = 1;
+  return (json_encode($search));
+}
+
 function get_sExhibitionJson(){
   $search = [];
   $search[eType] = 1;
@@ -5081,13 +5052,14 @@ function get_page_type($type_id){
 }
 
 function get_exhibition_tpl1($layout_id){
-  if($layout_id == '101')       $template = 'timeline_view';          
+  if($layout_id == '101')       $template = 'timeline_view';
+  elseif($layout_id == '102')   $template = 'exhibitions';          
   elseif($layout_id == '103')   $template = 'masonry_3C';          
   elseif($layout_id == '104')   $template = 'masonry_4C';          
   elseif($layout_id == '105')   $template = 'masonry_3C_TS';          
-  elseif($layout_id == '106')  $template = 'masonry_4C_TS';
-  elseif($layout_id == '137')  $template = 'masonry_3CY';
-  elseif($layout_id == '138')  $template = 'masonry_4CY';
+  elseif($layout_id == '106')   $template = 'masonry_4C_TS';
+  elseif($layout_id == '137')   $template = 'masonry_3CY';
+  elseif($layout_id == '138')   $template = 'masonry_4CY';
 
   elseif($layout_id == '186')  $template = 'landscape_2C';          
   elseif($layout_id == '187')  $template = 'landscape_2C_TS';          
@@ -5285,6 +5257,155 @@ function add_single_exb($exhibition_ids, $page_id){
   if($error) return json_error($error);
   $obj = get_object('exhibition_map', $id);
   return $obj;
+}
+
+//Add default pages (Home, Artist, Exhibition, Contact)
+function add_default_page($id, $data, $options = array()) {
+  if(!data['user_id']) mydie ("add_default_pages: missing id");
+  $obj_type = 'minisite_page';
+  $minisite_id = $id;
+
+  $add_home = default_home($id, $obj_type ,$data);
+  $add_news = default_news($id, $obj_type ,$data);
+  $add_exhibition = default_exhibition($id, $obj_type ,$data);
+  $add_SelectedArt = default_selectedArt($id, $obj_type ,$data);
+  $add_about = default_about($id, $obj_type ,$data);
+  $add_cv = default_cv($id, $obj_type ,$data);
+  $add_contact = default_contact($id, $obj_type ,$data);
+  
+  return array($data, $errors, $messages);
+}
+
+function default_home($id, $obj_type ,$data){ //Multiple Exhibition - Smart filter
+  $page = 'Home';
+  $slug = url_safe("/".$page."/", true);
+  $datas = gethome_exhibitionJson();
+  $data['type'] = 30; 
+  $data['menu_title'] = $page;
+  $data['slug'] = $slug;
+  $data['data'] = $datas;
+  $data['minisite_id'] = $id;
+  $data['page_layout'] = 261;
+  $data['second_layout'] = 133;
+  $data['template'] = 10;
+  $data['show_details'] = 0;
+  $data['row_order'] = 1;
+  if(!$data)  json_error("No datas found for default Home page");
+  list($page_id, $errors) = add_object($obj_type, $data);
+  if($errors) json_error($errors);
+  return $page_id;
+}
+
+function default_news($id, $obj_type ,$data){ //Single Exhibition
+  $page = 'News';
+  $slug = url_safe("/".$page."/", true);
+  $datas = get_sExhibitionJson();
+  $data['type'] = 60; 
+  $data['menu_title'] = $page;
+  $data['slug'] = $slug;
+  $data['data'] = $datas;
+  $data['minisite_id'] = $id;
+  $data['page_layout'] = 295;
+  $data['second_layout'] = 0;
+  $data['template'] = 20;
+  $data['show_details'] = 1;
+  $data['row_order'] = 2;
+  if(!$data)  json_error("No datas found for default News page");
+  list($page_id, $errors) = add_object($obj_type, $data);
+  if($errors) json_error($errors);
+  return $page_id;
+}
+
+function default_exhibition($id, $obj_type ,$data){ //Multiple Exhibition - Smart filter
+  $page = 'Exhibitions';
+  $slug = url_safe("/".$page."/", true);
+  $datas = get_exhibitionJson();
+  $data['type'] = 30; 
+  $data['menu_title'] = $page;
+  $data['slug'] = $slug;
+  $data['data'] = $datas;
+  $data['minisite_id'] = $id;
+  $data['page_layout'] = 232;
+  $data['second_layout'] = 133;
+  $data['template'] = 20;
+  $data['show_details'] = 1;
+  $data['row_order'] = 3;
+  if(!$data)  json_error("No datas found for default Exhibitions page");
+  list($page_id, $errors) = add_object($obj_type, $data);
+  if($errors) json_error($errors);
+  return $page_id;
+}
+
+function default_selectedArt($id, $obj_type ,$data){ //Selected Art
+  $page = 'Selected Art';
+  $slug = url_safe("/".$page."/", true);
+  $data['type'] = 50; 
+  $data['menu_title'] = $page;
+  $data['slug'] = $slug;
+  $data['minisite_id'] = $id;
+  $data['page_layout'] = 165;
+  $data['second_layout'] = 0;
+  $data['template'] = 0;
+  $data['show_details'] = 1;
+  $data['row_order'] = 4;
+  if(!$data)  json_error("No datas found for default Selected Art page");
+  list($page_id, $errors) = add_object($obj_type, $data);
+  if($errors) json_error($errors);
+  return $page_id;
+}
+
+function default_about($id, $obj_type ,$data){ //About
+  $page = 'About';
+  $slug = url_safe("/".$page."/", true);
+  $data['type'] = 50; 
+  $data['menu_title'] = $page;
+  $data['slug'] = $slug;
+  $data['minisite_id'] = $id;
+  $data['page_layout'] = 156;
+  $data['second_layout'] = 0;
+  $data['template'] = 0;
+  $data['show_details'] = 1;
+  $data['row_order'] = 5;
+  if(!$data)  json_error("No datas found for default About page");
+  list($page_id, $errors) = add_object($obj_type, $data);
+  if($errors) json_error($errors);
+  return $page_id;
+}
+
+function default_cv($id, $obj_type ,$data){ //CV
+  $page = 'CV';
+  $slug = url_safe("/".$page."/", true);
+  $data['type'] = 50; 
+  $data['menu_title'] = $page;
+  $data['slug'] = $slug;
+  $data['minisite_id'] = $id;
+  $data['page_layout'] = 157;
+  $data['second_layout'] = 0;
+  $data['template'] = 10;
+  $data['show_details'] = 1;
+  $data['row_order'] = 5;
+  if(!$data)  json_error("No datas found for default About page");
+  list($page_id, $errors) = add_object($obj_type, $data);
+  if($errors) json_error($errors);
+  return $page_id;
+}
+
+function default_contact($id, $obj_type ,$data){ //Contact
+  $page = 'Contact';
+  $slug = url_safe("/".$page."/", true);
+  $data['type'] = 40; 
+  $data['menu_title'] = $page;
+  $data['slug'] = $slug;
+  $data['minisite_id'] = $id;
+  $data['page_layout'] = 118;
+  $data['second_layout'] = 0;
+  $data['template'] = 0;
+  $data['show_details'] = 0;
+  $data['row_order'] = 7;
+  if(!$data)  json_error("No datas found for default CV page");
+  list($page_id, $errors) = add_object($obj_type, $data);
+  if($errors) json_error($errors);
+  return $page_id;
 }
 
 function create_ngnix(){

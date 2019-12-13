@@ -520,7 +520,7 @@ $(document).on("click", '#soft_delete', function(){
     url: "/ajax.php",
     dataType: "json",
     data: {
-      oper: "artist-delete",
+      oper: "remove-artist",
       artist_id: artist_id,
       page_id: page_id, 
       primary: primary,
@@ -1205,6 +1205,7 @@ function gallery_backend_ready() {
   $(document).on("change",'#gbe_loc_id',function() {
     var $cb = $(this);
     var val = $cb.val();
+    console.log("test "+val);
     if(val == 0) {
       $("#gbe_location").show();
     } else {
@@ -1345,8 +1346,10 @@ function show_tabs(tab) {
     $('#gbe_extSite_link').show();
   }else if(tab == 'extMail'){
     $('#gbe_extMail_link').show();
-  }else if((tab == 'manualexb') || (tab == 'manualexbcontent') || (tab == 'manualexbpage') ){
+  }else if((tab == 'manualexb') || (tab == 'manualexbcontent') || (tab == 'manualexbpage') || (tab == 'manualexblayout') ){
     $('#gbe_manualexb_link').show();
+  }else if(tab == 'extlink'){
+    $('#gbe_extlink').show();
   }
 }
 
@@ -1358,6 +1361,7 @@ function hidetabs(){
   $("#gbe_singleExhibition_link").hide();
   $("#gbe_extSite_link").hide(); 
   $('#gbe_extMail_link').hide();
+  $('#gbe_extlink').hide();
   $("#gbe_manualexb_link").hide();
 }
 
