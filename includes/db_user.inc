@@ -1041,7 +1041,7 @@ function update_manifestId($user_id, $site_url){
 function create_manifest($user_id, $site_url){
   $filename = "./user/manifest/manifest_".$user_id.".json";
   if (file_exists($filename)){
-    $update = update_manifestId($user_id, $url);
+    $update = update_manifestId($user_id, $site_url);
   }else{
     $txt = '{
       "name": "Vpatina",

@@ -4318,8 +4318,8 @@
       $_SESSION['hash'] = $hash;
 
       if($log_id && $user_id){
-        $url = site_full_url($siteObj->id);
-        $update = create_manifest($user_id, $url);
+        $site_url = site_full_url($siteObj->id);
+        $update = create_manifest($user_id, $site_url);
       } 
 
       $response = new stdClass;
