@@ -397,6 +397,7 @@
 
     case 'save-profile':
        extract($obj_data);
+       //dump($obj_data);
        $id = $obj_data[obj_id];
        $user_id = $obj_data[user_id];
        $contact = $obj_data[contact];
@@ -787,7 +788,7 @@
 
     case 'save-minisite-basic':
       extract($obj_data);
-
+      
       $obj_type = $obj_data[obj_type];
       if($obj_data[icon_type] == 1)
         $obj_data[icon_size] = 1;
@@ -795,6 +796,13 @@
       if($obj_data[show_mail]){
         if(!$obj_data[mailtype] || !$obj_data[u_key] || !$obj_data[u_id] || !$obj_data[b_id])
           json_error("Please enter the required fields");
+      }
+
+      if($obj_data[domain]){
+        $obj_data[domain] = str_replace('https://', '', $obj_data[domain]);
+        $obj_data[domain] = str_replace('http://', '', $obj_data[domain]);
+        $obj_data[domain] = str_replace('www.', '', $obj_data[domain]);
+        $obj_data[domain] = rtrim($obj_data[domain], '/');
       }
       $data = [];
       $data[show_mail] = $obj_data[show_mail] ? $obj_data[show_mail] : 0;
@@ -804,7 +812,7 @@
       $data[b_id] = $obj_data[b_id] ? $obj_data[b_id] : 0;
 
       $obj_data['footer_data'] = json_encode($data);
-      
+
       if($obj_id) {
         list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
         print_log("save-ministe: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
@@ -7537,7 +7545,7 @@
     $jsonObj->plugin_id = $plugin_id;
     
     $output = json_encode($jsonObj);
-    
+  
     $jsonp = $_GET['jsoncallback'];
     header('Content-Type: application/x-javascript; charset=utf-8');
     echo $jsonp ? $_GET['jsoncallback']."($output)" : $output;exit();

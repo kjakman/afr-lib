@@ -57,7 +57,7 @@ function user_register($username, $password, $profileData=[], $params=[]) {
   print_log("New user:".dump($result,true), 'user', LOG_LEVEL_TEST);
 
   print_log("New profile".dump($profileData,true), 'user', LOG_LEVEL_TEST);
-  
+
   list($profile_id, $errors) = add_object('user_profile', $profileData);
   if($errors) return array(0, $errors); /** Failed to add user profile - but user was added - not good */ 
   
@@ -1025,7 +1025,7 @@ function fix_profile_location($app, $options) {
   return $output;
 }
 
-function update_manifestId($user_id, $site_url){
+function update_manifestId($user_id, $site_url=''){
   //$filename = "./afr/json/manifest_".$user_id.".json";
   $filename = "./user/manifest/manifest_".$user_id.".json";
   $jsonString = file_get_contents($filename);
@@ -1041,7 +1041,7 @@ function update_manifestId($user_id, $site_url){
 function create_manifest($user_id, $site_url){
   $filename = "./user/manifest/manifest_".$user_id.".json";
   if (file_exists($filename)){
-    $update = update_manifestId($user_id, $site_url);
+    $update = update_manifestId($user_id, $site_ur='');
   }else{
     $txt = '{
       "name": "Vpatina",

@@ -884,8 +884,7 @@ function getobj_id($obj_type, $user_id, $page_id){
 
 // update one object
 function update_object($obj_type, $data, $id, $options = array()) {
-
-  if(!$id) mydie ("update_object $obj_type: missing id");
+  if(!$id) mydie ("update_object $obj_type: missingg id");
 
   $options['id'] = $id;
     
@@ -1939,7 +1938,7 @@ function save_object_query($obj_type, $data, $options = array()) {
       if(strlen($att_val)) {
         $date_format = $att_type == 'datetime' ? 'Y-m-d H:i:s' : 'Y-m-d';
         $valid = $att_type == 'datetime' && is_datetime($att_val) || $att_type == 'date' && is_date($att_val);
-        if(!$valid) $att_val = date($date_format, strtotime($att_val));
+        //if(!$valid) $att_val = date($date_format, strtotime($att_val));
       
         $pattern = "/([+-]?\d+) (DAY|HOUR)/"; // integer
         if(preg_match($pattern, $att_val, $m)) {
@@ -4981,6 +4980,17 @@ function get_artwork_type($type){
   return $text;
 }
 
+function get_artwork_presentation($presentation){
+    if($presentation == '10') $text = "";
+    elseif($presentation == '20') $text = "Free Standing";
+    elseif($presentation == '30') $text = "Pedestal Mounted";
+    elseif($presentation == '40') $text = "Wall Mounted";
+    elseif($presentation == '50') $text = "Hanging";
+    elseif($presentation == '60') $text = "Installation";
+
+    return $text;
+}
+
 function get_layout($type, $subtype){
   $data = find_object('minisite_layout', ['type' => $type, 'subtype' => $subtype ,'active' => 1, 'row_order' => 1]);
   return $data->id;
@@ -5052,6 +5062,7 @@ function get_page_type($type_id){
 }
 
 function get_exhibition_tpl1($layout_id){
+
   if($layout_id == '101')       $template = 'timeline_view';
   elseif($layout_id == '102')   $template = 'exhibitions';          
   elseif($layout_id == '103')   $template = 'masonry_3C';          
@@ -5060,6 +5071,7 @@ function get_exhibition_tpl1($layout_id){
   elseif($layout_id == '106')   $template = 'masonry_4C_TS';
   elseif($layout_id == '137')   $template = 'masonry_3CY';
   elseif($layout_id == '138')   $template = 'masonry_4CY';
+
 
   elseif($layout_id == '186')  $template = 'landscape_2C';          
   elseif($layout_id == '187')  $template = 'landscape_2C_TS';          

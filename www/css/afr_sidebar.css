@@ -168,18 +168,31 @@ body{
 }
 .custom_button_float{
 	position: absolute;
-    bottom: 26px;
+    bottom: 66px;
     left: 125px;
     z-index: 999;
 }
 .popup_open .custom_button_float, .popup_open .note-toolbar{
     z-index: 9;
 }
+.fileupload-buttonbar{
+	overflow:hidden;
+}
 .fileupload-buttonbar:before{
-	content:'Upload an image OR attach an image already uploaded to your "Media Drive" (Maximum file size 10mb - supported file types jpg, jpeg, png)';
+	content:'Upload an image OR attach an image already uploaded to your "Media Drive" ';
 	display:block;
 	width:100%;
     padding: 0px 15px 20px;
+}
+.fileupload-buttonbar:after{
+	content:'Maximum file size 10mb - supported file types jpg, jpeg, png';
+	display:block;
+	width:100%;
+    padding: 0px 15px 20px;
+	font-weight:900;
+	clear:none;
+	float: left;
+	color: #000;
 }
 .selected_art .fileupload-buttonbar:before{
 	display:none;

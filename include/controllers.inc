@@ -435,12 +435,13 @@ function controller_minisite($app, $options = []) {
   switch($page) {
     case ($page == 'artist' || $page == 'artist_layout1' || $page == 'artist_layout2' || $page == 'artist_layout3' || $page == 'artist_layout4' || $page == 'artist_layout5' || $page == 'artist_layout6' || $page == 'artist_masonry' || $page == 'artist_hanging' || $page == 'artist_standing' || $page == 'artist_masonryExt' || $page == 'artist_layout7' || $page == 'artist_layout8' || $page == 'artist_layout9' || $page == 'artist_layout10'): 
       $artist = "";
+      
       if($bioartist){
         $scope->artist = $artist = $bioartist;
         $artist_id = $artist->user_id;
       }else{
         $slug = $parts[1];
-        $artist = $artists[$slug];
+        $artist = $artists[$slug]? $artists[$slug] : $artists1[$slug];
         $scope->artist = $artist;
         $artist_id = $artist->id;
       }
