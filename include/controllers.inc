@@ -42,6 +42,7 @@ function controller_minisite($app, $options = []) {
 
   // To simplify paths
   $get_tpl = get_template($parts, $minisite_id);
+  
   if($get_tpl['page']) $page = $get_tpl['page'];
   if($get_tpl['tpl']) $tpl = $get_tpl['tpl'];
 
@@ -76,7 +77,10 @@ function controller_minisite($app, $options = []) {
   $se_title = $minisite;
   $se_description = $minisite;
 
+  print_log("Returned type=$type page=$page tpl: $minisite_id".dump($get_tpl,true), 'minisite', LOG_LEVEL_TEST);  
+
   switch($type) {
+
   /**
   case 'artist':
     $search = ['user_id' => $user_id, 'active' => 1, 'type' => COLLECTION_TYPE_EXHIBITION, 'subtype' => 40, 'show_website' => 1];
@@ -103,12 +107,19 @@ function controller_minisite($app, $options = []) {
     
     break;
   **/  
-  case ($type == 'gallery' || $type == 'artist'):
+  // case ($type == 'gallery' || $type == 'artist'):
+
+  case 'gallery':
+  case 'artist':
   default:
+    print_log("kj got here page=$page type=$type", 'minisite', LOG_LEVEL_TEST);
+  
     if($page == 'artists' || $page == 'artist') {
       $scope->page_slug = ($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
       $page_slug = ($parts[0] != '') ? "/".$parts[0]."/" :  "/".$get_tpl['get_slug']."/" ; 
-      
+
+
+
       $search = find_object('minisite_page', ['user_id' => $user_id, 'active' => 1, 'minisite_id' => $minisite_id,'slug' => $page_slug]);
       $page_id = $search->id;
       $colSearch = ['user_id' => $user_id, 'id' => $page_id, 'minisite_id' => $minisite_id, 'active' => 1 ];
@@ -155,7 +166,7 @@ function controller_minisite($app, $options = []) {
         elseif($minisite_pageObj->second_layout == 208)       $tpl = $page = 'artist_layout9';
         elseif($minisite_pageObj->second_layout == 209)       $tpl = $page = 'artist_layout10';
       }
-    }
+   }
    
     if($page == 'exhibitions' || $page == 'exhibition') {
 
@@ -290,6 +301,7 @@ function controller_minisite($app, $options = []) {
           }
         }        
       } 
+
 
       if($page == 'manualexbs' || $page == 'manualexb'){
         $scope->page_slug = $slugstr =($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
@@ -672,6 +684,7 @@ function controller_minisite($app, $options = []) {
         $type = $minisitePageObj->type;
         $scope->debug = html_h3("Found custom minisite page");
         $scope->debug .= "Name: {$minisitePageObj->menu_title} ID: {$minisitePageObj->id}) Tpl: {$tpl}";        
+        
       } else {
         return scope_error($app, "Page {$page} not found", 'minisites/404');
       }
@@ -682,7 +695,6 @@ function controller_minisite($app, $options = []) {
   $docroot = docroot(false);
   $custom_filename = "{$docroot}/user/minisite/{$minisite}/pages/{$page}/default.html";
   if(is_file($custom_filename)) {
-    //print_log("page=$page path={$path} slug={$slug} subview={$subview} tpl={$pageObj->template}".dump($parts,true), 'minisite', LOG_LEVEL_TEST);
     list($custom_header, $custom_content) = site_parse_pagefile($custom_filename);
     $scope->headers = $custom_header;
     $scope->custom_content = $custom_content;
@@ -5955,8 +5967,6 @@ function controller_gallery_collections($app, $options = []) {
     $app->page->title = $title;    
     
   } else { /** find collections */
-    //$scope->error = "got here type=$type artist_id=$artist_id".dump($options, true);
-    //return;
     
     if($items = $scope->items) { // my-vpatina
       //$myCollectionObj = gallery_find_user_collection($siteObj, $u_id);
