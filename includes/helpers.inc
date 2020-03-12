@@ -3706,6 +3706,16 @@ function full_domain() {
 }
 */
 
+// return protocol hostname 
+function full_domain($trailing_slash = false) {
+  //$pu = parse_url($_SERVER['REQUEST_URI']);
+  //return $pu["scheme"] . "://" . $pu["host"];
+  $host = $_SERVER['HTTP_HOST'];
+  $protocol=$_SERVER['PROTOCOL'] = isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) ? 'https' : 'http';
+  return "$protocol://$host".($trailing_slash ? "/" : "");
+}
+
+
 // takes an assoc array (a=>1, b=>2, c=>3) or object returns string like a=1;b=2;c=3
 // no quotes added around value (must do in passed array)
 // by default, do not quote variables beginning with $
