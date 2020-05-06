@@ -28,6 +28,7 @@ function controller_minisite($app, $options = []) {
   $scope->minisite_type = $type = $msObj->type;
   $font_type = $msObj->font_type;
   $scope->fonts= $font_styles = find_object('minisite_font', ['id' => $font_type, 'active' => 1]);
+  $scope->minisite_page_type = $minisite_page_type = find_objects('minisite_page_type', ['active'=>1], ['sort'=>'row_order']);
   $scope->menus = $menus = get_objects('minisite_menu');
   $scope->hover = $hover = get_objects('minisite_hover');
   

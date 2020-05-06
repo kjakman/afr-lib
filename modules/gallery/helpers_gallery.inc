@@ -154,12 +154,13 @@ function gallery_get_json($collection_id, $site_id=247) {
   print_log("cid: $curator_id name: $curator_name email: $curator_email".dump($curatorObj,true), 'gallery', LOG_LEVEL_ALWAYS);
 
   $media_ids = [];
-  $mapObjs = find_objects('media_collection_map', array('media_collection_id' => $collection_id, 'active' => 1), array('fields' => ['id', 'media_id', 'type', 'description', 'artwork_id'], 'sort' => 'rank'));
+  $mapObjs = find_objects('media_collection_map', array('media_collection_id' => $collection_id, 'active' => 1), array('fields' => ['id', 'media_id', 'type', 'description', 'artwork_id', 'media_id', 'artist_id'], 'sort' => 'rank'));;
   if($mapObjs){
     foreach($mapObjs as $mapObj) {
+     if($mapObj->media_id != '0' && $mapObj->artist_id != '0'){
       $mapArray[$mapObj->media_id] = $mapObj->id; 
       $get_media = get_object('media', $mapObj->media_id);
-      
+      //dump($mapObj);die;
       if(!$mapObj->artwork_id){
         $title = $collectionObj->title; 
         $type_val = related_images_type($mapObj->type);
@@ -177,8 +178,9 @@ function gallery_get_json($collection_id, $site_id=247) {
       }
       $get_media->comment = $name;
       list($id, $errors) = update_object('media', $get_media, $get_media->id);
-      if($errors) json_error($errors);
       
+      if($errors) json_error($errors);
+     }
     }
     //$media_ids = find_objects('media_collection_map', array('media_collection_id' => $collection_id, 'active' => 1), array('fields' => 'distinct media_id', 'sort' => 'rank'));
     $media_ids = array_keys($mapArray);

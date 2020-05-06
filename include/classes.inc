@@ -72,9 +72,9 @@ $__CLASSES = array(
     'comment' =>              array(USER_LEVEL_USER,   'content', '', '', 0, 'title', 'created desc', ''),
     'newsletter' =>           array(USER_LEVEL_USER,   'content', '', '', 0, 'email_address', 'created desc', ''),
     'article_type' =>         array(USER_LEVEL_USER,   'content', '', '', NF_CACHE_ASSOC, '', '', ''),
-    'minisite' =>             array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'name', '', ''),
-    'minisite_page_type' =>   array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'name', '', ''),
-    'minisite_page' =>        array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'page_name', '', ''),
+    'minisite' =>             array(USER_LEVEL_ADMIN,  'site', '', '', 0, 'name', '', ''),
+    'minisite_page_type' =>   array(USER_LEVEL_ADMIN,  'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'name', '', ''),
+    'minisite_page' =>        array(USER_LEVEL_ADMIN,  'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'page_name', '', ''),
                                                                              
 
 // user                            
@@ -2064,40 +2064,7 @@ $__CLASS_ATTRIBUTES = array(
 
   "minisite" => 
   array(
-     'id'=>                 array('ID',                 'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 3),
-     'created'=>            array('Created',            'datetime', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT),
-     'timestamp'=>          array('Timestamp',          'timestamp', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT, 14 ),
-     'active'  =>           array('Active?',            'bool',     1,  AF_HIDE_ADD, 0),
-     'site_id'=>            array('Site',               'link',  0, AF_SEARCHABLE|AF_HIDE, 'site'),
-     'client_id'=>          array('Client',             'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
-     'user_id' =>           array('User ID',            'link', ATT_DEFAULT_USER_ID, 0, 'user'),
-     'admin_users' =>       array('Admin Users',        'json', '', 0),
-     'type'=>               array('Type',               'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 32 ),
-     'name'=>               array('Name',               'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
-     'sub_title'=>          array('Sub Title',          'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
-     'description'=>        array('Description',          'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
-     'url'=>                array('Url',                'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 64 ),
-     'domain'=>             array('Domain',             'str',  '', AF_SEARCHABLE, 128 ),
-     'email_address'=>      array('Email',              'email',  '', AF_SEARCHABLE|AF_HIDE_LIST, 128),
-     'languages'=>          array('Languages',          'json', 'en', AF_OBLIGATORY, 'language', array('active' => 1)),
-     'default_language'=>   array('Language',               'valSelect', 'en', AF_OBLIGATORY|AF_SEARCHABLE, $langArray),
-     'data' =>              array('Data',               'json', '', 0),
-     'template' =>          array('Template',           'str', '', 128),
-     'logo'   =>            array('Logo',               'image',   '', AF_HIDE_LIST, 128),
-     'logo_small' =>        array('Logo - Small',       'image',   '', AF_HIDE_LIST, 128),
-
-     'text_color'=>         array('Text Color',         'color',    '', AF_HIDE_LIST, 6),
-     'bg_color'=>           array('BG Color',           'color',    '', AF_HIDE_LIST, 6),
-     'theme_color1'=>       array('Theme Color 1',      'color',    '', AF_HIDE_LIST, 6),
-     'theme_color2'=>       array('Theme Color 2',      'color',    '', AF_HIDE_LIST, 6),
-     'font'=>               array('Font',               'str',  '', 0, 64 ),
-     'css'=>                array('Css',                'str',  '', 0, 64 ),
-     'location_id'=>        array('Location',           'link',   0, AF_HIDE_ADD, 'location'),
-     'footer'=>             array('Footer',             'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 128 ),
-     'show_title'  =>       array('Show title',         'bool',     1,  AF_HIDE_ADD, 0),
-     'show_subtitle'  =>    array('Show subtitle',      'bool',     1,  AF_HIDE_ADD, 0),
-     'show_timing'  =>      array('Show timing',        'bool',     1,  AF_HIDE_ADD, 0),
-     'show_social'  =>      array('Show social',        'bool',     1,  AF_HIDE_ADD, 0),
+     
    ),
 
    "minisite_page_type" => 

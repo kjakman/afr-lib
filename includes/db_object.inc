@@ -884,14 +884,13 @@ function getobj_id($obj_type, $user_id, $page_id){
 
 // update one object
 function update_object($obj_type, $data, $id, $options = array()) {
+  //print_r($data);exit;
   if(!$id) mydie ("update_object $obj_type: missingg id");
 
   $options['id'] = $id;
     
   list($id, $errors, $messages) = save_object_query($obj_type, $data, $options);
-
   if($debug) print_log("Update $obj_type $id:".caller_stack().dump($data, true), 'reservation', LOG_LEVEL_TEST);
-
   return array($id, $errors, $messages);
 }
 
@@ -1223,6 +1222,7 @@ function object_cache_store($obj_type, $id, $obj) {
 }
 
 function get_object($obj_type, $id, $selected_fields='', $options=array()) {
+ // print_r($selected_fields);die;
   if($options && !is_array($options)) die("get_object: options not array");
   
   if(!$id) {
@@ -1234,7 +1234,6 @@ function get_object($obj_type, $id, $selected_fields='', $options=array()) {
     $fields = is_array($selected_fields) ? $selected_fields : explode(',', $selected_fields);
     $field_count = count($fields);
   }
-  
   $classFlags = get_object_flags($obj_type);
   if($classFlags & NF_CACHE_ASSOC) {
     if($cachedObj = object_cache_fetch_assoc($obj_type, $id, $fields)) {
@@ -1743,6 +1742,7 @@ function get_object_value_query($obj_type, $target_fields, $filters="", $sort=""
 
 // function save_object_query($obj_type, $data, $id=0, $parent_id=0, $preset_id=0, $parent_type='') {
 function save_object_query($obj_type, $data, $options = array()) {
+  //print_r($data);exit;
   $time_start = microtime(true);
   $debug = $options['debug_query'] ? 1 : 0;
   
@@ -1777,7 +1777,7 @@ function save_object_query($obj_type, $data, $options = array()) {
   }
   
   $orgObj = $id ? get_object($obj_type, $id) : NULL;
-
+  //print_r($orgObj);exit;
   $new = $id ? false : true;
 
   if(is_object($data)) $data = obj2array($data);
@@ -1791,7 +1791,7 @@ function save_object_query($obj_type, $data, $options = array()) {
   }
 
   $fields = get_object_attributes($obj_type, 0);
-      
+ // print_r($fields);exit;    
   $obj_keys = array_keys($fields);
   
 

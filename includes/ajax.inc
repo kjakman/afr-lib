@@ -788,7 +788,7 @@
 
     case 'save-minisite-basic':
       extract($obj_data);
-      
+      //print_r($obj_data);exit;
       $obj_type = $obj_data[obj_type];
       if($obj_data[icon_type] == 1)
         $obj_data[icon_size] = 1;
@@ -812,7 +812,7 @@
       $data[b_id] = $obj_data[b_id] ? $obj_data[b_id] : 0;
 
       $obj_data['footer_data'] = json_encode($data);
-
+      
       if($obj_id) {
         list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
         print_log("save-ministe: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
