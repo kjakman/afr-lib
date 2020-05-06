@@ -1025,12 +1025,12 @@ function fix_profile_location($app, $options) {
   return $output;
 }
 
-function update_manifestId($user_id, $site_url=''){
+function update_manifestId($user_id, $site_url){
   //$filename = "./afr/json/manifest_".$user_id.".json";
   $filename = "./user/manifest/manifest_".$user_id.".json";
   $jsonString = file_get_contents($filename);
   $datas = json_decode($jsonString, true);
-  $site_url = "https://new.vpatina.dci.in/profile/".$user_id;
+  $site_url = $site_url."/".$user_id;
   if($datas['start_url']){
     $datas['start_url'] = $site_url;
     $newJsonString = json_encode($datas);
@@ -1038,10 +1038,13 @@ function update_manifestId($user_id, $site_url=''){
   }
 }
 
-function create_manifest($user_id, $site_url){
+function create_manifest($user_id, $site_url = ''){
+  if(!$user_id) return '';
   $filename = "./user/manifest/manifest_".$user_id.".json";
+  $site_url = full_domain();
+
   if (file_exists($filename)){
-    $update = update_manifestId($user_id, $site_ur='');
+    $update = update_manifestId($user_id, $site_url);
   }else{
     $txt = '{
       "name": "Vpatina",

@@ -1669,7 +1669,7 @@ var baseUrl = getUrl.protocol + "//" + getUrl.host;
 var g_pswp = false;
 var g_pswp_index = -1;
 var g_site_url = baseUrl;
-//var g_site_url = 'https://www.vpatina.com';
+var g_host_url = 'https://www.vpatina.com';
 var g_aid = 10;
 var g_site_id = '247';
 var g_user_id = '';
@@ -2588,7 +2588,7 @@ var openPhotoSwipe = function(cid, index, galleryElement, disableAnimation, from
           }, {
               id: 'email',
               label: 'E-mail',
-              url: g_site_url + '/share/?url={{image_url}}&obj_type=media_collection_map&obj_id={{obj_id}}&_aid=10&template=mail/mail-artwork.html&controller=gallery_artworks'
+              url: g_host_url + '/share/?url={{image_url}}&obj_type=media_collection_map&obj_id={{obj_id}}&_aid=10&template=mail/mail-artwork.html&controller=gallery_artworks'
           }
           //{id:'download', label:'Download image', url:'{{raw_image_url}}', download:true}
       ],
@@ -3122,7 +3122,7 @@ function vp_contact_link(cid) {
       var obj_type = 'media_collection_map';
   var obj_id = item.map_id ? item.map_id : cid.split('_')[1];
 
-  var link = "/share/?recipient=" + encodeURIComponent(recipient) + "&subject=" + encodeURIComponent(subject);
+  var link = g_host_url + "/share/?recipient=" + encodeURIComponent(recipient) + "&subject=" + encodeURIComponent(subject);
   link = link + "&obj_type=" + obj_type + "&obj_id=" + obj_id;
 
   if (g_user_id && vpdata.user) {
@@ -3218,7 +3218,8 @@ function vp_full_link(link) {
   var sharer_id = g_sharer_id ? g_sharer_id : 1;
   var tail = "_aid=" + sharer_id;
   var full_link = link.indexOf('?') > -1 ? link + "&" + tail : link + "?" + tail;
-  return g_site_url + full_link;
+  var domain_link = full_link.indexOf('http') > -1 ? full_link : g_site_url + full_link;
+  return domain_link;
 }
 
 function vp_iframe(link) {
