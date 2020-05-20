@@ -155,18 +155,23 @@ function gallery_get_json($collection_id, $site_id=247) {
 
   $media_ids = [];
   $mapObjs = find_objects('media_collection_map', array('media_collection_id' => $collection_id, 'active' => 1), array('fields' => ['id', 'media_id', 'type', 'description', 'artwork_id'], 'sort' => 'rank'));
+  $vpatinaSiteUrl = "https://vpatina.com";
   if($mapObjs){
     foreach($mapObjs as $mapObj) {
       $mapArray[$mapObj->media_id] = $mapObj->id; 
+      $mapArtworkArray[$mapObj->media_id] = $mapObj->artwork_id; 
       $get_media = get_object('media', $mapObj->media_id);
       
       if(!$mapObj->artwork_id){
+        $artwork_link = "{$vpatinaSiteUrl}/item/{$mapObj->media_id}/";
         $title = $collectionObj->title; 
         $type_val = related_images_type($mapObj->type);
         if($type_val)
           $type = ' ('.$type_val.') ';
           $name = "$title $type $mapObj->description";
       }else{
+        $artwork_link = "${vpatinaSiteUrl}/artwork/{$mapObj->artwork_id}/";
+
         if($get_media->original_year)
           $year = '('.$get_media->original_year.'),';
           $artist = user_display_name($get_media->artist_id);
@@ -183,7 +188,7 @@ function gallery_get_json($collection_id, $site_id=247) {
     //$media_ids = find_objects('media_collection_map', array('media_collection_id' => $collection_id, 'active' => 1), array('fields' => 'distinct media_id', 'sort' => 'rank'));
     $media_ids = array_keys($mapArray);
     
-    $artwork_link = site_full_url($siteObj)."/item/";
+    
     $obj_id_list = implode(',', $media_ids);
     $base_url = $_SERVER['HTTP_HOST'];  
     $protocol = "https";
@@ -214,9 +219,11 @@ function gallery_get_json($collection_id, $site_id=247) {
     $items = find_objects('media', array('id' => $media_ids), array('sort' => "FIELD(id, $obj_id_list)", 'fields' => $fields));
     foreach($items as &$item) {
       $item->map_id = $map_id = $mapArray[$item->media_id];
-      
+      $item->artwork_id = $artwork_id = $mapArtworkArray[$item->media_id];
+
       $slug = slugify($item->title);
-      $item->link = "{$artwork_link}{$slug}~{$map_id}";
+      //$item->link = "{$artwork_link}{$slug}~{$map_id}";
+      $item->link =  $artwork_id  ? "https://www.vpatina.com/artwork/{$obj_id}/{$slug}-{$artwork_id}?plugin" : "{$artwork_link}{$slug}~{$map_id}";
 
       $item->comment = safe_text($item->comment);
     }
@@ -525,6 +532,8 @@ function gallery_getartwork_json($artwork_id, $site_id=247) {
     array_unshift($media_ids, $artworkObj->title_image);
 
   $artwork_link = site_full_url($siteObj)."/item/";
+
+
   $obj_id_list = implode(',', $media_ids);
   $base_url = $_SERVER['HTTP_HOST'];  
   $protocol = "https";

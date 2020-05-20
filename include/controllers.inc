@@ -4503,7 +4503,7 @@ function controller_gallery_backend($app, $options = []) {
   $__header->scripts[] = "/afr/bower/bootstrap-confirmation2/bootstrap-confirmation.js";    
   $__header->scripts[] = "/afr/js/event-form.js?ver={$app->version}";    
   
-  $__header->scripts[] = "/afr/bower/jquery.are-you-sure/jquery.are-you-sure.js";
+  //$__header->scripts[] = "/afr/bower/jquery.are-you-sure/jquery.are-you-sure.js";
 
   $__header->scripts[] = "/afr/js/afr_gallery_backend.js?ver={$app->version}";
 
@@ -4511,7 +4511,7 @@ function controller_gallery_backend($app, $options = []) {
 
   $__header->scripts[] = "/afr/bower/tag-it/js/tag-it.min.js";
   $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
-  //$__header->scripts[] = "/afr/bower/table-export/jquery.base64.js?v=1.11";
+  $__header->scripts[] = "/afr/bower/table-export/jquery.base64.js?v=1.11";
   $__header->scripts[] = "/afr/js/jquery.base64.js"; /** Fix: https://github.com/wenzhixin/bootstrap-table/issues/189 */
   $__header->scripts[] = "/afr/bower/table-export/tableExport.js?v=1.11";
   $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js?v=1.11";

@@ -600,8 +600,9 @@ var formChangedFlag = false;
 window.onbeforeunload = confirmExit;
 
 function confirmExit() {
+  return;
   if (!needToConfirm || !formChangedFlag) return;
-  return "You have attempted to leave this page. If you have made any changes to the fields without Saving, your changes will be lost. Are you sure you want to exit this page?";
+  return "You have attempted to leave this page. If you have madeAre you sure any changes to the fields without Saving, your changes will be lost. Are you sure you want to exit this page?";
 }
 
 function nl2br(str) {

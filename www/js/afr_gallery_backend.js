@@ -1197,7 +1197,7 @@ function gbe_confirm_callback() {
 function gallery_backend_ready() {
   //console.log("gallery_backend_ready v2.1 ARE YOU SURE");
 
-  $('form').areYouSure( {'silent':true} );
+  //$('form').areYouSure( {'silent':true} );
   
   //$('form').trigger('reinitialize.areYouSure');
   
