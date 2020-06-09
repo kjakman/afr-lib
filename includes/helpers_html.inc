@@ -925,7 +925,6 @@ function jquery_file_uploader($id='fileupload', $val='', $options = array(), $co
   if($class = $options['class']) $classes[] = $class;
   $output = html_div($error.html_div('', implode(' ', $classes), $container_options), 'jquery-file-uploader-container'); //."id=$id".dump($options, true);
   //$output .= dump($options, true);
-
   //print_log("jquery_file_uploader: options=".dump($options, true), 'upload', LOG_LEVEL_TEST);
   
   return $output;

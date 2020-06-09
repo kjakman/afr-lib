@@ -788,8 +788,9 @@
 
     case 'save-minisite-basic':
       extract($obj_data);
-      //print_r($obj_data);exit;
+      //print_r($obj_data[url_slug]);exit;
       $obj_type = $obj_data[obj_type];
+     // print_r($obj_type);
       if($obj_data[icon_type] == 1)
         $obj_data[icon_size] = 1;
 
@@ -799,12 +800,34 @@
       }
 
       if($obj_data[domain]){
+
+        $prot = $obj_data[domain];
+        $port_needle = 'http://';
+        if (strpos($prot,$port_needle) !== false) {
+           $obj_data[url_slug] = $port_needle;
+        }
+
+        $prot_https = $obj_data[domain];
+        $port_https_needle = 'https://';
+        if (strpos($prot_https,$port_https_needle) !== false) {
+           $obj_data[url_slug] = $port_https_needle;
+        }
+        
+        $www = $obj_data[domain];
+        $www_needle = 'http://www.';
+        if (strpos($www,$www_needle) !== false) {
+          $obj_data[url_slug] = $www_needle;
+        }
+
         $obj_data[domain] = str_replace('https://', '', $obj_data[domain]);
         $obj_data[domain] = str_replace('http://', '', $obj_data[domain]);
         $obj_data[domain] = str_replace('www.', '', $obj_data[domain]);
         $obj_data[domain] = rtrim($obj_data[domain], '/');
       }
+
+
       $data = [];
+      $data[action_url] = $obj_data[action_url] ? $obj_data[action_url] : 0;
       $data[show_mail] = $obj_data[show_mail] ? $obj_data[show_mail] : 0;
       $data[mailtype] = $obj_data[mailtype] ? $obj_data[mailtype] : 0;
       $data[u_key] = $obj_data[u_key] ? $obj_data[u_key] : 0;

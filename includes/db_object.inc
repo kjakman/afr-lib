@@ -884,7 +884,7 @@ function getobj_id($obj_type, $user_id, $page_id){
 
 // update one object
 function update_object($obj_type, $data, $id, $options = array()) {
-  //print_r($data);exit;
+  //print_r($id.',');
   if(!$id) mydie ("update_object $obj_type: missingg id");
 
   $options['id'] = $id;
@@ -4909,7 +4909,7 @@ function get_template($parts, $minisite_id){
               $tpl_values['page'] = 'manualexbs';
               $tpl_values['tpl'] = 'manualexbs';
             }else{
-              $tpl_values['page'] = 'mantualexb';
+              $tpl_values['page'] = 'manualexb';
               $tpl_values['tpl'] = 'manualexb';
             }
           }else{
