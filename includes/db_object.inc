@@ -4858,7 +4858,7 @@ function update_artist_name($user_id, $artist_name){
   if($errors) json_error($errors);
   else return 1;
 }
-
+//  ------------------------------------------------- Vignesh ----------- 29-06-2020--------//
 function get_template($parts, $minisite_id){
   $tpl_values = [];
   $parts1_tpls = find_objects('minisite_tpl', ['parts' => 1]);
@@ -4940,7 +4940,7 @@ function get_template($parts, $minisite_id){
   }
   return $tpl_values;
 }
-
+//  --------------------------- End ---------------------- Vignesh ----------- 29-06-2020--------//
 function get_collection($exhibitions, $page_slug){
   $data = [];
   foreach($exhibitions as $collectionObj){
@@ -5181,11 +5181,11 @@ function get_exhibition_tpl1($layout_id){
   elseif($layout_id == 206 || $layout_id == 230 || $layout_id == 247 || $layout_id == 271 || $layout_id == 287)  
     $template = '3X2_4C';
 
-  elseif($layout_id == 212 || $layout_id == 232 || $layout_id == 251 || $layout_id == 273 || $layout_id == 289)  
+  elseif($layout_id == 212 || $layout_id == 232 || $layout_id == 251 ||  $layout_id == 273 || $layout_id == 289)  
     $template = 'niagra_1'; //casa
   elseif($layout_id == 213 || $layout_id == 233 || $layout_id == 254 || $layout_id == 274 || $layout_id == 290)  
     $template = 'niagra_2'; //nor
-  elseif($layout_id == 214 || $layout_id == 231 || $layout_id == 248 || $layout_id == 272 || $layout_id == 288)  
+  elseif($layout_id == 214 || $layout_id == 231 || $layout_id == 255 || $layout_id == 248 || $layout_id == 272 || $layout_id == 288)  
     $template = 'niagra_3'; //balti
   
   elseif($layout_id == '215')  $template = 'parallax_1';
