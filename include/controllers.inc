@@ -410,7 +410,7 @@ function controller_minisite($app, $options = []) {
 
         $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'slug' => $page_slug, 'active' => 1]);
 
-        if($minisite_pageObj->page_layout == 135 || $minisite_pageObj->page_layout == 0)       $tpl = $page = 'singleExh';
+        if($minisite_pageObj->page_layout == 135)       $tpl = $page = 'singleExh';
         elseif($minisite_pageObj->page_layout == 136)   $tpl = $page = 'singleExh_kwLoc';
         elseif($minisite_pageObj->page_layout == 294)   $tpl = $page = 'singleExh_1';
         elseif($minisite_pageObj->page_layout == 295)   $tpl = $page = 'singleExh_sewLoc';
@@ -4810,6 +4810,7 @@ function controller_gallery_backend($app, $options = []) {
       $app->page->itemview = 'vault';
       $app->page->listview = 'vaults';
       $scope->user_profile = $user_profile = get_user($app->user_id);
+      $scope->list_media = find_objects('media_folder', ['user_id'=>$app->user_id]);
       $app->page->subtemplate = $sub = '_gallery-backend-vault.html';
 
       $tags = get_objects('media_tags');

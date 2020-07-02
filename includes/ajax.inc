@@ -709,7 +709,8 @@
               $obj_data['page_layout'] = get_layout(20,2);
             elseif($obj_data[type] == 60){                                    //Single Exhibition
               $obj_data['data'] = get_sExhibitionJson();
-              $obj_data['page_layout'] = get_layout($obj_data[type], 1);
+              //$obj_data['page_layout'] = get_layout($obj_data[type], 1);
+               $obj_data['page_layout'] = 294;
             }elseif($obj_data[type] == 80){                                    //Manual Exhibition
               $obj_data['page_layout'] = get_layout(30, 1);
               $obj_data['second_layout'] = get_layout(30, 2);
