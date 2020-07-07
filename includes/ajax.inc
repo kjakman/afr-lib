@@ -709,7 +709,8 @@
               $obj_data['page_layout'] = get_layout(20,2);
             elseif($obj_data[type] == 60){                                    //Single Exhibition
               $obj_data['data'] = get_sExhibitionJson();
-              $obj_data['page_layout'] = get_layout($obj_data[type], 1);
+              //$obj_data['page_layout'] = get_layout($obj_data[type], 1);
+               $obj_data['page_layout'] = 294;
             }elseif($obj_data[type] == 80){                                    //Manual Exhibition
               $obj_data['page_layout'] = get_layout(30, 1);
               $obj_data['second_layout'] = get_layout(30, 2);
@@ -788,8 +789,9 @@
 
     case 'save-minisite-basic':
       extract($obj_data);
-      
+      //print_r($obj_data[url_slug]);exit;
       $obj_type = $obj_data[obj_type];
+     // print_r($obj_type);
       if($obj_data[icon_type] == 1)
         $obj_data[icon_size] = 1;
 
@@ -799,12 +801,34 @@
       }
 
       if($obj_data[domain]){
+
+        $prot = $obj_data[domain];
+        $port_needle = 'http://';
+        if (strpos($prot,$port_needle) !== false) {
+           $obj_data[url_slug] = $port_needle;
+        }
+
+        $prot_https = $obj_data[domain];
+        $port_https_needle = 'https://';
+        if (strpos($prot_https,$port_https_needle) !== false) {
+           $obj_data[url_slug] = $port_https_needle;
+        }
+        
+        $www = $obj_data[domain];
+        $www_needle = 'http://www.';
+        if (strpos($www,$www_needle) !== false) {
+          $obj_data[url_slug] = $www_needle;
+        }
+
         $obj_data[domain] = str_replace('https://', '', $obj_data[domain]);
         $obj_data[domain] = str_replace('http://', '', $obj_data[domain]);
         $obj_data[domain] = str_replace('www.', '', $obj_data[domain]);
         $obj_data[domain] = rtrim($obj_data[domain], '/');
       }
+
+
       $data = [];
+      $data[action_url] = $obj_data[action_url] ? $obj_data[action_url] : 0;
       $data[show_mail] = $obj_data[show_mail] ? $obj_data[show_mail] : 0;
       $data[mailtype] = $obj_data[mailtype] ? $obj_data[mailtype] : 0;
       $data[u_key] = $obj_data[u_key] ? $obj_data[u_key] : 0;
@@ -812,7 +836,7 @@
       $data[b_id] = $obj_data[b_id] ? $obj_data[b_id] : 0;
 
       $obj_data['footer_data'] = json_encode($data);
-
+      
       if($obj_id) {
         list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
         print_log("save-ministe: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);

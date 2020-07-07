@@ -28,6 +28,7 @@ function controller_minisite($app, $options = []) {
   $scope->minisite_type = $type = $msObj->type;
   $font_type = $msObj->font_type;
   $scope->fonts= $font_styles = find_object('minisite_font', ['id' => $font_type, 'active' => 1]);
+  $scope->minisite_page_type = $minisite_page_type = find_objects('minisite_page_type', ['active'=>1], ['sort'=>'row_order']);
   $scope->menus = $menus = get_objects('minisite_menu');
   $scope->hover = $hover = get_objects('minisite_hover');
   
@@ -313,10 +314,13 @@ function controller_minisite($app, $options = []) {
         $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'slug' => $page_slug, 'active' => 1]);
 
         if($page == 'manualexbs')
+        {
           $template = get_exhibition_tpl1($minisite_pageObj->page_layout);
+        }
         else
+        {
           $template = get_exhibition_tpl2($minisite_pageObj->second_layout);
-
+        }
         $scope->layout = find_object('minisite_layout', ['id' => $minisite_pageObj->page_layout, 'active' =>1]);
 
         $tpl = $page = $template;
@@ -4592,6 +4596,10 @@ function controller_gallery_backend($app, $options = []) {
     $scope->add_to_logo1 = $add_to_logo1 = $_GET['add_to_logo1'] ?: 0;
     $scope->get_str = $get_str = "add_to_logo1=$add_to_logo1";
   }
+  if($_GET['add_to_media']){
+    $scope->add_to_media = $add_to_media = $_GET['add_to_media'] ?: 0;
+    $scope->get_str = $get_str = "add_to_media=$add_to_media";
+  }
   if($_GET['add_to_exbart']){
     $scope->add_to_exbart = $add_to_exbart = $_GET['add_to_exbart'] ?: 0;
     $scope->get_str = $get_str = "add_to_exbart=$add_to_exbart";
@@ -4802,6 +4810,7 @@ function controller_gallery_backend($app, $options = []) {
       $app->page->itemview = 'vault';
       $app->page->listview = 'vaults';
       $scope->user_profile = $user_profile = get_user($app->user_id);
+      $scope->list_media = find_objects('media_folder', ['user_id'=>$app->user_id]);
       $app->page->subtemplate = $sub = '_gallery-backend-vault.html';
 
       $tags = get_objects('media_tags');

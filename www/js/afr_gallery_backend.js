@@ -726,6 +726,49 @@ $(document).on("click", "#status", function() {
   }            
 });
 
+// Publish
+$(document).on("click", "#active", function() { 
+  $('.active'+id).show();
+  var id = $(this).data('value');
+  var obj_type= "artwork";
+  var obj_data = $(this).text();
+  var col = $(this).data('col');
+
+  if(col=='active'){ 
+    $('.active'+id).hide();
+    $('#active'+id).show();
+    $('#select1').remove();      
+    $('#active'+id).append('<select id= "select1" class="select1'+id+'"><option>Select</option><option id= "option" value="0">OFF</option><option  id= "option" value="1">ON</option></select>');
+
+    $(document).on("change", "#select1", function() {
+      var value1 = $(this).parent().prop('id');
+      value1 = value1.replace('active','');
+      var value = $('#active'+value1+' #select1').val();
+      var obj_type= "media_collection";
+      var col = $('#active').data('col');
+      $('.select1'+value1).show(value);
+      $.ajax({ url: "/ajax.php?obj_type=" + obj_type,
+        type: "POST",
+        data: {
+          type : "media_collection",
+          col: col,
+          data : value,
+          id : value1,
+          oper : "edit",
+        },
+        success:function(response_data_json) {
+          var value2='Available';
+           $('#active'+value1).hide();
+           if(value==0)       value2="OFF";
+           if(value==1)       value2="ON";
+          $('.active'+value1).text(value2);
+          $('.active'+value1).show();
+        }
+      });    
+    });
+  }            
+});
+
 //dynamic table edit on exhibition module 
 $(document).on("click", ".edit_exhibition", function() { 
   $(this).prop('contenteditable', true);
@@ -1148,10 +1191,10 @@ function bstCollectionSubtypeFormatter(value, row, index) {
   }      
 }
 
-function bstPublishedFormatter(value, row, index) {
+/*function bstPublishedFormatter(value, row, index) {
   if(parseInt(row.active)) return 'ON';
   else return 'OFF';   
-}
+}*/
 
 // function bstDateFormatter(value, row, index) {
 //   if(!row.created) return '';
