@@ -167,7 +167,7 @@ body{
     width: 100%;
 }
 .custom_button_float{
-	position: absolute;
+	/*position: absolute;*/
     bottom: 66px;
     left: 125px;
     z-index: 999;

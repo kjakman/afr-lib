@@ -2556,8 +2556,8 @@ function init_datepicker_ranges() {
 
       var momStart = moment($start.datepicker('getDate'))
       var momEnd = moment($end.datepicker('getDate'))
-      var start_date = momStart.format(g_moment_sql_format);
-      var end_date = momEnd.format(g_moment_sql_format);
+      var start_date = momStart.format(g_moment_format);
+      var end_date = momEnd.format(g_moment_format);
 
       var default_period = 1; 
       if (typeof $range.data('default-period') !== 'undefined') {
@@ -8574,6 +8574,8 @@ function bounds_obj2json(bounds) {
   var lng1 = bounds.northeast ? parseFloat(bounds.northeast.lng).toFixed(g_loc_accuracy) : 0;
   var bounds = [[lat0,lng0],[lat1,lng1]];
   return JSON.stringify(bounds);
-}                        
+}         
+
+           
 
 

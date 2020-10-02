@@ -12,6 +12,13 @@ function controller_home($app, $options = []) {
   return;
 }
 
+
+function my_sort_function($a, $b)
+{
+    return $a->ordering < $b->ordering;
+
+}
+
 function controller_minisite($app, $options = []) {
   $__header = $app->header;
   $u_id = $app->user_id;
@@ -170,9 +177,9 @@ function controller_minisite($app, $options = []) {
    }
    
     if($page == 'exhibitions' || $page == 'exhibition') {
-
       $scope->page_slug = $slugstr =($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
       $scope->sub_slug = $subviews = ($parts[2] != '') ?  $parts[2] : $get_tpl['get_subviews'];
+
       $page_slug =  ($parts[0] != '') ? "/".$parts[0]."/" : "/".$get_tpl['get_slug']."/"; 
 
       $minisite_id = $msObj->id;
@@ -3162,6 +3169,7 @@ function controller_user_account($app, $options = []) {
 
 /** new public: view user profile */
 function controller_user_profile($app, $options = []) {
+  //echo "hi";
   //global $u_id, $u_level;
   $u_id = $app->user->id;
   $__header = $app->header; 
@@ -3210,6 +3218,12 @@ function controller_user_profile($app, $options = []) {
 
   $scope->profile = $scope->user = $userObj;
   $scope->user_id = $userObj->id;
+  $curator_profile = get_user($app->object_id);
+  $scope->curator_id = $curator_profile->id;
+  $scope->curator_name = $curator_profile->display_name;
+  $scope->curator_photo = $curator_profile->photo;
+  $scope->curator_address_formatted = $curator_profile->address_formatted;
+  $scope->curator_social = $curator_profile->social;
  
   $scope->auth_edit = $auth_edit = $scope->auth_edit_user = auth_user_profile($user_id);
   
@@ -3382,6 +3396,7 @@ function controller_edit_profile($app, $options = []) {
 }
 
 function controller_artist_profile($app, $options = []) {
+  //echo "addf";
   global $u_id;
   $__header = $app->header; 
   $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
@@ -3392,14 +3407,19 @@ function controller_artist_profile($app, $options = []) {
   $__header->styles[] = "/afr/css/gallery/afr_gallery.css?ver={$app->version}";
 
   $scope = $app->page->scope;
-  
   controller_user_profile($app,$options);
   $obj_type = $scope->obj_type = $scope->obj_type ?: $app->object_type;
   $obj_id = $scope->obj_id =  $scope->obj_id ?: $app->object_id;
+  //$obj_id = $media_id = $scope->obj_id = $scope->obj_id ?: $app->object_id;
   $obj = $obj_type && $obj_id ? get_object($obj_type, $obj_id) : null;
   $siteObj = $app->site;
   $scope->url = site_full_url($siteObj)."/profile/".$obj_id;
+
+  //$scope->collection = $collectionObj = find_object('media_collection',array('user_id' => $obj_id));
+  //$scope->curator = get_user($collectionObj->user_id);
   
+  //print_r($scope->curator);
+
   if(!$obj_id) $obj_id = $u_id;
   
   //echo("ot=$obj_type id=$obj_id");
@@ -3407,6 +3427,8 @@ function controller_artist_profile($app, $options = []) {
   if($obj_type == 'user' && $obj_id) { // from slug
     $user_id = $obj_id;
     $userObj = get_user($obj_id);
+    //$scope->curator_id = user_has_role($userObj, USER_ROLE_CURATOR) ? $userObj->id : 0;
+    //print_r($userObj);
   } else {
     $userObj = $app->user; // logged in user, already merged with profile
     $user_id = $u_id;
@@ -3447,28 +3469,76 @@ function controller_artist_profile($app, $options = []) {
     
     $scope->artist_artworks = gallery_selected_artworks($user_id, ['start' => $start, 'limit' => $limit]);
     $scope->my_projects = $cur_projects = find_objects('media_collection', array('user_id' => $curator_id, 'type' => MEDIA_COLLECTION_TYPE_EXHIBITION, 'active' => 1), ['start' => $start, 'limit' => $limit]);
-    
+    //print_r($cur_projects);
     $my_projects = $cur_exhibition = [];
     foreach($cur_projects as $cur_project){
       $artists = json_decode($cur_project->artist_ids, True);
+      $get_date = $get_type = [];
+          $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $cur_project->id, 'active'=>1]);
+        foreach($get_artworks as $artwork){
+            $get_date[] = $artwork->original_year;
+            $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
+            $get_type[] = get_artwork_type($find_art->type);
+        }
+          $mini =  min(array_filter($get_date));
+          $max = max(array_filter($get_date));
       if(count($artists) == 1){
         if(in_array($curator_id, $artists)){
             $my_projects[] = $cur_project;
+          if($cur_project->subtype == 40){
+            $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+            if($mini == $max)
+              $selection_range = "Selection (".$mini.")";
+            elseif($mini < $max)
+              $selection_range =  "Selection (".$mini."-".$max.")";
+            else
+            $selection_range =  "Selection";
+            $cur_project->selection_range = $selection_range;
+            $cur_project->selection_type = $selection_type;
+          }
         }
         if($artists[0] != $curator_id){
           $cur_exhibition[] = $cur_project;
+          if($cur_project->subtype == 40){
+            $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+            if($mini == $max)
+              $selection_range = "Selection (".$mini.")";
+            elseif($mini < $max)
+              $selection_range =  "Selection (".$mini."-".$max.")";
+            else
+            $selection_range =  "Selection";
+            $cur_project->selection_range = $selection_range;
+            $cur_project->selection_type = $selection_type;
+          }
         }
       }else{
         $cur_exhibition[] = $cur_project;
+        if($cur_project->subtype == 40){
+            $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+            if($mini == $max)
+              $selection_range = "Selection (".$mini.")";
+            elseif($mini < $max)
+              $selection_range =  "Selection (".$mini."-".$max.")";
+            else
+            $selection_range =  "Selection";
+            $cur_project->selection_range = $selection_range;
+            $cur_project->selection_type = $selection_type;
+          }
       }
     }
     $scope->my_projects = $my_projects;
+    //dump($cur_exhibition);
     $scope->curator_exhibition = $cur_exhibition;
+    //echo "2";
     
     $scope->curator_artworks = gallery_unique_artworks(array_find_key($curator_exhibitions, 'id'), ['start' => $start, 'limit' => $limit]);
     $curator_profile = get_user($curator_id);
+    $scope->curator_id = $curator_profile->id;
     $scope->curator_name = $curator_profile->display_name;
-
+    $scope->curator_photo = $curator_profile->photo;
+    $scope->curator_address_formatted = $curator_profile->address_formatted;
+    $scope->curator_social = $curator_profile->social;
+    //dump($scope->curator_name);
   } elseif($is_artist) {
     $scope->template = "user-profile-artist.html";    
 
@@ -3492,8 +3562,12 @@ function controller_artist_profile($app, $options = []) {
 
     /*To view Exhibitions curated by gallery in artist profile*/
     $curator_profile = get_user($curator_ids[0]);
-    $curator_id = $curator_profile->id;
+    $scope->curator_id = $curator_id = $curator_profile->id;
     $scope->curator_name = $curator_profile->display_name;
+    $scope->curator_photo = $curator_profile->photo;
+    $scope->curator_address_formatted = $curator_profile->address_formatted;
+    $scope->curator_social = $curator_profile->social;
+    //dump($curator_profile);
     $cur_projects = find_objects('media_collection', array('user_id' => $curator_id, 'type' => MEDIA_COLLECTION_TYPE_EXHIBITION, 'active' => 1), ['start' => $start, 'limit' => $limit]);
     
     $my_projects = $cur_exhibition = [];
@@ -3513,25 +3587,79 @@ function controller_artist_profile($app, $options = []) {
 
     foreach($curator_exhibition as $curator_exhibitions){
       $artists = json_decode($curator_exhibitions->artist_ids, True);
+      $get_date = $get_type = [];
+          $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $curator_exhibitions->id, 'active'=>1]);
+        foreach($get_artworks as $artwork){
+            $get_date[] = $artwork->original_year;
+            $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
+            $get_type[] = get_artwork_type($find_art->type);
+        }
+          $mini =  min(array_filter($get_date));
+          $max = max(array_filter($get_date));
       if(count($artists) >1){
         if(($user_id != $curator_id) && (in_array($artist_id, $artists)) && (in_array($curator_id, $artists))){
           $artist_arr[] = $curator_exhibitions;
+          if($curator_exhibitions->subtype == 40){
+            $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+            if($mini == $max)
+              $selection_range = "Selection (".$mini.")";
+            elseif($mini < $max)
+              $selection_range =  "Selection (".$mini."-".$max.")";
+            else
+            $selection_range =  "Selection";
+            $curator_exhibitions->selection_range = $selection_range;
+            $curator_exhibitions->selection_type = $selection_type;
+          }
         }
         if(in_array($curator_id, $artists) && ($curator_id != $artists) ){
           $cur_arr[] = $curator_exhibitions;
+          if($curator_exhibitions->subtype == 40){
+            $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+            if($mini == $max)
+              $selection_range = "Selection (".$mini.")";
+            elseif($mini < $max)
+              $selection_range =  "Selection (".$mini."-".$max.")";
+            else
+            $selection_range =  "Selection";
+            $curator_exhibitions->selection_range = $selection_range;
+            $curator_exhibitions->selection_type = $selection_type;
+          }
         }
       }else{
         if($artists[0] != $curator_id){
           $cur_arr[] = $curator_exhibitions;
+          if($curator_exhibitions->subtype == 40){
+            $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+            if($mini == $max)
+              $selection_range = "Selection (".$mini.")";
+            elseif($mini < $max)
+              $selection_range =  "Selection (".$mini."-".$max.")";
+            else
+            $selection_range =  "Selection";
+            $curator_exhibitions->selection_range = $selection_range;
+            $curator_exhibitions->selection_type = $selection_type;
+          }
         }
         if(($user_id != $curator_id) && ($artists[0] == $artist_id)){
           $artist_arr[] = $curator_exhibitions;
+          if($curator_exhibitions->subtype == 40){
+            $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+            if($mini == $max)
+              $selection_range = "Selection (".$mini.")";
+            elseif($mini < $max)
+              $selection_range =  "Selection (".$mini."-".$max.")";
+            else
+            $selection_range =  "Selection";
+            $curator_exhibitions->selection_range = $selection_range;
+            $curator_exhibitions->selection_type = $selection_type;
+          }
         }
       }
     }
     $scope->artist_exhibitions = $artist_arr;
     
     $scope->curator_exhibition = $cur_arr;
+    //echo "3";
         
   } else {
     $scope->template = "user-profile-collector.html";
@@ -3555,7 +3683,7 @@ function controller_artist_profile($app, $options = []) {
   
   $app->page->template = $scope->template;
   //die("ctrl: {$app->page->controller} tpl {$app->page->template}");
-  
+  //print_r($scope);
   
   return;  
 }                           
@@ -4810,7 +4938,7 @@ function controller_gallery_backend($app, $options = []) {
       $app->page->itemview = 'vault';
       $app->page->listview = 'vaults';
       $scope->user_profile = $user_profile = get_user($app->user_id);
-      $scope->list_media = find_objects('media_folder', ['user_id'=>$app->user_id]);
+      $scope->list_media = find_objects('media_folder', ['user_id'=>$app->user_id, 'filename'=>'Uploads']);
       $app->page->subtemplate = $sub = '_gallery-backend-vault.html';
 
       $tags = get_objects('media_tags');
@@ -4974,7 +5102,6 @@ function controller_gallery_backend($app, $options = []) {
     case "website":
       $scope->section = 'website';
       $scope->obj_type = $obj_type = "minisite";
-      
       if($_GET['page_id']){
         $page_id = $_GET['page_id'];
         $scope->page_id = $page_id;
@@ -5191,6 +5318,7 @@ function controller_gallery_backend($app, $options = []) {
     case "profile":
       $scope->section = 'network';
       $scope->obj_type = $obj_type = "artist";
+      //controller_gallery_collections($app);
       if(!$add) {   
         if(!$id) return controller_error($app, "Missing ID");
         if($_GET['profile_id']) $id = $scope->id = $scope->obj_id = get_object('user_profile', $id, 'user_id');
@@ -5314,7 +5442,6 @@ function controller_gallery_backend($app, $options = []) {
       $scope->obj_type = $obj_type = "media_collection";
 
       $scope->add_media = $_GET['add_media'];
-      
       if(!$add) {                  
         if(!$id) return controller_error($app, "Missing ID");
         controller_gallery_collections($app);
@@ -5540,7 +5667,8 @@ function controller_gallery_item($app, $options = []) {
   $scope->media_collection = $media =get_object($obj_type, $obj_id);
   $scope->collection = $collection =get_object('media_collection', $media->media_collection_id);
   $scope->collection_id = $collection->id;
-  if($scope->curator_id = $curator_id = $collection->user_id) $scope->curator = get_user($collection->user_id);
+  if($scope->curator_id = $curator_id = $collection->user_id) 
+  $scope->curator = get_user($collection->user_id);
   $scope->artist = $artist = get_user($collection->artist_id);
 
   $scope->other_exhibitions = find_objects('media_collection_map', 
@@ -5592,15 +5720,40 @@ function controller_gallery_artworks($app, $options = []) {
     
   if($obj_id) {
     $obj = get_object($obj_type, $obj_id);
-    
     $scope->mail_controller = 'gallery_artworks';
     $scope->mail_template = 'mail/mail-artwork.html';
     
     $scope->obj_id = $obj_id;
+    $exh_id = $scope->exh_id;
+    //$scope->exh_id = $scope->obj_id = $collection_ids = $obj_id;
+    
+    /** find artwork in collection */
+    $artworks = find_objects('media_collection_map', array('media_collection_id' => $exh_id, 'active' => 1), array('sort' => 'rank'));
+
+    //echo "SELECT * from  media_collection_map LEFT JOIN artwork on media_collection_map.artwork_id = artwork.id where media_collection_map.media_collection_id=$collection_id and media_collection_map.active = 1";
+    //$sql = db_getAll("SELECT * from  media_collection_map LEFT JOIN artwork on media_collection_map.artwork_id = artwork.id where media_collection_map.media_collection_id=$collection_id and media_collection_map.active = 1");
+    //print_r($sql);
+    //print_r($artworks);
+    //print_r(count($artworks));
+    foreach($artworks as $art){
+      $a = (array)$art;
+      $ids = $art->media_id;
+      $data = find_object('media', array('id' => $ids));
+      $art_id = $data->parent_id;
+      $find = find_object('artwork', array('id' => $art_id));
+      if($find) $b = (array)$find;
+      else $b = (array)$data;
+      $merge[] = array_merge($a, $b);
+    }
+    //print_r($merge);
+    $scope->artwork_data = $merge;
+    $scope->artworks = $artworks;
+    //print_r($artwork);
 
     if(!in_array($obj_type, ['media_collection_map', 'artwork'])) return scope_error($app, "Illegal type $obj_type", '404');
     
     $collection_id = $curator_id = $mapObj = $collectionObj = null;
+    //print_r($collection_id);
     
     /** map - gives us collection to work with */
     if($obj_type == 'media_collection_map') {
@@ -5624,6 +5777,7 @@ function controller_gallery_artworks($app, $options = []) {
     $artwork_id = $obj_id;
     
     $scope->artwork = $artworkObj = get_object('artwork', $artwork_id);
+    //print_r($artworkObj);
     $scope->artist_id = $artist_id = $artworkObj->artist_id;
     $scope->media_id = $media_id = $scope->artwork->title_image = $artworkObj->title_image; 
 
@@ -5642,19 +5796,58 @@ function controller_gallery_artworks($app, $options = []) {
       $cur_arr = [];
       foreach($curator_exhibitions as $curator_exhibition){
         $artists = json_decode($curator_exhibition->artist_ids, True);
+        $get_date = $get_type = [];
+          $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $curator_exhibition->id, 'active'=>1]);
+          foreach($get_artworks as $artwork){
+              $get_date[] = $artwork->original_year;
+              $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
+              $get_type[] = get_artwork_type($find_art->type);
+          }
+          $mini =  min(array_filter($get_date));
+          $max = max(array_filter($get_date));
           if(count($artists) >1){
             if(in_array($curator_id, $artists) && ($curator_id != $artists)){
               $cur_arr[] = $curator_exhibition;
+              if($curator_exhibition->subtype == 40){
+                $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                if($mini == $max)
+                  $selection_range = "Selection (".$mini.")";
+                elseif($mini < $max)
+                  $selection_range =  "Selection (".$mini."-".$max.")";
+                else
+                $selection_range =  "Selection";
+                $curator_exhibition->selection_range = $selection_range;
+                $curator_exhibition->selection_type = $selection_type;
+              }
             }
           }else{
             if($artists[0] != $curator_id){
               $cur_arr[] = $curator_exhibition;
+              if($curator_exhibition->subtype == 40){
+                $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                if($mini == $max)
+                  $selection_range = "Selection (".$mini.")";
+                elseif($mini < $max)
+                  $selection_range =  "Selection (".$mini."-".$max.")";
+                else
+                $selection_range =  "Selection";
+                $curator_exhibition->selection_range = $selection_range;
+                $curator_exhibition->selection_type = $selection_type;
+              }
             }
           }
         }
       
       $scope->curator_exhibitions = $cur_arr;
+      //echo "4";
 
+      $curator_profile = get_user($curator_id);
+      $scope->curator_id = $curator_profile->id;
+      $scope->curator_name = $curator_profile->display_name;
+      $scope->curator_photo = $curator_profile->photo;
+      $scope->curator_address_formatted = $curator_profile->address_formatted;
+      $scope->curator_social = $curator_profile->social;
+      //dump($curator_profile);
       $curator_arts = gallery_unique_artworks(array_find_key($curator_exhibitions, 'id'), ['start' => $start, 'limit' => $limit]);
 
       $curator_artworks = [];
@@ -5717,7 +5910,8 @@ function controller_gallery_artworks($app, $options = []) {
     }
     
     //$artwork = $scope->artwork;
-    $title = $artworkObj->name ?: "Untitled";
+    //dump($artworkObj);
+    $title = $artworkObj->title ?: "Untitled";
     $title .= " by $artist_name";
     $description = implode('. ', array_filter(array($artworkObj->original_technique, $artworkObj->short_description, $artworkObj->comment)));
     $scope->follow_id = $artworkObj->media_id;
@@ -5849,6 +6043,9 @@ function controller_gallery_folder($app, $options = []) {
 }
 
 function controller_gallery_collections($app, $options = []) {
+  //$uri_path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+  //$uri_segments = explode('/', $uri_path);
+  //dump($uri_segments);
   global $u_id;
   $__header = $app->header; 
   $__header->styles[] = "/afr/css/gallery/afr_gallery.css?ver={$app->version}";
@@ -5862,14 +6059,14 @@ function controller_gallery_collections($app, $options = []) {
   //die("tpl={$app->page->template}");
   
   $scope = $app->page->scope;
-  $scope->items = $scope->objects;  
+  $scope->items = $scope->objects; 
+
   // unset($scope->objects);
   $obj_id = $media_id = $scope->obj_id = $scope->obj_id ?: $app->object_id;
   $obj_type = $scope->obj_type = $scope->obj_type ?: $app->object_type;
   
   $start = 0;
   $limit = 40;
-  
   print_log("sot: {$scope->obj_type} tos {$app->object_type} => {$obj_type}", 'gallery', LOG_LEVEL_TEST);
   $scope->my_collection_id = $scope->user_collection_id = $user_collection_id = $u_id ? gallery_find_user_collection($siteObj, $u_id, array('return' => 'id')) : 0;
   $scope->follow_type = $obj_type;
@@ -5880,10 +6077,16 @@ function controller_gallery_collections($app, $options = []) {
     $scope->collection = $collectionObj = get_object('media_collection', $obj_id);
     $scope->mail_template = 'mail/mail-collection.html';
     $scope->mail_controller = 'gallery_collections';
-
+    //print_r($scope);
     /** find artwork in collection */
     $artworks = find_objects('media_collection_map', array('media_collection_id' => $collection_id, 'active' => 1), array('sort' => 'rank'));
-    
+
+    //print_r($artworks);
+    //echo "SELECT * from  media_collection_map LEFT JOIN artwork on media_collection_map.artwork_id = artwork.id where media_collection_map.media_collection_id=$collection_id and media_collection_map.active = 1";
+    //$sql = db_getAll("SELECT * from  media_collection_map LEFT JOIN artwork on media_collection_map.artwork_id = artwork.id where media_collection_map.media_collection_id=$collection_id and media_collection_map.active = 1");
+    //print_r($sql);
+    //print_r($artworks);
+    //print_r($artworks);
     foreach($artworks as $art){
       $a = (array)$art;
       $ids = $art->media_id;
@@ -5894,28 +6097,71 @@ function controller_gallery_collections($app, $options = []) {
       else $b = (array)$data;
       $merge[] = array_merge($a, $b);
     }
+    //print_r($merge);
+    $scope->artwork = $merge;
     $scope->artworks = $artworks;
 
     if($collectionObj->type == MEDIA_COLLECTION_TYPE_EXHIBITION) {
-      if($scope->curator_id = $curator_id = $collectionObj->user_id) $scope->curator = get_user($collectionObj->user_id);
+      if($scope->curator_id = $curator_id = $collectionObj->user_id) 
+        $scope->curator = get_user($collectionObj->user_id);
+      //print_r($scope->curator);
       $curator_exhibitions = find_objects('media_collection', 
           array('id' => array('!=', $collection_id), 'user_id' => $curator_id, 'type' => MEDIA_COLLECTION_TYPE_EXHIBITION, 'active' => 1),
           array('start' => $start, 'limit' => $limit));
       $cur_arr = [];
       foreach($curator_exhibitions as $curator_exhibition){
         $artists = json_decode($curator_exhibition->artist_ids, True);
+        $get_date = $get_type = [];
+          $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $curator_exhibition->id, 'active'=>1]);
+          foreach($get_artworks as $artwork){
+              $get_date[] = $artwork->original_year;
+              $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
+              $get_type[] = get_artwork_type($find_art->type);
+          }
+          $mini =  min(array_filter($get_date));
+          $max = max(array_filter($get_date));
         if(count($artists) >1){
           if(in_array($curator_id, $artists) && ($curator_id != $artists) ){
             $cur_arr[] = $curator_exhibition;
+            if($curator_exhibition->subtype == 40){
+                $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                if($mini == $max)
+                  $selection_range = "Selection (".$mini.")";
+                elseif($mini < $max)
+                  $selection_range =  "Selection (".$mini."-".$max.")";
+                else
+                $selection_range =  "Selection";
+                $curator_exhibition->selection_range = $selection_range;
+                $curator_exhibition->selection_type = $selection_type;
+              }
           }
         }else{
           if($artists[0] != $curator_id){
             $cur_arr[] = $curator_exhibition;
+            if($curator_exhibition->subtype == 40){
+                $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                if($mini == $max)
+                  $selection_range = "Selection (".$mini.")";
+                elseif($mini < $max)
+                  $selection_range =  "Selection (".$mini."-".$max.")";
+                else
+                $selection_range =  "Selection";
+                $curator_exhibition->selection_range = $selection_range;
+                $curator_exhibition->selection_type = $selection_type;
+              }
           }
         }
       }
       $scope->curator_exhibitions = $cur_arr;
-      
+      //dump($get_type);
+      //echo "1";
+      $curator_profile = get_user($curator_id);
+      $scope->curator_id = $curator_profile->id;
+      $scope->curator_name = $curator_profile->display_name;
+      $scope->curator_photo = $curator_profile->photo;
+      $scope->curator_address_formatted = $curator_profile->address_formatted;
+      $scope->curator_social = $curator_profile->social;
+      //dump($curator_profile);
       $curator_arts = gallery_unique_artworks(array_find_key($curator_exhibitions, 'id'),['start' => $start, 'limit' => $limit]);
       $curator_artworks = [];
       foreach($curator_arts as $curator_art){
@@ -5936,7 +6182,8 @@ function controller_gallery_collections($app, $options = []) {
     if($mid) {
       $artwork = get_object('media', $mid);
       $author_name = user_display_name($artwork->artist_id);
-      $title = $artwork->name ?: "Untitled Artwork";
+      //dump($collectionObj->title);
+      $title = $collectionObj->title ?: "Untitled Artwork";
       $title .= " by $author_name";
       $description = implode('. ', array_filter(array($artwork->original_technique, $artwork->short_description, $artwork->comment)));
 
@@ -5976,7 +6223,6 @@ function controller_gallery_collections($app, $options = []) {
     $app->page->title = $title;    
     
   } else { /** find collections */
-    
     if($items = $scope->items) { // my-vpatina
       //$myCollectionObj = gallery_find_user_collection($siteObj, $u_id);
       //$scope->my_collection_id = $collection_id = $myCollectionObj->id;
@@ -5989,10 +6235,244 @@ function controller_gallery_collections($app, $options = []) {
         $scope->template = "404";
         return;    
       }
-      $search = array('type' => $collection_type, 'active' => 1);
-      $user_id = pick_first($scope->artist_id, $scope->user_id, $u_id);    
-      $search['user_id'] = $user_id;
-      $scope->items = $items = find_objects('media_collection', $search);
+      //echo "vignesh";
+      $curator_profile = get_user($_GET['user_id']);
+      $scope->curator_id = $curator_profile->id;
+      $scope->curator_name = $curator_profile->display_name;
+      $scope->curator_photo = $curator_profile->photo;
+      $scope->curator_address_formatted = $curator_profile->address_formatted;
+      $scope->curator_social = $curator_profile->social;
+      //dump($curator_profile);
+      $uri_path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+      $uri_segments = explode('/', $uri_path);
+      if($uri_segments[2] == 'selection')
+      {
+        $sel = array('subtype' => 40, 'type' => $collection_type, 'active' => 1);
+        //$user_id = pick_first($scope->artist_id, $scope->user_id, $u_id);    
+        $sel['user_id'] = $_GET['user_id'];
+
+     // $artsss = db_getAll("select * from artwork where status='40' and user_id = '".$_GET['user_id']."' and active='1' order by primary_year desc");
+    //foreach($artsss as $art){
+       // $scope->selection = $selections = find_objects('media_collection', $sel);
+        //echo "select a.id,a.title_image,a.image,a.start_date,a.end_date,a.location_id,a.address_formatted,a.event_id,a.artist_id,a.subtype,a.artists,a.artist_ids,a.title_image_json,b.status,b.primary_year,b.technique from media_collection as a join artwork b on a.subtype = b.status join artwork as b2 on a.subtype = b2.status and a.user_id = b.user_id where a.subtype = '40' and  a.type = '$collection_type' and a.user_id = '$use_id' and a.active='1' and b.active='1' group by a.title";
+        //$scope->selection = $selections = db_getAll("select a.id,a.title_image,a.image,a.start_date,a.end_date,a.location_id,a.address_formatted,a.event_id,a.artist_id,a.subtype,a.artists,a.artist_ids,a.title_image_json,b.status,b.primary_year,b.technique from media_collection as a join artwork b on a.subtype = b.status join artwork as b2 on a.subtype = b2.status and a.user_id = b.user_id where a.subtype = '40' and  a.type = '$collection_type' and a.user_id = '$use_id' and a.active='1' and b.active='1' order by  group by a.title");
+        //dump($selections);
+
+      $r = find_objects('media_collection', $sel);
+
+      $re = [];
+      foreach ($r as $k)
+      {
+          $id[] = $k->id;
+      }
+        $dat = implode(",", $id);
+      
+     $selections = db_getAll("select *,a.id ,a.user_id, a.type, a.title, a.title_image, a.description, a.image, a.json, a.address_formatted, a.artist_id, a.artist_ids, a.title_image_json, b.original_year, min(b.original_year) as minorg from media_collection as a join media_collection_map as b on a.id = b.media_collection_id where media_collection_id in (".$dat.") and a.active = '1' group by b.media_collection_id order by minorg desc");
+
+    //echo"select *,a.id ,a.user_id, a.type, a.title, a.title_image, a.description, a.image, a.json, a.address_formatted, a.artist_id, a.artist_ids, a.title_image_json, b.original_year, min(b.original_year) as minorg from media_collection as a join media_collection_map as b on a.id = b.media_collection_id where media_collection_id in (".$dat.") and a.active = '1' group by b.media_collection_id order by minorg desc";
+    //dump($chk);
+
+     // $get_test = find_objects('media_collection_map', ['media_collection_id' => $id, 'active'=>1]);    
+         
+          //dump($selections);
+        $orderingvalue = 0;
+    foreach($selections as $selectionordering)
+      {
+
+        $artists = json_decode($selectionordering->artist_ids, True);
+        $get_date = $get_type = [];
+        $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $selectionordering->id, 'active'=>1]); 
+        foreach($get_artworks as $artwork){
+            $get_date[] = $artwork->original_year;
+            $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
+            $get_type[] = get_artwork_type($find_art->type);
+        }
+    
+        $selections[$orderingvalue]->ordering =  min(array_filter($get_date));
+        $orderingvalue++;
+      }
+    
+    //$rek = array();
+    /*rsort($selections);
+    foreach($selections as $key => $val)
+    {
+      $rek[$val->ordering] = $val;
+    }
+    dump($rek);exit;*/
+
+    usort($selections, 'my_sort_function');
+    $scope->selection = $selections;
+    $selection = $selections;
+//    dump($selections);
+
+
+
+  foreach($selections as $key => $selection){
+    //dump($selections);
+
+      $tst = find_objects('media_collection_map', ['media_collection_id' => $selection->id, 'active'=>1]);
+      $get_test = [];
+      foreach($tst as $t)
+          {
+              $get_test[] = $t->original_year;
+          }
+          $mini_test =  min(array_filter($get_test));
+          $max_test = max(array_filter($get_test));
+          //dump($mini_test);
+
+        $artists = json_decode($selection->artist_ids, True);
+        $get_date = $get_type = [];
+        $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $selection->id, 'active'=>1]);
+    //foreach($chk as $v){     
+          foreach($get_artworks as $artwork){
+              $get_date[] = $artwork->original_year;
+              $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
+              $get_type[] = get_artwork_type($find_art->type);
+          }
+          //dump($get_date);
+          $mini =  min(array_filter($get_date));
+          $max = max(array_filter($get_date));
+
+          //dump($mini);
+
+            if($selection->subtype == 40){
+                $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                if($mini == $max)
+                  $selection_range = "Selection (".$mini.")";
+                elseif($mini < $max)
+                  $selection_range =  "Selection (".$mini."-".$max.")";
+                else
+                $selection_range =  "Selection";
+                $selection->selection_range = $selection_range;
+                $selection->selection_type = $selection_type;
+            }
+          }
+       // }
+      }
+      else if($uri_segments[2] == 'event') 
+      {
+        $eve = array('subtype' => 30, 'type' => $collection_type, 'active' => 1);
+        //$user_id = pick_first($scope->artist_id, $scope->user_id, $u_id);    
+        $eve['user_id'] = $_GET['user_id'];;
+        $scope->event = $events = find_objects('media_collection', $eve,
+            ['sort' => 'start_date desc']);
+        foreach($events as $event){
+        $artists = json_decode($event->artist_ids, True);
+        $get_date = $get_type = [];
+          $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $event->id, 'active'=>1]);
+          foreach($get_artworks as $artwork){
+              $get_date[] = $artwork->original_year;
+              $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
+              $get_type[] = get_artwork_type($find_art->type);
+          }
+          $mini =  min(array_filter($get_date));
+          $max = max(array_filter($get_date));
+            if($event->subtype == 40){
+                $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                if($mini == $max)
+                  $selection_range = "Selection (".$mini.")";
+                elseif($mini < $max)
+                  $selection_range =  "Selection (".$mini."-".$max.")";
+                else
+                $selection_range =  "Selection";
+                $event->selection_range = $selection_range;
+                $event->selection_type = $selection_type;
+          }
+        }
+      }
+      else if($uri_segments[2] == 'gallery')
+      {
+        $gal = array('subtype' => 10, 'type' => $collection_type, 'active' => 1);
+        //$user_id = pick_first($scope->artist_id, $scope->user_id, $u_id);    
+        $gal['user_id'] = $_GET['user_id'];
+        $scope->gallery = $gallerys = find_objects('media_collection', $gal,
+            ['sort' => 'start_date desc']);
+        foreach($gallerys as $gallery){
+        $artists = json_decode($gallery->artist_ids, True);
+        $get_date = $get_type = [];
+          $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $gallery->id, 'active'=>1]);
+          foreach($get_artworks as $artwork){
+              $get_date[] = $artwork->original_year;
+              $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
+              $get_type[] = get_artwork_type($find_art->type);
+          }
+          $mini =  min(array_filter($get_date));
+          $max = max(array_filter($get_date));
+            if($gallery->subtype == 40){
+                $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                if($mini == $max)
+                  $selection_range = "Selection (".$mini.")";
+                elseif($mini < $max)
+                  $selection_range =  "Selection (".$mini."-".$max.")";
+                else
+                $selection_range =  "Selection";
+                $gallery->selection_range = $selection_range;
+                $gallery->selection_type = $selection_type;
+          }
+        }
+      }
+      else if($uri_segments[2] == 'artfair')
+      {
+        $art = array('subtype' => 20, 'type' => $collection_type, 'active' => 1);
+        //$user_id = pick_first($scope->artist_id, $scope->user_id, $u_id);    
+        $art['user_id'] = $_GET['user_id'];
+        $scope->artfair = $artfairs = find_objects('media_collection', $art ,
+            ['sort' => 'start_date desc']);
+        foreach($artfairs as $artfair){
+        $artists = json_decode($artfair->artist_ids, True);
+        $get_date = $get_type = [];
+          $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $artfair->id, 'active'=>1]);
+          foreach($get_artworks as $artwork){
+              $get_date[] = $artwork->original_year;
+              $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
+              $get_type[] = get_artwork_type($find_art->type);
+          }
+          $mini =  min(array_filter($get_date));
+          $max = max(array_filter($get_date));
+            if($artfair->subtype == 40){
+                $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                if($mini == $max)
+                  $selection_range = "Selection (".$mini.")";
+                elseif($mini < $max)
+                  $selection_range =  "Selection (".$mini."-".$max.")";
+                else
+                $selection_range =  "Selection";
+                $artfair->selection_range = $selection_range;
+                $artfair->selection_type = $selection_type;
+          }
+        }
+      }
+      else
+      {
+        $search = array('type' => $collection_type, 'active' => 1);
+        $user_id = pick_first($scope->artist_id, $scope->user_id, $u_id);    
+        $search['user_id'] = $user_id;
+        $scope->items = $items = find_objects('media_collection', $search);
+        foreach($scope->items as $items){
+        $artists = json_decode($items->artist_ids, True);
+        $get_date = $get_type = [];
+          $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $items->id, 'active'=>1]);
+          foreach($get_artworks as $artwork){
+              $get_date[] = $artwork->original_year;
+              $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
+              $get_type[] = get_artwork_type($find_art->type);
+          }
+          $mini =  min(array_filter($get_date));
+          $max = max(array_filter($get_date));
+            if($items->subtype == 40){
+                $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                if($mini == $max)
+                  $selection_range = "Selection (".$mini.")";
+                elseif($mini < $max)
+                  $selection_range =  "Selection (".$mini."-".$max.")";
+                else
+                $selection_range =  "Selection";
+                $items->selection_range = $selection_range;
+                $items->selection_type = $selection_type;
+          }
+        }
+      }
+
       $scope->vault = 1;
     }
     

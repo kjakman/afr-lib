@@ -24,6 +24,9 @@ function env_site_id($domain) {
 
 # Which page
 function route($app) {
+
+  $uri_path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+  $seg2 = explode('/',$uri_path);
   
   $router = new AltoRouter();
   $router->addMatchTypes(array('n' => '[a-zA-Z0-9-_]+'));
@@ -39,8 +42,11 @@ function route($app) {
   $router->map( 'GET', '/backend/[a:subview]/[a:action]', 'gallery_backend', 'backend:subview:action');
 
   $router->map( 'GET', '/backend/profile/[i:id]/edit', 'gallery_backend', 'backend:edit-profile:id');
+
+  
   
   $router->map( 'GET', '/exhibitions', 'gallery_collections', 'exhibitions');
+
   $router->map( 'GET', '/exhibition/([n:name]-)?[i:id]', 'gallery_collections', 'exhibition:id');
   $router->map( 'GET', '/exhibition/([n:name]-)?[i:id]/[i:item]', 'gallery_collections', 'exhibition:id:item');
 
@@ -56,6 +62,18 @@ function route($app) {
   /** Elastic Tools */
   $router->map( 'GET', '/mapping', 'est_mapping', 'ElasticTools Mapping');
   $router->map( 'GET', '/mapping-guide', 'est_mapping_guide', 'ElasticTools Mapping Guide');
+
+  $router->map( 'GET', '/exhibition/[n:name]', 'gallery_collections', 'type:name');
+  //dump($seg2);
+  /*if($seg2[2] == 'selection' || $seg2[2] == 'event' || $seg2[2] == 'gallery' || $seg2[2] == 'artfair')
+  {
+     $router->map( 'GET', '/profile/[n:name]', 'gallery_collections', 'prof:name');
+  }
+  if($seg2[3] == 'selection' || $seg2[3] == 'event' || $seg2[3] == 'gallery' || $seg2[3] == 'artfair')
+  {
+    $router->map( 'GET', '/artwork/[i:id]/[n:name]', 'gallery_collections', 'art:id:name');
+  }*/
+
   
   
   //$router->map( 'GET', '/profile/([n:name]-)?[i:id]', 'user_profile', 'profile:id');

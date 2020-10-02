@@ -5287,8 +5287,9 @@ function add_single_exb($exhibition_ids, $page_id){
       if($errors) json_error($errors);
     }
   }else
-    $error = "Failed to add exhibition - Missing Media";
-  
+    //$error = "Failed to add exhibition - Missing Media";
+    echo "<script>alert('Failed to add exhibition - Missing Media');</script>";
+    return $get_media; 
   switch($changed) { // reload
     case 'exb':
       $art = find_object('exhibition_map', ['active' => 1, 'page_id' => ['>', 0]]);
@@ -5347,7 +5348,7 @@ function default_news($id, $obj_type ,$data){ //Single Exhibition
   $data['minisite_id'] = $id;
   $data['page_layout'] = 295;
   $data['second_layout'] = 0;
-  $data['template'] = 20;
+  $data['template'] = 10;
   $data['show_details'] = 1;
   $data['row_order'] = 2;
   if(!$data)  json_error("No datas found for default News page");
@@ -5365,9 +5366,9 @@ function default_exhibition($id, $obj_type ,$data){ //Multiple Exhibition - Smar
   $data['slug'] = $slug;
   $data['data'] = $datas;
   $data['minisite_id'] = $id;
-  $data['page_layout'] = 232;
+  $data['page_layout'] = 103;
   $data['second_layout'] = 133;
-  $data['template'] = 20;
+  $data['template'] = 10;
   $data['show_details'] = 1;
   $data['row_order'] = 3;
   if(!$data)  json_error("No datas found for default Exhibitions page");

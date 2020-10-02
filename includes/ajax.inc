@@ -28,7 +28,18 @@
       $obj_type= $_REQUEST['type'];
       $obj_id= $_REQUEST['id'];
       $obj_col= $_REQUEST['col'];
-      $data= $_REQUEST['data'];
+      $date = $_REQUEST['date'];
+      $datas= $_REQUEST['data'];
+      if($date)
+      {
+        $data = date("Y-m-d", strtotime($date));
+      }
+      elseif($datas)
+      {
+        $data = $datas;
+      }
+      //echo $_REQUEST['date'];die;
+      
       $obj_data= array('obj_type'=>$obj_type,'obj_id'=>$obj_id,$obj_col=>$data);
       $result= update_object($obj_type, $obj_data, $obj_id);
       die("success");
@@ -402,10 +413,12 @@
        $user_id = $obj_data[user_id];
        $contact = $obj_data[contact];
        $obj_type = 'user_profile';
+
+       $obj_data[date_of_birth] = date("Y-m-d", strtotime($obj_data[date_of_birth]));
        
        if($obj_data[date_of_birth]){
         $today = today();     
-        $dateOfBirth = $obj_data[date_of_birth];      
+        $dateOfBirth = date("Y-m-d", strtotime($obj_data[date_of_birth]));      
         $diff = date_diff(date_create($dateOfBirth), date_create($today));
         $age = $diff->format("%y");
         if ($age < 18) json_error("Age should be greater than 18");
@@ -698,23 +711,33 @@
           if(!$obj_id){                                                       //Adding default values for each page
             if($obj_data[type] == 20){                                        //artist page
               $obj_data['page_layout'] = get_layout($obj_data[type], 1);
-              $obj_data['second_layout'] = get_layout($obj_data[type], 2);
+              $obj_data['second_layout'] = 131;
+              $obj_data['template'] = 10;
+              $obj_data['show_details'] = 1;
             }elseif($obj_data[type] == 30){                                   //exhibition
               $obj_data['data'] = get_exhibitionJson();
               $obj_data['page_layout'] = get_layout($obj_data[type], 1);
-              $obj_data['second_layout'] = get_layout($obj_data[type], 2);
-            }elseif($obj_data[type] == 40 )                                   //contact 
+              $obj_data['second_layout'] = 133;
+              $obj_data['template'] = 10;
+              $obj_data['show_details'] = 1;
+            }elseif($obj_data[type] == 40 ){                                   //contact 
               $obj_data['page_layout'] = get_layout($obj_data[type], 1);
-            elseif($obj_data[type] == 50)                                     //bio
-              $obj_data['page_layout'] = get_layout(20,2);
-            elseif($obj_data[type] == 60){                                    //Single Exhibition
+            }elseif($obj_data[type] == 50){                                     //bio
+              $obj_data['page_layout'] = 131;
+              $obj_data['template'] = 10;
+              $obj_data['show_details'] = 1;
+            }elseif($obj_data[type] == 60){                                    //Single Exhibition
               $obj_data['data'] = get_sExhibitionJson();
-              //$obj_data['page_layout'] = get_layout($obj_data[type], 1);
+               //$obj_data['page_layout'] = get_layout($obj_data[type], 2);
                $obj_data['page_layout'] = 294;
-            }elseif($obj_data[type] == 80){                                    //Manual Exhibition
-              $obj_data['page_layout'] = get_layout(30, 1);
-              $obj_data['second_layout'] = get_layout(30, 2);
-            }elseif($obj_data[type] == 90){                                    //Manual Exhibition
+               $obj_data['template'] = 10;
+               $obj_data['show_details'] = 1;
+            }elseif($obj_data[type] == 80){                                   //Manual exhibition
+              $obj_data['page_layout'] = 103;
+              $obj_data['second_layout'] = 133;
+              $obj_data['template'] = 10;
+              $obj_data['show_details'] = 1;
+            }elseif($obj_data[type] == 90){                                    
               $obj_data['template'] = 10;
             }
             $obj_data['row_order'] = get_rowOrder($minisite_id);
@@ -1088,7 +1111,8 @@
       extract($obj_data);
       //dump($obj_data);
       $address_formatted = $obj_data['address_formatted'];
-      $type_name = get_object('media_collection_type', $type, 'name');      
+      $type_name = get_object('media_collection_type', $type, 'name'); 
+
       
       $id = $obj_id;
       if(isset($obj_data['subtype'])) { // first tab
@@ -1145,6 +1169,7 @@
             }
             if($errors) json_error($errors);
           }
+          
           if($obj_data['title_image']){         //Json encode artwork image path
             $title_image = $obj_data['title_image']; 
             $find_media = find_object('media', ['id' => $title_image]);

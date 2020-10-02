@@ -1669,7 +1669,7 @@ var baseUrl = getUrl.protocol + "//" + getUrl.host;
 var g_pswp = false;
 var g_pswp_index = -1;
 var g_site_url = baseUrl;
-var g_host_url = 'https://www.vpatina.com';
+var g_host_url = baseUrl;
 var g_aid = 10;
 var g_site_id = '247';
 var g_user_id = '';
@@ -1677,7 +1677,7 @@ var g_user_name = '';
 var g_sharer_id = '';
 var g_host_protocol = 'https';
 var g_host_tld = 'www';
-var g_host_domain = 'vpatina.com';
+var g_host_domain = getUrl.host;
 var g_client_protocol = document.location.protocol;
 var g_follow = [];
 var g_branch = '9d08da5';
@@ -2517,7 +2517,8 @@ var openPhotoSwipe = function(cid, index, galleryElement, disableAnimation, from
           /** todo: use -1 for no, 1 for yes, 0 for unknown */
           //console.log("calling vp_caption for title: data", item.data);
           var caption = vp_caption(json, item.data, 0);
-          captionEl.children[0].innerHTML = ''; // caption;
+          captionEl.children[0].innerHTML = caption;
+          //captionEl.children[0].innerHTML = ''; // caption;
           return true;
       },
 
