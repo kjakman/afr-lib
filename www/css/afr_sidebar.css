@@ -167,7 +167,7 @@ body{
     width: 100%;
 }
 .custom_button_float{
-	position: absolute;
+	/*position: absolute;*/
     bottom: 66px;
     left: 125px;
     z-index: 999;
@@ -196,4 +196,28 @@ body{
 }
 .selected_art .fileupload-buttonbar:before{
 	display:none;
+}
+.curser_move, .ui-sortable-handle{
+  cursor: move;
+}
+.edit-collection-description{
+    cursor: auto;
+}
+.ui-sortable-handle p{
+	
+}
+tr.ui-sortable-helper:after{
+    content: "\f0c9";
+	font-family: FontAwesome;
+    display: block;
+    position: absolute;
+    top: 0px;
+    left: -26px;
+    width: 26px;
+    height: 100%;
+    background-color: #f5f5f5;
+	text-align: center;
+    padding: 8px 0px;
+    border: 1px solid #ddd;
+    border-radius: 5px 0px 0px 5px;
 }

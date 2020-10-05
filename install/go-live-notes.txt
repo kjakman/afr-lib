@@ -1,3 +1,37 @@
+### New notes: July 2020
+
+
+Go live steps
+
+
+# Check disk space (for backups)
+df -h
+
+# Backup DB and rename
+dbdump.sh
+mv /backup/db/vpatina.sql /backup/db/vpatina-2020-07-06.sql
+
+# Backup sites (live and dev)
+rsync -az /web/sites/vpatina/ /backup/sites/vpatina-20200706/
+
+# vpatina@vpatina:/web/code/sh$ vpcomp.sh | grep differ
+Files /web/sites/vpatina/master/afr-lib/include/classes.inc and /web/sites/vpatina/test/afr-lib/include/classes.inc differ
+Files /web/sites/vpatina/master/afr-lib/include/controllers.inc and /web/sites/vpatina/test/afr-lib/include/controllers.inc differ
+Files /web/sites/vpatina/master/afr-lib/include/set_env.inc and /web/sites/vpatina/test/afr-lib/include/set_env.inc differ
+Files /web/sites/vpatina/master/afr-lib/includes/ajax.inc and /web/sites/vpatina/test/afr-lib/includes/ajax.inc differ
+Files /web/sites/vpatina/master/afr-lib/includes/api.inc and /web/sites/vpatina/test/afr-lib/includes/api.inc differ
+Files /web/sites/vpatina/master/afr-lib/includes/db_object.inc and /web/sites/vpatina/test/afr-lib/includes/db_object.inc differ
+Files /web/sites/vpatina/master/afr-lib/modules/gallery/helpers_gallery.inc and /web/sites/vpatina/test/afr-lib/modules/gallery/helpers_gallery.inc differ
+Files /web/sites/vpatina/master/afr-lib/www/js/afr_gallery_backend.js and /web/sites/vpatina/test/afr-lib/www/js/afr_gallery_backend.js differ
+Files /web/sites/vpatina/master/afr-lib/www/js/afr.js and /web/sites/vpatina/test/afr-lib/www/js/afr.js differ
+Files /web/sites/vpatina/master/afr-lib/www/js/vp/vp.js and /web/sites/vpatina/test/afr-lib/www/js/vp/vp.js differ
+Files /web/sites/vpatina/master/afr-lib/pages/share.html and /web/sites/vpatina/test/afr-lib/pages/share.html differ
+Files /web/sites/vpatina/master/afr-app-gallery/include/app_classes.inc and /web/sites/vpatina/test/afr-app-gallery/include/app_classes.inc differ
+
+
+
+### Old notes
+
 cd /web/sites/vpatina/test/
 rm /web/sites/vpatina/test/afr-lib/www/json/manifest_*
 

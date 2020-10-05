@@ -154,19 +154,24 @@ function gallery_get_json($collection_id, $site_id=247) {
   print_log("cid: $curator_id name: $curator_name email: $curator_email".dump($curatorObj,true), 'gallery', LOG_LEVEL_ALWAYS);
 
   $media_ids = [];
-  $mapObjs = find_objects('media_collection_map', array('media_collection_id' => $collection_id, 'active' => 1), array('fields' => ['id', 'media_id', 'type', 'description', 'artwork_id'], 'sort' => 'rank'));
+  $mapObjs = find_objects('media_collection_map', array('media_collection_id' => $collection_id, 'active' => 1), array('fields' => ['id', 'media_id', 'type', 'description', 'artwork_id', 'media_id', 'artist_id'], 'sort' => 'rank'));;
   if($mapObjs){
     foreach($mapObjs as $mapObj) {
+     if($mapObj->media_id != '0' && $mapObj->artist_id != '0'){
       $mapArray[$mapObj->media_id] = $mapObj->id; 
+      $mapArtworkArray[$mapObj->media_id] = $mapObj->artwork_id; 
       $get_media = get_object('media', $mapObj->media_id);
-      
+      //dump($mapObj);die;
       if(!$mapObj->artwork_id){
+        $artwork_link = "{$vpatinaSiteUrl}/item/{$mapObj->media_id}/";
         $title = $collectionObj->title; 
         $type_val = related_images_type($mapObj->type);
         if($type_val)
           $type = ' ('.$type_val.') ';
           $name = "$title $type $mapObj->description";
       }else{
+        $artwork_link = "${vpatinaSiteUrl}/artwork/{$mapObj->artwork_id}/";
+
         if($get_media->original_year)
           $year = '('.$get_media->original_year.'),';
           $artist = user_display_name($get_media->artist_id);
@@ -177,13 +182,14 @@ function gallery_get_json($collection_id, $site_id=247) {
       }
       $get_media->comment = $name;
       list($id, $errors) = update_object('media', $get_media, $get_media->id);
-      if($errors) json_error($errors);
       
+      if($errors) json_error($errors);
+     }
     }
     //$media_ids = find_objects('media_collection_map', array('media_collection_id' => $collection_id, 'active' => 1), array('fields' => 'distinct media_id', 'sort' => 'rank'));
     $media_ids = array_keys($mapArray);
     
-    $artwork_link = site_full_url($siteObj)."/item/";
+    
     $obj_id_list = implode(',', $media_ids);
     $base_url = $_SERVER['HTTP_HOST'];  
     $protocol = "https";
@@ -214,9 +220,11 @@ function gallery_get_json($collection_id, $site_id=247) {
     $items = find_objects('media', array('id' => $media_ids), array('sort' => "FIELD(id, $obj_id_list)", 'fields' => $fields));
     foreach($items as &$item) {
       $item->map_id = $map_id = $mapArray[$item->media_id];
-      
+      $item->artwork_id = $artwork_id = $mapArtworkArray[$item->media_id];
+
       $slug = slugify($item->title);
-      $item->link = "{$artwork_link}{$slug}~{$map_id}";
+      //$item->link = "{$artwork_link}{$slug}~{$map_id}";
+      $item->link =  $artwork_id  ? "".$_SERVER['HTTP_HOST']."/artwork/{$obj_id}/{$slug}-{$artwork_id}?plugin" : "{$artwork_link}{$slug}~{$map_id}";
 
       $item->comment = safe_text($item->comment);
     }
@@ -525,6 +533,8 @@ function gallery_getartwork_json($artwork_id, $site_id=247) {
     array_unshift($media_ids, $artworkObj->title_image);
 
   $artwork_link = site_full_url($siteObj)."/item/";
+
+
   $obj_id_list = implode(',', $media_ids);
   $base_url = $_SERVER['HTTP_HOST'];  
   $protocol = "https";
@@ -729,7 +739,15 @@ function gallery_unique_artworks($collection_ids, $options) {
 
 function gallery_selected_artworks($user_id, $options) {
   $get_id = find_object('media_collection', array('user_id' => $user_id, 'type' =>150, 'active' =>1));
-  $mapObjs = find_objects('media_collection_map', array('media_collection_id' => $get_id->id));
+  if($get_id == 0)
+  {
+    $mapObjs = find_objects('media_collection_map', array('media_collection_id' => $get_id->id));
+  }
+  else
+  {
+    $mapObjs = db_getAll("select *,a.media_id from media_collection_map as a join artwork b on a.artwork_id = b.id where a.media_collection_id = $get_id->id");
+  }
+  
   $objs = array();
   foreach($mapObjs as $mapObj) {
     $objs[] = $mapObj;
@@ -3368,14 +3386,14 @@ function gallery_title_image($siteObj_or_id, $search, $options=NULL) {
 
       //$nav_buttons .= html_link("#", html_div('', 'mini-sprite-32 s214', array('style' => 'margin-top:10px;margin-right:10px')), array('title' => phrase('about', CAPITALIZE)." vPatina", 'js' => "data-viewer='$viewer' data-parent='".json_encode(array('obj_type' => $parent_obj_type, 'id' => $parent_id))."' data-search='".json_encode(array('obj_type' => 'site', 'id' => 247))."'", 'class' => $loader_class)).' ';
 
-      $logo = html_image("https://www.vpatina.com/img/vpatina-logo-32.png", 'vPatina', array('height' => 24, 'width' => 24, 'style' => 'margin-top: -10px'));
+      $logo = html_image("".$_SERVER['HTTP_HOST']."/img/vpatina-logo-32.png", 'vPatina', array('height' => 24, 'width' => 24, 'style' => 'margin-top: -10px'));
       $nav_buttons .= html_link("#", $logo, array('title' => phrase('about', CAPITALIZE)." vPatina", 'js' => "data-viewer='$viewer' data-parent='".json_encode(array('obj_type' => $parent_obj_type, 'id' => $parent_id))."' data-search='".json_encode(array('obj_type' => 'site', 'id' => 247))."'", 'class' => $loader_class)).' ';
       if($media_id)      $nav_buttons .= html_link("#", '<i class="fa fa-picture-o fa-2x"></i>', array('title' => "Artwork information", 'js' => "data-viewer='$viewer' data-parent='".json_encode(array('obj_type' => $parent_obj_type, 'id' => $parent_id))."' data-search='".json_encode(array('obj_type' => 'media', 'id' => $media_id))."'", 'class' => $loader_class)).' '; //mini-sprite-32 s41
       if($collection_id) $nav_buttons .= html_link("#", '<i class="fa fa-bank fa-2x"></i>', array('title' => "Exhibition information", 'js' => "data-viewer='$viewer' data-parent='".json_encode(array('obj_type' => $parent_obj_type, 'id' => $parent_id))."' data-search='".json_encode(array('obj_type' => 'media_collection', 'id' => $collection_id))."'", 'class' => $loader_class)).' '; //mini-sprite-32 s41
       if($artist_id)     $nav_buttons .= html_link("#", '<i class="fa fa-paint-brush fa-2x"></i>', array('title' => "Artist information", 'js' => "data-viewer='$viewer' data-parent='".json_encode(array('obj_type' => $parent_obj_type, 'id' => $parent_id))."' data-search='".json_encode(array('obj_type' => 'user', 'id' => $artist_id))."'", 'class' => $loader_class)).' '; // 'mini-sprite-32 s34'
       if($curator_id)    $nav_buttons .= html_link("#", '<i class="fa fa-eye fa-2x"></i>', array('title' => "Curator information", 'js' => "data-viewer='$viewer' data-parent='".json_encode(array('obj_type' => $parent_obj_type, 'id' => $parent_id))."' data-search='".json_encode(array('obj_type' => 'user', 'id' => $curator_id))."'", 'class' => $loader_class)).' '; // 'mini-sprite-32 s213'
 
-      $buy_link = "http://www.vpatina.com/login/?_aid=$aff_id&ref=%2Fmyvpatina%2F%3F_aif%3D".$media_id."%26_aid%3D".$aff_id."&".time()."-".rand(1,1000);; /** todo: fix this */
+      $buy_link = "".$_SERVER['HTTP_HOST']."/login/?_aid=$aff_id&ref=%2Fmyvpatina%2F%3F_aif%3D".$media_id."%26_aid%3D".$aff_id."&".time()."-".rand(1,1000);; /** todo: fix this */
       if($buy_link) {
         $download_title = phrase('follow', CAPITALIZE);
         //$nav_buttons .= html_link('#', '<i class="fa fa-star-o fa-2x"></i>', array('data-url' => $buy_link."?".time()."-".rand(1,1000), 'title' => $download_title, 'js' => "data-viewer='$viewer' data-parent='".json_encode(array('obj_type' => $parent_obj_type, 'id' => $parent_id))."' data-search='".json_encode(array('parent_type' => 'media', 'parent_id' => $media_id))."'", 'class' => 'vp-loader-iframe')).' ';

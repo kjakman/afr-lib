@@ -639,18 +639,19 @@ $(document).on("focusout", ".edit", function() {
 });  
 
 //For price option in artwork
-$(document).on("click", "#phide", function() { 
+/*$(document).on("click", "#phide", function() { 
   $('.phide'+id).show();
   var id = $(this).data('value');
   var obj_type= "artwork";
   var obj_data = $(this).text();
   var col = $(this).data('col');
   if(col=='price_option'){ 
-    $('.phide'+id).hide();
+    //$('.phide'+id).show();
     $('#shows'+id).show();
     $('#select').remove();      
-    $('#shows'+id).append('<select id= "select" class="select'+id+'"><option>Select</option><option id= "option" value="1">Show price</option><option  id= "option" value="0">Hide price</option><option  id= "option" value="-1">Price on enquiry</option></select>');
+    $('#shows'+id).append('<select id= "select" class="select'+id+' form-control"><option>Select</option><option id= "option" value="1">Show price</option><option  id= "option" value="0">Hide price</option><option  id= "option" value="-1">Price on enquiry</option></select>');
     $(document).on("change", "#select", function() {
+      alert();
       var value1 = $(this).parent().prop('id');
       value1 = value1.replace('shows','');
       var value = $('#shows'+value1+' #select').val();
@@ -678,10 +679,10 @@ $(document).on("click", "#phide", function() {
       });    
     });
   }    
-});
+});*/
 
 // For Status drop down in artwork
-$(document).on("click", "#status", function() { 
+/*$(document).on("click", "#status", function() { 
   $('.status'+id).show();
   var id = $(this).data('value');
   var obj_type= "artwork";
@@ -692,7 +693,7 @@ $(document).on("click", "#status", function() {
     $('.status'+id).hide();
     $('#cstatus'+id).show();
     $('#select1').remove();      
-    $('#cstatus'+id).append('<select id= "select1" class="select1'+id+'"><option>Select</option><option id= "option" value="10">Available</option><option  id= "option" value="20">Reserved</option><option  id= "option" value="30">Sold</option><option  id= "option" value="40">Inactive</option><option  id= "option" value="50">On loan, etc.</option></select>');
+    $('#cstatus'+id).append('<select id= "select1" class="select1'+id+' form-control"><option>Select</option><option id= "option" value="10">Available</option><option  id= "option" value="20">Reserved</option><option  id= "option" value="30">Sold</option><option  id= "option" value="40">Inactive</option><option  id= "option" value="50">On loan, etc.</option></select>');
 
     $(document).on("change", "#select1", function() {
       var value1 = $(this).parent().prop('id');
@@ -724,7 +725,50 @@ $(document).on("click", "#status", function() {
       });    
     });
   }            
-});
+});*/
+
+// Publish
+/*$(document).on("click", "#active", function() { 
+  $('.active'+id).show();
+  var id = $(this).data('value');
+  var obj_type= "artwork";
+  var obj_data = $(this).text();
+  var col = $(this).data('col');
+
+  if(col=='active'){ 
+    $('.active'+id).hide();
+    $('#active'+id).show();
+    $('#select1').remove();      
+    $('#active'+id).append('<select id= "select1" class="select1'+id+' form-control"><option>Select</option><option id= "option" value="0">OFF</option><option  id= "option" value="1">ON</option></select>');
+
+    $(document).on("change", "#select1", function() {
+      var value1 = $(this).parent().prop('id');
+      value1 = value1.replace('active','');
+      var value = $('#active'+value1+' #select1').val();
+      var obj_type= "media_collection";
+      var col = $('#active').data('col');
+      $('.select1'+value1).show(value);
+      $.ajax({ url: "/ajax.php?obj_type=" + obj_type,
+        type: "POST",
+        data: {
+          type : "media_collection",
+          col: col,
+          data : value,
+          id : value1,
+          oper : "edit",
+        },
+        success:function(response_data_json) {
+          var value2='Available';
+           $('#active'+value1).hide();
+           if(value==0)       value2="OFF";
+           if(value==1)       value2="ON";
+          $('.active'+value1).text(value2);
+          $('.active'+value1).show();
+        }
+      });    
+    });
+  }            
+});*/
 
 //dynamic table edit on exhibition module 
 $(document).on("click", ".edit_exhibition", function() { 
@@ -757,16 +801,72 @@ $(document).on("focusout", ".edit_exhibition", function() {
 }); 
 
 
-$(document).on("click", ".edit_date", function() { 
-  //console.log("clicked");
-  $(this).datepicker({
-      dateFormat: 'dd-mm-yy',
-      onSelect: function(dateText) {
-          $(this).val(dateText);
-          //console.log(dateText);
-      }
+$(document).on("click", ".edit_exb_start_date", function() { 
+  var id = $(this).data('id');
+  var k = "#edit_exb_start_date" + id;
+   var startdate = $(k).text();
+   //alert(startdate);
+   $(this).datepicker({
+      format: "dd-mm-yyyy",
+    }).on('changeDate', function (ev) {
+    var date = new Date(ev.date);
+    $(this).text(date.getDate()+'-' + (date.getMonth()+1) +'-' + date.getFullYear());
   });
 });
+
+$(document).on("focusout", ".edit_exb_start_date", function() { 
+  $(this).prop('contenteditable', true);
+  var obj_type= "media_collection";
+  var id = $(this).data('id');
+  var col = $(this).data('col');
+  var data = $(this).text();
+  //alert(data);
+  $.ajax({ url: "/ajax.php?obj_type=" + obj_type,
+   type: "POST",
+    data: {
+      type : "media_collection",
+      id : id,
+      col: col,
+      date : data,      
+      oper : "edit",
+    }
+  
+  });  
+}); 
+
+$(document).on("click", ".edit_exb_end_date", function() { 
+  //var startdate = $(this).text();
+  //alert(startdate);
+  var id = $(this).data('id');
+  var k = "#edit_exb_start_date" + id;
+  var startdate = $(k).text();
+  $(this).datepicker({
+      format: "dd-mm-yyyy",
+      startDate: $(k).text()  ,
+    }).on('changeDate', function (ev) {
+    var date = new Date(ev.date);
+    $(this).text(date.getDate()+'-' + (date.getMonth()+1) +'-' + date.getFullYear());
+  });
+});
+
+$(document).on("focusout", ".edit_exb_end_date", function() { 
+  $(this).prop('contenteditable', true);
+  var obj_type= "media_collection";
+  var id = $(this).data('id');
+  var col = $(this).data('col');
+  var data = $(this).text();
+  $.ajax({ url: "/ajax.php?obj_type=" + obj_type,
+   type: "POST",
+    data: {
+      type : "media_collection",
+      id : id,
+      col: col,
+      date : data,      
+      oper : "edit",
+    }
+  
+  });  
+}); 
 
 // For type drop down in related artwork
 $(document).on("click", "#edit-media-type", function() { 
@@ -776,7 +876,7 @@ $(document).on("click", "#edit-media-type", function() {
   $('.status'+id).hide();
   $('#cstatus'+id).show();
   $('#select').remove();      
-  $('#cstatus'+id).append('<select id= "select" class="select'+id+'"><option>Select</option><option id= "option" value="10">Blank - leave blank</option><option  id= "option" value="20">Detail </option><option  id= "option" value="30">Installation</option><option  id= "option" value="40">Studio</option><option  id= "option" value="50">Inspiration</option><option  id= "option" value="60">Influences</option><option  id= "option" value="70">Event</option></select>');
+  $('#cstatus'+id).append('<select id= "select" class="select'+id+' form-control"><option>Select</option><option id= "option" value="10">Blank - leave blank</option><option  id= "option" value="20">Detail </option><option  id= "option" value="30">Installation</option><option  id= "option" value="40">Studio</option><option  id= "option" value="50">Inspiration</option><option  id= "option" value="60">Influences</option><option  id= "option" value="70">Event</option></select>');
 
   $(document).on("change", "#select", function() {
     var value1 = $(this).parent().prop('id');
@@ -825,14 +925,14 @@ $(document).on("focusout", ".edit-media-description", function() {
 });
 
 // For type drop down in related collection
-$(document).on("click", "#edit-collection-type", function() { 
-  $('.status'+id).show();
-  var id = $(this).data('id');
+//$(document).on("click", "#edit-collection-type", function() { 
+  //$('.status'+id).show();
+  //var id = $(this).data('id');
 
-  $('.status'+id).hide();
-  $('#cstatus'+id).show();
-  $('#select').remove();      
-  $('#cstatus'+id).append('<select id= "select" class="select'+id+'"><option>Select</option><option id= "option" value="10">Blank - leave blank</option><option  id= "option" value="20">Detail </option><option  id= "option" value="30">Installation</option><option  id= "option" value="40">Studio</option><option  id= "option" value="50">Inspiration</option><option  id= "option" value="60">Influences</option><option  id= "option" value="70">Event</option></select>');
+  //$('.status'+id).hide();
+  //$('#cstatus'+id).show();
+  //$('#select').remove();      
+  //$('#cstatus'+id).append('<select id= "select" class="select'+id+' form-control"><option>Select</option><option id= "option" value="10">Blank - leave blank</option><option  id= "option" value="20">Detail </option><option  id= "option" value="30">Installation</option><option  id= "option" value="40">Studio</option><option  id= "option" value="50">Inspiration</option><option  id= "option" value="60">Influences</option><option  id= "option" value="70">Event</option></select>');
 
   $(document).on("change", "#select", function() {
     var value1 = $(this).parent().prop('id');
@@ -863,7 +963,7 @@ $(document).on("click", "#edit-collection-type", function() {
       }
     });    
   });           
-});
+//});
 
 $(document).on("focusout", ".edit-collection-description", function() { 
   //$(this).prop('contenteditable', false);
@@ -1148,10 +1248,10 @@ function bstCollectionSubtypeFormatter(value, row, index) {
   }      
 }
 
-function bstPublishedFormatter(value, row, index) {
+/*function bstPublishedFormatter(value, row, index) {
   if(parseInt(row.active)) return 'ON';
   else return 'OFF';   
-}
+}*/
 
 // function bstDateFormatter(value, row, index) {
 //   if(!row.created) return '';
@@ -1160,12 +1260,12 @@ function bstPublishedFormatter(value, row, index) {
 
 function bstStartDateFormatter(value, row, index) {
   if(!row.start_date) return '';
-  return '<span contentEditable="true" class="edit_date">'+sql2human_short(row.start_date)+'</span>';
+  return '<span type="hidden" contentEditable="true" id="edit_exb_start_date'+row.id+'" class="edit_exb_start_date" name="edit_exb_start_date" data-date="'+sql2human(row.start_date)+'" data-col="start_date" data-id="'+row.id+'">'+sql2human(row.start_date)+'</span>';
 }
 
 function bstEndDateFormatter(value, row, index) {
   if(!row.end_date) return '';
-  return sql2human_short(row.end_date);
+  return '<span type="hidden" contentEditable="true" id="edit_exb_end_date" class="edit_exb_end_date" name="edit_exb_end_date" data-startdate="'+sql2human(row.start_date)+'" data-date="'+sql2human(row.end_date)+'" data-col="end_date" data-id="'+row.id+'">'+sql2human(row.end_date)+'</span>';
 }
 
 function bstArtistFormatter(value, row, index) {
@@ -1197,7 +1297,7 @@ function gbe_confirm_callback() {
 function gallery_backend_ready() {
   //console.log("gallery_backend_ready v2.1 ARE YOU SURE");
 
-  $('form').areYouSure( {'silent':true} );
+  //$('form').areYouSure( {'silent':true} );
   
   //$('form').trigger('reinitialize.areYouSure');
   
