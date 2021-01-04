@@ -1685,4 +1685,4 @@ $('#".$fld."').ColorPicker({
  $output .= html_script_inline($script);
 
  return $output;
-}
+} 

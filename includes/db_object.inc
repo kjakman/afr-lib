@@ -5458,6 +5458,6 @@ function create_ngnix(){
   $myfile = fopen($filename, "w") or die("Unable to open file!");
   fwrite($myfile, $txt);
   fclose($myfile);
-}
+} 
 
 
