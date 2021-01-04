@@ -179,7 +179,7 @@ body{
 	overflow:hidden;
 }
 .fileupload-buttonbar:before{
-	content:'Upload an image OR attach an image already uploaded to your "Media Drive" ';
+	content:'Upload an image OR attach an image already uploaded to your "Media Drive" (Maximum of one image)';
 	display:block;
 	width:100%;
     padding: 0px 15px 20px;

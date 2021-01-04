@@ -33,6 +33,7 @@ function route($app) {
 
   /** Test Site */
   $router->map( 'GET', '/testpage', 'mytest', 'mytestpage');
+  $router->map( 'GET', '/manual_update_selection', 'manual', 'manualpage');
   
   $router->map( 'GET', '/backend', 'gallery_backend', 'backend');
   $router->map( 'GET', '/backend/[a:subview]/[i:id]', 'gallery_backend', 'backend:subview:id');

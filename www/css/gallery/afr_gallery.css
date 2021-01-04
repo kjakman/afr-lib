@@ -53,7 +53,7 @@
 
   -webkit-column-gap:   30px;
   -moz-column-gap:      30px;
-  column-gap:           30px;  
+  column-gap:           0px;  
 }
 
 .photo-grid .photo-grid-container, .photo-grid-5 .photo-grid-container{

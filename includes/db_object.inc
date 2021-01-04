@@ -885,6 +885,7 @@ function getobj_id($obj_type, $user_id, $page_id){
 // update one object
 function update_object($obj_type, $data, $id, $options = array()) {
   //print_r($id.',');
+  //print_r($data);
   if(!$id) mydie ("update_object $obj_type: missingg id");
 
   $options['id'] = $id;
@@ -4967,6 +4968,7 @@ function get_exhibitionJson(){
   $search['show_gallery'] = 1;
   $search['show_artfair'] = 1;
   $search['show_others'] = 1;
+  $search['show_selection'] = 1;
   return (json_encode($search));
 }
 
@@ -4989,6 +4991,7 @@ function get_sExhibitionJson(){
   $search[gallery] = 10;
   $search[artfair] = 20;
   $search[others] = 30;
+  $search[selection] = 40;
   return (json_encode($search));
 }
 

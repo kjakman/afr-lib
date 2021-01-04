@@ -7,6 +7,32 @@ function controller_mytest($app, $options = []) {
   return;
 }
 
+function controller_manual($app, $options = []){
+    //echo "Hai";
+    $sql = db_getAll("SELECT id FROM media_collection where subtype IN (40,50)"); 
+
+    foreach($sql as $val)
+    {
+      $sql1 = db_getAll("SELECT  *,min(original_year) as year FROM media_collection_map WHERE media_collection_id=".$val->id." AND original_year != '' GROUP BY media_collection_id");
+      if(count($sql1) == 1)
+              {
+                foreach($sql1 as $mval)
+                {
+                    $year = "".$mval->year."-01-01";
+                    update_object('media_collection', ['exhibition_sequence' => $year], $mval->media_collection_id);
+                }
+              }
+              else
+              {
+                    $year = "1000-01-01";
+                    update_object('media_collection', ['exhibition_sequence' => $year], $val->id);
+              }
+    }
+    $scope = $app->page->scope;
+    $scope->template = 'minisites/manual_update_selection.html';
+    return;   
+}
+
 /** not used by any site atm */
 function controller_home($app, $options = []) {
   return;
@@ -176,7 +202,7 @@ function controller_minisite($app, $options = []) {
       }
    }
    
-    if($page == 'exhibitions' || $page == 'exhibition') {
+if($page == 'exhibitions' || $page == 'exhibition') {
       $scope->page_slug = $slugstr =($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
       $scope->sub_slug = $subviews = ($parts[2] != '') ?  $parts[2] : $get_tpl['get_subviews'];
 
@@ -195,36 +221,56 @@ function controller_minisite($app, $options = []) {
       if($data[show_gallery]) $gallery = '10';
       if($data[show_artfair]) $artfair = '20';
       if($data[show_others])  $others = '30';
+      if(($data[show_selection]) && ($data[show_past] || $data[show_latest]))
+      {
+         $selection = '40';
+      } 
       if($data[show_current]) $current_view = 1;
       if($data[show_past])    $past_view = 1;
       if($data[show_future])  $future_view = 1;  
       if($data[show_latest])  $latest_view = 1;
       if($data[show_recent])  $sort = 'DESC'; else $sort = 'ASC';
 
-      $search = ['user_id' => $user_id, 'type' => COLLECTION_TYPE_EXHIBITION, 'active' => 1, 'subtype' => [$gallery,$artfair,$others] ];
+      $search = ['user_id' => $user_id, 'type' => COLLECTION_TYPE_EXHIBITION, 'active' => 1, 'subtype' => [$gallery,$artfair,$others,$selection]];
 
       if($page == 'exhibitions'){
+        
         $title = $parts[2];
+        //dump($minisite_pageObj->page_layout);
         if($minisite_pageObj->page_layout == '102'){
           $when = $subviews ?: 'all';
           switch($when) {
             case 'past':
-              $search['end_date'] = ['<', $today];
+              //if(($data[show_selection]) && ($data[show_past] || $data[show_latest]))
+              //{
+                //$search['exhibition_sequence'] = ['<', $today];
+             // }
+             // else
+             // {
+                $search['end_date'] = ['<', $today];
+             // }
               break;
             case 'current':
-              $search['start_date'] = ['<=', $today];
+              $search['exhibition_sequence'] = ['<=', $today];
               $search['end_date'] = ['>=', $today];      
               break;
             case 'future':
-              $search['start_date'] = ['>', $today];
+              $search['exhibition_sequence'] = ['>', $today];
               break;
             case 'currentandfuture':
-              $search['end_date'] = ['>=', $today];
+              //if(($data[show_selection]) && ($data[show_past] || $data[show_latest]))
+              //{
+               //$search['exhibition_sequence'] = ['<', $today];
+              //}
+              //else
+              //{
+                $search['end_date'] = ['>=', $today];
+             // }
               break;
             case 'all':
               $future_past = 0;
                 if(($current_view == 1) && ($past_view == 1) && ($future_view == 1)){
-                  unset($search['start_date']);
+                  unset($search['exhibition_sequence']);
                   unset($search['end_date']);
                 }
                 elseif(($future_view == 1) && ($current_view == 1)){
@@ -234,15 +280,18 @@ function controller_minisite($app, $options = []) {
                   $scope->future_past = 1;
                 }
                 elseif(($current_view == 1) && ($past_view == 1)){
-                  $search['start_date'] = ['<=', $today];
+                  $search['exhibition_sequence'] = ['<=', $today];
                 }
               break;
             default: // all or single
               break;
           }
         }
+        //echo "Test";
+        //dump($search);
         $template = get_exhibition_tpl1($minisite_pageObj->page_layout);
         $scope->layout = find_object('minisite_layout', ['id' => $minisite_pageObj->page_layout, 'active' =>1]);
+        //dump($scope->layout);
       }
       else{
         unset($search['subtype']);
@@ -252,54 +301,101 @@ function controller_minisite($app, $options = []) {
         
         /** Filter by gallery, Art, Other events */
       if($data[show_recent] == 1 )
-        $exhibitionObjs = find_objects('media_collection', $search, ['sort' => 'start_date desc']) ?: [];
+        $exhibitionObjs = find_objects('media_collection', $search, ['sort' => 'exhibition_sequence desc']) ?: [];
       else
-        $exhibitionObjs = find_objects('media_collection', $search, ['sort' => 'start_date asc']) ?: [];
-
+        $exhibitionObjs = find_objects('media_collection', $search, ['sort' => 'exhibition_sequence asc']) ?: [];
+        //dump(count($exhibitionObjs));   
+        
         $exhibition_ids = $exhibitions = $latestexhibition = $data_exist = [];
-        $future_count = $past_count = $current_count = 0;
-
+        $future_count = $past_count = $current_count =  $selection_count = 0;
         foreach($exhibitionObjs as $exhibitionObj) {
           $exhibitionObj->slug = slugify($exhibitionObj->title);
           $current = "";
-          if($exhibitionObj->start_date && $exhibitionObj->end_date) {
-            if($exhibitionObj->end_date < $today) {
-              $data_exist['past'] = 1;
+          if($exhibitionObj->exhibition_sequence || $exhibitionObj->end_date) { 
+            if($exhibitionObj->end_date < $today && !empty($exhibitionObj->end_date)) { 
+              $data_exist["past"] = 1;
               $current = "past";
               $past_count = $past_count+1;
-            }elseif($exhibitionObj->start_date > $today) {
+            }elseif($exhibitionObj->exhibition_sequence < $today) {
+              $data_exist["selection"] = 1;
+              $current = "selection";
+              $selection_count = $selection_count+1; 
+            }elseif($exhibitionObj->exhibition_sequence > $today) {
               $current = "future";
-              $data_exist[future] = 1;
+              $data_exist["future"] = 1;
               $future_count = $future_count +1;
             }else {
               $current = "current";
-              $data_exist[current] = 1 ;
+              $data_exist["current"] = 1 ;
               $current_count = $current_count+1;
             }
           } else {
             continue; /** skip exhibitions w/o dates */
           }
+          //dump($current);
           $exhibitionObj->current = $current;     
           $exhibitionObj->page_slug = $slugstr; 
+          $get_date = $get_type = [];
+                $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $exhibitionObj->id, 'active'=>1]);
+                foreach($get_artworks as $artwork){
+                  $get_date[] = $artwork->original_year;
+                  $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
+                  $get_type[] = get_artwork_type($find_art->type);
+                }
+                $mini =  min(array_filter($get_date));
+                $max = max(array_filter($get_date));
+
+                if($exhibitionObj->subtype == 40){
+                  $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                  if($mini == $max)
+                    $selection_range = "Selection (".$mini.")";
+                  elseif($mini < $max)
+                    $selection_range =  "Selection (".$mini."-".$max.")";
+                  else
+                    $selection_range =  "Selection";
+                  $exhibitionObj->selection_range = $selection_range;
+                  $exhibitionObj->selection_type = $selection_type;
+                }
           $exhibitions[$exhibitionObj->slug] = $exhibitionObj;
           $exhibition_ids[] = $exhibitionObj->id;
         }
         $scope->exhibitions = $exhibitions;
         $scope->data_exist = $data_exist;
-        $scope->exhibition_years = $exhibition_years = db_getAll("SELECT year(start_date) as year from  media_collection where user_id='$user_id' AND type='120' AND start_date!='' AND active='1' group by year order by year ".$sort);      
+        $scope->exhibition_years = $exhibition_years = db_getAll("SELECT year(exhibition_sequence) as year from  media_collection where user_id='$user_id' AND type='120' AND start_date!='' AND active='1' group by year order by year ".$sort);      
         
         /* To view latest exhibition */
         if($latest_view){
-          unset($search['start_date']);
+          unset($search['exhibition_sequence']);
           unset($search['end_date']);
-          $latestexhibition = find_objects('media_collection', $search, ['sort' => 'end_date desc', 'limit' => 1]) ?: []; 
-          
+          $latestexhibition = find_objects('media_collection', $search, ['sort' => 'exhibition_sequence desc', 'limit' => 1]) ?: []; 
+          //dump($latestexhibition);
           if(($latestexhibition) ){
             foreach($latestexhibition as $exhibition) {
-              if($exhibition->start_date && $exhibition->end_date){
+              if($exhibition->exhibition_sequence || $exhibition->end_date){
                 $exhibition->slug = slugify($exhibition->title);
                 $exhibition->page_slug = $slugstr;
                 $latestexhibitions[] = $exhibition;
+                $get_date = $get_type = [];
+                $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $exhibition->id, 'active'=>1]);
+                foreach($get_artworks as $artwork){
+                  $get_date[] = $artwork->original_year;
+                  $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
+                  $get_type[] = get_artwork_type($find_art->type);
+                }
+                $mini =  min(array_filter($get_date));
+                $max = max(array_filter($get_date));
+
+                if($exhibition->subtype == 40){
+                  $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                  if($mini == $max)
+                    $selection_range = "Selection (".$mini.")";
+                  elseif($mini < $max)
+                    $selection_range =  "Selection (".$mini."-".$max.")";
+                  else
+                    $selection_range =  "Selection";
+                  $exhibition->selection_range = $selection_range;
+                  $exhibition->selection_type = $selection_type;
+                }
               }          
             }
             $scope->latest_exhibitions = $latestexhibitions;
@@ -309,7 +405,6 @@ function controller_minisite($app, $options = []) {
           }
         }        
       } 
-
 
       if($page == 'manualexbs' || $page == 'manualexb'){
         $scope->page_slug = $slugstr =($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
@@ -563,17 +658,18 @@ function controller_minisite($app, $options = []) {
       $scope->artworks = $mapObjs = find_objects('media_collection_map', $search, ['sort' => 'rank']);
       break;
 
-    case ($page == 'singleExh' || $page == singleExh_kwLoc || $page == singleExh_sewLoc ||$page == singleExh_1 || $page == singleExh_2 || $page == singleExh_3 || $page == singleExh_4 || $page == singleExh_5):
+    case ($page == 'singleExh' || $page == 'singleExh_kwLoc' || $page == 'singleExh_sewLoc' ||$page == 'singleExh_1' || $page == 'singleExh_2' || $page == 'singleExh_3' || $page == 'singleExh_4' || $page == 'singleExh_5'):
       $slugstr =($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
       $gallery = $artfair = $others = '0';
       $data = json_decode($minisite_pageObj->data, True);
       if($data[gallery]) $gallery = '10';
       if($data[artfair]) $artfair = '20';
       if($data[others])  $others = '30';
+      if($data[selection])  $selection = '40';
 
       if($data['eType'] == 1){
-        $search = ['user_id' => $user_id, 'type' => COLLECTION_TYPE_EXHIBITION, 'active' => 1, 'subtype' => [$gallery,$artfair, $others] ];
-        $collection = find_objects('media_collection', $search, ['sort' => 'end_date desc', 'limit' => 1]);
+        $search = ['user_id' => $user_id, 'type' => COLLECTION_TYPE_EXHIBITION, 'active' => 1, 'subtype' => [$gallery,$artfair, $others, $selection] ];
+        $collection = find_objects('media_collection', $search, ['sort' => 'exhibition_sequence desc', 'limit' => 1]);
       }else{
         $find_page = find_object('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id ,'active' => 1, 'slug' => $page_slug]);
         $page_id = $find_page->id;
@@ -5505,6 +5601,7 @@ function controller_gallery_backend($app, $options = []) {
         $map_id = $_GET['add_media'];
 
         if($artwork_ids || $media_ids || $title_id) { // cannot be both
+        //echo "Hai";exit;
           if($artwork_ids){
             $ids = $artwork_ids;
             $what = 'artwork';
@@ -5536,7 +5633,6 @@ function controller_gallery_backend($app, $options = []) {
             $artist_id = $mapObj->artist_id;
             if(!in_array($artist_id, $artist_ids)) $artist_ids[] = $artist_id;
           }
-          
           /** update artist list: keep existing artists NOT in the list that were explicitly added */
           $artist_ids = find_objects('media_collection_map', ['active' => 1, 'media_collection_id' => $collection_id, 'artwork_id' => ['>', 0]], ['fields' => 'distinct artist_id']);
           if($artist_ids) {   
@@ -5553,6 +5649,29 @@ function controller_gallery_backend($app, $options = []) {
             print_log("combined artist json: {$artists_json}", 'gallery', LOG_LEVEL_TEST);
             
             update_object('media_collection', ['artist_id' => $artist_ids[0], 'artist_ids' => $artists_json], $collection->id);
+            //=====================Update Exhibition Sequence=====vignesh 03-09-2020======================//
+            $media_collection = db_getAll("SELECT id FROM media_collection WHERE id=".$collection_id." AND subtype IN (40,50)");   
+            //dump($media_collection);exit;
+            foreach($media_collection as $val){
+              //echo "SELECT  *,min(original_year) as year FROM media_collection_map WHERE media_collection_id=".$val->id." AND original_year != '' GROUP BY media_collection_id";die;
+              $media_collection_map = db_getAll("SELECT  *,min(original_year) as year FROM media_collection_map WHERE media_collection_id=".$val->id." AND original_year != '' GROUP BY media_collection_id");
+              //dump(count($media_collection_map));exit;
+              if(count($media_collection_map) == 1)
+              {
+                foreach($media_collection_map as $mval)
+                {
+                    $year = "".$mval->year."-01-01";
+                    update_object('media_collection', ['exhibition_sequence' => $year], $mval->media_collection_id);
+                }
+              }
+              else
+              {
+                    $year = "1000-01-01";
+                    update_object('media_collection', ['exhibition_sequence' => $year], $collection_id);
+              }
+            }
+            //=====================Update Exhibition Sequence=====vignesh 03-09-2020 End======================//
+
           }
                     
           switch($changed) { // reload

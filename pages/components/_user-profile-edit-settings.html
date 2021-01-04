@@ -1,6 +1,9 @@
 
           {$profile = $scope.profile}
-          
+
+          <div class="mt20">
+            <a href="https://vimeo.com/482446178" class="btn btn-info button-large popup-iframe" data-effect="mfp-fade"><i class="fa fa-play-circle"></i>Profile Basic Tutorial</a>
+          </div><br>
           <form id="user_profile_form" class="ajax-submit" data-handler="save-profile" data-toggle="validator" data-reload_link="#user-verification-link">
             <!-- <input type="hidden" name="obj_type" value="user_profile" /> -->
             <input type="hidden" name="obj_id"  value="{$profile.profile_id}" />
@@ -13,14 +16,14 @@
             
             <div class="row">              
               <div class="col-sm-6">
-                <label for="first_name">First Name</label>
+                <label for="first_name" class="control-label">First Name</label>
                 <div class="input-group">
                   <span class="input-group-addon"><i class="fa fa-user"></i></span>
                   <input name="first_name" id="first_name" class="form-control" value="{$scope.profile.first_name}" type="text" required/>
                 </div>         
               </div>      
               <div class="col-sm-6">
-                <label for="last_name">Last Name</label>
+                <label for="last_name" class="control-label">Last Name</label>
                 <div class="input-group">
                   <span class="input-group-addon"><i class="fa fa-user"></i></span>
                   <input name="last_name" id="last_name" class="form-control" value="{$scope.profile.last_name}" type="text" required />
@@ -30,14 +33,14 @@
             
             <div class="row mt20">
               <div class="col-sm-6">
-                <label for="display_name">Display Name</label>
+                <label for="display_name" class="control-label">Display Name</label>
                 <div class="input-group">
                   <span class="input-group-addon"><i class="fa fa-user"></i></span>
                   <input name="display_name" id="display_name" class="form-control" value="{$scope.profile.display_name}" type="text" />
                 </div>         
               </div>      
               <div class="col-sm-6">
-                <label for="email_address">Email</label>
+                <label for="email_address">Email<span class="optional">(Optional)</span></label>
                 <div class="input-group">
                   <span class="input-group-addon"><i class="fa fa-envelope"></i></span>
                   <input name="email_address" id="email_address" class="form-control" value="{$scope.profile.email_address}" type="email" required />
@@ -47,7 +50,7 @@
 
             <div class="row mt20">
               <div class="col-sm-6">
-              <label>Date of birth</label>
+              <label>Date of birth<span class="optional">(Optional)</span></label>
               <div class="input-group">
                 <input type="text" id="date_of_birth" value="{date("d-m-Y", strtotime($scope.profile.date_of_birth))}" class="form-control datepicker" name="date_of_birth" placeholder="Date of birth" readonly="true">
                 <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
@@ -55,13 +58,13 @@
               <!--div class="help-block with-errors">Whole Number</div-->                          
               </div>
               <div class="col-sm-3">
-                <label for="Mobile">Mobile</label>
+                <label for="Mobile">Mobile<span class="optional">(Optional)</span></label>
                 <div class="form-group">
                   <input name="mobile" id="mobile" class="form-control" value ="{$scope.profile.mobile}" type="tel" />
                 </div>         
               </div> 
               <div class="col-sm-3">
-                <label for="Mobile">Fax</label>
+                <label for="Mobile">Fax<span class="optional">(Optional)</span></label>
                 <div class="form-group">
                   <input name="fax" id="fax" class="form-control" value ="{$scope.profile.fax}" type="tel" />
                 </div>         
@@ -77,13 +80,13 @@
             
             <div class="row mt20">
               <div class="col-sm-6">
-                <label for="phone">Phone</label>
+                <label for="phone">Phone<span class="optional">(Optional)</span></label>
                 <div class="form-group">
                   <input name="phone" id="phone" class="form-control" value="{$scope.profile.phone}" type="tel" />
                 </div>         
               </div>      
               <div class="col-sm-6">
-                <label for="languages">Which languages do you speak?</label>
+                <label for="languages">Which languages do you speak?<span class="optional">(Optional)</span></label>
                 <div class="form-group">
                   <div id="language-tag-list" class="tag-list" data-langs="{$scope.profile.languages}"></div>                  
                   <input name="languages" id="languages" class="form-control" value="{$scope.profile.languages}" type="hidden" />
@@ -93,7 +96,7 @@
             
             <div class="row mt20">
               <div class="form-group col-sm-6">
-                <label>Timezone</label>                  
+                <label>Timezone<span class="optional">(Optional)</span></label>                  
                 <select name="timezone" id="timezone" data-value="{$scope.profile.timezone}" 
                    class="form-control auto-select" autofocus="autofocus" autocorrect="off" autocomplete="off">
                   <option value="">Select a timezone...</option>
@@ -103,7 +106,7 @@
 
               {if ($site.gallery_site)}
               <div class="col-sm-6">
-                <label for="url_web">Website</label>
+                <label for="url_web">Website<span class="optional">(Optional)</span></label>
                 <div class="input-group">
                   <span class="input-group-addon"><i class="fa fa-globe"></i></span>
                   <input name="url_web" id="url_web" class="form-control" value="{$scope.profile.url_web}" type="url" />
@@ -126,7 +129,7 @@
 
             <div class="row mb20">
               <div class="col-xs-12">
-                <label for="profile-address">{'address'|translate:'c'}</label>
+                <label for="profile-address">{'address'|translate:'c'}<span class="optional">(Optional)</span></label>
                 <div class="input-group">
                   <span class="input-group-addon"><i class="fa fa-map-marker"></i></span>
                   <input name="profile-address" id="profile-address" class="form-control geocomplete" placeholder="123 Main street, New York" 

@@ -35,7 +35,6 @@ $.fn.toggleInputError = function(erred) {
 /**
 if(window.addEventListener) document.addEventListener('DOMMouseScroll', stopScroll, false);
 document.onmousewheel = stopScroll;
-
 function stopScroll() {
   //console.log("Scroll stop");
   $('html, body').stop();
@@ -347,16 +346,16 @@ function get_target_id($target) {
                   
 // removes empty elements from form before submitting (makes for cleaner query string.)
 function cleanEmptyFields(theform) {
-	//return;
+  //return;
   //var theform = thebutton.form;
-	//return true;		
-	var fs='';
-	for(i=0; i<theform.elements.length; i++) {
-		var fldName = theform.elements[i].name;
-		//alert(fldName + " = " + theform.elements[i].value); 
-		if(theform.elements[i].value == '') theform.elements[i].disabled = true; 
-	}
-	return true;		
+  //return true;    
+  var fs='';
+  for(i=0; i<theform.elements.length; i++) {
+    var fldName = theform.elements[i].name;
+    //alert(fldName + " = " + theform.elements[i].value); 
+    if(theform.elements[i].value == '') theform.elements[i].disabled = true; 
+  }
+  return true;    
 }
 
 
@@ -396,8 +395,8 @@ function replace_query_var(uri, key, value) {
 }
 
 function hideEl(el){
-	//return;
-	if (document.getElementById(el)){
+  //return;
+  if (document.getElementById(el)){
         document.getElementById(el).style.display = 'none';
   } else {
     //alert('hideEl: no element'+el);
@@ -418,10 +417,10 @@ function limitText(limitField, limitCount, limitNum) {
   var $limitField = $('#'+limitField);
   var $limitCount = $('#'+limitCount);
   if ($limitField.val().length > limitNum) {
-		$limitField.val($limitField.val().substring(0, limitNum));
-	} else {
-		$limitCount.html(limitNum - $limitField.val().length);
-	}
+    $limitField.val($limitField.val().substring(0, limitNum));
+  } else {
+    $limitCount.html(limitNum - $limitField.val().length);
+  }
 }
 
 function autocomplete_off(el_id) { // hack since autocomplete='off' is not strict (x)html
@@ -455,28 +454,28 @@ function print_message(message, style) {
 
 /* Function : dump()  http://www.openjs.com/scripts/others/dump_function_php_print_r.php */
 function dumpArr(arr,level) {
-	var dumped_text = "";
-	if(!level) level = 0;
-	
-	//The padding given at the beginning of the line.
-	var level_padding = "";
-	for(var j=0;j<level+1;j++) level_padding += "    ";
-	
-	if(typeof(arr) == 'object') { //Array/Hashes/Objects 
-		for(var item in arr) {
-			var value = arr[item];
-			
-			if(typeof(value) == 'object') { //If it is an array,
-				dumped_text += level_padding + "'" + item + "' ...\n";
-				dumped_text += dump(value,level+1);
-			} else {
-				dumped_text += level_padding + "'" + item + "' => \"" + value + "\"\n";
-			}
-		}
-	} else { //Stings/Chars/Numbers etc.
-		dumped_text = "===>"+arr+"<===("+typeof(arr)+")";
-	}
-	return dumped_text;
+  var dumped_text = "";
+  if(!level) level = 0;
+  
+  //The padding given at the beginning of the line.
+  var level_padding = "";
+  for(var j=0;j<level+1;j++) level_padding += "    ";
+  
+  if(typeof(arr) == 'object') { //Array/Hashes/Objects 
+    for(var item in arr) {
+      var value = arr[item];
+      
+      if(typeof(value) == 'object') { //If it is an array,
+        dumped_text += level_padding + "'" + item + "' ...\n";
+        dumped_text += dump(value,level+1);
+      } else {
+        dumped_text += level_padding + "'" + item + "' => \"" + value + "\"\n";
+      }
+    }
+  } else { //Stings/Chars/Numbers etc.
+    dumped_text = "===>"+arr+"<===("+typeof(arr)+")";
+  }
+  return dumped_text;
 }
 
 /* repeatString() returns a string which has been repeated a set number of times */ 
@@ -965,90 +964,90 @@ function time_between(datein, dateout, unit_in_ms) {
 */
 
 (function(jQuery){
-	
-	jQuery.hotkeys = {
-		version: "0.8",
+  
+  jQuery.hotkeys = {
+    version: "0.8",
 
-		specialKeys: {
-			8: "backspace", 9: "tab", 13: "return", 16: "shift", 17: "ctrl", 18: "alt", 19: "pause",
-			20: "capslock", 27: "esc", 32: "space", 33: "pageup", 34: "pagedown", 35: "end", 36: "home",
-			37: "left", 38: "up", 39: "right", 40: "down", 45: "insert", 46: "del", 
-			96: "0", 97: "1", 98: "2", 99: "3", 100: "4", 101: "5", 102: "6", 103: "7",
-			104: "8", 105: "9", 106: "*", 107: "+", 109: "-", 110: ".", 111 : "/", 
-			112: "f1", 113: "f2", 114: "f3", 115: "f4", 116: "f5", 117: "f6", 118: "f7", 119: "f8", 
-			120: "f9", 121: "f10", 122: "f11", 123: "f12", 144: "numlock", 145: "scroll", 191: "/", 224: "meta"
-		},
-	
-		shiftNums: {
-			"`": "~", "1": "!", "2": "@", "3": "#", "4": "$", "5": "%", "6": "^", "7": "&", 
-			"8": "*", "9": "(", "0": ")", "-": "_", "=": "+", ";": ": ", "'": "\"", ",": "<", 
-			".": ">",  "/": "?",  "\\": "|"
-		}
-	};
+    specialKeys: {
+      8: "backspace", 9: "tab", 13: "return", 16: "shift", 17: "ctrl", 18: "alt", 19: "pause",
+      20: "capslock", 27: "esc", 32: "space", 33: "pageup", 34: "pagedown", 35: "end", 36: "home",
+      37: "left", 38: "up", 39: "right", 40: "down", 45: "insert", 46: "del", 
+      96: "0", 97: "1", 98: "2", 99: "3", 100: "4", 101: "5", 102: "6", 103: "7",
+      104: "8", 105: "9", 106: "*", 107: "+", 109: "-", 110: ".", 111 : "/", 
+      112: "f1", 113: "f2", 114: "f3", 115: "f4", 116: "f5", 117: "f6", 118: "f7", 119: "f8", 
+      120: "f9", 121: "f10", 122: "f11", 123: "f12", 144: "numlock", 145: "scroll", 191: "/", 224: "meta"
+    },
+  
+    shiftNums: {
+      "`": "~", "1": "!", "2": "@", "3": "#", "4": "$", "5": "%", "6": "^", "7": "&", 
+      "8": "*", "9": "(", "0": ")", "-": "_", "=": "+", ";": ": ", "'": "\"", ",": "<", 
+      ".": ">",  "/": "?",  "\\": "|"
+    }
+  };
 
-	function keyHandler( handleObj ) {
-		// Only care when a possible input has been specified
-		if ( typeof handleObj.data !== "string" ) {
-			return;
-		}
-		
-		var origHandler = handleObj.handler,
-			keys = handleObj.data.toLowerCase().split(" ");
-	
-		handleObj.handler = function( event ) {
-			// Don't fire in text-accepting inputs that we didn't directly bind to
-			if ( this !== event.target && (/textarea|select/i.test( event.target.nodeName ) ||
-				 event.target.type === "text") ) {
-				return;
-			}
-			
-			// Keypress represents characters, not special keys
-			var special = event.type !== "keypress" && jQuery.hotkeys.specialKeys[ event.which ],
-				character = String.fromCharCode( event.which ).toLowerCase(),
-				key, modif = "", possible = {};
+  function keyHandler( handleObj ) {
+    // Only care when a possible input has been specified
+    if ( typeof handleObj.data !== "string" ) {
+      return;
+    }
+    
+    var origHandler = handleObj.handler,
+      keys = handleObj.data.toLowerCase().split(" ");
+  
+    handleObj.handler = function( event ) {
+      // Don't fire in text-accepting inputs that we didn't directly bind to
+      if ( this !== event.target && (/textarea|select/i.test( event.target.nodeName ) ||
+         event.target.type === "text") ) {
+        return;
+      }
+      
+      // Keypress represents characters, not special keys
+      var special = event.type !== "keypress" && jQuery.hotkeys.specialKeys[ event.which ],
+        character = String.fromCharCode( event.which ).toLowerCase(),
+        key, modif = "", possible = {};
 
-			// check combinations (alt|ctrl|shift+anything)
-			if ( event.altKey && special !== "alt" ) {
-				modif += "alt+";
-			}
+      // check combinations (alt|ctrl|shift+anything)
+      if ( event.altKey && special !== "alt" ) {
+        modif += "alt+";
+      }
 
-			if ( event.ctrlKey && special !== "ctrl" ) {
-				modif += "ctrl+";
-			}
-			
-			// TODO: Need to make sure this works consistently across platforms
-			if ( event.metaKey && !event.ctrlKey && special !== "meta" ) {
-				modif += "meta+";
-			}
+      if ( event.ctrlKey && special !== "ctrl" ) {
+        modif += "ctrl+";
+      }
+      
+      // TODO: Need to make sure this works consistently across platforms
+      if ( event.metaKey && !event.ctrlKey && special !== "meta" ) {
+        modif += "meta+";
+      }
 
-			if ( event.shiftKey && special !== "shift" ) {
-				modif += "shift+";
-			}
+      if ( event.shiftKey && special !== "shift" ) {
+        modif += "shift+";
+      }
 
-			if ( special ) {
-				possible[ modif + special ] = true;
+      if ( special ) {
+        possible[ modif + special ] = true;
 
-			} else {
-				possible[ modif + character ] = true;
-				possible[ modif + jQuery.hotkeys.shiftNums[ character ] ] = true;
+      } else {
+        possible[ modif + character ] = true;
+        possible[ modif + jQuery.hotkeys.shiftNums[ character ] ] = true;
 
-				// "$" can be triggered as "Shift+4" or "Shift+$" or just "$"
-				if ( modif === "shift+" ) {
-					possible[ jQuery.hotkeys.shiftNums[ character ] ] = true;
-				}
-			}
+        // "$" can be triggered as "Shift+4" or "Shift+$" or just "$"
+        if ( modif === "shift+" ) {
+          possible[ jQuery.hotkeys.shiftNums[ character ] ] = true;
+        }
+      }
 
-			for ( var i = 0, l = keys.length; i < l; i++ ) {
-				if ( possible[ keys[i] ] ) {
-					return origHandler.apply( this, arguments );
-				}
-			}
-		};
-	}
+      for ( var i = 0, l = keys.length; i < l; i++ ) {
+        if ( possible[ keys[i] ] ) {
+          return origHandler.apply( this, arguments );
+        }
+      }
+    };
+  }
 
-	jQuery.each([ "keydown", "keyup", "keypress" ], function() {
-		jQuery.event.special[ this ] = { add: keyHandler };
-	});
+  jQuery.each([ "keydown", "keyup", "keypress" ], function() {
+    jQuery.event.special[ this ] = { add: keyHandler };
+  });
 
 })( jQuery );
 
@@ -1245,7 +1244,7 @@ function parse_json(json) {
  * Converts the given data structure to a JSON string.
  * Argument: arr - The data structure that must be converted to JSON
  * Example: var json_string = array2json(['e', {pluribus: 'unum'}]);
- * 			var json = array2json({"success":"Sweet","failure":false,"empty_array":[],"numbers":[1,2,3],"info":{"name":"Binny","site":"http:\/\/www.openjs.com\/"}});
+ *      var json = array2json({"success":"Sweet","failure":false,"empty_array":[],"numbers":[1,2,3],"info":{"name":"Binny","site":"http:\/\/www.openjs.com\/"}});
  * http://www.openjs.com/scripts/data/json_encode.php
  */
 function array2json(arr) {
@@ -1257,7 +1256,7 @@ function array2json(arr) {
     var is_list = (Object.prototype.toString.apply(arr) === '[object Array]');
 
     for(var key in arr) {
-    	var value = arr[key];
+      var value = arr[key];
         if(typeof value == "object") { //Custom handling for arrays
             //alert(dump(value) + " is object"); 
             if(is_list) parts.push(array2json(value)); /* :RECURSION: */
@@ -1304,9 +1303,9 @@ function update_gallery_trash(params, data) {
  * Simply loops thru each jquery item and logs it
  */
 jQuery.fn.debug = function() {
-	return this.each(function(){
-		$.log(this);
-	});
+  return this.each(function(){
+    $.log(this);
+  });
 };
 
 /*
@@ -1316,22 +1315,22 @@ jQuery.fn.debug = function() {
  * If not, it creates a string representation of the html element (if message is an object), or just uses the supplied value (if not an object).
  */
 jQuery.log = function(message){
-	// only if debugging is on
-	if( window.DEBUG ){
-		// if no firebug, build a debug line from the actual html element if it's an object, or just send the string
-		var str = message;
-		if( !('firebug' in console) ){
-			if( typeof(message) == 'object' ){
-				str = '&lt;';
-				str += message.nodeName.toLowerCase();
-				for( var i = 0; i < message.attributes.length; i++ ){
-					str += ' ' + message.attributes[i].nodeName.toLowerCase() + '="' + message.attributes[i].nodeValue + '"';
-				}
-				str += '&gt;';
-			}
-		}
-		console.console.log(str);
-	}
+  // only if debugging is on
+  if( window.DEBUG ){
+    // if no firebug, build a debug line from the actual html element if it's an object, or just send the string
+    var str = message;
+    if( !('firebug' in console) ){
+      if( typeof(message) == 'object' ){
+        str = '&lt;';
+        str += message.nodeName.toLowerCase();
+        for( var i = 0; i < message.attributes.length; i++ ){
+          str += ' ' + message.attributes[i].nodeName.toLowerCase() + '="' + message.attributes[i].nodeValue + '"';
+        }
+        str += '&gt;';
+      }
+    }
+    console.console.log(str);
+  }
 };
 
 // end logging
@@ -1346,39 +1345,39 @@ jQuery.log = function(message){
  *
  */
  
-this.imagePreview = function(){	
-	/* CONFIG */
-		
-		yOffset = 500;
-		xOffset = 30;
-		
-		// these 2 variable determine popup's distance from the cursor
-		// you might want to adjust to get the right result
-		
-	/* END CONFIG */
-	$("a.preview, img.image_preview").hover(function(e){
-		this.t = this.title;
-		this.title = "";	
-		//alert(this.href);
-		var c = (this.t != "") ? "<br/>" + this.t : "";
-		$("body").append("<p id='preview' style='z-index: 1000'><img src='"+ (this.href ? this.href : this.src) +"' alt='Image preview' />"+ c +"</p>");								 
-		var height = parseInt($('#preview').css('height'));
-		// if(height > 700) yOffset += 300;
-		// $("#preview").append("<p> h ="+ height +"</p>");								 
-		$("#preview")                                                         
-			.css("top",(e.pageY - yOffset) + "px")
-			.css("left",(e.pageX + xOffset) + "px")
-			.fadeIn("fast");						
+this.imagePreview = function(){ 
+  /* CONFIG */
+    
+    yOffset = 500;
+    xOffset = 30;
+    
+    // these 2 variable determine popup's distance from the cursor
+    // you might want to adjust to get the right result
+    
+  /* END CONFIG */
+  $("a.preview, img.image_preview").hover(function(e){
+    this.t = this.title;
+    this.title = "";  
+    //alert(this.href);
+    var c = (this.t != "") ? "<br/>" + this.t : "";
+    $("body").append("<p id='preview' style='z-index: 1000'><img src='"+ (this.href ? this.href : this.src) +"' alt='Image preview' />"+ c +"</p>");                 
+    var height = parseInt($('#preview').css('height'));
+    // if(height > 700) yOffset += 300;
+    // $("#preview").append("<p> h ="+ height +"</p>");                
+    $("#preview")                                                         
+      .css("top",(e.pageY - yOffset) + "px")
+      .css("left",(e.pageX + xOffset) + "px")
+      .fadeIn("fast");            
     },
-	function(){
-		this.title = this.t;	
-		$("#preview").remove();
-    });	
-	// $("a.preview").mousemove(function(e){
-	// 	$("#preview")
-	// 		.css("bottom",(e.pageY - yOffset) + "px")
-	// 		.css("left",(e.pageX + xOffset) + "px");
-	// });			
+  function(){
+    this.title = this.t;  
+    $("#preview").remove();
+    }); 
+  // $("a.preview").mousemove(function(e){
+  //  $("#preview")
+  //    .css("bottom",(e.pageY - yOffset) + "px")
+  //    .css("left",(e.pageX + xOffset) + "px");
+  // });      
 };
 
 function neosmart_wall(user, limit, offset) {  
@@ -1412,11 +1411,11 @@ function facebook_wall(user, limit, offset) {
 
 function facebook_wall_js(div_id, user, token, limit, offset) {
   $('#' + div_id).facebookWall({
-		id: user,
-		access_token: token,
-		limit: limit,
-		offset: offset
-	});
+    id: user,
+    access_token: token,
+    limit: limit,
+    offset: offset
+  });
 }
 
 // removes a paramter from query string
@@ -1764,12 +1763,12 @@ $(document).on("click", "A.goto-tab", function() {
 
 $(document).on("click", ".tooltip-ajax", function() {
   $(this).tooltip({
-		content:function(callback) { //callback
+    content:function(callback) { //callback
       var url = $(this).data("url");
-			$.get(url,{}, function(data) {
-				callback(data); //call the callback function to return the value
-			});
-		},
+      $.get(url,{}, function(data) {
+        callback(data); //call the callback function to return the value
+      });
+    },
   });
 });
 
@@ -2431,12 +2430,10 @@ function datepicker_setval($dp) {
 }
 
 /** not in use 
-
 function init_date_range() {
   init_datepicker_ranges();
   return false;
 }
-
 function init_datepicker_range($dp) {
   
   return;
@@ -2494,7 +2491,6 @@ function init_datepicker_range($dp) {
   });
   
   datepicker_set_duration($dp, 'days');
-
   if($start.val() || $end.val()) {
     update = false; // value already set
     //console.log("no update, vals set");
@@ -2994,12 +2990,12 @@ function afr_ready() {
 
   //console.log("Found " + $('.tooltip-ajax').length + " ajax tooltips");
   $('.tooltip-ajax').tooltip({
-		content:function(callback) { //callback
+    content:function(callback) { //callback
       var url = $(this).data("url");
-			$.get(url,{}, function(data) {
-				callback(data); //call the callback function to return the value
-			});
-		},
+      $.get(url,{}, function(data) {
+        callback(data); //call the callback function to return the value
+      });
+    },
   });
 
 
@@ -3320,7 +3316,6 @@ function afr_ready() {
     var url = $input.data('url');
     var operation = $input.data('operation');
     var ajax_url = operation ? "/ajax.php?oper=" + operation : url;
-
     if(ajax_url) {
       var bh = new Bloodhound({
         datumTokenizer: Bloodhound.tokenizers.obj.whitespace('value'),
@@ -4475,7 +4470,6 @@ function fc_get_day_rate(apt, weekend) {
   rate_weekend += extra_guest_rate; 
   var rate_extraperson = parseInt(apt.rate_extraperson || 0);
   var rate_num_guests = parseInt(apt.rate_num_guests || 2);
-
   // if num_guests
   var ng = apt.ng || 1;
   var extra_guests = Math.max(ng - rate_num_guests, 0);
@@ -4487,10 +4481,8 @@ function fc_get_day_rate(apt, weekend) {
   
   // if dates
   var num_days = apt.nd;
-
   if(weekend && apt.rate_weekend > 0 && apt.rate_weekend != apt.rate_day) return rate_weekend;
   return rate_day;
-
   */
 }
 
@@ -4638,12 +4630,12 @@ function fc_average_rate($fullcalendar, start, end, unit) {
 function init_tooltip() {
   //console.log("init tooltip()");
   $('.tooltip-ajax').tooltip({
-		content:function(callback) { //callback
+    content:function(callback) { //callback
       var url = $(this).data("url");
-			$.get(url,{}, function(data) {
-				callback(data); //call the callback function to return the value
-			});
-		},
+      $.get(url,{}, function(data) {
+        callback(data); //call the callback function to return the value
+      });
+    },
   });
   //console.log("init_tooltip(): jquery len=" + $('.tooltip-jq').length);
   $('.tooltip-jq').tooltip({
@@ -4890,7 +4882,7 @@ function fancybox_loader() {
   // Disable opening and closing animations, change title type
   $(".fancybox-effects-b").fancybox({
     openEffect  : 'none',
-    closeEffect	: 'none',
+    closeEffect : 'none',
 
     helpers : {
       title : {
@@ -4952,7 +4944,7 @@ function fancybox_loader() {
       title : {
         type : 'inside'
       },
-      buttons	: {}
+      buttons : {}
     },
 
     afterLoad : function() {
@@ -5045,9 +5037,9 @@ function fancybox_loader() {
  *  Copyright (c) 2001-2013. Matteo Bicocchi (Pupunzi);
  *  Open lab srl, Firenze - Italy
  *  email: matteo@open-lab.com
- *  site: 	http://pupunzi.com
- *  blog:	http://pupunzi.open-lab.com
- * 	http://open-lab.com
+ *  site:   http://pupunzi.com
+ *  blog: http://pupunzi.open-lab.com
+ *  http://open-lab.com
  *
  *  Licences: MIT, GPL
  *  http://www.opensource.org/licenses/mit-license.php
@@ -5068,78 +5060,78 @@ function fancybox_loader() {
 
 (function($){
 
-	var jQversion = jQuery.fn.jquery.split(".");
-	if(jQversion[1]<8)
-		return;
+  var jQversion = jQuery.fn.jquery.split(".");
+  if(jQversion[1]<8)
+    return;
 
-	jQuery.browser = {};
-	jQuery.browser.mozilla = false;
-	jQuery.browser.webkit = false;
-	jQuery.browser.opera = false;
-	jQuery.browser.msie = false;
+  jQuery.browser = {};
+  jQuery.browser.mozilla = false;
+  jQuery.browser.webkit = false;
+  jQuery.browser.opera = false;
+  jQuery.browser.msie = false;
 
-	var nAgt = navigator.userAgent;
-	jQuery.browser.name  = navigator.appName;
-	jQuery.browser.fullVersion  = ''+parseFloat(navigator.appVersion);
-	jQuery.browser.majorVersion = parseInt(navigator.appVersion,10);
-	var nameOffset,verOffset,ix;
+  var nAgt = navigator.userAgent;
+  jQuery.browser.name  = navigator.appName;
+  jQuery.browser.fullVersion  = ''+parseFloat(navigator.appVersion);
+  jQuery.browser.majorVersion = parseInt(navigator.appVersion,10);
+  var nameOffset,verOffset,ix;
 
 // In Opera, the true version is after "Opera" or after "Version"
-	if ((verOffset=nAgt.indexOf("Opera"))!=-1) {
-		jQuery.browser.opera = true;
-		jQuery.browser.name = "Opera";
-		jQuery.browser.fullVersion = nAgt.substring(verOffset+6);
-		if ((verOffset=nAgt.indexOf("Version"))!=-1)
-			jQuery.browser.fullVersion = nAgt.substring(verOffset+8);
-	}
+  if ((verOffset=nAgt.indexOf("Opera"))!=-1) {
+    jQuery.browser.opera = true;
+    jQuery.browser.name = "Opera";
+    jQuery.browser.fullVersion = nAgt.substring(verOffset+6);
+    if ((verOffset=nAgt.indexOf("Version"))!=-1)
+      jQuery.browser.fullVersion = nAgt.substring(verOffset+8);
+  }
 // In MSIE, the true version is after "MSIE" in userAgent
-	else if ((verOffset=nAgt.indexOf("MSIE"))!=-1) {
-		jQuery.browser.msie = true;
-		jQuery.browser.name = "Microsoft Internet Explorer";
-		jQuery.browser.fullVersion = nAgt.substring(verOffset+5);
-	}
+  else if ((verOffset=nAgt.indexOf("MSIE"))!=-1) {
+    jQuery.browser.msie = true;
+    jQuery.browser.name = "Microsoft Internet Explorer";
+    jQuery.browser.fullVersion = nAgt.substring(verOffset+5);
+  }
 // In Chrome, the true version is after "Chrome"
-	else if ((verOffset=nAgt.indexOf("Chrome"))!=-1) {
-		jQuery.browser.webkit = true;
-		jQuery.browser.name = "Chrome";
-		jQuery.browser.fullVersion = nAgt.substring(verOffset+7);
-	}
+  else if ((verOffset=nAgt.indexOf("Chrome"))!=-1) {
+    jQuery.browser.webkit = true;
+    jQuery.browser.name = "Chrome";
+    jQuery.browser.fullVersion = nAgt.substring(verOffset+7);
+  }
 // In Safari, the true version is after "Safari" or after "Version"
-	else if ((verOffset=nAgt.indexOf("Safari"))!=-1) {
-		jQuery.browser.webkit = true;
-		jQuery.browser.name = "Safari";
-		jQuery.browser.fullVersion = nAgt.substring(verOffset+7);
-		if ((verOffset=nAgt.indexOf("Version"))!=-1)
-			jQuery.browser.fullVersion = nAgt.substring(verOffset+8);
-	}
+  else if ((verOffset=nAgt.indexOf("Safari"))!=-1) {
+    jQuery.browser.webkit = true;
+    jQuery.browser.name = "Safari";
+    jQuery.browser.fullVersion = nAgt.substring(verOffset+7);
+    if ((verOffset=nAgt.indexOf("Version"))!=-1)
+      jQuery.browser.fullVersion = nAgt.substring(verOffset+8);
+  }
 // In Firefox, the true version is after "Firefox"
-	else if ((verOffset=nAgt.indexOf("Firefox"))!=-1) {
-		jQuery.browser.mozilla = true;
-		jQuery.browser.name = "Firefox";
-		jQuery.browser.fullVersion = nAgt.substring(verOffset+8);
-	}
+  else if ((verOffset=nAgt.indexOf("Firefox"))!=-1) {
+    jQuery.browser.mozilla = true;
+    jQuery.browser.name = "Firefox";
+    jQuery.browser.fullVersion = nAgt.substring(verOffset+8);
+  }
 // In most other browsers, "name/version" is at the end of userAgent
-	else if ( (nameOffset=nAgt.lastIndexOf(' ')+1) <
-			(verOffset=nAgt.lastIndexOf('/')) )
-	{
-		jQuery.browser.name = nAgt.substring(nameOffset,verOffset);
-		jQuery.browser.fullVersion = nAgt.substring(verOffset+1);
-		if (jQuery.browser.name.toLowerCase()==jQuery.browser.name.toUpperCase()) {
-			jQuery.browser.name = navigator.appName;
-		}
-	}
+  else if ( (nameOffset=nAgt.lastIndexOf(' ')+1) <
+      (verOffset=nAgt.lastIndexOf('/')) )
+  {
+    jQuery.browser.name = nAgt.substring(nameOffset,verOffset);
+    jQuery.browser.fullVersion = nAgt.substring(verOffset+1);
+    if (jQuery.browser.name.toLowerCase()==jQuery.browser.name.toUpperCase()) {
+      jQuery.browser.name = navigator.appName;
+    }
+  }
 // trim the fullVersion string at semicolon/space if present
-	if ((ix=jQuery.browser.fullVersion.indexOf(";"))!=-1)
-		jQuery.browser.fullVersion=jQuery.browser.fullVersion.substring(0,ix);
-	if ((ix=jQuery.browser.fullVersion.indexOf(" "))!=-1)
-		jQuery.browser.fullVersion=jQuery.browser.fullVersion.substring(0,ix);
+  if ((ix=jQuery.browser.fullVersion.indexOf(";"))!=-1)
+    jQuery.browser.fullVersion=jQuery.browser.fullVersion.substring(0,ix);
+  if ((ix=jQuery.browser.fullVersion.indexOf(" "))!=-1)
+    jQuery.browser.fullVersion=jQuery.browser.fullVersion.substring(0,ix);
 
-	jQuery.browser.majorVersion = parseInt(''+jQuery.browser.fullVersion,10);
-	if (isNaN(jQuery.browser.majorVersion)) {
-		jQuery.browser.fullVersion  = ''+parseFloat(navigator.appVersion);
-		jQuery.browser.majorVersion = parseInt(navigator.appVersion,10);
-	}
-	jQuery.browser.version = jQuery.browser.majorVersion;
+  jQuery.browser.majorVersion = parseInt(''+jQuery.browser.fullVersion,10);
+  if (isNaN(jQuery.browser.majorVersion)) {
+    jQuery.browser.fullVersion  = ''+parseFloat(navigator.appVersion);
+    jQuery.browser.majorVersion = parseInt(navigator.appVersion,10);
+  }
+  jQuery.browser.version = jQuery.browser.majorVersion;
 })(jQuery)
 
 function array2tr(ar) {
@@ -6177,12 +6169,10 @@ $(document).on("click", "A.smtlink", function() {
   }
   data.page_id = $("BODY").data('id');
   var tpl = $item.data("tpl") || $item.data("template") || '';
-
   console.log("smtlink: Loading tpl=" + tpl + " into " + target + " data=", data);
   return template_load(target, tpl, controller, options, data);     
                                                               
 });
-
     
 $(document).on("click", ".vmenu-item", function() {
   var $item = $(this);
@@ -6207,7 +6197,6 @@ $(document).on("click", ".vmenu-item", function() {
     if(data) ajax_url = ajax_url + '&' + obj2qs(data);
     $('#' + target).load(ajax_url, function(responseText) {        
       var onload = $anchor.data('onload'); // optionally call JS function on load
-
       // done, restore
       $icon.css('background-position', icon_pos); // hide icon
       $icon.html(''); // hide wheel
@@ -6468,14 +6457,14 @@ function lunh_calc(number) {
     sum += parseInt(number.substring(i,i+1));
   }
   var delta = new Array (0,1,2,3,4,-4,-3,-2,-1,0);
-  for (i=number.length-1; i>=0; i-=2 ) {		
+  for (i=number.length-1; i>=0; i-=2 ) {    
     var deltaIndex = parseInt(number.substring(i,i+1));
-    var deltaValue = delta[deltaIndex];	
+    var deltaValue = delta[deltaIndex]; 
     sum += deltaValue;
-  }	
+  } 
   var mod10 = sum % 10;
-  mod10 = 10 - mod10;	
-  if (mod10==10) {		
+  mod10 = 10 - mod10; 
+  if (mod10==10) {    
     mod10=0;                                              
   }
   return mod10;
@@ -8326,11 +8315,11 @@ function file_get_exif(file, mediaData) { // By Kjetil
 // Return a helper with preserved width of cells
 // That way draggable table rows keep original width during dragging
 var fixHelper = function(e, ui) {
-	ui.children().each(function() {
-		$(this).width($(this).width());
-		$(this).height($(this).height());
-	});
-	return ui;
+  ui.children().each(function() {
+    $(this).width($(this).width());
+    $(this).height($(this).height());
+  });
+  return ui;
 };
 
 
@@ -8442,7 +8431,6 @@ $(document).on("click", ".suggestion_input, .jq-autocomplete", function (e) {
 /** This handles user pressing enter in autocompletee field w/o selecting from list: 
 Simulate that user selects first */
 /** Hmm, this triggers in all form fields, disabling return to submit...
-
 $(document).on("focusin", ".jq-autocomplete", function () {
   //console.log("focus on autocomplete");
   $(window).keydown(function(event) {
@@ -8575,7 +8563,3 @@ function bounds_obj2json(bounds) {
   var bounds = [[lat0,lng0],[lat1,lng1]];
   return JSON.stringify(bounds);
 }         
-
-           
-
-
