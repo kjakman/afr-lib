@@ -7,6 +7,33 @@ function controller_mytest($app, $options = []) {
   return;
 }
 
+function controller_manual($app, $options = []){
+    //echo "Hai";
+    $sql = db_getAll("SELECT id FROM media_collection where subtype IN (40,50)"); 
+
+    foreach($sql as $val)
+    {
+      $sql1 = db_getAll("SELECT  *,min(original_year) as year FROM media_collection_map WHERE media_collection_id=".$val->id." AND original_year != '' GROUP BY media_collection_id");
+      if(count($sql1) == 1)
+              {
+                foreach($sql1 as $mval)
+                {
+                    $year = "".$mval->year."-01-01";
+                    update_object('media_collection', ['exhibition_sequence' => $year], $mval->media_collection_id);
+                }
+              }
+              else
+              {
+                    $year = "1000-01-01";
+                    update_object('media_collection', ['exhibition_sequence' => $year], $val->id);
+              }
+    }
+    $scope = $app->page->scope;
+    $scope->template = 'minisites/manual_update_selection.html';
+    return;   
+}
+
+
 /** not used by any site atm */
 function controller_home($app, $options = []) {
   return;
