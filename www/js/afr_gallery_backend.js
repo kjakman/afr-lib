@@ -586,11 +586,13 @@ $(document).on("click", '#delete-artwork-media', function(){
 //Delete related artwork media
 $(document).on("click", '#delete-collection-media', function(){
   var id = $(this).data('value');
+  var collection_id = $(this).data('id');
   $.ajax({
     url: "/ajax.php",
     data: {
       oper: "collection-media-delete",
       obj_id: id,
+      collection_id: collection_id,
       obj_type: 'media_collection_map'
     },
     success:function(response_data_json) {
@@ -819,6 +821,7 @@ $(document).on("focusout", ".edit_exb_start_date", function() {
   var obj_type= "media_collection";
   var id = $(this).data('id');
   var col = $(this).data('col');
+  var col2 = $(this).data('col2');
   var data = $(this).text();
   //alert(data);
   $.ajax({ url: "/ajax.php?obj_type=" + obj_type,
@@ -827,6 +830,7 @@ $(document).on("focusout", ".edit_exb_start_date", function() {
       type : "media_collection",
       id : id,
       col: col,
+      col2: col2,
       date : data,      
       oper : "edit",
     }
@@ -1244,6 +1248,7 @@ function bstCollectionSubtypeFormatter(value, row, index) {
     case 20: return 'Art Fair';
     case 30: return 'Other Event';
     case 40: return 'Selection';
+    case 50: return 'Private Link';
     default: return '';
   }      
 }
@@ -1260,7 +1265,7 @@ function bstCollectionSubtypeFormatter(value, row, index) {
 
 function bstStartDateFormatter(value, row, index) {
   if(!row.start_date) return '';
-  return '<span type="hidden" contentEditable="true" id="edit_exb_start_date'+row.id+'" class="edit_exb_start_date" name="edit_exb_start_date" data-date="'+sql2human(row.start_date)+'" data-col="start_date" data-id="'+row.id+'">'+sql2human(row.start_date)+'</span>';
+  return '<span type="hidden" contentEditable="true" id="edit_exb_start_date'+row.id+'" class="edit_exb_start_date" name="edit_exb_start_date" data-date="'+sql2human(row.start_date)+'" data-col="start_date" data-col2="exhibition_sequence" data-id="'+row.id+'">'+sql2human(row.start_date)+'</span>';
 }
 
 function bstEndDateFormatter(value, row, index) {
@@ -1556,6 +1561,14 @@ function validateDatas(){
   }
 }
 
+  function Test()
+   {
+       $(".profile_default").hide();
+   }
+   function delTest()
+   {
+       $(".profile_default").show();
+   }
 
 /**
 $(document).ready(function() {  

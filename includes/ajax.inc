@@ -28,19 +28,28 @@
       $obj_type= $_REQUEST['type'];
       $obj_id= $_REQUEST['id'];
       $obj_col= $_REQUEST['col'];
+      $obj_col2= $_REQUEST['col2'];
       $date = $_REQUEST['date'];
       $datas= $_REQUEST['data'];
       if($date)
       {
         $data = date("Y-m-d", strtotime($date));
       }
-      elseif($datas)
+      else
       {
         $data = $datas;
       }
+      //dump($data);exit;
       //echo $_REQUEST['date'];die;
+      if($obj_col == 'start_date')
+      {
+        $obj_data= array('obj_type'=>$obj_type,'obj_id'=>$obj_id,$obj_col=>$data,$obj_col2=>$data);  
+      }
+      else
+      {
+        $obj_data= array('obj_type'=>$obj_type,'obj_id'=>$obj_id,$obj_col=>$data);  
+      }
       
-      $obj_data= array('obj_type'=>$obj_type,'obj_id'=>$obj_id,$obj_col=>$data);
       $result= update_object($obj_type, $obj_data, $obj_id);
       die("success");
   }
@@ -334,7 +343,9 @@
       if($error = check_required($obj_data, 
           ['title' => "Title", 'primary_year' => "Primary Year", 'technique' => "Technique"])) 
           json_error("Missing: ".implode(', ', $error));
-      */  
+      */    
+      if($obj_data['primary_year'] == "") $obj_data['primary_year'] = "";
+      //dump($obj_data);exit;
       if($obj_id) {
         list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
         print_log("save-artwork: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'gallery', LOG_LEVEL_TEST);
@@ -388,7 +399,6 @@
         if($error = check_required($obj_data, 
             ['type' => "Type"])) 
             json_error("Missing: ".implode(', ', $error));
-
       if($obj_id) {
         list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
       }else{
@@ -1116,6 +1126,32 @@
       
       $id = $obj_id;
       if(isset($obj_data['subtype'])) { // first tab
+      //=====================Add New Column Exhibition Sequence Vignesh 02-09-2010=============//
+        if($obj_data['subtype'] == '40' || $obj_data['subtype'] == '50'){
+            if($id != '')
+            {
+            $media_collection_map = db_getAll("SELECT  *,min(original_year) as year FROM media_collection_map WHERE media_collection_id=".$id." AND original_year != '' GROUP BY media_collection_id");
+            //dump(count($media_collection_map));exit;
+              if(count($media_collection_map) == 1)
+              {
+                foreach($media_collection_map as $mval){
+                    $year = "".$mval->year."-01-01";
+                    update_object('media_collection', ['exhibition_sequence' => $year], $mval->media_collection_id);
+                }
+              }
+              else
+              {
+                  $year = "1000-01-01";
+                  update_object('media_collection', ['exhibition_sequence' => $year], $id);
+              } 
+            }
+            else
+            {
+               $obj_data['exhibition_sequence'] = "1000-01-01"; 
+            }    
+        }
+      //=====================Add New Column Exhibition Sequence Vignesh 02-09-2010=============//
+      //dump($obj_data['exhibition_sequence']);exit;
         if($error = check_required($obj_data, 
             ['title' => "Title", 'subtype' => "Type"]
           )) json_error("Missing: ".implode(', ', $error));
@@ -1147,15 +1183,19 @@
           }
           $start_date = $obj_data['start_date'] = date2sql($obj_data['start_date']);
           $end_date = $obj_data['end_date'] = date2sql($obj_data['end_date']);
+          //=====================Add New Column Exhibition Sequence Vignesh 02-09-2010=============//
+          if($ex_type == 'Gallery Show' || $ex_type == 'Art Fair' || $ex_type == 'Other Event'){
+            $obj_data['exhibition_sequence'] = $start_date;
+          }
+          //=====================End Column Exhibition Sequence Vignesh 02-09-2010=============//
+          //print_r($obj_data);exit;
           print_log("save-collection: loc={$loc_id} date={$sql_date} start={$start_date} end={$end_date} data:".dump($obj_data,true), 'collection', LOG_LEVEL_TEST);
           
           if($start_date > $end_date) json_error("Start cannot be after end");
         }
-      
       }
       //print_log("add:$address org:$address_formatted changed: $address_changed", 'collection', LOG_LEVEL_TEST);
 
-      
       if($obj_id) {
         /* upload title image validation */         
         if($obj_data['title_image_option'] == 0){   //Inactive existing media if title image selected from artwork
@@ -1193,11 +1233,12 @@
           $obj_data['start_date'] = '';
           $obj_data['end_date'] = '';
         }
+        //print_r($obj_data);exit;
         list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
       } else {
         list($id, $errors) = add_object($obj_type, $obj_data);
       }
-      
+      //print_r($obj_data['exhibition_sequence']);
       if($errors) json_error($errors);
       if(!$id) json_error("Missing ID");
      
@@ -1228,7 +1269,6 @@
       }  
 
       if($type == MEDIA_COLLECTION_TYPE_EXHIBITION) {
-        
         $in  = $data['start_date'] = date2sql($start_date);
         $out  = $data['end_date'] = date2sql($end_date);
         
@@ -5785,6 +5825,8 @@
 
     case 'collection-media-delete':
       $id = trim($obj_data['obj_id']);
+      $collection_id = trim($obj_data['collection_id']);
+      //dump($obj_data);exit;
       $obj_type = trim($obj_data['obj_type']);
       if($id){
         $data = find_object($obj_type, ['id' => $id]);
@@ -5792,6 +5834,27 @@
         if($media_id)
           list($delete_media, $errors) = delete_object('media', $media_id);
           list($delete_artwork, $errors) = delete_object($obj_type, $id);
+          //=====================Update Exhibition Sequence=====vignesh 03-09-2020======================//
+            $media_collection = db_getAll("SELECT id FROM media_collection WHERE id=".$collection_id." and subtype IN (40,50)");   
+            //dump($media_collection);exit;
+            foreach($media_collection as $val)
+            {
+              $media_collection_map = db_getAll("SELECT  *,min(original_year) as year FROM media_collection_map WHERE media_collection_id=".$val->id." AND original_year !='' GROUP BY media_collection_id");
+              if(count($media_collection_map) == '1')
+              {
+                foreach($media_collection_map as $mval)
+                {
+                    $year = "".$mval->year."-01-01";
+                    update_object('media_collection', ['exhibition_sequence' => $year], $mval->media_collection_id);
+                  }
+              }
+              else
+              {
+                    $year = "1000-01-01";
+                    update_object('media_collection', ['exhibition_sequence' => $year], $collection_id);
+              }        
+            }
+            //=====================Update Exhibition Sequence=====vignesh 03-09-2020 End======================//
         if($errors) write_file($log_file, "Delete errors:".dump($errors, true), 'a'); // "\n------------\n\n"
       }
       $result->message = "Media Deleted";
@@ -7782,5 +7845,5 @@
   // Else, just display the message on a new page  
   }
   
-  exit(); // nothing more to do
+  exit(); // nothing more to do 
 
