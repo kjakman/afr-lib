@@ -1,0 +1,36 @@
+{
+  "name": "select-to-autocomplete",
+  "version": "0.0.2",
+  "homepage": "https://github.com/daminufe/selectToAutocomplete",
+  "authors": [
+    "Jamie Appleseed <jamie@baymard.com>"
+  ],
+  "description": "Turns a select box into an advanced autocomplete with synonims support.",
+  "main": "jquery.select-to-autocomplete.js",
+  "moduleType": [
+    "globals"
+  ],
+  "keywords": [
+    "select",
+    "autocomplete",
+    "country",
+    "selector"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "_release": "0.0.2",
+  "_resolution": {
+    "type": "version",
+    "tag": "0.0.2",
+    "commit": "68009caed2f85a4b029c2588c0c57a727556f6b8"
+  },
+  "_source": "https://github.com/daminufe/selectToAutocomplete.git",
+  "_target": "^0.0.2",
+  "_originalSource": "select-to-autocomplete"
+}

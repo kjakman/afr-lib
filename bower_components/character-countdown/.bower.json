@@ -1,0 +1,14 @@
+{
+  "name": "character-countdown",
+  "homepage": "https://github.com/michael-lynch/character-countdown",
+  "version": "1.0.0",
+  "_release": "1.0.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "1.0.0",
+    "commit": "6047a65e7355ed48573cfba4ecafa57c0c5e6b53"
+  },
+  "_source": "https://github.com/michael-lynch/character-countdown.git",
+  "_target": "^1.0.0",
+  "_originalSource": "character-countdown"
+}

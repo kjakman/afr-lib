@@ -1,0 +1,37 @@
+{
+  "name": "iban",
+  "main": "iban.js",
+  "version": "0.0.10",
+  "homepage": "https://github.com/arhs/iban.js",
+  "description": "IBAN & BBAN validation, formatting and conversion in JavaScript",
+  "keywords": [
+    "iban",
+    "bban",
+    "validation",
+    "formatting",
+    "conversion",
+    "format",
+    "validate",
+    "convert"
+  ],
+  "authors": [
+    "ARHS Developments SA"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "test",
+    "LICENSE",
+    "README.md",
+    "package.json"
+  ],
+  "_release": "0.0.10",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.0.10",
+    "commit": "bfb7fc8bd4d4ebdcda218492ac823d16b059880c"
+  },
+  "_source": "https://github.com/arhs/iban.js.git",
+  "_target": "^0.0.10",
+  "_originalSource": "iban"
+}

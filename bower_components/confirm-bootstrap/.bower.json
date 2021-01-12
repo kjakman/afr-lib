@@ -1,0 +1,25 @@
+{
+  "name": "confirm-bootstrap",
+  "description": "Confirm modal made with twitter bootstrap",
+  "main": "confirm-bootstrap.js",
+  "authors": [
+    "Maxime Ailloud"
+  ],
+  "license": "WTFPL",
+  "keywords": [
+    "confirm",
+    "bootstrap"
+  ],
+  "homepage": "https://github.com/maxailloud/confirm-bootstrap",
+  "moduleType": [],
+  "version": "1.1.0",
+  "_release": "1.1.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "1.1.0",
+    "commit": "8bf888c6089ad7c0e5d1d038c65eb86178fe255f"
+  },
+  "_source": "https://github.com/maxailloud/confirm-bootstrap.git",
+  "_target": "^1.1.0",
+  "_originalSource": "confirm-bootstrap"
+}
