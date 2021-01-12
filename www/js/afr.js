@@ -7557,6 +7557,12 @@ function init_fileuploader($target, loadData, extra_options) {
 
    });      
        
+  $target.on('fileuploadprocessdone', function (e, data) {
+      
+      console.log("fileuploadprocessdone:");
+      console.log(data.exif.getAll());
+  });
+
    $target.on('fileuploadcompleted', function(e, data) {
      var result = data ? data.result : {};
      var success = result.success;
