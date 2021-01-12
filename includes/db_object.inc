@@ -1845,6 +1845,7 @@ function save_object_query($obj_type, $data, $options = array()) {
   $flds = array();
   $vals = array();
 
+
   if($debug) print_log("soq: gh3", "soq", LOG_LEVEL_ALWAYS);
   
   foreach($fields as $field => $class) {
@@ -2045,7 +2046,6 @@ function save_object_query($obj_type, $data, $options = array()) {
   if($error_count) return array(0, $errors, $messages);
   
 
-  
   if($id) {
     $action = 'update';
   } else { // insert query
@@ -2054,7 +2054,8 @@ function save_object_query($obj_type, $data, $options = array()) {
       $id = $preset_id;
     } else {
       $id = nextId($table);
-      if(!$id) return array(0, array("No ID sequence for $obj_type and no preset id"));
+      //print_r(nextId($table));exit;
+      //if(!$id) return array(0, array("No ID sequence for $obj_type and no preset id"));
     }
   }
 

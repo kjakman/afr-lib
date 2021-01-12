@@ -4784,6 +4784,7 @@ function controller_gallery_backend($app, $options = []) {
   $subview = $app->page->subview = $app->page->subview ?: 'artworks';
   //$subview = $app->page->subview ?: 'artworks';
   $partial = isset($_GET['_pv']) && $_GET['_pv'];
+
   $app->page->subtemplate = "_gallery-backend-{$subview}.html";
   
   if(!$partial) { /** don't need to do this in partial view */
@@ -4943,6 +4944,97 @@ function controller_gallery_backend($app, $options = []) {
       $app->page->itemview = 'ACsettings';
       $app->page->listview = 'ACsettings';
     break;
+
+    //-----------------------vignesh Implimented----------------//
+
+      case "crud":
+      $scope->section = 'crud';
+      $scope->obj_type = $obj_type = "cruds";
+      //dump($obj_type);exit;
+      if(!$add) {
+        if(!$id) return controller_error($app, "Missing ID");
+
+        //$get_data = db_getAll("select * from crud where id='$scope->obj_id'");
+        $get_data = find_objects($obj_type, array('id' => $scope->obj_id));
+
+        //$crud_datas = [];
+        foreach($get_data as $val){
+             $scope->id = $val->id;
+             $scope->name = $val->name;
+             $scope->email = $val->email;
+             $scope->mobile = $val->mobile;
+        }
+
+      }
+      //die("u_id={$app->user_id } Auth_artist: {$auth_artist} auth_artwork={$scope->auth_edit_artwork}".dump($artist_ids,true));
+      
+      $app->page->subtemplate = $sub = '_gallery-backend-crud-form.html';
+      $app->page->itemview = 'crud';
+      $app->page->listview = 'cruds';
+      print_log("action={$action} type={$obj_type} id={$obj_id} name={$obj->name} edit={$edit} auth={$auth_edit} sub={$sub}", 'backend', LOG_LEVEL_TEST);
+      
+      break;
+
+      case "cruds":
+      $scope->section = 'crud';
+      $scope->obj_type = $obj_type = "cruds";
+      $app->page->itemview = 'crud';
+      $app->page->listview = 'crud';
+      //dump($scope);
+      $filters = ['active' => 1];
+      $filter_json = count($filters) ? json_encode($filters) : '';
+      $scope->list_url = "/ajax.php?oper=get-rows&obj_type=cruds".($filter_json ? "&filters=".urlencode($filter_json) : '');
+      break;
+
+      //---------------------------End Vignesh Implimented------------------//
+
+//-----------------------Jemima Implimented----------------//
+
+      	case "company":
+
+			$scope->section = 'company';
+			$scope->obj_type = $obj_type = "company";
+
+
+
+      		if(!$add) {
+        		if(!$id) return controller_error($app, "Missing ID");
+
+
+				//$get_data = db_getAll("select * from company where id='$scope->obj_id'");
+				$get_data = find_objects('company', array('id' => $scope->obj_id));
+
+				//$crud_datas = [];
+				foreach($get_data as $val){
+				     $scope->id = $val->id;
+				     $scope->name = $val->name;
+				     $scope->email = $val->email;
+				     $scope->mobile = $val->mobile;
+				}
+
+      		}
+      		//die("u_id={$app->user_id } Auth_artist: {$auth_artist} auth_artwork={$scope->auth_edit_artwork}".dump($artist_ids,true));
+      
+			$app->page->subtemplate = $sub = '_gallery-backend-company-form.html';
+			$app->page->itemview = 'company';
+			$app->page->listview = 'companies';
+
+			print_log("action={$action} type={$obj_type} id={$obj_id} name={$obj->name} edit={$edit} auth={$auth_edit} sub={$sub}", 'backend', LOG_LEVEL_TEST);
+      
+      	break;
+
+      	case "companies":
+			$scope->section = 'company';
+			$scope->obj_type = $obj_type = "company";
+			$app->page->itemview = 'company';
+			$app->page->listview = 'companies';
+			//dump($scope);
+			$filters = ['active' => 1];
+			$filter_json = count($filters) ? json_encode($filters) : '';
+			$scope->list_url = "/ajax.php?oper=get-rows&obj_type=company".($filter_json ? "&filters=".urlencode($filter_json) : '');
+      	break;
+
+//---------------------------End Jemima Implimented------------------//
       
     case "artwork":
       $scope->section = 'artwork';

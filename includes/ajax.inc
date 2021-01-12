@@ -330,6 +330,77 @@
       echo(json_encode($result));
       exit;      
       break;
+
+
+    //------------------------------vignesh Implemented-------------------//
+    case 'save-crud':
+      extract($obj_data);
+
+      print_log("save-crud: type: {$obj_type} id: {$obj_id} data:".dump($obj_data,true), 'crud', LOG_LEVEL_TEST);
+
+      if($obj_id) {
+        list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
+        print_log("save-crud: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'crud', LOG_LEVEL_TEST);
+      } else {
+        list($id, $errors) = add_object($obj_type, $obj_data);
+        print_log("save-crud: added {$obj_type} id: {$obj_id} errors".dump($errors,true), 'crud', LOG_LEVEL_TEST);
+      }              
+          
+      if($errors) json_error($errors);
+      
+      $obj = get_object($obj_type, $id);
+      //$obj->next_tab = $obj_data['next_tab'];
+      
+      $result->success = 1;
+      $result->data = $obj;
+      if($obj_id) 
+      {
+        $result->message = "Successfully Update Crud";
+      }
+      else
+      {
+        $result->message = "Successfully Inserted Crud";
+      }  
+      
+      echo(json_encode($result));
+      exit;      
+      break;  
+    //------------------------------End vignesh Implemented-------------------//     
+
+//------------------------------Jemima Implemented-------------------//
+    case 'save-company':
+        extract($obj_data);
+
+        print_log("save-company: type: {$obj_type} id: {$obj_id} data:".dump($obj_data,true), 'company', LOG_LEVEL_TEST);
+
+        if($obj_id) {
+            list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
+            print_log("save-company: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'company', LOG_LEVEL_TEST);
+        }else {
+            list($id, $errors) = add_object($obj_type, $obj_data);
+            print_log("save-company: added {$obj_type} id: {$obj_id} errors".dump($errors,true), 'company', LOG_LEVEL_TEST);
+        }              
+          
+        if($errors) json_error($errors);
+      
+        $obj = get_object($obj_type, $id);
+        //$obj->next_tab = $obj_data['next_tab'];
+      
+        $result->success = 1;
+        $result->data = $obj;
+        if($obj_id) 
+        {
+            $result->message = "Successfully Update Company";
+        }
+        else
+        {
+            $result->message = "Successfully Inserted Company";
+        }  
+      
+        echo(json_encode($result));
+        exit;      
+    break;  
+//------------------------------End Jemima Implemented-------------------//      
     
     case 'save-artwork':
       extract($obj_data);
@@ -2462,7 +2533,7 @@
     case 'get-rows':
       extract($obj_data);
       $allowed_types = ['invoice', 'inv_lineitem', 'payment', 'withdrawal', 'user', 'shortstay', 'dictionary', 'reservation', 
-                        'artwork', 'gallery', 'media_collection', 'media', 'media_folder' ,'plugin', 'minisite', 'uhuru_registration', 'uhuru_trial_lesson'];
+                        'artwork', 'gallery', 'media_collection', 'media', 'media_folder' ,'plugin', 'minisite', 'uhuru_registration', 'uhuru_trial_lesson', 'cruds','company'];
       if(!in_array($obj_type, $allowed_types)) json_error("Listing $obj_type not supported");
       $options = array();
       foreach(array('offset', 'limit', 'sort', 'order', 'fields') as $fld) $options[$fld] = $obj_data[$fld];
@@ -2536,7 +2607,6 @@
           $terms[] = "sum($field) as $field";
         }
       }
-
       $totalRows = find_objects($obj_type, $search, array('fields' => $terms));
       $totalRow = $totalRows[0];
       $response->total = $totalRow->total_count + $extra_count;
