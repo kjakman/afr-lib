@@ -2077,7 +2077,7 @@ function vp_artwork_info(vpdata) {
   //  content = content + "Price on inquiry<br>";
   //}
 
-  //if (item.comment) content = content + "<hr><p>floop" + item.comment + "</p><br>";
+  if (item.comment) content = content + "<hr><p>floop" + item.comment + "</p><br>";
 
   //<div class='vp__tab-content'><p>" + comment + "</p></div>";
   return content;
@@ -2499,7 +2499,7 @@ var openPhotoSwipe = function(cid, index, galleryElement, disableAnimation, from
       // Delay until loading indicator is displayed
       loadingIndicatorDelay: 1000,
 
-      // Function builds caption markup
+      // Function builds caption markup 
       addCaptionHTMLFn: function(item, captionEl, isFake) {
           // item      - slide object
           // captionEl - caption DOM element
@@ -2516,12 +2516,14 @@ var openPhotoSwipe = function(cid, index, galleryElement, disableAnimation, from
 
           /** todo: use -1 for no, 1 for yes, 0 for unknown */
           //console.log("calling vp_caption for title: data", item.data);
-          var caption = vp_caption(json, item.data, 0);
-       captionEl.children[0].innerHTML = caption;
-          captionEl.children[0].innerHTML = 'fofoo2'; // caption;
-          //captionEl.children[0].innerHTML = ''; // caption;
-          return true;
-      },
+        var caption = vp_caption(json, item.data, 0);
+        //   captionEl.children[0].innerHTML = caption;
+       //   captionEl.children[0].innerHTML = 'fofoo2'; // caption;
+       //    //captionEl.children[0].innerHTML = ''; // caption;
+            captionEl.children[0].innerHTML = caption;
+
+            return true;
+        },
 
       // Buttons/elements
       closeEl: true,

@@ -1,4 +1,5 @@
 console.log("loading afr.js 201911200225");
+console.log("loading afr.js 201911200225");
 
 if(typeof g_ready_scripts == "undefined") var g_ready_scripts = [];
 g_ready_scripts.push('afr_ready');
@@ -43,6 +44,8 @@ function stopScroll() {
 */
 
 function in_iframe() {
+      console.log("in_iframe:");
+
   try {
     return window.self !== window.top;
   } catch (e) {
@@ -51,23 +54,33 @@ function in_iframe() {
 }
 
 function isDefined(thevar){
+      console.log("isDefined:");
+
    return (typeof(thevar) == 'undefined') ? false : true;
 }
 
 function isExisting(obj){
+      console.log("isExisting:");
+
   return typeof(obj)!='undefined';
 }
 
 //returns true is it is an array
 function isArray(obj) {
+      console.log("isArray:");
+
   return (obj.constructor.toString().indexOf("Array") == -1) ? false : true;
 }
 
 function is_array(input){
+      console.log("is_array:");
+
   return typeof(input)=='object' && (input instanceof Array);
 }
 
 function in_array(needle, haystack) {
+      console.log("in_array:");
+
   var length = haystack.length;
   for(var i = 0; i < length; i++) {
       if(haystack[i] == needle) return true;
@@ -77,10 +90,14 @@ function in_array(needle, haystack) {
 
 // return a clone of object members (not prototypes);
 function clone_object(obj) {
+      console.log("clone_object:");
+
   return JSON.parse(JSON.stringify(obj));
 }
 
 function truncate(str, len, elipsis) {
+      console.log("truncate:");
+
   if(!str) return str;
   if(str.length <= len) return str;
   if(typeof elipsis == "undefined") var elipsis = "...";
@@ -89,6 +106,8 @@ function truncate(str, len, elipsis) {
 
 // http://kevin.vanzonneveld.net
 function is_object (mixed_var) {
+      console.log("is_object:");
+
   if (Object.prototype.toString.call(mixed_var) === '[object Array]') {
     return false;
   }
@@ -131,6 +150,8 @@ Array.min = function( array ){
 
 // http://stackoverflow.com/questions/17264639/replace-text-but-keep-case
 function matchCase(text, pattern) {
+      console.log("matchCase:");
+
   var result = '';
 
   for(var i = 0; i < text.length; i++) {
@@ -148,10 +169,14 @@ function matchCase(text, pattern) {
 }
 
 function form_input_is_int(input) {
+      console.log("form_input_is_int:");
+
   return !isNaN(input)&&parseInt(input)==input;
 }
 
 function currency2symbol(currency) {
+      console.log("currency2symbol:");
+
   var currency_symbols = {
       'USD': '$', // US Dollar
       'EUR': '€', // Euro
@@ -177,6 +202,8 @@ function currency2symbol(currency) {
 
 // http://phpjs.org/functions/extract/
 function extract (arr, type, prefix) {
+      console.log("extract:");
+
   // From: http://phpjs.org/functions
   // +   original by: Brett Zamir (http://brett-zamir.me)
   // %        note 1: Only works by extracting into global context (whether called in the global scope or
@@ -265,10 +292,14 @@ function extract (arr, type, prefix) {
 
 // following 2 from http://www.andrewpeace.com/javascript-is-int.html
 function is_int(input) {
+      console.log("is_int:");
+
   return typeof(input)=='number'&&parseInt(input)==input;
 }
 
 function remove_null(obj_or_array) {
+      console.log("remove_null:");
+
   for (i in obj_or_array) {
     //alert("i=" + i + " val=" + obj_or_array[i] + ' is null=' + (obj_or_array[i] === null ? "true" : "false"));
     if (obj_or_array[i] === null || obj_or_array[i] === undefined) {      
@@ -280,6 +311,8 @@ function remove_null(obj_or_array) {
 
 // finds object(s) with key=val in obj (or array)
 function findObjects(obj, key, val) {
+      console.log("findObjects:");
+
   var objects = [];
   for (var i in obj) {
     if (!obj.hasOwnProperty(i)) continue;
@@ -339,6 +372,8 @@ function log() {
 // takes a jquery object, splits id, returns 2nd part
 // so foo_233 returns 233
 function get_target_id($target) {
+      console.log("findObjects:");
+
   var tid = $target.prop("id");
   var ar = tid.split("_");
   return ar[1];
@@ -346,6 +381,8 @@ function get_target_id($target) {
                   
 // removes empty elements from form before submitting (makes for cleaner query string.)
 function cleanEmptyFields(theform) {
+      console.log("findObjects:");
+
   //return;
   //var theform = thebutton.form;
   //return true;    
@@ -364,6 +401,8 @@ function cleanEmptyFields(theform) {
 // so first use: var queryString = url.substring( query.indexOf('?') + 1); 
 // Thanks http://www.joezimjs.com/javascript/3-ways-to-parse-a-query-string-in-a-url/
 function parseQueryString (queryString) {
+      console.log("findObjects:");
+
   var params = {}, queries, temp, i, l;
   queries = queryString.split("&"); // Split into key/value pairs
  
@@ -377,6 +416,8 @@ function parseQueryString (queryString) {
 
 // thanks http://stackoverflow.com/questions/5999118/add-or-update-query-string-parameter
 function replace_query_var(uri, key, value) {
+      console.log("replace_query_var:");
+
   if(uri == '#') return "?" + key + "=" + encodeURIComponent(value);
   var hash = '';  
   if(uri.indexOf('#') > 0) { // handle hash
@@ -395,6 +436,8 @@ function replace_query_var(uri, key, value) {
 }
 
 function hideEl(el){
+      console.log("hideEl:");
+
   //return;
   if (document.getElementById(el)){
         document.getElementById(el).style.display = 'none';
@@ -404,6 +447,8 @@ function hideEl(el){
 }
 
 function showEl(el){
+      console.log("showEl:");
+
   //alert('showEl:'+el);
   if (document.getElementById(el)){
       document.getElementById(el).style.display = 'block';
@@ -1346,6 +1391,7 @@ jQuery.log = function(message){
  */
  
 this.imagePreview = function(){ 
+  console.log('imagePreview starts');
   /* CONFIG */
     
     yOffset = 500;
@@ -1378,6 +1424,8 @@ this.imagePreview = function(){
   //    .css("bottom",(e.pageY - yOffset) + "px")
   //    .css("left",(e.pageX + xOffset) + "px");
   // });      
+  console.log('imagePreview ends');
+
 };
 
 function neosmart_wall(user, limit, offset) {  
@@ -2035,51 +2083,57 @@ function fill_form(form_id, data) {
 
 // return a random letter + timestamp to use as a "random" element ID
 function random_id() {
-  var randLetter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
-  return randLetter + Date.now();
+    var randLetter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+    return randLetter + Date.now();
 }
 
 /** used to load URL from back-end. Show spinner. Used by invoice export */
-$(document).on("click", ".ajax-loader", function(e) {
-  console.log('ajax-loader');
-  var $target = $(this);
-  var url = $target.data('url') || $target.attr('href') || '';
-  if($target.data('breakout')) {
-    url = replace_query_var(url, '_pv', 0)
-    console.log("breakout - use hard redirect to url=" + url);
-    window.location.href = url; // don't use soft load
-    return;
-  }
-  if(g_form_dirty) {
-    e.preventDefault();
-    console.log("ajax-loader: form dirty a href=" + url);
-    if(!confirm_modal($target)) return;
-  }
-  
-  var target = $target.data('target');
-  var org_text = $target.html();
-  var load_text = $target.data('load_text') || org_text;
-  var $target_div = $(target);
-  var spinner = '<i class="fa fa-spinner fa-spin"></i> ';
-  console.log('url=' + url + ' target=' + target + " len=" + $target_div.length);
-  if(url && target && $target_div.length) {
-    $target.removeClass("hidden").html(spinner + load_text).show("fast");
-    $target_div.load(url, function() {
-      $target.html(org_text); 
-      ready_script();      
+$( document ).ready(function(){
+    $(document).on("click", ".ajax-loader", function(e) {
+        $.ajaxSetup ({
+            cache: false
+        });
+        console.log('ajax-loader');
+        var $target = $(this);
+        var url = $target.data('url') || $target.attr('href') || '';
+        if($target.data('breakout')) {
+            url = replace_query_var(url, '_pv', 0)
+            console.log("breakout - use hard redirect to url=" + url);
+            window.location.href = url; // don't use soft load
+            return;
+        }
+        if(g_form_dirty) {
+            e.preventDefault();
+            console.log("ajax-loader: form dirty a href=" + url);
+            if(!confirm_modal($target)) return;
+        }
+      
+        var target = $target.data('target');
+        var org_text = $target.html();
+        var load_text = $target.data('load_text') || org_text;
+        var $target_div = $(target);
+        var spinner = '<i class="fa fa-spinner fa-spin"></i> ';
+        console.log('url=' + url + ' target=' + target + " len=" + $target_div.length);
+        if(url && target && $target_div.length) {
+            $target.removeClass("hidden").html(spinner + load_text).show("fast");
+            $target_div.load(url, function() {
+                $target.html(org_text); 
+                ready_script();      
+            });
+        }
+        return false;
     });
-  }
-  return false;
 });
+    
 
 /** disable empty fields to clean URL for GET requests */
 $(document).on("submit", ".clean-submit", function() {
-  var $form = $(this);
-  console.log("Cleaning form method=" + $form.attr('method').toLowerCase());
-  if($form.attr('method').toLowerCase() == "get") {
-    form_disable_blank($form);
-  }
-  return true;  
+    var $form = $(this);
+    console.log("Cleaning form method=" + $form.attr('method').toLowerCase());
+    if($form.attr('method').toLowerCase() == "get") {
+        form_disable_blank($form);
+    }
+    return true;  
 });
 
 function form_disable_blank($form) {
@@ -2270,6 +2324,8 @@ $(document).on("change", ".mail-form INPUT.auto-preview, .mail-form TEXTAREA.aut
   var $form = $(this).closest('form');
   var form_id = $form.attr('id');
   mail_preview(form_id);
+      console.log("auto-preview:");
+
 });
 
 function escapeHtml(unsafe) {
@@ -2290,6 +2346,8 @@ function mail_preview(form_id) {
   }
   
   $("#mail_preview").attr("srcdoc", "Loading preview...");
+      console.log("mail_preview:");
+
   var ajax_url = "/ajax.php?oper=mail-preview";
   console.log("url=" + ajax_url);
   jQuery.ajax({
@@ -7423,6 +7481,8 @@ function jfu_file_list($target) {
 
 // new uploader, using Blueimp jquery-fileupload
 function init_fileuploader($target, loadData, extra_options) {
+  console.log("afr.js: init_fileuploader");
+
   if(typeof extra_options === 'undefined') var extra_options = {}; // overrides
   if(typeof loadData === 'undefined') loadData = true;
  
@@ -7434,6 +7494,7 @@ function init_fileuploader($target, loadData, extra_options) {
   if(!(view == "grid" || view == "list")) view = "list";
   
   var mediaData = $target.data('media_data') || {};
+  console.log("afr.js: init_fileuploader1");
   
   $target.data('initialized', 1);
   $target.data("upload-count", 0); // number of files in the upload queue
@@ -7449,6 +7510,7 @@ function init_fileuploader($target, loadData, extra_options) {
   var disabled = $target.hasClass('disabled') ? true : false;
   var div_id = $target.prop('id');
   //  alert("id=" + div_id);
+  console.log("afr.js: init_fileuploader2");
 
   // defaults
   var extensions = options.allowed_extensions || ['jpeg', 'jpg', 'gif', 'png'];
@@ -7475,6 +7537,7 @@ function init_fileuploader($target, loadData, extra_options) {
   //  //console.log("No parent ID, looking at element, found:" + parent_id);
   //  mediaData.parent_id = parent_id;
   //}
+  console.log("afr.js: init_fileuploader3");
 
   var endpoint = '/ajax.php?oper=jq-file-upload';
   var params = {
@@ -7496,6 +7559,7 @@ function init_fileuploader($target, loadData, extra_options) {
   /** todo: turn off local_resize, set imageMaxWidth/Height in options */
   var localResize = /Android(?!.*Chrome)|Opera/.test(window.navigator && navigator.userAgent);
   var crop = false;
+  console.log("afr.js: init_fileuploader4");
   
   console.log("local resize=" + localResize);
     
@@ -7533,6 +7597,7 @@ function init_fileuploader($target, loadData, extra_options) {
        data.files.error = data;
      }
      //console.log('len=' + data.files.length + ' valid files=' + valid_count + " gler=" + er + " fer=" + data.files[0].error + " 2nd=" + (data.files.length > 1 ? data.files[1].error : ' none'));
+  console.log("afr.js: init_fileuploader ends");
      
    });
 
@@ -7560,7 +7625,7 @@ function init_fileuploader($target, loadData, extra_options) {
   $target.on('fileuploadprocessdone', function (e, data) {
       
       console.log("fileuploadprocessdone:");
-      console.log(data.exif.getAll());
+      //console.log(data.exif.getAll()); 
   });
 
    $target.on('fileuploadcompleted', function(e, data) {
@@ -8243,7 +8308,7 @@ function file_check_dimensions(file, options) {
     //console.log("max H=" + maxH + " W=" + maxW + " S=" + maxS);
     //console.log("min H=" + minH + " W=" + minW + " S=" + minS);
     //console.log("min Size=");
-    //console.log(minS);
+    console.log("file_check_dimensions");
     //console.log("error=" + file.error);
 
   }

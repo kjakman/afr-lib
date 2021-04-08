@@ -2988,7 +2988,7 @@ $__CLASS_ATTRIBUTES = array(
      
      'tags'             => array('Tags',               'text',     '', 0),
      'language'         => array('Language'     ,      'str',      '', 0, 2 ),
-     'languages'=>         array('Languages',          'json',     '',   AF_HIDE_LIST),
+     'languages'=>         array('Languages',          'str',     '',   AF_HIDE_LIST),
      'age'              => array('Age'          ,      'str',      '', 0, 3 ),
      'birth_day'        => array('Birth day'     ,     'str',      '', 0, 2 ),
      'birth_month'      => array('Birth month'   ,     'str',      '', 0, 2 ),

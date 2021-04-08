@@ -1,6722 +1,6714 @@
 <?php
 
-function controller_mytest($app, $options = []) {
-  $scope = $app->page->scope;
-  $scope->template = 'test-page.html';
-  $scope->foo = "bar";
-  return;
-}
+    function controller_mytest($app, $options = []) {
+        $scope = $app->page->scope;
+        $scope->template = 'test-page.html';
+        $scope->foo = "bar";
+        return;
+    }
 
-function controller_manual($app, $options = []){
-    //echo "Hai";
-    $sql = db_getAll("SELECT id FROM media_collection where subtype IN (40,50)"); 
+    function controller_manual($app, $options = []){
+        //echo "Hai";
+        $sql = db_getAll("SELECT id FROM media_collection where subtype IN (40,50)"); 
 
-    foreach($sql as $val)
-    {
-      $sql1 = db_getAll("SELECT  *,min(original_year) as year FROM media_collection_map WHERE media_collection_id=".$val->id." AND original_year != '' GROUP BY media_collection_id");
-      if(count($sql1) == 1)
-              {
+        foreach($sql as $val)
+        {
+            $sql1 = db_getAll("SELECT  *,min(original_year) as year FROM media_collection_map WHERE media_collection_id=".$val->id." AND original_year != '' GROUP BY media_collection_id");
+            if(count($sql1) == 1){
                 foreach($sql1 as $mval)
                 {
                     $year = "".$mval->year."-01-01";
                     update_object('media_collection', ['exhibition_sequence' => $year], $mval->media_collection_id);
                 }
-              }
-              else
-              {
-                    $year = "1000-01-01";
-                    update_object('media_collection', ['exhibition_sequence' => $year], $val->id);
-              }
+            }else{
+                $year = "1000-01-01";
+                update_object('media_collection', ['exhibition_sequence' => $year], $val->id);
+            }
+        }
+        $scope = $app->page->scope;
+        $scope->template = 'minisites/manual_update_selection.html';
+        return;   
     }
-    $scope = $app->page->scope;
-    $scope->template = 'minisites/manual_update_selection.html';
-    return;   
-}
 
-/** not used by any site atm */
-function controller_home($app, $options = []) {
-  return;
-}
+    /** not used by any site atm */
+    function controller_home($app, $options = []) {
+        return;
+    }
 
 
-function my_sort_function($a, $b)
-{
-    return $a->ordering < $b->ordering;
+    function my_sort_function($a, $b){
+        return $a->ordering < $b->ordering;
+    }
 
-}
-
-function controller_minisite($app, $options = []) {
-  $__header = $app->header;
-  $u_id = $app->user_id;
-  $pageObj = $app->page;
-  $scope = $app->page->scope;
-  $msObj = $scope->msObj = $app->minisite;
-  $minisite_id = $msObj->id;
-  if($css = $msObj->css) $__header->styles[] = "/css/minisites/{$msObj->url}/{$css}?v={$app->version}";
-  $se_title = $se_description = '';
-
-  $scope->minisite = $minisite = $msObj->url;
-  $scope->basepath = $msObj->internal ? "/{$msObj->user_id}/{$minisite}" : '';    
-  $scope->minisite_name = $msObj->name;
-  $scope->minisite_type = $type = $msObj->type;
-  $font_type = $msObj->font_type;
-  $scope->fonts= $font_styles = find_object('minisite_font', ['id' => $font_type, 'active' => 1]);
-  $scope->minisite_page_type = $minisite_page_type = find_objects('minisite_page_type', ['active'=>1], ['sort'=>'row_order']);
-  $scope->menus = $menus = get_objects('minisite_menu');
-  $scope->hover = $hover = get_objects('minisite_hover');
-  
-  $user_id = $msObj->user_id;
-  if(!$user_id) die("Minisite: missing user");
-  
-  //die("controller_minisite: user: {$user_id}");
-  /** which page */
-  $path = $pageObj->path;
-  $parts = array_filter(explode('/', trim($path,'/')));
-  //$page = $tpl = pick_first(strtolower($parts[0]), 'home');
-
-  // To simplify paths
-  $get_tpl = get_template($parts, $minisite_id);
-  
-  if($get_tpl['page']) $page = $get_tpl['page'];
-  if($get_tpl['tpl']) $tpl = $get_tpl['tpl'];
-
-  //$slug = count($parts) >= 1 ? strtolower($parts[1]) : '';
-  $scope->page_name = $slug = count($parts) >= 1 ? strtolower($parts[0]) : '';
-  
-  $obj_id = 0;
-  if(strstr($slug, '~')) {
-    list($name, $obj_id) = explode('~', $slug);
-  }
-
-  $subview = count($parts) > 1 ? strtolower($parts[2]) : '';
-
-  $scope->artworks = [];
-  $scope->user_id = $user_id;
-  $scope->user = $user = get_user($user_id);
-  $scope->user_display_name = $display_name = user_display_name($user);
-  $title = '';
-  
-  if(count($parts) > 3) return controller_error($app, "{$path} not found");
-   
-  //dump($options);
-  $artist = null;
-  $artists = $artistAr = [];
-  $data = [];
-  $today = today();
-  
-  $exhibitions = $artists = [];
-  
-  print_log("type={$type} path: {$path} page:{$page} slug:{$slug} id: {$obj_id} name: {$name} sub:{$subview} options".dump($options,true), 'minisite', LOG_LEVEL_TEST);  
-  
-  $se_title = $minisite;
-  $se_description = $minisite;
-
-  print_log("Returned type=$type page=$page tpl: $minisite_id".dump($get_tpl,true), 'minisite', LOG_LEVEL_TEST);  
-
-  switch($type) {
-
-  /**
-  case 'artist':
-    $search = ['user_id' => $user_id, 'active' => 1, 'type' => COLLECTION_TYPE_EXHIBITION, 'subtype' => 40, 'show_website' => 1];
-    $scope->artist = $artist = get_user($user_id);
-    
-    if(!$artist) return scope_error($app, "Artist {$slug} not found", '404');
-
-    $artist->slug = slugify($uObj->display_name);
-    $artist->collections = $exhibitionObjs = find_objects('media_collection', $search);
-
-    $collectionObjs = find_objects('media_collection', ['user_id' => $user_id, 'active' => 1, 'type' => COLLECTION_TYPE_PROJECT]);    
-    $collectionObj = $collectionObjs[0];
-    $collection_count = count($collectionObjs);
-    $exhibition_count = count($exhibitionObjs);
-    print_log("user: {$user_id} $collection_count collections $exhibition_count id={$collectionObj->id} type={$collectionObj->type} title={$collectionObj->title}", 'minisite', LOG_LEVEL_TEST);
-
-    $artist->collection = $collectionObj;
-    $artist->collection_id = $collectionObj->id;
-    $artist->title_image = $uObj->photo ?: collection_title_image($collectionObj, 'ig');
-    $artist->collections = $exhibitionObjs;
- 
-    
-    //die("type={$type} path: {$path} page:{$page} slug:{$slug} sub:{$subview} options".dump($options,true));
-    
-    break;
-  **/  
-  // case ($type == 'gallery' || $type == 'artist'):
-
-  case 'gallery':
-  case 'artist':
-  default:
-    print_log("kj got here page=$page type=$type", 'minisite', LOG_LEVEL_TEST);
-  
-    if($page == 'artists' || $page == 'artist') {
-      $scope->page_slug = ($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
-      $page_slug = ($parts[0] != '') ? "/".$parts[0]."/" :  "/".$get_tpl['get_slug']."/" ; 
-
-
-
-      $search = find_object('minisite_page', ['user_id' => $user_id, 'active' => 1, 'minisite_id' => $minisite_id,'slug' => $page_slug]);
-      $page_id = $search->id;
-      $colSearch = ['user_id' => $user_id, 'id' => $page_id, 'minisite_id' => $minisite_id, 'active' => 1 ];
-      $collectionObj = find_object('minisite_page', $colSearch);
-
-      if($collectionObj->search){
-        $artist_ids = json_decode($collectionObj->search, True);     
-        $artistArs = get_artist($user_id, $artist_ids, $page_slug);
-        $artistAr = array_sort($artistArs, 'last_name');
-        foreach($artistAr as $this_artist) $artists[$this_artist->slug] = $this_artist;
-        $scope->artists = $artists;
-      }
-      if($collectionObj->search1){
-        $artist_ids = json_decode($collectionObj->search1, True); 
-        $artistArs = get_artist($user_id, $artist_ids, $page_slug);
-        $artistAr = array_sort($artistArs, 'last_name');
-        foreach($artistAr as $this_artist) $artists1[$this_artist->slug] = $this_artist;
-        $scope->secArtists = $artists1;
-      }
-
-      $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'id' => $page_id ,'active' => 1]);
-      
-      if($page == 'artists'){
-        if($minisite_pageObj->page_layout == '119')           $tpl = $page = 'artists_layout2'; 
-        elseif($minisite_pageObj->page_layout == '124')       $tpl = $page = 'artists_layout1'; 
-        elseif($minisite_pageObj->page_layout == '125')       $tpl = $page = 'artists';
-        elseif($minisite_pageObj->page_layout == '126')       $tpl = $page = 'artists_layout3';
-        elseif(($minisite_pageObj->page_layout == '127') 
-        || ($minisite_pageObj->page_layout == '134') )        $tpl = $page = 'artists_layout4';
-      }else{
-        if($minisite_pageObj->second_layout == 128)           $tpl = $page = 'artist'; 
-        elseif($minisite_pageObj->second_layout == 129)       $tpl = $page = 'artist_layout1'; 
-        elseif($minisite_pageObj->second_layout == 130)       $tpl = $page = 'artist_layout2'; 
-        elseif($minisite_pageObj->second_layout == 131)       $tpl = $page = 'artist_layout3'; 
-        elseif($minisite_pageObj->second_layout == 155)       $tpl = $page = 'artist_layout4';
-        elseif($minisite_pageObj->second_layout == 156)       $tpl = $page = 'artist_layout5';
-        elseif($minisite_pageObj->second_layout == 157)       $tpl = $page = 'artist_layout6';
-        elseif($minisite_pageObj->second_layout == 164)       $tpl = $page = 'artist_masonry';
-        elseif($minisite_pageObj->second_layout == 165)       $tpl = $page = 'artist_hanging';
-        elseif($minisite_pageObj->second_layout == 166)       $tpl = $page = 'artist_standing';
-        elseif($minisite_pageObj->second_layout == 167)       $tpl = $page = 'artist_masonryExt';
-        elseif($minisite_pageObj->second_layout == 179)       $tpl = $page = 'artist_layout7';
-        elseif($minisite_pageObj->second_layout == 207)       $tpl = $page = 'artist_layout8';
-        elseif($minisite_pageObj->second_layout == 208)       $tpl = $page = 'artist_layout9';
-        elseif($minisite_pageObj->second_layout == 209)       $tpl = $page = 'artist_layout10';
-      }
-   }
-   
-if($page == 'exhibitions' || $page == 'exhibition') {
-      $scope->page_slug = $slugstr =($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
-      $scope->sub_slug = $subviews = ($parts[2] != '') ?  $parts[2] : $get_tpl['get_subviews'];
-
-      $page_slug =  ($parts[0] != '') ? "/".$parts[0]."/" : "/".$get_tpl['get_slug']."/"; 
-
-      $minisite_id = $msObj->id;
-      $today = today();      
-      /** Exhibitions - only do when needed  */
-      /*Filter exhibition by type */
-      $gallery = $artfair = $others = '0';
-      
-      $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'slug' => $page_slug, 'active' => 1]);
-      $title = $minisite_pageObj->page_title;
-      $data = json_decode($minisite_pageObj->data, True);
-
-      if($data[show_gallery]) $gallery = '10';
-      if($data[show_artfair]) $artfair = '20';
-      if($data[show_others])  $others = '30';
-      if(($data[show_selection]) && ($data[show_past] || $data[show_latest]))
-      {
-         $selection = '40';
-      } 
-      if($data[show_current]) $current_view = 1;
-      if($data[show_past])    $past_view = 1;
-      if($data[show_future])  $future_view = 1;  
-      if($data[show_latest])  $latest_view = 1;
-      if($data[show_recent])  $sort = 'DESC'; else $sort = 'ASC';
-
-      $search = ['user_id' => $user_id, 'type' => COLLECTION_TYPE_EXHIBITION, 'active' => 1, 'subtype' => [$gallery,$artfair,$others,$selection]];
-
-      if($page == 'exhibitions'){
-        
-        $title = $parts[2];
-        //dump($minisite_pageObj->page_layout);
-        if($minisite_pageObj->page_layout == '102'){
-          $when = $subviews ?: 'all';
-          switch($when) {
-            case 'past':
-              //if(($data[show_selection]) && ($data[show_past] || $data[show_latest]))
-              //{
-                //$search['exhibition_sequence'] = ['<', $today];
-             // }
-             // else
-             // {
-                $search['end_date'] = ['<', $today];
-             // }
-              break;
-            case 'current':
-              $search['exhibition_sequence'] = ['<=', $today];
-              $search['end_date'] = ['>=', $today];      
-              break;
-            case 'future':
-              $search['exhibition_sequence'] = ['>', $today];
-              break;
-            case 'currentandfuture':
-              //if(($data[show_selection]) && ($data[show_past] || $data[show_latest]))
-              //{
-               //$search['exhibition_sequence'] = ['<', $today];
-              //}
-              //else
-              //{
-                $search['end_date'] = ['>=', $today];
-             // }
-              break;
-            case 'all':
-              $future_past = 0;
-                if(($current_view == 1) && ($past_view == 1) && ($future_view == 1)){
-                  unset($search['exhibition_sequence']);
-                  unset($search['end_date']);
-                }
-                elseif(($future_view == 1) && ($current_view == 1)){
-                  $search['end_date'] = ['>=', $today];
-                }
-                elseif(($future_view == 1) && ($past_view == 1)){
-                  $scope->future_past = 1;
-                }
-                elseif(($current_view == 1) && ($past_view == 1)){
-                  $search['exhibition_sequence'] = ['<=', $today];
-                }
-              break;
-            default: // all or single
-              break;
-          }
-        }
-        //echo "Test";
-        //dump($search);
-        $template = get_exhibition_tpl1($minisite_pageObj->page_layout);
-        $scope->layout = find_object('minisite_layout', ['id' => $minisite_pageObj->page_layout, 'active' =>1]);
-        //dump($scope->layout);
-      }
-      else{
-        unset($search['subtype']);
-        $template = get_exhibition_tpl2($minisite_pageObj->second_layout);
-      }
-      $tpl = $page = $template;
-        
-        /** Filter by gallery, Art, Other events */
-      if($data[show_recent] == 1 )
-        $exhibitionObjs = find_objects('media_collection', $search, ['sort' => 'exhibition_sequence desc']) ?: [];
-      else
-        $exhibitionObjs = find_objects('media_collection', $search, ['sort' => 'exhibition_sequence asc']) ?: [];
-        //dump(count($exhibitionObjs));   
-        
-        $exhibition_ids = $exhibitions = $latestexhibition = $data_exist = [];
-        $future_count = $past_count = $current_count =  $selection_count = 0;
-        foreach($exhibitionObjs as $exhibitionObj) {
-          $exhibitionObj->slug = slugify($exhibitionObj->title);
-          $current = "";
-          if($exhibitionObj->exhibition_sequence || $exhibitionObj->end_date) { 
-            if($exhibitionObj->end_date < $today && !empty($exhibitionObj->end_date)) { 
-              $data_exist["past"] = 1;
-              $current = "past";
-              $past_count = $past_count+1;
-            }elseif($exhibitionObj->exhibition_sequence < $today) {
-              $data_exist["selection"] = 1;
-              $current = "selection";
-              $selection_count = $selection_count+1; 
-            }elseif($exhibitionObj->exhibition_sequence > $today) {
-              $current = "future";
-              $data_exist["future"] = 1;
-              $future_count = $future_count +1;
-            }else {
-              $current = "current";
-              $data_exist["current"] = 1 ;
-              $current_count = $current_count+1;
-            }
-          } else {
-            continue; /** skip exhibitions w/o dates */
-          }
-          //dump($current);
-          $exhibitionObj->current = $current;     
-          $exhibitionObj->page_slug = $slugstr; 
-          $get_date = $get_type = [];
-                $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $exhibitionObj->id, 'active'=>1]);
-                foreach($get_artworks as $artwork){
-                  $get_date[] = $artwork->original_year;
-                  $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
-                  $get_type[] = get_artwork_type($find_art->type);
-                }
-                $mini =  min(array_filter($get_date));
-                $max = max(array_filter($get_date));
-
-                if($exhibitionObj->subtype == 40){
-                  $selection_type = implode(', ' , array_unique(array_filter($get_type)));
-                  if($mini == $max)
-                    $selection_range = "Selection (".$mini.")";
-                  elseif($mini < $max)
-                    $selection_range =  "Selection (".$mini."-".$max.")";
-                  else
-                    $selection_range =  "Selection";
-                  $exhibitionObj->selection_range = $selection_range;
-                  $exhibitionObj->selection_type = $selection_type;
-                }
-          $exhibitions[$exhibitionObj->slug] = $exhibitionObj;
-          $exhibition_ids[] = $exhibitionObj->id;
-        }
-        $scope->exhibitions = $exhibitions;
-        $scope->data_exist = $data_exist;
-        $scope->exhibition_years = $exhibition_years = db_getAll("SELECT year(exhibition_sequence) as year from  media_collection where user_id='$user_id' AND type='120' AND start_date!='' AND active='1' group by year order by year ".$sort);      
-        
-        /* To view latest exhibition */
-        if($latest_view){
-          unset($search['exhibition_sequence']);
-          unset($search['end_date']);
-          $latestexhibition = find_objects('media_collection', $search, ['sort' => 'exhibition_sequence desc', 'limit' => 1]) ?: []; 
-          //dump($latestexhibition);
-          if(($latestexhibition) ){
-            foreach($latestexhibition as $exhibition) {
-              if($exhibition->exhibition_sequence || $exhibition->end_date){
-                $exhibition->slug = slugify($exhibition->title);
-                $exhibition->page_slug = $slugstr;
-                $latestexhibitions[] = $exhibition;
-                $get_date = $get_type = [];
-                $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $exhibition->id, 'active'=>1]);
-                foreach($get_artworks as $artwork){
-                  $get_date[] = $artwork->original_year;
-                  $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
-                  $get_type[] = get_artwork_type($find_art->type);
-                }
-                $mini =  min(array_filter($get_date));
-                $max = max(array_filter($get_date));
-
-                if($exhibition->subtype == 40){
-                  $selection_type = implode(', ' , array_unique(array_filter($get_type)));
-                  if($mini == $max)
-                    $selection_range = "Selection (".$mini.")";
-                  elseif($mini < $max)
-                    $selection_range =  "Selection (".$mini."-".$max.")";
-                  else
-                    $selection_range =  "Selection";
-                  $exhibition->selection_range = $selection_range;
-                  $exhibition->selection_type = $selection_type;
-                }
-              }          
-            }
-            $scope->latest_exhibitions = $latestexhibitions;
-            //dump($latestexhibitions);
-          }else{
-            return scope_error($app, "Missing Latest Exhibitions in home page", '404');
-          }
-        }        
-      } 
-
-      if($page == 'manualexbs' || $page == 'manualexb'){
-        $scope->page_slug = $slugstr =($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
-        $scope->sub_slug = $subviews = ($parts[2] != '') ?  $parts[2] : $get_tpl['get_subviews'];
-        $page_slug =  ($parts[0] != '') ? "/".$parts[0]."/" : "/".$get_tpl['get_slug']."/"; 
-
+    function controller_minisite($app, $options = []) {
+        $__header = $app->header;
+        $u_id = $app->user_id;
+        $pageObj = $app->page;
+        $scope = $app->page->scope;
+        $msObj = $scope->msObj = $app->minisite;
         $minisite_id = $msObj->id;
+        if($css = $msObj->css) $__header->styles[] = "/css/minisites/{$msObj->url}/{$css}?v={$app->version}";
+        $se_title = $se_description = '';
 
-        $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'slug' => $page_slug, 'active' => 1]);
+        $scope->minisite = $minisite = $msObj->url;
+        $scope->basepath = $msObj->internal ? "/{$msObj->user_id}/{$minisite}" : '';    
+        $scope->minisite_name = $msObj->name;
+        $scope->minisite_type = $type = $msObj->type;
+        $font_type = $msObj->font_type;
+        $scope->fonts= $font_styles = find_object('minisite_font', ['id' => $font_type, 'active' => 1]);
+        $scope->minisite_page_type = $minisite_page_type = find_objects('minisite_page_type', ['active'=>1], ['sort'=>'row_order']);
+        $scope->menus = $menus = get_objects('minisite_menu');
+        $scope->hover = $hover = get_objects('minisite_hover');
 
-        if($page == 'manualexbs')
-        {
-          $template = get_exhibition_tpl1($minisite_pageObj->page_layout);
-        }
-        else
-        {
-          $template = get_exhibition_tpl2($minisite_pageObj->second_layout);
-        }
-        $scope->layout = find_object('minisite_layout', ['id' => $minisite_pageObj->page_layout, 'active' =>1]);
-
-        $tpl = $page = $template;
-        
-        $exb_ids = find_objects('exhibition_map', ['page_id' =>$minisite_pageObj->id, 'active'=>1, 'type'=>'manual'], ['sort' => 'rank asc']);
-       
-        foreach($exb_ids as $exb_id){
-          $exhibitionObjs[] = find_object('media_collection', ['id'=>$exb_id->media_collection_id, 'active'=>1]) ?: [];
-        }
-
-        $exhibitions = [];
-        $selection_range = 0;
-        foreach($exhibitionObjs as $exhibitionObj){
-          $exhibitionObj->slug = slugify($exhibitionObj->title);
-          $current = "";
-          $exhibitionObj->current = $current;     
-          $exhibitionObj->page_slug = $slugstr; 
-          $get_date = $get_type = [];
-          $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $exhibitionObj->id, 'active'=>1]);
-          foreach($get_artworks as $artwork){
-            $get_date[] = $artwork->original_year;
-            $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
-            $get_type[] = get_artwork_type($find_art->type);
-          }
-          $mini =  min(array_filter($get_date));
-          $max = max(array_filter($get_date));
-          
-          if($exhibitionObj->subtype == 40){
-            $selection_type = implode(', ' , array_unique(array_filter($get_type)));
-            if($mini == $max)
-              $selection_range = "Selection (".$mini.")";
-            elseif($mini < $max)
-              $selection_range =  "Selection (".$mini."-".$max.")";
-            else
-              $selection_range =  "Selection";
-            $exhibitionObj->selection_range = $selection_range;
-            $exhibitionObj->selection_type = $selection_type;
-          }
-          $exhibitions[$exhibitionObj->slug] = $exhibitionObj;
-          
-          $exhibition_ids[] = $exhibitionObj->id;
-        }
-        $scope->exhibitions = $exhibitions;
-      }
-
-      if($page == 'contact'){
-        $scope->page_slug = ($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
-        $page_slug = ($parts[0] != '') ? "/".$parts[0]."/" :  "/".$get_tpl['get_slug']."/";
-        $minisite_id = $msObj->id;
-        
-        $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'slug' => $page_slug, 'active' => 1]);
-
-        if($minisite_pageObj->page_layout == 117)         $tpl = $page = 'contact';
-        elseif($minisite_pageObj->page_layout == 118)     $tpl = $page = 'contact1'; 
-      }   
-      if($page == 'bio'){
-        $scope->subview = $subview = $parts[1];
-        $scope->sub_slug = $title= $subviews = $parts[2];
-        $minisite_id = $msObj->id;
-        $page_slug = ($parts[0] != '') ? "/".$parts[0]."/" :  "/".$get_tpl['get_slug']."/"; 
-
-        $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'slug' => $page_slug, 'active' => 1]);
-
-        $bioartist = find_object('user_profile', ['user_id' => $user_id]);
-
-        if($minisite_pageObj->page_layout == 128)       $tpl = $page = 'artist';
-        elseif($minisite_pageObj->page_layout == 129)   $tpl = $page = 'artist_layout1';
-        elseif($minisite_pageObj->page_layout == 130)   $tpl = $page = 'artist_layout2';
-        elseif($minisite_pageObj->page_layout == 131)   $tpl = $page = 'artist_layout3';
-        elseif($minisite_pageObj->page_layout == 155)   $tpl = $page = 'artist_layout4';
-        elseif($minisite_pageObj->page_layout == 156)   $tpl = $page = 'artist_layout5';
-        elseif($minisite_pageObj->page_layout == 157)   $tpl = $page = 'artist_layout6';
-        elseif($minisite_pageObj->page_layout == 164)   $tpl = $page = 'artist_masonry';
-        elseif($minisite_pageObj->page_layout == 165)   $tpl = $page = 'artist_hanging';
-        elseif($minisite_pageObj->page_layout == 166)   $tpl = $page = 'artist_standing';
-        elseif($minisite_pageObj->page_layout == 167)   $tpl = $page = 'artist_masonryExt';
-        elseif($minisite_pageObj->page_layout == 179)   $tpl = $page = 'artist_layout7';
-        elseif($minisite_pageObj->page_layout == 207)   $tpl = $page = 'artist_layout8';
-        elseif($minisite_pageObj->page_layout == 208)   $tpl = $page = 'artist_layout9';
-        elseif($minisite_pageObj->page_layout == 209)   $tpl = $page = 'artist_layout10';
-      }
-      if($page == 'singleExhibitions'){
-        $scope->subview = $subview = $parts[2];
-        $scope->page_slug = $slugstr =($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
-        $minisite_id = $msObj->id;
-        $page_slug = ($parts[0] != '') ? "/".$parts[0]."/" :  "/".$get_tpl['get_slug']."/"; 
-
-        $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'slug' => $page_slug, 'active' => 1]);
-
-        if($minisite_pageObj->page_layout == 135)       $tpl = $page = 'singleExh';
-        elseif($minisite_pageObj->page_layout == 136)   $tpl = $page = 'singleExh_kwLoc';
-        elseif($minisite_pageObj->page_layout == 294)   $tpl = $page = 'singleExh_1';
-        elseif($minisite_pageObj->page_layout == 295)   $tpl = $page = 'singleExh_sewLoc';
-        elseif($minisite_pageObj->page_layout == 172)   $tpl = $page = 'singleExh_2';
-        elseif($minisite_pageObj->page_layout == 173)   $tpl = $page = 'singleExh_3';
-        elseif($minisite_pageObj->page_layout == 174)   $tpl = $page = 'singleExh_4';
-        elseif($minisite_pageObj->page_layout == 175)   $tpl = $page = 'singleExh_5';
-      } 
-
-      if($page == 'shopifyTest'){
-        $tpl = $page = 'shopifyTest';
-        $scope->subview = $subview = $parts[2];
-        $scope->page_slug = $slugstr =($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
-        $minisite_id = $msObj->id;
-        $page_slug = ($parts[0] != '') ? "/".$parts[0]."/" :  "/".$get_tpl['get_slug']."/"; 
-
-        $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'active' => 1, 'slug' => $page_slug, 'minisite_id'=>$minisite_id]);
-      }
-      if($page == 'mailchimpTest'){
-        
-        $scope->subview = $subview = $parts[2];
-        $scope->page_slug = $slugstr =($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
-
-        $page_slug = ($parts[0] != '') ? "/".$parts[0]."/" :  "/".$get_tpl['get_slug']."/"; 
-        $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'active' => 1, 'slug' => $page_slug]);
-        $data = json_decode($minisite_pageObj->data);
-        if($data->mailtype == 10)     $tpl = $page = 'classicMail';
-        elseif($data->mailtype == 20) $tpl = $page = 'condensedMail';
-        elseif($data->mailtype == 30) $tpl = $page = 'horizontalMail';
-        else                          $tpl = $page = 'unstyledMail';
-      }
+        $user_id = $msObj->user_id;
+        if(!$user_id) die("Minisite: missing user");
       
-    break;
-  }
-  
-  /** todo: 404 if slug/subview not allowed or not found */
-  
-  switch($page) {
-    case ($page == 'artist' || $page == 'artist_layout1' || $page == 'artist_layout2' || $page == 'artist_layout3' || $page == 'artist_layout4' || $page == 'artist_layout5' || $page == 'artist_layout6' || $page == 'artist_masonry' || $page == 'artist_hanging' || $page == 'artist_standing' || $page == 'artist_masonryExt' || $page == 'artist_layout7' || $page == 'artist_layout8' || $page == 'artist_layout9' || $page == 'artist_layout10'): 
-      $artist = "";
-      
-      if($bioartist){
-        $scope->artist = $artist = $bioartist;
-        $artist_id = $artist->user_id;
-      }else{
-        $slug = $parts[1];
-        $artist = $artists[$slug]? $artists[$slug] : $artists1[$slug];
-        $scope->artist = $artist;
-        $artist_id = $artist->id;
-      }
-      $collection_data = find_object('media_collection', ['user_id' => $artist_id, 'type' => '150', 'active' => 1]);
-      $scope->collection_id = $collection_data->id;
-      if(collection_data) {
-        $search = ['media_collection_id' => $collection_data->id, 'active' => 1];
-        $scope->artworks = $mapObjs = find_objects('media_collection_map', $search);
-      } 
-      $page_slug = ($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
+        //die("controller_minisite: user: {$user_id}");
+        /** which page */
+        $path = $pageObj->path;
+        $parts = array_filter(explode('/', trim($path,'/')));
+        //$page = $tpl = pick_first(strtolower($parts[0]), 'home');
 
-      $scope->exhibitions = $exhibitions = find_objects('media_collection', ['artist_id' => $artist_id, 'type' => COLLECTION_TYPE_EXHIBITION, 'active' => 1, 'subtype' => ['10','20'] ], ['sort' => 'end_date desc']);
-      //dump($scope->exhibitions);
-   
-      $se_title = $artist->display_name;
-      $se_description = $artist->description;                          
-      
-      $scope->show_images = 1;
-      $scope->show_solo = strlen(strip_blank($artist->gallery_solo_shows)) > 0 ? 1 : 0;
-      $scope->show_group = strlen(strip_blank($artist->gallery_group_shows)) > 0 ? 1 : 0;
-      $scope->show_press = strlen(strip_blank($artist->press)) > 0 ? 1 : 0;
-      $scope->show_bio = $scope->show_solo || $scope->show_group || $scope->show_press ? 1 : 0;
-      $scope->show_pub = 0; // strlen(strip_blank($artist->publications)) > 0;
-      break;
-    
-    case 'artists':
-      break;
-    case 'artists_layout1':
-      break;
-    case 'artists_layout2':
-      break;
-    case 'artists_layout3':
-      break;
-    case 'artists_layout4':
-      break;
-    case 'shopifyTest':
-      break;
-    case ($page == 'classicMail' || $page == 'condensedMail' || $page == 'horizontalMail' || $page == 'unstyledMail'):
-      break;
-    
-    case ($page == 'exhibition' || $page == exhibition1 || $page == exh_masonry || $page == exh_hanging || $page == exh_standing || $page == exh_masonryExt || $page == kyoto_WLoc || $page == seoul_WLoc):
-      if($parts[1]) $slug = $parts[1];
+        // To simplify paths
+        $get_tpl = get_template($parts, $minisite_id);
 
-      if(!$slug) return scope_error($app, "Missing slug", '404');
-      $collectionObj = $obj_id ? get_object('media_collection', $obj_id) : $exhibitions[$slug];
-      if(!$parts[1]) $collectionObj->page_slug = $page_title;
-      if(!$collectionObj) {
-        print_log("no $slug in ".dump($exhibitions,true), 'minisite', LOG_LEVEL_TEST);
-        //return scope_error($app, "Exhibition {$slug} not found", '404');
-      }
-      
-      $artist_names = collection_artist_list($collectionObj);    
-      $se_title = "{$collectionObj->title}, {$artist_names}";
-      $se_description = $collectionObj->description;
-      $scope->profile = find_object('user_profile', ['user_id'=> $collectionObj->artist_id]);
-      $scope->collection = $collectionObj;
-      $scope->collection_id = $collection_id = $collectionObj->id;
-      if($loc_id = $collectionObj->location_id) {
-        $locObj = get_object('location', $loc_id);
-        $scope->collection->location = $locObj;
-      }
-  
-      if($event_id = $collectionObj->event_id) {
-        $eventObj = get_object('event', $event_id);
-        if($eventObj) 
-          $scope->collection->event = $eventObj;
-      }  
-      $selection_range = 0; 
-      $parts_0 = '/'.$parts[0].'/';                                                    //to get manual exhibition
-      $minisite_page = find_object('minisite_page', ['minisite_id' => $minisite_id, 'slug' => $parts_0, 'active' => 1]);
-      if($minisite_page->type == 80){
-        $scope->manualExhibition = 1;
-        $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $collectionObj->id, 'active'=>1]);
-        foreach($get_artworks as $artwork){
-          $get_date[] = $artwork->original_year;
-          $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
-          $get_type[] = get_artwork_type($find_art->type);
+        if($get_tpl['page']) $page = $get_tpl['page'];
+        if($get_tpl['tpl']) $tpl = $get_tpl['tpl'];
+
+        //$slug = count($parts) >= 1 ? strtolower($parts[1]) : '';
+        $scope->page_name = $slug = count($parts) >= 1 ? strtolower($parts[0]) : '';
+
+        $obj_id = 0;
+        if(strstr($slug, '~')) {
+            list($name, $obj_id) = explode('~', $slug);
         }
-        $mini =  min(array_filter($get_date));
-        $max = max(array_filter($get_date));
-        
-        if($collectionObj->subtype == 40){
-          $selection_type = implode(', ' , array_unique(array_filter($get_type)));
-          if($mini == $max)
-            $selection_range = "Selection (".$mini.")";
-          elseif($mini < $max)
-            $selection_range =  "Selection (".$mini."-".$max.")";
-          else
-            $selection_range =  "Selection";
-          $scope->collection->selection_range = $selection_range;
-          $scope->collection->selection_type = $selection_type;
-          unset($scope->collection->location);
-        }
-      } 
-      $search = ['media_collection_id' => $collection_id, 'active' => 1];
-      $scope->artworks = $mapObjs = find_objects('media_collection_map', $search, ['sort' => 'rank']);
-      break;
 
-    case ($page == 'singleExh' || $page == 'singleExh_kwLoc' || $page == 'singleExh_sewLoc' ||$page == 'singleExh_1' || $page == 'singleExh_2' || $page == 'singleExh_3' || $page == 'singleExh_4' || $page == 'singleExh_5'):
-      $slugstr =($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
-      $gallery = $artfair = $others = '0';
-      $data = json_decode($minisite_pageObj->data, True);
-      if($data[gallery]) $gallery = '10';
-      if($data[artfair]) $artfair = '20';
-      if($data[others])  $others = '30';
-      if($data[selection])  $selection = '40';
+        $subview = count($parts) > 1 ? strtolower($parts[2]) : '';
 
-      if($data['eType'] == 1){
-        $search = ['user_id' => $user_id, 'type' => COLLECTION_TYPE_EXHIBITION, 'active' => 1, 'subtype' => [$gallery,$artfair, $others, $selection] ];
-        $collection = find_objects('media_collection', $search, ['sort' => 'exhibition_sequence desc', 'limit' => 1]);
-      }else{
-        $find_page = find_object('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id ,'active' => 1, 'slug' => $page_slug]);
-        $page_id = $find_page->id;
-        $get_mediaId = find_object('exhibition_map', ['page_id' => $page_id, 'active' => 1, 'type'=>'single']);
-        $media_collection = $get_mediaId->media_collection_id;
-        $collection = find_objects('media_collection', ['id' => $media_collection, 'active' => 1], ['limit' => 1]);
-      }
-      $scope->collection_id = $collection_id = $collection[0]->id;
-      $scope->collection = $collection[0];
-      $scope->collection->slug = slugify($collection[0]->title);
-      $scope->collection->page_slug = $slugstr;
-      $search = ['media_collection_id' => $collection_id, 'active' => 1];
-      $scope->artworks = $mapObjs = find_objects('media_collection_map', $search, ['sort' => 'rank']);
-      //$scope->related_artwork_id = $related_artwork_id = explode('~', $parts[2])[1];
-    break;
-    
-    case 'work':
-      break;
+        $scope->artworks = [];
+        $scope->user_id = $user_id;
+        $scope->user = $user = get_user($user_id);
+        $scope->user_display_name = $display_name = user_display_name($user);
+        $title = '';
 
-    case 'exhibitions':
-      break;
-      
-    case ($page == 'coverpage' || $page == 'coverpage_landscape'):
-      $data = [];
-      $page_slug = ($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
-      foreach($exhibitions as $collectionObj){
-        if(!$collectionObj) {
-          print_log("no $slug in ".dump($exhibitions,true), 'minisite', LOG_LEVEL_TEST);
-          //return scope_error($app, "Exhibition {$slug} not found", '404');
-        }
-        $collectionObj->collection_id = $collectionObj->id;
-        $collectionObj->page_slug = $page_slug;
-        $collectionObj->slug = slugify($collectionObj->title);
-        $collectionObj->artist_names = collection_artist_list($collectionObj); 
-        $collectionObj->se_title = "{$collectionObj->title}, {$artist_names}";
-        $collectionObj->se_description = $collectionObj->description;
+        if(count($parts) > 3) return controller_error($app, "{$path} not found");
+
+        //dump($options);
+        $artist = null;
+        $artists = $artistAr = [];
+        $data = [];
+        $today = today();
+
+        $exhibitions = $artists = [];
+
+        print_log("type={$type} path: {$path} page:{$page} slug:{$slug} id: {$obj_id} name: {$name} sub:{$subview} options".dump($options,true), 'minisite', LOG_LEVEL_TEST);  
+
+        $se_title = $minisite;
+        $se_description = $minisite;
+
+        print_log("Returned type=$type page=$page tpl: $minisite_id".dump($get_tpl,true), 'minisite', LOG_LEVEL_TEST);  
+
+        switch($type) {
+
+          /**
+          case 'artist':
+            $search = ['user_id' => $user_id, 'active' => 1, 'type' => COLLECTION_TYPE_EXHIBITION, 'subtype' => 40, 'show_website' => 1];
+            $scope->artist = $artist = get_user($user_id);
+            
+            if(!$artist) return scope_error($app, "Artist {$slug} not found", '404');
+
+            $artist->slug = slugify($uObj->display_name);
+            $artist->collections = $exhibitionObjs = find_objects('media_collection', $search);
+
+            $collectionObjs = find_objects('media_collection', ['user_id' => $user_id, 'active' => 1, 'type' => COLLECTION_TYPE_PROJECT]);    
+            $collectionObj = $collectionObjs[0];
+            $collection_count = count($collectionObjs);
+            $exhibition_count = count($exhibitionObjs);
+            print_log("user: {$user_id} $collection_count collections $exhibition_count id={$collectionObj->id} type={$collectionObj->type} title={$collectionObj->title}", 'minisite', LOG_LEVEL_TEST);
+
+            $artist->collection = $collectionObj;
+            $artist->collection_id = $collectionObj->id;
+            $artist->title_image = $uObj->photo ?: collection_title_image($collectionObj, 'ig');
+            $artist->collections = $exhibitionObjs;
+         
+            
+            //die("type={$type} path: {$path} page:{$page} slug:{$slug} sub:{$subview} options".dump($options,true));
+            
+            break;
+          **/  
+          // case ($type == 'gallery' || $type == 'artist'):
+
+            case 'gallery':
+                case 'artist':
+                    default:
+                    print_log("kj got here page=$page type=$type", 'minisite', LOG_LEVEL_TEST);
+                    if($page == 'artists' || $page == 'artist') {
+                        $scope->page_slug = ($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
+                        $page_slug = ($parts[0] != '') ? "/".$parts[0]."/" :  "/".$get_tpl['get_slug']."/" ; 
+                        $search = find_object('minisite_page', ['user_id' => $user_id, 'active' => 1, 'minisite_id' => $minisite_id,'slug' => $page_slug]);
+                        $page_id = $search->id;
+                        $colSearch = ['user_id' => $user_id, 'id' => $page_id, 'minisite_id' => $minisite_id, 'active' => 1 ];
+                        $collectionObj = find_object('minisite_page', $colSearch);
+
+                        if($collectionObj->search){
+                            $artist_ids = json_decode($collectionObj->search, True);     
+                            $artistArs = get_artist($user_id, $artist_ids, $page_slug);
+                            $artistAr = array_sort($artistArs, 'last_name');
+                            foreach($artistAr as $this_artist) $artists[$this_artist->slug] = $this_artist;
+                            $scope->artists = $artists;
+                        }
+                        if($collectionObj->search1){
+                            $artist_ids = json_decode($collectionObj->search1, True); 
+                            $artistArs = get_artist($user_id, $artist_ids, $page_slug);
+                            $artistAr = array_sort($artistArs, 'last_name');
+                            foreach($artistAr as $this_artist) $artists1[$this_artist->slug] = $this_artist;
+                            $scope->secArtists = $artists1;
+                        }
+
+                        $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'id' => $page_id ,'active' => 1]);
+
+                        if($page == 'artists'){
+                            if($minisite_pageObj->page_layout == '119')           $tpl = $page = 'artists_layout2'; 
+                            elseif($minisite_pageObj->page_layout == '124')       $tpl = $page = 'artists_layout1'; 
+                            elseif($minisite_pageObj->page_layout == '125')       $tpl = $page = 'artists';
+                            elseif($minisite_pageObj->page_layout == '126')       $tpl = $page = 'artists_layout3';
+                            elseif(($minisite_pageObj->page_layout == '127') 
+                            || ($minisite_pageObj->page_layout == '134') )        $tpl = $page = 'artists_layout4';
+                        }else{
+                            if($minisite_pageObj->second_layout == 128)           $tpl = $page = 'artist'; 
+                            elseif($minisite_pageObj->second_layout == 129)       $tpl = $page = 'artist_layout1'; 
+                            elseif($minisite_pageObj->second_layout == 130)       $tpl = $page = 'artist_layout2'; 
+                            elseif($minisite_pageObj->second_layout == 131)       $tpl = $page = 'artist_layout3'; 
+                            elseif($minisite_pageObj->second_layout == 155)       $tpl = $page = 'artist_layout4';
+                            elseif($minisite_pageObj->second_layout == 156)       $tpl = $page = 'artist_layout5';
+                            elseif($minisite_pageObj->second_layout == 157)       $tpl = $page = 'artist_layout6';
+                            elseif($minisite_pageObj->second_layout == 164)       $tpl = $page = 'artist_masonry';
+                            elseif($minisite_pageObj->second_layout == 165)       $tpl = $page = 'artist_hanging';
+                            elseif($minisite_pageObj->second_layout == 166)       $tpl = $page = 'artist_standing';
+                            elseif($minisite_pageObj->second_layout == 167)       $tpl = $page = 'artist_masonryExt';
+                            elseif($minisite_pageObj->second_layout == 179)       $tpl = $page = 'artist_layout7';
+                            elseif($minisite_pageObj->second_layout == 207)       $tpl = $page = 'artist_layout8';
+                            elseif($minisite_pageObj->second_layout == 208)       $tpl = $page = 'artist_layout9';
+                            elseif($minisite_pageObj->second_layout == 209)       $tpl = $page = 'artist_layout10';
+                        }
+                    }if($page == 'exhibitions' || $page == 'exhibition') {
+                        // dump('ashi');
+
+                        $scope->page_slug = $slugstr =($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
+                        $scope->sub_slug = $subviews = ($parts[2] != '') ?  $parts[2] : $get_tpl['get_subviews'];
+
+                        $page_slug =  ($parts[0] != '') ? "/".$parts[0]."/" : "/".$get_tpl['get_slug']."/"; 
+
+                        $minisite_id = $msObj->id;
+                        $today = today(); 
+                        // dump('ashi');
+                             
+                        /** Exhibitions - only do when needed  */
+                        /*Filter exhibition by type */
+                        $gallery = $artfair = $others = '0';
+
+                        $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'slug' => $page_slug, 'active' => 1]);
+                        $title = $minisite_pageObj->page_title;
+                        $data = json_decode($minisite_pageObj->data, True);
+
+                        if($data[show_gallery]) $gallery = '10';
+                        if($data[show_artfair]) $artfair = '20';
+                        if($data[show_others])  $others = '30';
+                        if(($data[show_selection]) && ($data[show_past] || $data[show_latest]))
+                        {
+                            $selection = '40';
+                        } 
+                        if($data[show_current]) $current_view = 1;
+                        if($data[show_past])    $past_view = 1;
+                        if($data[show_future])  $future_view = 1;  
+                        if($data[show_latest])  $latest_view = 1;
+                        if($data[show_recent])  $sort = 'DESC'; else $sort = 'ASC';
+
+                        $search = ['user_id' => $user_id, 'type' => COLLECTION_TYPE_EXHIBITION, 'active' => 1, 'subtype' => [$gallery,$artfair,$others,$selection]];
+
+                        if($page == 'exhibitions'){
                 
-        if($loc_id = $collectionObj->location_id) {
-          $locObj = get_object('location', $loc_id);
-          $collectionObj->location = $locObj;
-        }    
-        if($event_id = $collectionObj->event_id) {
-          $eventObj = get_object('event', $event_id);
-          //if(!$eventObj) die("event $event_id not found");
-          $collectionObj->event = $eventObj;
-        }      
-        $search = ['media_collection_id' => $collection_id, 'active' => 1];
-        $scope->artworks = $mapObjs = find_objects('media_collection_map', $search, ['sort' => 'rank']);
-        $data[] = $collectionObj;
-      }
-      $scope->collection_data = $data;
-      $scope->latest_exhibitions = $latestexhibitions;
-    break;
+                            $title = $parts[2];
+                            //dump($minisite_pageObj->page_layout);
+                            if($minisite_pageObj->page_layout == '102'){
+                                $when = $subviews ?: 'all';
+                                switch($when) {
+                                    case 'past':
+						              $search['end_date'] = ['<', $today];
+						              break;
+						            case 'current':
+						              $search['start_date'] = ['<=', $today];
+						              $search['end_date'] = ['>=', $today];      
+						              break;
+						            case 'future':
+						              $search['start_date'] = ['>', $today];
+						              break;
+						           
+                                    case 'currentandfuture':
+                                        // dump('currentashiiiicurrentandfuture'.$today);
 
-    case ($page == ('masonry_3C' || 'masonry_4C' || 'masonry_3C_TS' || 'masonry_4C_TS' || 'masonry_3CY'|| 'masonry_4CY')):
-      $scope->exhibitions = $exhibitions;
-      $scope->latest_exhibitions = $latestexhibitions;
-    break; 
+                                      //if(($data[show_selection]) && ($data[show_past] || $data[show_latest]))
+                                      //{
+                                       //$search['exhibition_sequence'] = ['<', $today];
+                                      //}
+                                      //else
+                                      //{
+                                        $search['end_date'] = ['>=', $today];
+                                     // }
+                                        break;
+                                    case 'all':
+                                        $future_past = 0;
+                                        if(($current_view == 1) && ($past_view == 1) && ($future_view == 1)){
+                                            unset($search['exhibition_sequence']);
+                                            unset($search['end_date']);
+                                        }
+                                        elseif(($future_view == 1) && ($current_view == 1)){
+                                            $search['end_date'] = ['>=', $today];
+                                        }
+                                        elseif(($future_view == 1) && ($past_view == 1)){
+                                            $scope->future_past = 1;
+                                        }
+                                        elseif(($current_view == 1) && ($past_view == 1)){
+                                            $search['exhibition_sequence'] = ['<=', $today];
+                                        }
+                                        break;
+                                    default: // all or single
+                                        break;
+                                }
+                            }
+                            //echo "Test";
+                            //dump($search);
+                            $template = get_exhibition_tpl1($minisite_pageObj->page_layout);
+                            $scope->layout = find_object('minisite_layout', ['id' => $minisite_pageObj->page_layout, 'active' =>1]);
+                            //dump($scope->layout);
+                        }else{
+                            unset($search['subtype']);
+                            $template = get_exhibition_tpl2($minisite_pageObj->second_layout);
+                        }
+                        $tpl = $page = $template;
+                
+                        /** Filter by gallery, Art, Other events */
+                        if($data[show_recent] == 1 )
+                            $exhibitionObjs = find_objects('media_collection', $search, ['sort' => 'exhibition_sequence desc']) ?: [];
+                        else
+                            $exhibitionObjs = find_objects('media_collection', $search, ['sort' => 'exhibition_sequence asc']) ?: [];
+                            //dump(count($exhibitionObjs));   
+                
+                        $exhibition_ids = $exhibitions = $latestexhibition = $data_exist = [];
+                        $future_count = $past_count = $current_count =  $selection_count = 0;
+                        foreach($exhibitionObjs as $exhibitionObj) {
+                            $exhibitionObj->slug = slugify($exhibitionObj->title);
+                            $current = "";
+                            if($exhibitionObj->exhibition_sequence || $exhibitionObj->end_date) { 
+                                if($exhibitionObj->end_date < $today && !empty($exhibitionObj->end_date)) { 
+                                    $data_exist["past"] = 1;
+                                    $current = "past";
+                                    $past_count = $past_count+1;
+                                }
+                                elseif(($exhibitionObj->exhibition_sequence < $today) && ($exhibitionObj->end_date > $today)) {
+ 									$current = "current";
+					              	$data_exist[current] = 1 ;
+					              	$current_count = $current_count+1;
+				            	}
+                            	elseif($exhibitionObj->exhibition_sequence < $today) {
+                                    $data_exist["selection"] = 1;
+                                    $current = "selection";
+                                    $selection_count = $selection_count+1; 
+                                }elseif($exhibitionObj->start_date > $today) {
+					              	$current = "future";
+					              	$data_exist[future] = 1;
+					              	$future_count = $future_count +1;
+					            }else {
+					              	$current = "current";
+					              	$data_exist[current] = 1 ;
+					              	$current_count = $current_count+1;
+					            }
+                            } else {
+                                continue; /** skip exhibitions w/o dates */
+                            }
+                            //dump($current);
+                            $exhibitionObj->current = $current;     
+                            $exhibitionObj->page_slug = $slugstr; 
+                            $get_date = $get_type = [];
+                            $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $exhibitionObj->id, 'active'=>1]);
+                            foreach($get_artworks as $artwork){
+                                $get_date[] = $artwork->original_year;
+                                $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
+                                $get_type[] = get_artwork_type($find_art->type);
+                            }
+                            $mini =  min(array_filter($get_date));
+                            $max = max(array_filter($get_date));
 
-    case ($page == 'landscape_3C' || $page == 'landscape_3C_TS' || $page == 'landscape_4C' || $page == 'landscape_time' || $page == 'landscape_3CY' || $page == 'landscape_4CY' || $page == 'landscape_2C' || $page == 'landscape_2C_TS' || $page == 'landscape_2CY'):
-    break; 
-    
-    case ($page == 'natural' || $page == 'tiles' || $page == 'hangingline_3C_TS' || $page == 'natural_time' || $page == 'hangingline_3CY' || $page == 'hangingline_4CY'):
-    break;
+                            if($exhibitionObj->subtype == 40){
+                                $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                                if($mini == $max)
+                                    $selection_range = "Selection (".$mini.")";
+                                elseif($mini < $max)
+                                    $selection_range =  "Selection (".$mini."-".$max.")";
+                                else
+                                    $selection_range =  "Selection";
+                                $exhibitionObj->selection_range = $selection_range;
+                                $exhibitionObj->selection_type = $selection_type;
+                            }
+                            $exhibitions[$exhibitionObj->slug] = $exhibitionObj;
+                            $exhibition_ids[] = $exhibitionObj->id;
+                        }
+                        $scope->exhibitions = $exhibitions;
+                        $scope->data_exist = $data_exist;
+                        $scope->exhibition_years = $exhibition_years = db_getAll("SELECT year(exhibition_sequence) as year from  media_collection where user_id='$user_id' AND type='120' AND start_date!='' AND active='1' group by year order by year ".$sort);      
+                
+                        /* To view latest exhibition */
+                        if($latest_view){
+                            unset($search['exhibition_sequence']);
+                            unset($search['end_date']);
+                            $latestexhibition = find_objects('media_collection', $search, ['sort' => 'exhibition_sequence desc', 'limit' => 1]) ?: []; 
+                            //dump($latestexhibition);
+                            if(($latestexhibition) ){
+                                foreach($latestexhibition as $exhibition) {
+                                    if($exhibition->exhibition_sequence || $exhibition->end_date){
+                                        $exhibition->slug = slugify($exhibition->title);
+                                        $exhibition->page_slug = $slugstr;
+                                        $latestexhibitions[] = $exhibition;
+                                        $get_date = $get_type = [];
+                                        $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $exhibition->id, 'active'=>1]);
+                                        foreach($get_artworks as $artwork){
+                                          $get_date[] = $artwork->original_year;
+                                          $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
+                                          $get_type[] = get_artwork_type($find_art->type);
+                                        }
+                                        $mini =  min(array_filter($get_date));
+                                        $max = max(array_filter($get_date));
 
-    case ($page == 'standing_3C' || $page == 'standing_4C' || $page == 'standing_3CT' || $page == 'standing_4CT' || $page == 'standing_3CY' || $page == 'standing_4CY'):
-    break;
+                                        if($exhibition->subtype == 40){
+                                            $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                                            if($mini == $max)
+                                                $selection_range = "Selection (".$mini.")";
+                                            elseif($mini < $max)
+                                                $selection_range =  "Selection (".$mini."-".$max.")";
+                                            else
+                                                $selection_range =  "Selection";
+                                            $exhibition->selection_range = $selection_range;
+                                            $exhibition->selection_type = $selection_type;
+                                        }
+                                    }          
+                                }
+                                $scope->latest_exhibitions = $latestexhibitions;
+                                //dump($latestexhibitions);
+                            }else{
+                                return scope_error($app, "Missing Latest Exhibitions in home page", '404');
+                            }
+                        }        
+                    } 
 
-    case ($page == '16ratio9_3C' || $page == '16ratio9_4C' || $page == '16ratio9_3CT' || $page == '16ratio9_4CT' || $page == '16ratio9_3CY' || $page == '16ratio9_4CY' || $page == '16ratio9_2C' || $page == '16ratio9_2CT' || $page == '16ratio9_2CY'):
-    break;  
+                    if($page == 'manualexbs' || $page == 'manualexb'){
+                        $scope->page_slug = $slugstr =($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
+                        $scope->sub_slug = $subviews = ($parts[2] != '') ?  $parts[2] : $get_tpl['get_subviews'];
+                        $page_slug =  ($parts[0] != '') ? "/".$parts[0]."/" : "/".$get_tpl['get_slug']."/"; 
 
-    case ($page == '4ratio3_3C' || $page == '4ratio3_4C' || $page == '4ratio3_3CT' || $page == '4ratio3_4CT' || $page == '4ratio3_3CY' || $page == '4ratio3_4CY' || $page == '4ratio3_2C' || $page == '4ratio3_2CT' || $page == '4ratio3_2CY'):
-    break;
+                        $minisite_id = $msObj->id;
 
-    case ($page == '3ratio2_3C' || $page == '3ratio2_4C' || $page == '3ratio2_3CT' || $page == '3ratio2_4CT' || $page == '3ratio2_3CY' || $page == '3ratio2_4CY' || $page == '3ratio2_2C' || $page == '3ratio2_2CT' || $page == '3ratio2_2CY'):
-    break;
+                        $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'slug' => $page_slug, 'active' => 1]);
 
-    case ($page == 'banner' || $page == 'banner_time' || $page == 'banner_year'):
-    break;
+                        if($page == 'manualexbs')
+                        {
+                            $template = get_exhibition_tpl1($minisite_pageObj->page_layout);
+                        }
+                        else
+                        {
+                            $template = get_exhibition_tpl2($minisite_pageObj->second_layout);
+                        }
+                        $scope->layout = find_object('minisite_layout', ['id' => $minisite_pageObj->page_layout, 'active' =>1]);
 
-    case ($page == '16X9_2C' || $page == '16X9_3C' || $page == '16X9_4C'):
-    break;
+                        $tpl = $page = $template;
+                        
+                        $exb_ids = find_objects('exhibition_map', ['page_id' =>$minisite_pageObj->id, 'active'=>1, 'type'=>'manual'], ['sort' => 'rank asc']);
+               
+                        foreach($exb_ids as $exb_id){
+                            $exhibitionObjs[] = find_object('media_collection', ['id'=>$exb_id->media_collection_id, 'active'=>1]) ?: [];
+                        }
 
-    case 'timeline_view':
-    break;   
+                        $exhibitions = [];
+                        $selection_range = 0;
+                        foreach($exhibitionObjs as $exhibitionObj){
+                            $exhibitionObj->slug = slugify($exhibitionObj->title);
+                            $current = "";
+                            $exhibitionObj->current = $current;     
+                            $exhibitionObj->page_slug = $slugstr; 
+                            $get_date = $get_type = [];
+                            $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $exhibitionObj->id, 'active'=>1]);
+                            foreach($get_artworks as $artwork){
+                                $get_date[] = $artwork->original_year;
+                                $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
+                                $get_type[] = get_artwork_type($find_art->type);
+                            }
+                            $mini =  min(array_filter($get_date));
+                            $max = max(array_filter($get_date));
 
-    case ($page == 'contact' || 'contact1'):
-      $page_slug = ($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
-      $search = find_object('minisite_page', ['user_id' => $user_id, 'active' => 1, 'minisite_id' => $minisite_id,'slug' => $page_slug]);
-      $page_id = $search->id;
+                            if($exhibitionObj->subtype == 40){
+                                $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                                if($mini == $max)
+                                    $selection_range = "Selection (".$mini.")";
+                                elseif($mini < $max)
+                                    $selection_range =  "Selection (".$mini."-".$max.")";
+                                else
+                                    $selection_range =  "Selection";
+                                $exhibitionObj->selection_range = $selection_range;
+                                $exhibitionObj->selection_type = $selection_type;
+                            }
+                            $exhibitions[$exhibitionObj->slug] = $exhibitionObj;
+                            $exhibition_ids[] = $exhibitionObj->id;
+                        }
+                        $scope->exhibitions = $exhibitions;
+                    }
 
-      $scope->receiver_name = $display_name;
-      $scope->receiver_email = $user->email_address;
-      $scope->userdetail = $userdetail = find_object('user_profile', ['user_id' => $user_id]);
-      $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'id' => $page_id ,'active' => 1]);
-    break;
-   
-    case 'about':
-      break;
-    case 'news':
-      break;
-    case 'private':
-      break;
-    case 'home': /** not fully implemented yet - assumes existence of custom page for this artist */
-      //$tpl = "{$minisite}/{$tpl}";
-      //die("page={$page} tpl={$tpl}");
-      break;
-    default: /** Look for custom page */
-      $pageSearch = ['minisite_id' => $msObj->id, 'slug' => $page, 'active' => 1];
-      $minisitePageObj = find_object('minisite_page', $pageSearch);
-      if($minisitePageObj) {
-        $tpl = $minisitePageObj->template; 
-        $tpl = 'test'; /** add this to DB - hard coded for now */
-        $minisitePageObj->title = "Some Title"; /** add this to DB - hard coded for now */
-        $minisitePageObj->content = "<p>Some Content</p><p>Bla bla bla</p>"; /** add this to DB - hard coded for now */
-        
-        $scope->minisite_page = $minisitePageObj;
+                    if($page == 'contact'){
+                        $scope->page_slug = ($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
+                        $page_slug = ($parts[0] != '') ? "/".$parts[0]."/" :  "/".$get_tpl['get_slug']."/";
+                        $minisite_id = $msObj->id;
 
-        $type = $minisitePageObj->type;
-        $scope->debug = html_h3("Found custom minisite page");
-        $scope->debug .= "Name: {$minisitePageObj->menu_title} ID: {$minisitePageObj->id}) Tpl: {$tpl}";        
-        
-      } else {
-        return scope_error($app, "Page {$page} not found", 'minisites/404');
-      }
-      break;
-  }
-  
-  //dump($_SERVER);
-  $docroot = docroot(false);
-  $custom_filename = "{$docroot}/user/minisite/{$minisite}/pages/{$page}/default.html";
-  if(is_file($custom_filename)) {
-    list($custom_header, $custom_content) = site_parse_pagefile($custom_filename);
-    $scope->headers = $custom_header;
-    $scope->custom_content = $custom_content;
-    print_log("Found custom file {$custom_filename} content={$custom_content}", 'minisite', LOG_LEVEL_TEST);
+                        $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'slug' => $page_slug, 'active' => 1]);
 
-  }
-  
-  $pageObj->template = "minisites/{$tpl}";
-  $pageObj->name = $page;
-  $scope->page = $page;
-  $scope->slug = $slug;
-  $scope->subview = $subview;
-  $scope->title = $title;
-  $scope->mObj = $mObj = find_object('minisite', ['id' => $minisite_id, 'user_id' => $user_id, 'active' => 1]);
-  $scope->menuObj = $menuObj = find_objects('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'active' => 1], ['sort' => 'row_order asc']);
-  $scope->profileobj = $profileobj = find_object('user_profile', ['user_id' => $user_id]);
-  $scope->timings = $timings = db_getAll("select * from opening_hours where user_id='$user_id' ORDER BY `id` ASC");
+                        if($minisite_pageObj->page_layout == 117)  
+                            $tpl = $page = 'contact';
+                        elseif($minisite_pageObj->page_layout == 118)     
+                            $tpl = $page = 'contact1'; 
+                    }   
+                    if($page == 'bio'){
+                        $scope->subview = $subview = $parts[1];
+                        $scope->sub_slug = $title= $subviews = $parts[2];
+                        $minisite_id = $msObj->id;
+                        $page_slug = ($parts[0] != '') ? "/".$parts[0]."/" :  "/".$get_tpl['get_slug']."/"; 
 
-  $keywords = implode(',', array_filter([$minisite, $display_name, $page, $slug, $subview, $site->name, $page->name, $type, $se_title]));
-  
-  $app->page->se_title = htmlspecialchars($se_title);
-  $app->page->se_keywords = htmlspecialchars($keywords);
-  $app->page->se_description = htmlspecialchars($se_description);
-    
-  print_log("page=$page path={$path} slug={$slug} subview={$subview} tpl={$pageObj->template}".dump($parts,true), 'minisite', LOG_LEVEL_TEST);
-  return;
-}
+                        $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'slug' => $page_slug, 'active' => 1]);
 
+                        $bioartist = find_object('user_profile', ['user_id' => $user_id]);
 
-function controller_login($app, $options = []) {
-  global $u_id;
-  $scope = $app->page->scope;
-  $scope->provider_keys = $pk = $app->scope->provider_keys; // find_objects('provider_key', array('site_id' => $siteObj->id, 'active' => 1), array("field" => "provider_id"));
-  $ref = $_GET['ref'];
-  if($u_id && $ref) {
-    $scope->redirect = $ref; 
-  }
-  return;
-}
+                        if($minisite_pageObj->page_layout == 128)       $tpl = $page = 'artist';
+                        elseif($minisite_pageObj->page_layout == 129)   $tpl = $page = 'artist_layout1';
+                        elseif($minisite_pageObj->page_layout == 130)   $tpl = $page = 'artist_layout2';
+                        elseif($minisite_pageObj->page_layout == 131)   $tpl = $page = 'artist_layout3';
+                        elseif($minisite_pageObj->page_layout == 155)   $tpl = $page = 'artist_layout4';
+                        elseif($minisite_pageObj->page_layout == 156)   $tpl = $page = 'artist_layout5';
+                        elseif($minisite_pageObj->page_layout == 157)   $tpl = $page = 'artist_layout6';
+                        elseif($minisite_pageObj->page_layout == 164)   $tpl = $page = 'artist_masonry';
+                        elseif($minisite_pageObj->page_layout == 165)   $tpl = $page = 'artist_hanging';
+                        elseif($minisite_pageObj->page_layout == 166)   $tpl = $page = 'artist_standing';
+                        elseif($minisite_pageObj->page_layout == 167)   $tpl = $page = 'artist_masonryExt';
+                        elseif($minisite_pageObj->page_layout == 179)   $tpl = $page = 'artist_layout7';
+                        elseif($minisite_pageObj->page_layout == 207)   $tpl = $page = 'artist_layout8';
+                        elseif($minisite_pageObj->page_layout == 208)   $tpl = $page = 'artist_layout9';
+                        elseif($minisite_pageObj->page_layout == 209)   $tpl = $page = 'artist_layout10';
+                    }
+                    if($page == 'singleExhibitions'){
+                        $scope->subview = $subview = $parts[2];
+                        $scope->page_slug = $slugstr =($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
+                        $minisite_id = $msObj->id;
+                        $page_slug = ($parts[0] != '') ? "/".$parts[0]."/" :  "/".$get_tpl['get_slug']."/"; 
 
-function controller_register($app, $options = []) {
-  $scope = $app->page->scope;
-  return;
-}
+                        $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'slug' => $page_slug, 'active' => 1]);
 
-function controller_generic($app, $options = []) {
-  $scope = $app->page->scope;
-  return;
-}
+                        if($minisite_pageObj->page_layout == 135)       $tpl = $page = 'singleExh';
+                        elseif($minisite_pageObj->page_layout == 136)   $tpl = $page = 'singleExh_kwLoc';
+                        elseif($minisite_pageObj->page_layout == 294)   $tpl = $page = 'singleExh_1';
+                        elseif($minisite_pageObj->page_layout == 295)   $tpl = $page = 'singleExh_sewLoc';
+                        elseif($minisite_pageObj->page_layout == 172)   $tpl = $page = 'singleExh_2';
+                        elseif($minisite_pageObj->page_layout == 173)   $tpl = $page = 'singleExh_3';
+                        elseif($minisite_pageObj->page_layout == 174)   $tpl = $page = 'singleExh_4';
+                        elseif($minisite_pageObj->page_layout == 175)   $tpl = $page = 'singleExh_5';
+                    } 
 
-function controller_calendar($app, $options = []) {
-  global $u_id, $__CLIENT_ID, $__USER;
-  $__header = $app->header; 
-  $scope = $app->page->scope;
-  $siteObj = $app->site;
-  $app->page->hide_edit_menu = 1;
-  $scope->hide_menu = 1;
-  
-  $ver = $app->version;
-  
-  $__header->scripts[] = "/afr/js/admincal.js?v=$ver";
-  $__header->scripts[] = "/afr/js/admincal-dialog.js?v=$ver";
-  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js";
-  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js";    
-  $__header->styles[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.css";
-  $__header->styles[] = "/afr/css/admincal.css?v=$ver";
-  $__header->styles[] = "/afr/css/afr_gmenu.css?v=$ver";
-  
-  $cp = $options['cal_params'] ?: new stdClass;
-  
-  $ptype = $siteObj->property_type ?: 'shortstay';
-  $host_ids = user_host_list($u_id);  
-  $psearch = array('host_id' => $host_ids);
+                    if($page == 'shopifyTest'){
+                        $tpl = $page = 'shopifyTest';
+                        $scope->subview = $subview = $parts[2];
+                        $scope->page_slug = $slugstr =($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
+                        $minisite_id = $msObj->id;
+                        $page_slug = ($parts[0] != '') ? "/".$parts[0]."/" :  "/".$get_tpl['get_slug']."/"; 
 
-  
-  $scope->show_inactive = $show_inactive = isset($_GET['si']) ? $_GET['si'] : 0;
-  if(!$show_inactive) $psearch['active'] = 1;
+                        $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'active' => 1, 'slug' => $page_slug, 'minisite_id'=>$minisite_id]);
+                    }
+                    if($page == 'mailchimpTest'){
+                        $scope->subview = $subview = $parts[2];
+                        $scope->page_slug = $slugstr =($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
+
+                        $page_slug = ($parts[0] != '') ? "/".$parts[0]."/" :  "/".$get_tpl['get_slug']."/"; 
+                        $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'active' => 1, 'slug' => $page_slug]);
+                        $data = json_decode($minisite_pageObj->data);
+                        if($data->mailtype == 10)     $tpl = $page = 'classicMail';
+                        elseif($data->mailtype == 20) $tpl = $page = 'condensedMail';
+                        elseif($data->mailtype == 30) $tpl = $page = 'horizontalMail';
+                        else                          $tpl = $page = 'unstyledMail';
+                    }
+                    break;
+                }
           
-  //$scope->rentals = find_objects($ptype, $psearch);
-  $rentals = find_objects($ptype, $psearch, ['fields' => ['id', 'name', 'type', 'site_id', 'active'], 'sort' => 'address_street,address_number,address_suffix']);
-  foreach($rentals as $rental) {
-    $rental->link = rental_link($rental, ['full' => 1, 'live' => 1]);
-    //print_log("link for {$rental->name}: {$rental->link}", 'calendar', LOG_LEVEL_TEST);
-  }
-  array_unshift($rentals, ['id' => 0, 'name' => "?"]);
-  $scope->rentals = $rentals;
-  $scope->sites = find_objects('site', ['client_id' => $__CLIENT_ID, 'property_type' => $ptype, 'active' => 1], ['fields' => ['site.id', 'site.name', 'site.shortname']]);
-  $scope->legal_entities = find_objects('legal_entity', ['client_id' => $__CLIENT_ID, 'active' => 1], ['fields' => ['legal_entity.id', 'legal_entity.name', 'legal_entity.shortname']]);
-  $scope->agents = find_objects('agent', ['client_id' => $__CLIENT_ID, 'active' => 1], ['fields' => ['agent.id', 'agent.name'], 'sort' => 'agent.name']);
-  $scope->clients = find_objects('org', ['client_id' => $__CLIENT_ID, 'active' => 1], ['fields' => ['org.id', 'org.name'], 'sort' => 'org.name']);
-  $scope->host_ids = $host_ids;
-                     
-  $start = date('Y-m-01');
-  $scope->data = ['start' => $_GET['start'] ?: $start, 'mode' => 'calendar', 'period' => $_GET['p'] ?: 1, 
-                  'rentals' => $rentals, 'view' => 'month', 'host_ids' => $host_ids, 'show_inactive' => 0,
-                  'user_level' => $__USER->user_level, 'user_id' => $__USER->id]; /** new cal params */
-  return;                                              
-}
+                /** todo: 404 if slug/subview not allowed or not found */
+          
+                switch($page) {
+                    case ($page == 'artist' || $page == 'artist_layout1' || $page == 'artist_layout2' || $page == 'artist_layout3' || $page == 'artist_layout4' || $page == 'artist_layout5' || $page == 'artist_layout6' || $page == 'artist_masonry' || $page == 'artist_hanging' || $page == 'artist_standing' || $page == 'artist_masonryExt' || $page == 'artist_layout7' || $page == 'artist_layout8' || $page == 'artist_layout9' || $page == 'artist_layout10'): 
+                        $artist = "";
+              
+                        if($bioartist){
+                            $scope->artist = $artist = $bioartist;
+                            $artist_id = $artist->user_id;
+                        }else{
+                            $slug = $parts[1];
+                            $artist = $artists[$slug]? $artists[$slug] : $artists1[$slug];
+                            $scope->artist = $artist;
+                            $artist_id = $artist->id;
+                        }
+                        $collection_data = find_object('media_collection', ['user_id' => $artist_id, 'type' => '150', 'active' => 1]);
+                        $scope->collection_id = $collection_data->id;
+                        if(collection_data) {
+                            $search = ['media_collection_id' => $collection_data->id, 'active' => 1];
+                            $scope->artworks = $mapObjs = find_objects('media_collection_map', $search);
+                        } 
+                        $page_slug = ($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
 
-function controller_search($app, $options = []) {
-  $siteObj = $app->site;
-  $scope = $app->page->scope;
-  $results = array();
-  if($term = $_GET['s']) {
+                        $scope->exhibitions = $exhibitions = find_objects('media_collection', ['artist_id' => $artist_id, 'type' => COLLECTION_TYPE_EXHIBITION, 'active' => 1, 'subtype' => ['10','20'] ], ['sort' => 'end_date desc']);
+                        //dump($scope->exhibitions);
+
+                        $se_title = $artist->display_name;
+                        $se_description = $artist->description;                          
+
+                        $scope->show_images = 1;
+                        $scope->show_solo = strlen(strip_blank($artist->gallery_solo_shows)) > 0 ? 1 : 0;
+                        $scope->show_group = strlen(strip_blank($artist->gallery_group_shows)) > 0 ? 1 : 0;
+                        $scope->show_press = strlen(strip_blank($artist->press)) > 0 ? 1 : 0;
+                        $scope->show_bio = $scope->show_solo || $scope->show_group || $scope->show_press ? 1 : 0;
+                        $scope->show_pub = 0; // strlen(strip_blank($artist->publications)) > 0;
+                    break;
+            
+                    case 'artists':
+                        break;
+                    case 'artists_layout1':
+                        break;
+                    case 'artists_layout2':
+                        break;
+                    case 'artists_layout3':
+                        break;
+                    case 'artists_layout4':
+                        break;
+                    case 'shopifyTest':
+                        break;
+                    case ($page == 'classicMail' || $page == 'condensedMail' || $page == 'horizontalMail' || $page == 'unstyledMail'):
+                        break;
+            
+                    case ($page == 'exhibition' || $page == exhibition1 || $page == exh_masonry || $page == exh_hanging || $page == exh_standing || $page == exh_masonryExt || $page == kyoto_WLoc || $page == seoul_WLoc):
+                        if($parts[1]) $slug = $parts[1];
+
+                        if(!$slug) return scope_error($app, "Missing slug", '404');
+                        $collectionObj = $obj_id ? get_object('media_collection', $obj_id) : $exhibitions[$slug];
+                        if(!$parts[1]) $collectionObj->page_slug = $page_title;
+                        if(!$collectionObj) {
+                            print_log("no $slug in ".dump($exhibitions,true), 'minisite', LOG_LEVEL_TEST);
+                        //return scope_error($app, "Exhibition {$slug} not found", '404');
+                        }
+
+                        $artist_names = collection_artist_list($collectionObj);    
+                        $se_title = "{$collectionObj->title}, {$artist_names}";
+                        $se_description = $collectionObj->description;
+                        $scope->profile = find_object('user_profile', ['user_id'=> $collectionObj->artist_id]);
+                        $scope->collection = $collectionObj;
+                        $scope->collection_id = $collection_id = $collectionObj->id;
+                        if($loc_id = $collectionObj->location_id) {
+                            $locObj = get_object('location', $loc_id);
+                            $scope->collection->location = $locObj;
+                        }
+
+                        if($event_id = $collectionObj->event_id) {
+                            $eventObj = get_object('event', $event_id);
+                            if($eventObj) 
+                              $scope->collection->event = $eventObj;
+                        }  
+                        $selection_range = 0; 
+                        $parts_0 = '/'.$parts[0].'/';                                                    //to get manual exhibition
+                        $minisite_page = find_object('minisite_page', ['minisite_id' => $minisite_id, 'slug' => $parts_0, 'active' => 1]);
+                        if($minisite_page->type == 80){
+                            $scope->manualExhibition = 1;
+                            $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $collectionObj->id, 'active'=>1]);
+                            foreach($get_artworks as $artwork){
+                                $get_date[] = $artwork->original_year;
+                                $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
+                                $get_type[] = get_artwork_type($find_art->type);
+                            }
+                            $mini =  min(array_filter($get_date));
+                            $max = max(array_filter($get_date));
+
+                            if($collectionObj->subtype == 40){
+                                $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                                if($mini == $max)
+                                    $selection_range = "Selection (".$mini.")";
+                                elseif($mini < $max)
+                                    $selection_range =  "Selection (".$mini."-".$max.")";
+                                else
+                                    $selection_range =  "Selection";
+                                $scope->collection->selection_range = $selection_range;
+                                $scope->collection->selection_type = $selection_type;
+                                unset($scope->collection->location);
+                            }
+                        } 
+                        $search = ['media_collection_id' => $collection_id, 'active' => 1];
+                        $scope->artworks = $mapObjs = find_objects('media_collection_map', $search, ['sort' => 'rank']);
+                    break;
+
+                    case ($page == 'singleExh' || $page == 'singleExh_kwLoc' || $page == 'singleExh_sewLoc' ||$page == 'singleExh_1' || $page == 'singleExh_2' || $page == 'singleExh_3' || $page == 'singleExh_4' || $page == 'singleExh_5'):
+                        $slugstr =($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
+                        $gallery = $artfair = $others = '0';
+                        $data = json_decode($minisite_pageObj->data, True);
+                        if($data[gallery]) $gallery = '10';
+                        if($data[artfair]) $artfair = '20';
+                        if($data[others])  $others = '30';
+                        if($data[selection])  $selection = '40';
+
+                        if($data['eType'] == 1){
+                            $search = ['user_id' => $user_id, 'type' => COLLECTION_TYPE_EXHIBITION, 'active' => 1, 'subtype' => [$gallery,$artfair, $others, $selection] ];
+                            $collection = find_objects('media_collection', $search, ['sort' => 'exhibition_sequence desc', 'limit' => 1]);
+                        }else{
+                            $find_page = find_object('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id ,'active' => 1, 'slug' => $page_slug]);
+                            $page_id = $find_page->id;
+                            $get_mediaId = find_object('exhibition_map', ['page_id' => $page_id, 'active' => 1, 'type'=>'single']);
+                            $media_collection = $get_mediaId->media_collection_id;
+                            $collection = find_objects('media_collection', ['id' => $media_collection, 'active' => 1], ['limit' => 1]);
+                        }
+                            $scope->collection_id = $collection_id = $collection[0]->id;
+                            $scope->collection = $collection[0];
+                            $scope->collection->slug = slugify($collection[0]->title);
+                            $scope->collection->page_slug = $slugstr;
+                            $search = ['media_collection_id' => $collection_id, 'active' => 1];
+                            $scope->artworks = $mapObjs = find_objects('media_collection_map', $search, ['sort' => 'rank']);
+                            //$scope->related_artwork_id = $related_artwork_id = explode('~', $parts[2])[1];
+                    break;
         
-    // page content
-    if($result = search_result($siteObj, 'page_content', $term, array('title', 'content'), 'id', $options))
-      $results = array_merge($results, $result);
+                    case 'work':
+                        break;
 
-    // articles / blogs
-    if($result = search_result($siteObj, 'article', $term, array('title', 'content'), 'id', $options))
-      $results = array_merge($results, $result);
+                    case 'exhibitions':
+                        break;
+          
+                    case ($page == 'coverpage' || $page == 'coverpage_landscape'):
+                        $data = [];
+                        $page_slug = ($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
+                        foreach($exhibitions as $collectionObj){
+                            if(!$collectionObj) {
+                              print_log("no $slug in ".dump($exhibitions,true), 'minisite', LOG_LEVEL_TEST);
+                              //return scope_error($app, "Exhibition {$slug} not found", '404');
+                            }
+                            $collectionObj->collection_id = $collectionObj->id;
+                            $collectionObj->page_slug = $page_slug;
+                            $collectionObj->slug = slugify($collectionObj->title);
+                            $collectionObj->artist_names = collection_artist_list($collectionObj); 
+                            $collectionObj->se_title = "{$collectionObj->title}, {$artist_names}";
+                            $collectionObj->se_description = $collectionObj->description;
+                                
+                            if($loc_id = $collectionObj->location_id) {
+                                $locObj = get_object('location', $loc_id);
+                                $collectionObj->location = $locObj;
+                            }    
+                            if($event_id = $collectionObj->event_id) {
+                                $eventObj = get_object('event', $event_id);
+                                //if(!$eventObj) die("event $event_id not found");
+                                $collectionObj->event = $eventObj;
+                            }      
+                            $search = ['media_collection_id' => $collection_id, 'active' => 1];
+                            $scope->artworks = $mapObjs = find_objects('media_collection_map', $search, ['sort' => 'rank']);
+                            $data[] = $collectionObj;
+                        }
+                        $scope->collection_data = $data;
+                        $scope->latest_exhibitions = $latestexhibitions;
+                    break;
 
-    // comments
-    if($result = search_result($siteObj, 'comment', $term, array('title', 'content'), 'id', $options))
-      $results = array_merge($results, $result);
+                    case ($page == ('masonry_3C' || 'masonry_4C' || 'masonry_3C_TS' || 'masonry_4C_TS' || 'masonry_3CY'|| 'masonry_4CY')):
+                        $scope->exhibitions = $exhibitions;
+                        $scope->latest_exhibitions = $latestexhibitions;
+                    break; 
 
-    // events
-    if($result = search_result($siteObj, 'event', $term, array('name', 'notes'), 'id', $options))
-      $results = array_merge($results, $result);
-    
-  }
-  $scope->results = $results;
-  //dump($scope->result);
-  return;
-}
+                    case ($page == 'landscape_3C' || $page == 'landscape_3C_TS' || $page == 'landscape_4C' || $page == 'landscape_time' || $page == 'landscape_3CY' || $page == 'landscape_4CY' || $page == 'landscape_2C' || $page == 'landscape_2C_TS' || $page == 'landscape_2CY'):
+                    break; 
+                    
+                    case ($page == 'natural' || $page == 'tiles' || $page == 'hangingline_3C_TS' || $page == 'natural_time' || $page == 'hangingline_3CY' || $page == 'hangingline_4CY'):
+                    break;
 
-function controller_site_edit($app, $options = []) {
-  global $u_id;
-  $__header = $app->header; 
-  
-  $scope = $app->page->scope;
-  $ver = $app->version ?: date('md');
+                    case ($page == 'standing_3C' || $page == 'standing_4C' || $page == 'standing_3CT' || $page == 'standing_4CT' || $page == 'standing_3CY' || $page == 'standing_4CY'):
+                    break;
 
-  $__header->scripts[] = "/afr/js/afr_cms_jstree.js?v=$ver";
-  $__header->styles[] = "/afr/bower/jstree/dist/themes/default/style.min.css";
-  $__header->scripts[] = "/afr/bower/jstree/dist/jstree.min.js";
-    
-  return;
-}
+                    case ($page == '16ratio9_3C' || $page == '16ratio9_4C' || $page == '16ratio9_3CT' || $page == '16ratio9_4CT' || $page == '16ratio9_3CY' || $page == '16ratio9_4CY' || $page == '16ratio9_2C' || $page == '16ratio9_2CT' || $page == '16ratio9_2CY'):
+                    break;  
+
+                    case ($page == '4ratio3_3C' || $page == '4ratio3_4C' || $page == '4ratio3_3CT' || $page == '4ratio3_4CT' || $page == '4ratio3_3CY' || $page == '4ratio3_4CY' || $page == '4ratio3_2C' || $page == '4ratio3_2CT' || $page == '4ratio3_2CY'):
+                    break;
+
+                    case ($page == '3ratio2_3C' || $page == '3ratio2_4C' || $page == '3ratio2_3CT' || $page == '3ratio2_4CT' || $page == '3ratio2_3CY' || $page == '3ratio2_4CY' || $page == '3ratio2_2C' || $page == '3ratio2_2CT' || $page == '3ratio2_2CY'):
+                    break;
+
+                    case ($page == 'banner' || $page == 'banner_time' || $page == 'banner_year'):
+                    break;
+
+                    case ($page == '16X9_2C' || $page == '16X9_3C' || $page == '16X9_4C'):
+                    break;
+
+                    case 'timeline_view':
+                    break;   
+
+                    case ($page == 'contact' || 'contact1'):
+                        $page_slug = ($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
+                        $search = find_object('minisite_page', ['user_id' => $user_id, 'active' => 1, 'minisite_id' => $minisite_id,'slug' => $page_slug]);
+                        $page_id = $search->id;
+
+                        $scope->receiver_name = $display_name;
+                        $scope->receiver_email = $user->email_address;
+                        $scope->userdetail = $userdetail = find_object('user_profile', ['user_id' => $user_id]);
+                        $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'id' => $page_id ,'active' => 1]);
+                    break;
+       
+                    case 'about':
+                        break;
+                    case 'news':
+                        break;
+                    case 'private':
+                        break;
+                    case 'home': /** not fully implemented yet - assumes existence of custom page for this artist */
+                      //$tpl = "{$minisite}/{$tpl}";
+                      //die("page={$page} tpl={$tpl}");
+                        break;
+                    default: /** Look for custom page */
+                        $pageSearch = ['minisite_id' => $msObj->id, 'slug' => $page, 'active' => 1];
+                        $minisitePageObj = find_object('minisite_page', $pageSearch);
+                        if($minisitePageObj) {
+                            $tpl = $minisitePageObj->template; 
+                            $tpl = 'test'; /** add this to DB - hard coded for now */
+                            $minisitePageObj->title = "Some Title"; /** add this to DB - hard coded for now */
+                            $minisitePageObj->content = "<p>Some Content</p><p>Bla bla bla</p>"; /** add this to DB - hard coded for now */
+                            
+                            $scope->minisite_page = $minisitePageObj;
+
+                            $type = $minisitePageObj->type;
+                            $scope->debug = html_h3("Found custom minisite page");
+                            $scope->debug .= "Name: {$minisitePageObj->menu_title} ID: {$minisitePageObj->id}) Tpl: {$tpl}";        
+                        
+                        } else {
+                            return scope_error($app, "Page {$page} not found", 'minisites/404');
+                        }
+                        break;
+                }
+      
+            //dump($_SERVER);
+            $docroot = docroot(false);
+            $custom_filename = "{$docroot}/user/minisite/{$minisite}/pages/{$page}/default.html";
+            if(is_file($custom_filename)) {
+                list($custom_header, $custom_content) = site_parse_pagefile($custom_filename);
+                $scope->headers = $custom_header;
+                $scope->custom_content = $custom_content;
+                print_log("Found custom file {$custom_filename} content={$custom_content}", 'minisite', LOG_LEVEL_TEST);
+
+            }
+      
+            $pageObj->template = "minisites/{$tpl}";
+            $pageObj->name = $page;
+            $scope->page = $page;
+            $scope->slug = $slug;
+            $scope->subview = $subview;
+            $scope->title = $title;
+            $scope->mObj = $mObj = find_object('minisite', ['id' => $minisite_id, 'user_id' => $user_id, 'active' => 1]);
+            $scope->menuObj = $menuObj = find_objects('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'active' => 1], ['sort' => 'row_order asc']);
+            $scope->profileobj = $profileobj = find_object('user_profile', ['user_id' => $user_id]);
+            $scope->timings = $timings = db_getAll("select * from opening_hours where user_id='$user_id' ORDER BY `id` ASC");
+
+            $keywords = implode(',', array_filter([$minisite, $display_name, $page, $slug, $subview, $site->name, $page->name, $type, $se_title]));
+
+            $app->page->se_title = htmlspecialchars($se_title);
+            $app->page->se_keywords = htmlspecialchars($keywords);
+            $app->page->se_description = htmlspecialchars($se_description);
+        
+            print_log("page=$page path={$path} slug={$slug} subview={$subview} tpl={$pageObj->template}".dump($parts,true), 'minisite', LOG_LEVEL_TEST);
+            // dump($scope->minisite_pageObj);
+            return;
+    }
+
+
+    function controller_login($app, $options = []) {
+        global $u_id;
+        $scope = $app->page->scope;
+        $scope->provider_keys = $pk = $app->scope->provider_keys; // find_objects('provider_key', array('site_id' => $siteObj->id, 'active' => 1), array("field" => "provider_id"));
+        $ref = $_GET['ref'];
+        if($u_id && $ref) {
+            $scope->redirect = $ref; 
+        }
+        return;
+    }
+
+    function controller_register($app, $options = []) {
+        $scope = $app->page->scope;
+        return;
+    }
+
+    function controller_generic($app, $options = []) {
+        $scope = $app->page->scope;
+        return;
+    }
+
+    function controller_calendar($app, $options = []) {
+        global $u_id, $__CLIENT_ID, $__USER;
+        $__header = $app->header; 
+        $scope = $app->page->scope;
+        $siteObj = $app->site;
+        $app->page->hide_edit_menu = 1;
+        $scope->hide_menu = 1;
+
+        $ver = $app->version;
+
+        $__header->scripts[] = "/afr/js/admincal.js?v=$ver";
+        $__header->scripts[] = "/afr/js/admincal-dialog.js?v=$ver";
+        $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js";
+        $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js";    
+        $__header->styles[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.css";
+        $__header->styles[] = "/afr/css/admincal.css?v=$ver";
+        $__header->styles[] = "/afr/css/afr_gmenu.css?v=$ver";
+
+        $cp = $options['cal_params'] ?: new stdClass;
+
+        $ptype = $siteObj->property_type ?: 'shortstay';
+        $host_ids = user_host_list($u_id);  
+        $psearch = array('host_id' => $host_ids);
+
+
+        $scope->show_inactive = $show_inactive = isset($_GET['si']) ? $_GET['si'] : 0;
+        if(!$show_inactive) $psearch['active'] = 1;
+              
+        //$scope->rentals = find_objects($ptype, $psearch);
+        $rentals = find_objects($ptype, $psearch, ['fields' => ['id', 'name', 'type', 'site_id', 'active'], 'sort' => 'address_street,address_number,address_suffix']);
+        foreach($rentals as $rental) {
+        $rental->link = rental_link($rental, ['full' => 1, 'live' => 1]);
+        //print_log("link for {$rental->name}: {$rental->link}", 'calendar', LOG_LEVEL_TEST);
+        }
+        array_unshift($rentals, ['id' => 0, 'name' => "?"]);
+        $scope->rentals = $rentals;
+        $scope->sites = find_objects('site', ['client_id' => $__CLIENT_ID, 'property_type' => $ptype, 'active' => 1], ['fields' => ['site.id', 'site.name', 'site.shortname']]);
+        $scope->legal_entities = find_objects('legal_entity', ['client_id' => $__CLIENT_ID, 'active' => 1], ['fields' => ['legal_entity.id', 'legal_entity.name', 'legal_entity.shortname']]);
+        $scope->agents = find_objects('agent', ['client_id' => $__CLIENT_ID, 'active' => 1], ['fields' => ['agent.id', 'agent.name'], 'sort' => 'agent.name']);
+        $scope->clients = find_objects('org', ['client_id' => $__CLIENT_ID, 'active' => 1], ['fields' => ['org.id', 'org.name'], 'sort' => 'org.name']);
+        $scope->host_ids = $host_ids;
+                         
+        $start = date('Y-m-01');
+        $scope->data = ['start' => $_GET['start'] ?: $start, 'mode' => 'calendar', 'period' => $_GET['p'] ?: 1, 
+                      'rentals' => $rentals, 'view' => 'month', 'host_ids' => $host_ids, 'show_inactive' => 0,
+                      'user_level' => $__USER->user_level, 'user_id' => $__USER->id]; /** new cal params */
+        return;                                              
+    }
+
+    function controller_search($app, $options = []) {
+        $siteObj = $app->site;
+        $scope = $app->page->scope;
+        $results = array();
+        if($term = $_GET['s']) {
+            
+        // page content
+        if($result = search_result($siteObj, 'page_content', $term, array('title', 'content'), 'id', $options))
+          $results = array_merge($results, $result);
+
+        // articles / blogs
+        if($result = search_result($siteObj, 'article', $term, array('title', 'content'), 'id', $options))
+          $results = array_merge($results, $result);
+
+        // comments
+        if($result = search_result($siteObj, 'comment', $term, array('title', 'content'), 'id', $options))
+          $results = array_merge($results, $result);
+
+        // events
+        if($result = search_result($siteObj, 'event', $term, array('name', 'notes'), 'id', $options))
+          $results = array_merge($results, $result);
+
+        }
+        $scope->results = $results;
+        //dump($scope->result);
+        return;
+    }
+
+    function controller_site_edit($app, $options = []) {
+        global $u_id;
+        $__header = $app->header; 
+
+        $scope = $app->page->scope;
+        $ver = $app->version ?: date('md');
+
+        $__header->scripts[] = "/afr/js/afr_cms_jstree.js?v=$ver";
+        $__header->styles[] = "/afr/bower/jstree/dist/themes/default/style.min.css";
+        $__header->scripts[] = "/afr/bower/jstree/dist/jstree.min.js";
+
+        return;
+    }
 
 /** generic controller for back-end, e.g site_edit. Called from ajax.php: cms-explore */
-function controller_cms_explore($app, $options = []) {
-  $siteObj = $app->site;
-  $scope = $app->page->scope;
-  $language = pick_first($scope->language, $app->language, $siteObj->default_language);
-  $obj_type = $scope->obj_type;
-  $obj_id = $scope->obj_id;
-  $obj = $obj_type && $obj_id ? get_object($obj_type, $obj_id) : new stdClass;
-  switch($obj_type) {
-    case 'site_page': // add page_content for chosen language
-      if($obj_id) {
-        $obj = site_find_content($siteObj, $obj_id, $language); 
-      } else { /** add page */
-        $obj->id = $obj->obj_id = 0;
-        $obj->name = $name = $scope->name;
-        $obj->active = 1;
-        $obj->show_menu = 1;
-        $obj->parent_id = $parent_id = $scope->parent_id;
-        $obj->user_level = 0;
-        $safe_name = url_safe($name);
-        $parent_path = $parent_id ? find_object('page_content', ['page_id' => $parent_id, 'language' => $language], 'path') : '';
-        $obj->path = str_replace("//", "/", clean_path("{$parent_path}/{$safe_name}/"));
-      }
-      $obj->foo = 'bar';
-      break;
-    case 'site': // add site_content for chosen language
-      break;
-    default:
-      break;
-  }
-  $scope->obj = $obj;
-  return;
-}
-
+    function controller_cms_explore($app, $options = []) {
+        $siteObj = $app->site;
+        $scope = $app->page->scope;
+        $language = pick_first($scope->language, $app->language, $siteObj->default_language);
+        $obj_type = $scope->obj_type;
+        $obj_id = $scope->obj_id;
+        $obj = $obj_type && $obj_id ? get_object($obj_type, $obj_id) : new stdClass;
+        switch($obj_type) {
+            case 'site_page': // add page_content for chosen language
+                if($obj_id) {
+                    $obj = site_find_content($siteObj, $obj_id, $language); 
+                }else { /** add page */
+                    $obj->id = $obj->obj_id = 0;
+                    $obj->name = $name = $scope->name;
+                    $obj->active = 1;
+                    $obj->show_menu = 1;
+                    $obj->parent_id = $parent_id = $scope->parent_id;
+                    $obj->user_level = 0;
+                    $safe_name = url_safe($name);
+                    $parent_path = $parent_id ? find_object('page_content', ['page_id' => $parent_id, 'language' => $language], 'path') : '';
+                    $obj->path = str_replace("//", "/", clean_path("{$parent_path}/{$safe_name}/"));
+                }
+                $obj->foo = 'bar';
+                break;
+            case 'site': // add site_content for chosen language
+                break;
+            default:
+                break;
+        }
+        $scope->obj = $obj;
+        return;
+    }
 
 /** uses rental_search, object type is location */
-function controller_location($app, $options = []) {
-  return controller_geo_location($app, $options);
-}
+    function controller_location($app, $options = []) {
+        return controller_geo_location($app, $options);
+    }
 
 /** uses rental_search, object type is geo_city */
-function controller_geo_location($app, $options = []) {
-  global $u_id, $__LANG;
-  $__header = $app->header; 
-  $siteObj = $app->site;
-  $min_radius = 2250;
-  
-  $scope = $app->page->scope; // $scope = new stdClass;
-  $scope->property_type = $ptype = pick_first($siteObj->property_type, $app->property_type, 'shortstay');
-  
-  /** preprocessing - find bounds */
-  $__header->styles[] = "/afr/css/afr-air.css";
+    function controller_geo_location($app, $options = []) {
+        global $u_id, $__LANG;
+        $__header = $app->header; 
+        $siteObj = $app->site;
+        $min_radius = 2250;
 
-  $slug = $app->object_slug;
-  $obj_type = $scope->obj_type = $app->object_type;
-  $obj_id = $scope->obj_id = $app->object_id;
-  $obj = $locObj = $obj_type && $obj_id ? get_object($obj_type, $obj_id) : null;
-  $scope->slug = $slug;
-  $scope->obj = $obj;
-  
-  
-  if($obj) {
-    $center = loc2center($obj);
-    $obj_center = json_encode($center);
-    $obj_radius = $obj->location_radius;
-    $bounds = any2bounds($obj->location_bounds, true) ?: [];  
-    if($center && !$bounds) {
-      if($obj->population > 0) {
-        $radius = min(round($locObj->population / 10), 10000); // bigger radius for big cities, max 10km
-      } else {
-        $radius = DEFAULT_RADIUS;
-      }
-      $radius = max($radius, $min_radius); // bigger radius for big cities, min 3km
+        $scope = $app->page->scope; // $scope = new stdClass;
+        $scope->property_type = $ptype = pick_first($siteObj->property_type, $app->property_type, 'shortstay');
+
+        /** preprocessing - find bounds */
+        $__header->styles[] = "/afr/css/afr-air.css";
+
+        $slug = $app->object_slug;
+        $obj_type = $scope->obj_type = $app->object_type;
+        $obj_id = $scope->obj_id = $app->object_id;
+        $obj = $locObj = $obj_type && $obj_id ? get_object($obj_type, $obj_id) : null;
+        $scope->slug = $slug;
+        $scope->obj = $obj;
       
-      $bounds = radius2bounds($obj, $radius, true);      
-      print_log("calculated bounds {$bounds} radius={$radius}", 'property-search', LOG_LEVEL_TEST);
       
-    }
-    
-    
-    print_log("location set: slug={$slug} type={$obj_type} id={$obj_id} obj-center {$obj_center} radius={$obj_radius} obj-bounds={$obj->location_bounds} ", 'property-search', LOG_LEVEL_TEST);
-    
-    $pageObj = $app->page;
-    $parent_type = $pageObj->page_type == PAGE_LOCATION ? 'location': 'geo_city';
-    
-    // get location description    
-    $search = ['parent_type' => $parent_type, 'parent_id' => $obj->id, 'language' => $__LANG];
-    if($descObj = find_object('object_description', $search)) {
-      $scope->location->title = $descObj->title;
-      $scope->location->description = $descObj->description;
-      $scope->location->description_id = $descObj->id;
-    } elseif($descObj = find_object('object_description', ['parent_type' => $parent_type, 'parent_id' => $obj->id])) {
-      $descData = ['language' => $__LANG];
-      foreach(['site_id', 'parent_type', 'parent_id', 'type', 'description'] as $f) $descData[$f] = $descObj->$f;
-      list($desc_id, $errors) = add_object('object_description', $descData);
-      if($desc_id) {
-        $scope->location->title = $descObj->title;
-        $scope->location->description = $descObj->description;
-        $scope->location->description_id = $desc_id;
-      }
-      if($errors) $scope->error = $errors;
-    }
-    
-  } elseif($slug) {
-    list($status, $acc, $lat, $lng, $bounds) = google_geocode($slug);
-    print_log("geocoding: slug={$slug} status={$status} lat={$lat} lng={$lng}", 'property-search', LOG_LEVEL_TEST);
-    
-    if($status==200) {
-      $scope->http_code = "200"; //override error set in set_env.inc due to unknown slug
-      $center = [$lat, $lng];
-      $locObj = center2loc($center);
-      $boundsObj = $bounds ? json_decode($bounds) : radius2bounds($locObj, DEFAULT_RADIUS);
-      $bounds = any2bounds($boundsObj, true);
-    }
-  } else {
-    return scope_error($app, "Neither location object nor slug", '404');
-  }
-  
-  if($bounds) {
-    $center = bounds2center($bounds);
-    $loc = center2loc($center);
-    $radius = bounds2radius($bounds);
-    
-    if($obj_radius > $min_radius) {
-      print_log("Loc radius > min ($min_radius): $locObj->location_radius", 'property-search', LOG_LEVEL_TEST);
-      $min_radius = $locObj->location_radius;
-    }
+        if($obj) {
+            $center = loc2center($obj);
+            $obj_center = json_encode($center);
+            $obj_radius = $obj->location_radius;
+            $bounds = any2bounds($obj->location_bounds, true) ?: [];  
+            if($center && !$bounds) {
+                if($obj->population > 0) {
+                    $radius = min(round($locObj->population / 10), 10000); // bigger radius for big cities, max 10km
+                } else {
+                    $radius = DEFAULT_RADIUS;
+                }
+                $radius = max($radius, $min_radius); // bigger radius for big cities, min 3km
+
+                $bounds = radius2bounds($obj, $radius, true);      
+                print_log("calculated bounds {$bounds} radius={$radius}", 'property-search', LOG_LEVEL_TEST);
+              
+            }
+        
+            print_log("location set: slug={$slug} type={$obj_type} id={$obj_id} obj-center {$obj_center} radius={$obj_radius} obj-bounds={$obj->location_bounds} ", 'property-search', LOG_LEVEL_TEST);
+            
+            $pageObj = $app->page;
+            $parent_type = $pageObj->page_type == PAGE_LOCATION ? 'location': 'geo_city';
+            
+            // get location description    
+            $search = ['parent_type' => $parent_type, 'parent_id' => $obj->id, 'language' => $__LANG];
+            if($descObj = find_object('object_description', $search)) {
+                $scope->location->title = $descObj->title;
+                $scope->location->description = $descObj->description;
+                $scope->location->description_id = $descObj->id;
+            }elseif($descObj = find_object('object_description', ['parent_type' => $parent_type, 'parent_id' => $obj->id])) {
+                $descData = ['language' => $__LANG];
+                foreach(['site_id', 'parent_type', 'parent_id', 'type', 'description'] as $f) $descData[$f] = $descObj->$f;
+                list($desc_id, $errors) = add_object('object_description', $descData);
+                if($desc_id) {
+                    $scope->location->title = $descObj->title;
+                    $scope->location->description = $descObj->description;
+                    $scope->location->description_id = $desc_id;
+                }
+                if($errors) $scope->error = $errors;
+            }
+            
+        }elseif($slug) {
+            list($status, $acc, $lat, $lng, $bounds) = google_geocode($slug);
+            print_log("geocoding: slug={$slug} status={$status} lat={$lat} lng={$lng}", 'property-search', LOG_LEVEL_TEST);
+        
+            if($status==200) {
+                $scope->http_code = "200"; //override error set in set_env.inc due to unknown slug
+                $center = [$lat, $lng];
+                $locObj = center2loc($center);
+                $boundsObj = $bounds ? json_decode($bounds) : radius2bounds($locObj, DEFAULT_RADIUS);
+                $bounds = any2bounds($boundsObj, true);
+            }
+        }else {
+            return scope_error($app, "Neither location object nor slug", '404');
+        }
       
-    print_log("\n\nradius=$radius", 'property-search', LOG_LEVEL_TEST);
-    if($radius < $min_radius) {
-      //print_log("zooming out".dump($bounds,true), 'property-search', LOG_LEVEL_TEST);
-      $bounds = radius2bounds($loc, $min_radius, true);
-      $radius = bounds2radius($bounds);
-      //print_log("new radius=$radius".dump($bounds,true), 'property-search', LOG_LEVEL_TEST);
+        if($bounds) {
+            $center = bounds2center($bounds);
+            $loc = center2loc($center);
+            $radius = bounds2radius($bounds);
+            
+            if($obj_radius > $min_radius) {
+                print_log("Loc radius > min ($min_radius): $locObj->location_radius", 'property-search', LOG_LEVEL_TEST);
+                $min_radius = $locObj->location_radius;
+            }
+          
+            print_log("\n\nradius=$radius", 'property-search', LOG_LEVEL_TEST);
+            if($radius < $min_radius) {
+                //print_log("zooming out".dump($bounds,true), 'property-search', LOG_LEVEL_TEST);
+                $bounds = radius2bounds($loc, $min_radius, true);
+                $radius = bounds2radius($bounds);
+                //print_log("new radius=$radius".dump($bounds,true), 'property-search', LOG_LEVEL_TEST);
+          
+            }
+        
+            $center_str = $scope->center = json_encode($center);
+            $bounds_str = $scope->bounds = json_encode($bounds);
+        } else {
+            return scope_error($app, "Could not find location slug={$slug} name={$locObj->name}", '404');
+        }
       
+        print_log("OK: Found bounds: center={$center_str} bounds={$bounds_str} radius={$radius}", 'property-search', LOG_LEVEL_TEST);
+
+        $options['bounds'] = $bounds_str;
+        controller_rental_search($app, $options);  
+        return;
     }
+  
+    function controller_rental_search($app, $options = []) {
+        global $u_id, $__DEFAULT_BOUNDS;
+        $__header = $app->header; 
+        $siteObj = $app->site;
+
+        $ver = $app->version ?: date('md');
+        $__header->styles[] = "/afr/css/afr-air.css";
+
+        $scope = $app->page->scope; // $scope = $options['scope'] ?: new stdClass;
+
+        $scope->property_type = $ptype = pick_first($siteObj->property_type, $app->property_type, 'shortstay');
+        $scope->amenities = rental_amenities($siteObj, null, array('searchable' => 1));
+
+        print_log("controller_rental_search: stack:".caller_stack(), 'app', LOG_LEVEL_TEST);
+
+        /** todo: */
+        $scope->property_link = site_page_link($siteObj, PAGE_RENTAL_DETAIL);
+
+        print_log("controller_rental_search: stack:".caller_stack(), 'app', LOG_LEVEL_TEST);
+
+        $rs = $scope->rental_search;
+
+        $isset = isset($scope->rentals) ? "yes" : "no";
+        $rentals = (array) $scope->rentals;
+        $count = count($rentals);
+
+        print_log("controller_rental_search: rs={$rs} isset={$isset} count={$count}", 'rental-search', LOG_LEVEL_TEST);
+  
+        if($rs || $count) { /** new - search now happens in ajax.php: rental-search, returns json */
+            $scope->loaded = 1;
+            $preset = 1;
+            $search = null;
+
+            $sc = clone $scope;
+            unset($sc->rentals);
+            unset($sc->amenities);
+            print_log("controller_rental_search: scope".dump($sc, true), 'app', LOG_LEVEL_TEST);
     
-    $center_str = $scope->center = json_encode($center);
-    $bounds_str = $scope->bounds = json_encode($bounds);
-  } else {
-    return scope_error($app, "Could not find location slug={$slug} name={$locObj->name}", '404');
-  }
-  
-  print_log("OK: Found bounds: center={$center_str} bounds={$bounds_str} radius={$radius}", 'property-search', LOG_LEVEL_TEST);
-
-  $options['bounds'] = $bounds_str;
-  controller_rental_search($app, $options);  
-  return;
-}
-  
-function controller_rental_search($app, $options = []) {
-  global $u_id, $__DEFAULT_BOUNDS;
-  $__header = $app->header; 
-  $siteObj = $app->site;
-
-  $ver = $app->version ?: date('md');
-  $__header->styles[] = "/afr/css/afr-air.css";
-
-  $scope = $app->page->scope; // $scope = $options['scope'] ?: new stdClass;
-  
-  $scope->property_type = $ptype = pick_first($siteObj->property_type, $app->property_type, 'shortstay');
-  $scope->amenities = rental_amenities($siteObj, null, array('searchable' => 1));
-
-  print_log("controller_rental_search: stack:".caller_stack(), 'app', LOG_LEVEL_TEST);
-  
-  /** todo: */
-  $scope->property_link = site_page_link($siteObj, PAGE_RENTAL_DETAIL);
-
-  print_log("controller_rental_search: stack:".caller_stack(), 'app', LOG_LEVEL_TEST);
-
-  $rs = $scope->rental_search;
-
-  $isset = isset($scope->rentals) ? "yes" : "no";
-  $rentals = (array) $scope->rentals;
-  $count = count($rentals);
-  
-  print_log("controller_rental_search: rs={$rs} isset={$isset} count={$count}", 'rental-search', LOG_LEVEL_TEST);
-  
-  if($rs || $count) { /** new - search now happens in ajax.php: rental-search, returns json */
-    $scope->loaded = 1;
-    $preset = 1;
-    $search = null;
-
-    $sc = clone $scope;
-    unset($sc->rentals);
-    unset($sc->amenities);
-    print_log("controller_rental_search: scope".dump($sc, true), 'app', LOG_LEVEL_TEST);
+        } else {
+            //print_log("no rentals: controller_rental_search: scope".dump($scope, true), 'rental-search', LOG_LEVEL_TEST);
+            $scope->loaded = 1;
+            $preset = 0;
+            $search = $_GET;
     
-  } else {
-    //print_log("no rentals: controller_rental_search: scope".dump($scope, true), 'rental-search', LOG_LEVEL_TEST);
-    $scope->loaded = 1;
-    $preset = 0;
-    $search = $_GET;
+            if($bounds = $options['bounds']) {
+                $search['bounds'] = $bounds; // from controller_geo_location or controller_location
+            } elseif($bounds = $search['bounds']) {
+                //print_log("rental_search: expl. bounds:".dump($bounds,true), 'property-search', LOG_LEVEL_TEST);            
+            } elseif($loc = $search['loc']) {
+                $loc = urldecode($loc);
+                list($status, $acc, $lat, $lng, $bounds) = google_geocode($loc);
+                if($status==200) {
+                    $scope->http_code = "200"; //override error set in set_env.inc due to unknown slug
+                    $center = [$lat, $lng];
+                    $locObj = center2loc($center);
+                    $boundsObj = $bounds ? json_decode($bounds) : radius2bounds($locObj, DEFAULT_RADIUS);
+                    $bounds = any2bounds($boundsObj, true);        
+                    $search['bounds'] = json_encode($bounds);
+                }
+            }
     
-    if($bounds = $options['bounds']) {
-      $search['bounds'] = $bounds; // from controller_geo_location or controller_location
-    } elseif($bounds = $search['bounds']) {
-      //print_log("rental_search: expl. bounds:".dump($bounds,true), 'property-search', LOG_LEVEL_TEST);            
-    } elseif($loc = $search['loc']) {
-      $loc = urldecode($loc);
-      list($status, $acc, $lat, $lng, $bounds) = google_geocode($loc);
-      if($status==200) {
-        $scope->http_code = "200"; //override error set in set_env.inc due to unknown slug
-        $center = [$lat, $lng];
-        $locObj = center2loc($center);
-        $boundsObj = $bounds ? json_decode($bounds) : radius2bounds($locObj, DEFAULT_RADIUS);
-        $bounds = any2bounds($boundsObj, true);        
-        $search['bounds'] = json_encode($bounds);
-      }
+            if(!$search['bounds']) $search['bounds'] = $siteObj->default_bounds ?: $__DEFAULT_BOUNDS;
+    
+            /** widen search by 100%, as map will show bounds + a little extra... */
+            if(1) {
+                $search_bounds_json = $search['bounds'];
+                $search_bounds = json_decode($search['bounds']);
+                $search_radius = bounds2radius($search_bounds);
+
+                $search_center = bounds2center($search_bounds);
+                $search_loc = center2loc($search_center);
+
+                $factor = 2;
+                $wide_radius = $search_radius * $factor;
+                $wide_bounds = radius2bounds($search_loc, $wide_radius, true);
+
+                $search['bounds'] = $wide_bounds_json = json_encode($wide_bounds);
+
+                //print_log("Widened search from radius = $search_radius to $wide_radius", 'property-search', LOG_LEVEL_TEST);
+                //print_log("Was: $search_bounds_json", 'property-search', LOG_LEVEL_TEST);
+                //print_log("Now: $wide_bounds_json", 'property-search', LOG_LEVEL_TEST);
+            }
+    
+            $result = rental_search($search);
+            if($error = $result->error) $scope->error = $result->error;  
+
+            $data = $result->data ?: [];
+            foreach($data as $k=>$v) $scope->$k = $v;
+            $rentals = $data->rentals;
+
+            $scope->bounds = $search_bounds; /** reset to original */
+        }
+
+        $count = count($rentals);  
+        if(count($rentals)) {
+            if($search) $scope->filters = $filters = rental_search_filters($search);
+        } else {
+            $scope->tips = $tips = rental_search_tips($search);
+        }
+  
+        $scope->s2 = $search;
+
+        $center_str = $scope->center = json_encode($scope->center);
+        $bounds_str = $scope->bounds = json_encode($scope->bounds);
+
+        print_log("controller_rental_search v2: count=".count($rentals)." preset={$preset} center={$center} bounds={$bounds}", 'app', LOG_LEVEL_TEST);
+  
+        return;
     }
-    
-    if(!$search['bounds']) $search['bounds'] = $siteObj->default_bounds ?: $__DEFAULT_BOUNDS;
-    
-    /** widen search by 100%, as map will show bounds + a little extra... */
-    if(1) {
-      $search_bounds_json = $search['bounds'];
-      $search_bounds = json_decode($search['bounds']);
-      $search_radius = bounds2radius($search_bounds);
-  
-      $search_center = bounds2center($search_bounds);
-      $search_loc = center2loc($search_center);
-      
-      $factor = 2;
-      $wide_radius = $search_radius * $factor;
-      $wide_bounds = radius2bounds($search_loc, $wide_radius, true);
-    
-      $search['bounds'] = $wide_bounds_json = json_encode($wide_bounds);
-      
-      //print_log("Widened search from radius = $search_radius to $wide_radius", 'property-search', LOG_LEVEL_TEST);
-      //print_log("Was: $search_bounds_json", 'property-search', LOG_LEVEL_TEST);
-      //print_log("Now: $wide_bounds_json", 'property-search', LOG_LEVEL_TEST);
+
+
+    function controller_rental_feedback($app, $options = []) {
+        $scope = $app->page->scope;
+        $obj_type = $scope->obj_type = $app->object_type;
+        $obj_id = $scope->obj_id = $app->object_id;
+        $obj = $obj_type && $obj_id ? get_object($obj_type, $obj_id) : null;
+
+        $scope->feedback = $obj;
+        return;  
     }
-    
-    $result = rental_search($search);
-    if($error = $result->error) $scope->error = $result->error;  
-    
-    $data = $result->data ?: [];
-    foreach($data as $k=>$v) $scope->$k = $v;
-    $rentals = $data->rentals;
-    
-    $scope->bounds = $search_bounds; /** reset to original */
-  }
 
-  $count = count($rentals);  
-  if(count($rentals)) {
-    if($search) $scope->filters = $filters = rental_search_filters($search);
-  } else {
-    $scope->tips = $tips = rental_search_tips($search);
-  }
-  
-  $scope->s2 = $search;
-  
-  $center_str = $scope->center = json_encode($scope->center);
-  $bounds_str = $scope->bounds = json_encode($scope->bounds);
-  
-  print_log("controller_rental_search v2: count=".count($rentals)." preset={$preset} center={$center} bounds={$bounds}", 'app', LOG_LEVEL_TEST);
-  
-  return;
-}
+    function controller_sitemap($app, $options = []) {
+        global $u_id;
+        $__header = $app->header; 
+        $scope = $app->page->scope;
+        $siteObj = $app->site;
+        $tree = site_sitemap($siteObj, []);
+        //$search = ['address_country' => 'PT']; // for testing
+        if($ptype = $siteObj->property_type) {    
+            $ptree = site_sitemap_property_tree($siteObj, ['type' => $ptype, 'search' => $search]);
+            $tree = array_merge($tree, $ptree);
+        }
+        if($siteObj->golf_site) {
+            $gtree = site_sitemap_golf_tree($siteObj, ['search' => $search]);
+            $tree = array_merge($tree, $gtree);
+        }
+        $scope->sitemap_xml = $xml = site_sitemap_xml($siteObj, ["tree" => $tree]);
+        //echo(form_text('foo', $xml));die();
+        $xmlfile = docroot().'sitemap.xml';
+        $len = write_file($xmlfile, $xml);
 
+        $scope->sitemap = $tree;
+        return;  
+    }
 
-function controller_rental_feedback($app, $options = []) {
-  $scope = $app->page->scope;
-  $obj_type = $scope->obj_type = $app->object_type;
-  $obj_id = $scope->obj_id = $app->object_id;
-  $obj = $obj_type && $obj_id ? get_object($obj_type, $obj_id) : null;
+    function controller_event_calendar($app, $options = []) {
+        global $u_id, $u_level,$__USER_LEVELS;
+        $__header = $app->header; 
 
-  $scope->feedback = $obj;
-  return;  
-}
+        $ver = $app->version ?: date('md');
+        $siteObj = $app->site;
 
-function controller_sitemap($app, $options = []) {
-  global $u_id;
-  $__header = $app->header; 
-  $scope = $app->page->scope;
-  $siteObj = $app->site;
-  $tree = site_sitemap($siteObj, []);
-  //$search = ['address_country' => 'PT']; // for testing
-  if($ptype = $siteObj->property_type) {    
-    $ptree = site_sitemap_property_tree($siteObj, ['type' => $ptype, 'search' => $search]);
-    $tree = array_merge($tree, $ptree);
-  }
-  if($siteObj->golf_site) {
-    $gtree = site_sitemap_golf_tree($siteObj, ['search' => $search]);
-    $tree = array_merge($tree, $gtree);
-  }
-  $scope->sitemap_xml = $xml = site_sitemap_xml($siteObj, ["tree" => $tree]);
-  //echo(form_text('foo', $xml));die();
-  $xmlfile = docroot().'sitemap.xml';
-  $len = write_file($xmlfile, $xml);
-  
-  $scope->sitemap = $tree;
-  return;  
-}
+        $scope = $app->page->scope;
+        $__header->scripts[] = "/afr/bower/fullcalendar/dist/fullcalendar.js";
+        $__header->scripts[] = "/afr/bower/geocomplete/jquery.geocomplete.min.js";
+        $__header->styles[] = "/afr/bower/fullcalendar/dist/fullcalendar.css";
 
-function controller_event_calendar($app, $options = []) {
-  global $u_id, $u_level,$__USER_LEVELS;
-  $__header = $app->header; 
-  
-  $ver = $app->version ?: date('md');
-  $siteObj = $app->site;
-  
-  $scope = $app->page->scope;
-  $__header->scripts[] = "/afr/bower/fullcalendar/dist/fullcalendar.js";
-  $__header->scripts[] = "/afr/bower/geocomplete/jquery.geocomplete.min.js";
-  $__header->styles[] = "/afr/bower/fullcalendar/dist/fullcalendar.css";
+        $__header->scripts[] = "/afr/js/afr_gmap.js";
+        $__header->scripts[] = "/afr/bower/bootstrap-confirmation2/bootstrap-confirmation.js";    
+        $__header->scripts[] = "/afr/js/event-form.js?v={$ver}";    
 
-  $__header->scripts[] = "/afr/js/afr_gmap.js";
-  $__header->scripts[] = "/afr/bower/bootstrap-confirmation2/bootstrap-confirmation.js";    
-  $__header->scripts[] = "/afr/js/event-form.js?v={$ver}";    
+        $__header->styles[] = "/afr/jquery/periodpicker/build/jquery.periodpicker.min.css";
+        $__header->scripts[] = "/afr/jquery/periodpicker/build/jquery.periodpicker.full.min.js";
 
-  $__header->styles[] = "/afr/jquery/periodpicker/build/jquery.periodpicker.min.css";
-  $__header->scripts[] = "/afr/jquery/periodpicker/build/jquery.periodpicker.full.min.js";
-  
-  $calOptions = array();
-  $site_id = $scope->site_id = $siteObj->id;
-  
-  $scope->calendar_edit = $auth_edit = $u_level >= USER_LEVEL_EDITOR;
-  $site_id = $siteObj->id;
-  $scope->calendar_url = $url = ajax_operation_link('agenda-calendar-events', array('site_id' => $site_id, 'edit' => $auth_edit), array('public' => true));
-  $calOptions = array("selectable" => true, "editable" => $auth_edit, "url" => $url, "site_id" => $site_id, "timeFormat" => "H:mm");
-    
-  if($in) $calOptions['defaultDate'] = $in;
-  $scope->calendar_options = $calOptions;
-  $scope->user_levels = $__USER_LEVELS;
-  return;
-}
+        $calOptions = array();
+        $site_id = $scope->site_id = $siteObj->id;
+
+        $scope->calendar_edit = $auth_edit = $u_level >= USER_LEVEL_EDITOR;
+        $site_id = $siteObj->id;
+        $scope->calendar_url = $url = ajax_operation_link('agenda-calendar-events', array('site_id' => $site_id, 'edit' => $auth_edit), array('public' => true));
+        $calOptions = array("selectable" => true, "editable" => $auth_edit, "url" => $url, "site_id" => $site_id, "timeFormat" => "H:mm");
+
+        if($in) $calOptions['defaultDate'] = $in;
+        $scope->calendar_options = $calOptions;
+        $scope->user_levels = $__USER_LEVELS;
+        return;
+    }
 
 
 /** add rental */
-function controller_rental_add($app, $options = []) {
-  global $u_id;
-  $__header = $app->header; 
-  
-  $ver = $app->version;  
-  $__header->scripts[] = "/afr/bower/geocomplete/jquery.geocomplete.min.js";
-  $scope = $app->page->scope;
-  $scope->currency = "EUR";
-  $scope->host_ids = $host_ids = user_host_list($u_id) ?: array();
-  
-  $scope->rental_types = find_objects("hosting_property_type", array('active' => 1));
-  $scope->room_types = find_objects("hosting_room_type", array('active' => 1));
-    
-  return;  
-}
+    function controller_rental_add($app, $options = []) {
+        global $u_id;
+        $__header = $app->header; 
+
+        $ver = $app->version;  
+        $__header->scripts[] = "/afr/bower/geocomplete/jquery.geocomplete.min.js";
+        $scope = $app->page->scope;
+        $scope->currency = "EUR";
+        $scope->host_ids = $host_ids = user_host_list($u_id) ?: array();
+
+        $scope->rental_types = find_objects("hosting_property_type", array('active' => 1));
+        $scope->room_types = find_objects("hosting_room_type", array('active' => 1));
+
+        return;  
+    }
 
 /** /rentals/ page = table view */
-function controller_rentals($app, $options = []) {
-  global $u_id, $u_level;
-  $__header = $app->header; 
-  $siteObj = $app->site;
-  
-  $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
-  $__header->scripts[] = "/afr/bower/table-export/jquery.base64.js";
-  $__header->scripts[] = "/afr/bower/table-export/tableExport.js";
-  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js";
-  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js"; /** todo: support other languages, use $app->locale  */
-  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/export/bootstrap-table-export.js";
-  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/editable/bootstrap-table-editable.min.js";
-  $__header->scripts[] = "/afr/bower/x-editable/dist/bootstrap3-editable/js/bootstrap-editable.js";
-  $__header->styles[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.css";  
-  $__header->styles[] = "/afr/bower/bootstrap-table/dist/extensions/editable/bootstrap-editable.css";
+    function controller_rentals($app, $options = []) {
+        global $u_id, $u_level;
+        $__header = $app->header; 
+        $siteObj = $app->site;
 
-  $scope = $app->page->scope;
-  $errors = $messages = array();
-  $client_id = $scope->client_id = $app->client_id;
-  $client_name = $client_id ? get_object('client', $client_id, 'name') : '';
-  $ptype = $scope->property_type = pick_first($siteObj->property_type, $app->property_type, "shortstay");
-  $filters = array();
-  $filters['client_id'] = $client_id;
-  $system_user = 0;
-  $host_ids = user_host_list($u_id) ?: array();
+        $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
+        $__header->scripts[] = "/afr/bower/table-export/jquery.base64.js";
+        $__header->scripts[] = "/afr/bower/table-export/tableExport.js";
+        $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js";
+        $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js"; /** todo: support other languages, use $app->locale  */
+        $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/export/bootstrap-table-export.js";
+        $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/editable/bootstrap-table-editable.min.js";
+        $__header->scripts[] = "/afr/bower/x-editable/dist/bootstrap3-editable/js/bootstrap-editable.js";
+        $__header->styles[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.css";  
+        $__header->styles[] = "/afr/bower/bootstrap-table/dist/extensions/editable/bootstrap-editable.css";
 
-  if($u_level >= USER_LEVEL_STAFF) {
-    $system_user = $scope->system_user = 1;
-    $host_ids = array();
-  } elseif(count($host_ids)) { 
-    $filters['host_id'] = $host_ids;
-  } else {
-    return scope_error($app, "You are not a host, and not authorized to manage any hosts", '404');
-  }
-  
-  $obj_type = $ptype;
+        $scope = $app->page->scope;
+        $errors = $messages = array();
+        $client_id = $scope->client_id = $app->client_id;
+        $client_name = $client_id ? get_object('client', $client_id, 'name') : '';
+        $ptype = $scope->property_type = pick_first($siteObj->property_type, $app->property_type, "shortstay");
+        $filters = array();
+        $filters['client_id'] = $client_id;
+        $system_user = 0;
+        $host_ids = user_host_list($u_id) ?: array();
+
+        if($u_level >= USER_LEVEL_STAFF) {
+            $system_user = $scope->system_user = 1;
+            $host_ids = array();
+        } elseif(count($host_ids)) { 
+            $filters['host_id'] = $host_ids;
+        } else {
+            return scope_error($app, "You are not a host, and not authorized to manage any hosts", '404');
+        }
+
+        $obj_type = $ptype;
 
     
-  /** handle filters */
-  if(!isset($_GET['active'])) $_GET['active'] = 1;
-  foreach(array('active','host_id','address_country') as $fld) {
-    if(isset($_GET[$fld]) && strlen($_GET[$fld])) {
-      $val = trim($_GET[$fld]);
-      switch($fld) {        
-        default:
-          $filters[$fld] = $val;
-          break;
-      }
+        /** handle filters */
+        if(!isset($_GET['active'])) $_GET['active'] = 1;
+        foreach(array('active','host_id','address_country') as $fld) {
+            if(isset($_GET[$fld]) && strlen($_GET[$fld])) {
+                $val = trim($_GET[$fld]);
+                switch($fld) {        
+                    default:
+                        $filters[$fld] = $val;
+                    break;
+                }
+            }
+        }  
+
+        $host_id = count($host_ids) == 1 ? $host_ids[0] : $filters['host_id'];
+        if($host_id) $client_name = user_display_name($host_id);
+        if($cc = $filters['address_country']) $client_name .= " in ".find_object('countries', array('id' => $cc), 'name');
+
+        //dump($filters);
+        $scope->count = $count = count_objects($obj_type, $filters);
+
+        if(!$host_ids) {
+            $host_ids = find_objects($obj_type, $filters, array("field" => "distinct host_id"));
+        }
+
+        $scope->countries = $countries = find_objects($obj_type, $filters, array("field" => "distinct address_country"));
+        $scope->user_level = $u_level;
+        $scope->host_ids = $host_ids;
+        $scope->filters = $filters;
+        $filter_json = count($filters) ? json_encode($filters) : '';
+        $scope->obj_type = $obj_type;
+        $obj_name = get_object_name($obj_type);
+        $scope->data_url = "/ajax.php?oper=get-rows&obj_type=$obj_type".($filter_json ? "&filters=".urlencode($filter_json) : '');
+        $scope->edit_url = "/ajax.php?oper=save&obj_type=$obj_type";
+        $scope->title = $obj_name."s ".($client_id ? " for $client_name" : "")." ({$count})";
+
+        return;
     }
-  }  
-
-  $host_id = count($host_ids) == 1 ? $host_ids[0] : $filters['host_id'];
-  if($host_id) $client_name = user_display_name($host_id);
-  if($cc = $filters['address_country']) $client_name .= " in ".find_object('countries', array('id' => $cc), 'name');
-
-  //dump($filters);
-  $scope->count = $count = count_objects($obj_type, $filters);
-  
-  if(!$host_ids) {
-    $host_ids = find_objects($obj_type, $filters, array("field" => "distinct host_id"));
-  }
-  
-  $scope->countries = $countries = find_objects($obj_type, $filters, array("field" => "distinct address_country"));
-  $scope->user_level = $u_level;
-  $scope->host_ids = $host_ids;
-  $scope->filters = $filters;
-  $filter_json = count($filters) ? json_encode($filters) : '';
-  $scope->obj_type = $obj_type;
-  $obj_name = get_object_name($obj_type);
-  $scope->data_url = "/ajax.php?oper=get-rows&obj_type=$obj_type".($filter_json ? "&filters=".urlencode($filter_json) : '');
-  $scope->edit_url = "/ajax.php?oper=save&obj_type=$obj_type";
-  $scope->title = $obj_name."s ".($client_id ? " for $client_name" : "")." ({$count})";
-  
-  return;
-}
 
 /** host rental list */
 /** /my-rentals/ page = list view */
-function controller_rental_list($app, $options=[]) {
-  global $__USER, $u_id;
-  $siteObj = $app->site;
-  $scope = $app->page->scope;
+    function controller_rental_list($app, $options=[]) {
+        global $__USER, $u_id;
+        $siteObj = $app->site;
+        $scope = $app->page->scope;
 
-  /** rental list page - and rental list tab (for single rental edit */    
-  $ptype = $scope->property_type = $siteObj->property_type ?: 'shortstay';
-  
-  $host_ids = user_host_list($u_id);
-  $pSearch = array("host_id" => $host_ids);
-  $pSearch = array_merge_json($pSearch, $siteObj->property_filters);
-  
-  $limit = 10;
-  $start = $scope->start = $_GET['start'] ?: 0;        
-  $pOptions = array('limit' => $limit, 'start' => $start, 'sort' => 'name');
-  
-  $scope->rental_count = $count = count_objects($ptype, $pSearch);
-  $scope->rental_list = $rentals = find_objects($ptype, $pSearch, $pOptions);
-  
-  foreach($rentals as $aptObj) { /** check if we can list */
-    if($aptObj->active) continue;
-    $steps = property_remaining_steps($siteObj, $aptObj->type, $aptObj->id);
-    $aptObj->steps_remaining = count($steps); 
-  }
+        /** rental list page - and rental list tab (for single rental edit */    
+        $ptype = $scope->property_type = $siteObj->property_type ?: 'shortstay';
 
-  /** only on rental list page */    
-  $descObjs = find_objects('description_type', array('generic' => 1), array("sort" => "id desc"));
-  $generic_types = [];
-  foreach($descObjs as $descObj) {
-    $key = "text_".url_safe($descObj->name)."-example";
-    $descObj->example = phrase($key);
-    $generic_types[] = $descObj->id;
-  }
+        $host_ids = user_host_list($u_id);
+        $pSearch = array("host_id" => $host_ids);
+        $pSearch = array_merge_json($pSearch, $siteObj->property_filters);
+
+        $limit = 10;
+        $start = $scope->start = $_GET['start'] ?: 0;        
+        $pOptions = array('limit' => $limit, 'start' => $start, 'sort' => 'name');
+
+        $scope->rental_count = $count = count_objects($ptype, $pSearch);
+        $scope->rental_list = $rentals = find_objects($ptype, $pSearch, $pOptions);
+  
+        foreach($rentals as $aptObj) { /** check if we can list */
+            if($aptObj->active) continue;
+            $steps = property_remaining_steps($siteObj, $aptObj->type, $aptObj->id);
+            $aptObj->steps_remaining = count($steps); 
+        }
+
+        /** only on rental list page */    
+        $descObjs = find_objects('description_type', array('generic' => 1), array("sort" => "id desc"));
+        $generic_types = [];
+        foreach($descObjs as $descObj) {
+            $key = "text_".url_safe($descObj->name)."-example";
+            $descObj->example = phrase($key);
+            $generic_types[] = $descObj->id;
+        }
     
-  $scope->description_types_generic = $descObjs;
+        $scope->description_types_generic = $descObjs;
 
-  $host_id = 0;
-  if($__USER->user_level == USER_LEVEL_HOST) {
-    $host_id = $u_id;
-  } else {
-    $host_ids = user_host_list($u_id);
-    if(count($host_ids) > 1) {
-      $rental_host_ids = find_objects($ptype, ['host_id' => $host_ids], ['fields' => 'distinct host_id']);
-      if(count($rental_host_ids) == 1) {
-        $host_id = $rental_host_ids[0];
-      } else {
-        $host_id = $rental_host_ids[0]; // pick the first
-        $host_name = user_display_name($host_id);
-        $scope->warning = "Note: You are managing rentals for multiple hosts. Generic descriptions apply to {$host_name}.";
-        //$scope->error = "You are managing rentals for multiple hosts. Generic descriptions for multiple hosts is not yet implemented. Please contact support";
-      }
-    }
-  }
+        $host_id = 0;
+        if($__USER->user_level == USER_LEVEL_HOST) {
+            $host_id = $u_id;
+        } else {
+            $host_ids = user_host_list($u_id);
+            if(count($host_ids) > 1) {
+                $rental_host_ids = find_objects($ptype, ['host_id' => $host_ids], ['fields' => 'distinct host_id']);
+                if(count($rental_host_ids) == 1) {
+                    $host_id = $rental_host_ids[0];
+                } else {
+                    $host_id = $rental_host_ids[0]; // pick the first
+                    $host_name = user_display_name($host_id);
+                    $scope->warning = "Note: You are managing rentals for multiple hosts. Generic descriptions apply to {$host_name}.";
+                    //$scope->error = "You are managing rentals for multiple hosts. Generic descriptions for multiple hosts is not yet implemented. Please contact support";
+                }
+            }
+        }
       
-  if($host_id) {
-    // look for existing common/generic descriptions
-    $descObjs = find_objects('property_description', ["host_id" => $host_id, "property_type" => $property_type, "property_id" => 0, "type" => $generic_types, "active" => 1]);
-    $descriptions = [];
-    foreach($descObjs as $descObj) {
-      $type = $descObj->type;
-      $descTypeObj = get_object('description_type', $type);
-      if(!$descTypeObj->private) $description_more .= html_h4(phrase($descTypeObj->name, CAPITALIZE)).nl2br($descObj->description);        
-      $descriptions[$descObj->type] = $descObj;
-    }
-  }
-  $scope->host_id = $host_id;
-  $scope->guides_generic = $descriptions;
+        if($host_id) {
+            // look for existing common/generic descriptions
+            $descObjs = find_objects('property_description', ["host_id" => $host_id, "property_type" => $property_type, "property_id" => 0, "type" => $generic_types, "active" => 1]);
+            $descriptions = [];
+            foreach($descObjs as $descObj) {
+                $type = $descObj->type;
+                $descTypeObj = get_object('description_type', $type);
+                if(!$descTypeObj->private) $description_more .= html_h4(phrase($descTypeObj->name, CAPITALIZE)).nl2br($descObj->description);        
+                $descriptions[$descObj->type] = $descObj;
+            }
+        }
+        $scope->host_id = $host_id;
+        $scope->guides_generic = $descriptions;
   
-  $scope->template = 'rental-list.html'; 
+        $scope->template = 'rental-list.html'; 
 
-  return;
-  
-}
+        return;
+    }
   
 /** edit rental */
-function controller_rental_edit($app, $options = []) {
-  global $u_id;
-  $__header = $app->header; 
-  $scope = $app->page->scope;
-  $siteObj = $app->site;
-  $pageObj = $app->page;
-  $ver = $app->version;
+    function controller_rental_edit($app, $options = []) {
+        global $u_id;
+        $__header = $app->header; 
+        $scope = $app->page->scope;
+        $siteObj = $app->site;
+        $pageObj = $app->page;
+        $ver = $app->version;
 
-  if(!$u_id) {
-    redirect_login();
-    return;
-  }
-  
-  $id = $obj_id = $apt_id = $scope->obj_id = $scope->apt_id = pick_first($scope->rental_id, $scope->apt_id, $scope->obj_id, $_GET['apt_id'] ?: $_GET['obj_id'], $options['apt_id'] ?: $options['obj_id'], $app->object_id);
-  $t = $ptype = $scope->property_type = $siteObj->property_type ?: 'shortstay';
-  
-  /** host rental list use same URL - /edit-rental/ */
-  if(!$id) return  controller_error($app, "Missing rental ID");
+        if(!$u_id) {
+            redirect_login();
+            return;
+        }
 
-  /** OK: edit single rental */  
-  $__header->scripts[] = "/afr/bower/geocomplete/jquery.geocomplete.min.js";
-  $__header->scripts[] = "/afr/js/admincal-dialog.js?v=$ver";
-  $__header->styles[] = "/afr/css/afr_tooltip.css";
-      
-  jfu_dependencies($app);
-  
-  $__header->scripts[] = "/afr/js/admincal.js?v=$ver";
-  $__header->scripts[] = "/afr/js/admincal-dialog.js?v=$ver";
-  $__header->styles[] = "/afr/css/admincal.css?v=$ver";
-  $__header->styles[] = "/afr/css/afr_gmenu.css?v=$ver";
+        $id = $obj_id = $apt_id = $scope->obj_id = $scope->apt_id = pick_first($scope->rental_id, $scope->apt_id, $scope->obj_id, $_GET['apt_id'] ?: $_GET['obj_id'], $options['apt_id'] ?: $options['obj_id'], $app->object_id);
+        $t = $ptype = $scope->property_type = $siteObj->property_type ?: 'shortstay';
 
-  
-  $aptObj = get_object($t, $id);
-  print_log("controller_rental_edit t=$t id=$id apt=".dump($aptObj,true), 'app', LOG_LEVEL_TEST);
-  
-  $scope->auth_edit = $auth_edit = auth_rental($aptObj);
-  if(!auth_rental($aptObj)) return controller_error($app, "Edit Rental \"{$aptObj->name}\" not authorized");
-  //$scope = new stdClass;
-  controller_rental_detail($app, $options);
+        /** host rental list use same URL - /edit-rental/ */
+        if(!$id) return  controller_error($app, "Missing rental ID");
 
-  /** moved from rental_detail */
-  $steps_remaining = 0;
-  if($source_id = $aptObj->source_id) {
-    $scope->import_url = ajax_operation_link('rental-import', array('site_id' => $siteObj->id, 'property_type' => $aptObj->type, 'apt_id' => $id, 'source_id' => $source_id), array('public' => false));
-  } else {
-    $scope->steps_remaining = property_remaining_steps($siteObj, $aptObj->type, $aptObj->id);
-    //if(count($steps_remaining) && $aptObj->active) update_object('property', array('active' => 0), $aptObj->id); // deactivate;
-  }
-  
-  $scope->uploader = property_uploader($ptype, $id, array("view" => "grid", "handler" => "property_photo_handler")); // doesn't work in switch, as dependencies are not loaded
-  
-  
-  //$scope->subview = $template = pick_first($pageObj->subview, $_GET['view'], $_GET['template'], $options['template'], "_rental-edit-location.html");  
-  //if($template && strpos($template, '_rental-edit-') === false) $template = $scope->subview = $app->page->subtemplate = "_rental-edit-{$template}.html"; // allow shortform
-  $subview = $app->page->subview ?: 'location';  
-  $app->page->subtemplate = "_rental-edit-{$subview}.html";
-  switch($subview) {
-    case "location":
-      break;
-    case "photos":
-      $mediaData = array("user_id" => $u_id, "site_id" => $siteObj->id, "parent_type" => $ptype, "parent_id" => $id, "parent_field" => "media");
-      if($aptObj->source_id == SOURCE_ID_INTERHOME) { /** todo: check if media is list of external IDs */
-        $mediaData['inline'] = 1;
-      }
-      $scope->media_data = $mediaData; 
-      break;
-    case "calendar":
-      $scope->single_calendar_edit = true;
+        /** OK: edit single rental */  
+        $__header->scripts[] = "/afr/bower/geocomplete/jquery.geocomplete.min.js";
+        $__header->scripts[] = "/afr/js/admincal-dialog.js?v=$ver";
+        $__header->styles[] = "/afr/css/afr_tooltip.css";
+          
+        jfu_dependencies($app);
 
-      //$site_url = site_full_url($siteObj);      
-      
-      /** doesn't work on Hitabrick for some reason, deirects to http */
-      //$scope->single_calendar_url = $url = "/api/calendar/?host_id={$aptObj->host_id}&amp;apt_id={$aptObj->id}&amp;status=1";
-      
-      $scope->single_calendar_url = $url = ajax_operation_link('rental-calendar-events', array('apt_id' => $id, 'host_id' => $aptObj->host_id, 'single' => 1));        
-      print_log("api-url: {$url}", 'calendar', LOG_LEVEL_TEST);
-      
-      $scope->single_calendar_options = array("selectable" => true, "editable" => true, "weekNumbers" => true);
-      controller_calendar($app); /** loads rentals */
-      
-        // "events" => "/afr/XML/HV/property-calendar.php?format=event&id=$id&edit=1");
-      break;
-    case "description":
-      $scope->short_desc_example = $phrase = phrase("text_short-description-example");
-      //dump($phrase);
-      break;
-    case "guide":
-      $desc_types = array(DESC_TYPE_PROPERTY,DESC_TYPE_AREA);
-      if($siteObj->golf_site) $desc_types[] = DESC_TYPE_GOLF;
-      $desc_types[] = DESC_TYPE_FOOD; // private 
-      $desc_types[] = DESC_TYPE_RULES;
-      $desc_types[] = DESC_TYPE_INTERACTION;
-      $desc_types[] = DESC_TYPE_DIRECTIONS; // private
-      $desc_types[] = DESC_TYPE_CHECKIN; // private 
-      //dump($desc_types);
-      $descObjs = find_objects('description_type', array('id' => $desc_types), array("sort" => "private, id desc"));
-      foreach($descObjs as &$descObj) {
-        $key = "text_".url_safe($descObj->name)."-example";
-        $descObj->example = phrase($key);
-      }
-      $scope->description_types = $descObjs;
-      // not in use DESC_TYPE_TRAVEL,DESC_TYPE_QUICK,DESC_TYPE_ALBUM,DESC_TYPE_STRAP,
+        $__header->scripts[] = "/afr/js/admincal.js?v=$ver";
+        $__header->scripts[] = "/afr/js/admincal-dialog.js?v=$ver";
+        $__header->styles[] = "/afr/css/admincal.css?v=$ver";
+        $__header->styles[] = "/afr/css/afr_gmenu.css?v=$ver";
 
-      break;
-    case "amenities":
-      $scope->amenities = rental_amenities($siteObj, $aptObj, array('searchable' => 0));
-      //$scope->debug = dump($scope->amenities,true);
-      //dump($facArray);
-      break;
-    case "import":
-      $scope->sources = find_objects('calendar_import', array('property_type' => $ptype, 'apt_id' => $id, 'active' => 1));
-      break;
-      
-    case "reviews":
-      $start = $scope->start = $_GET['start'] ?: 0;
-      $limit = $scope->limit = 10;
-      $searchOptions = array("start" => $start, "limit" => $limit);        
-      $search = ["client_id" => $app->client_id, "parent_id" => $id, "parent_type" => $aptObj->type, "active" => 1, "published" => 1];
-      $scope->reviews = $reviews = find_objects("review", $search, $searchOptions);
-      $scope->review_count = count_objects("review", $search);
-      $scope->items = $items = find_objects('review_item', ['site_id' => $siteObj->id, 'parent_type' => $aptObj->type]);
-     break;
-    case "terms":
-      break;
-    case "pricing":
-      break;
-    case "list":
-      $host_ids = user_host_list($u_id);
-      $pSearch = array("host_id" => $host_ids);
-      $pSearch = array_merge_json($pSearch, $siteObj->property_filters);
-      $start = $scope->start = $_GET['start'] ?: 0;        
-      
-      $pOptions = array('limit' => 10, 'start' => $start);
-      
-      $scope->rental_list = $rentals = find_objects($ptype, $pSearch, $pOptions);
-      $scope->rental_count = $count = count_objects($ptype, $pSearch);
-      
-      foreach($rentals as $aptObj) { /** check if we can list */
-        if($aptObj->active) continue;
-        $steps = property_remaining_steps($siteObj, $aptObj->type, $aptObj->id);
-        $aptObj->steps_remaining = count($steps); 
-      }
-      break;
-      
-    default:
-      return controller_error($app, "Unknown subview {$subview}");
-      break;
-  }
-  
 
-  return;
+        $aptObj = get_object($t, $id);
+        print_log("controller_rental_edit t=$t id=$id apt=".dump($aptObj,true), 'app', LOG_LEVEL_TEST);
+
+        $scope->auth_edit = $auth_edit = auth_rental($aptObj);
+        if(!auth_rental($aptObj)) return controller_error($app, "Edit Rental \"{$aptObj->name}\" not authorized");
+        //$scope = new stdClass;
+        controller_rental_detail($app, $options);
+
+        /** moved from rental_detail */
+        $steps_remaining = 0;
+        if($source_id = $aptObj->source_id) {
+            $scope->import_url = ajax_operation_link('rental-import', array('site_id' => $siteObj->id, 'property_type' => $aptObj->type, 'apt_id' => $id, 'source_id' => $source_id), array('public' => false));
+        } else {
+            $scope->steps_remaining = property_remaining_steps($siteObj, $aptObj->type, $aptObj->id);
+        //if(count($steps_remaining) && $aptObj->active) update_object('property', array('active' => 0), $aptObj->id); // deactivate;
+        }
+
+        $scope->uploader = property_uploader($ptype, $id, array("view" => "grid", "handler" => "property_photo_handler")); // doesn't work in switch, as dependencies are not loaded
+
+
+        //$scope->subview = $template = pick_first($pageObj->subview, $_GET['view'], $_GET['template'], $options['template'], "_rental-edit-location.html");  
+        //if($template && strpos($template, '_rental-edit-') === false) $template = $scope->subview = $app->page->subtemplate = "_rental-edit-{$template}.html"; // allow shortform
+        $subview = $app->page->subview ?: 'location';  
+        $app->page->subtemplate = "_rental-edit-{$subview}.html";
+        switch($subview) {
+            case "location":
+                break;
+            case "photos":
+                $mediaData = array("user_id" => $u_id, "site_id" => $siteObj->id, "parent_type" => $ptype, "parent_id" => $id, "parent_field" => "media");
+                if($aptObj->source_id == SOURCE_ID_INTERHOME) { /** todo: check if media is list of external IDs */
+                    $mediaData['inline'] = 1;
+                }
+                $scope->media_data = $mediaData; 
+                break;
+            case "calendar":
+                $scope->single_calendar_edit = true;
+
+                //$site_url = site_full_url($siteObj);      
+
+                /** doesn't work on Hitabrick for some reason, deirects to http */
+                //$scope->single_calendar_url = $url = "/api/calendar/?host_id={$aptObj->host_id}&amp;apt_id={$aptObj->id}&amp;status=1";
+
+                $scope->single_calendar_url = $url = ajax_operation_link('rental-calendar-events', array('apt_id' => $id, 'host_id' => $aptObj->host_id, 'single' => 1));        
+                print_log("api-url: {$url}", 'calendar', LOG_LEVEL_TEST);
+
+                $scope->single_calendar_options = array("selectable" => true, "editable" => true, "weekNumbers" => true);
+                controller_calendar($app); /** loads rentals */
+
+                // "events" => "/afr/XML/HV/property-calendar.php?format=event&id=$id&edit=1");
+                break;
+            case "description":
+                $scope->short_desc_example = $phrase = phrase("text_short-description-example");
+                //dump($phrase);
+                break;
+            case "guide":
+                $desc_types = array(DESC_TYPE_PROPERTY,DESC_TYPE_AREA);
+                if($siteObj->golf_site) $desc_types[] = DESC_TYPE_GOLF;
+                $desc_types[] = DESC_TYPE_FOOD; // private 
+                $desc_types[] = DESC_TYPE_RULES;
+                $desc_types[] = DESC_TYPE_INTERACTION;
+                $desc_types[] = DESC_TYPE_DIRECTIONS; // private
+                $desc_types[] = DESC_TYPE_CHECKIN; // private 
+                //dump($desc_types);
+                $descObjs = find_objects('description_type', array('id' => $desc_types), array("sort" => "private, id desc"));
+                foreach($descObjs as &$descObj) {
+                    $key = "text_".url_safe($descObj->name)."-example";
+                    $descObj->example = phrase($key);
+                }
+                $scope->description_types = $descObjs;
+                // not in use DESC_TYPE_TRAVEL,DESC_TYPE_QUICK,DESC_TYPE_ALBUM,DESC_TYPE_STRAP,
+
+                break;
+            case "amenities":
+                $scope->amenities = rental_amenities($siteObj, $aptObj, array('searchable' => 0));
+                //$scope->debug = dump($scope->amenities,true);
+                //dump($facArray);
+                break;
+            case "import":
+                $scope->sources = find_objects('calendar_import', array('property_type' => $ptype, 'apt_id' => $id, 'active' => 1));
+                break;
+          
+            case "reviews":
+                $start = $scope->start = $_GET['start'] ?: 0;
+                $limit = $scope->limit = 10;
+                $searchOptions = array("start" => $start, "limit" => $limit);        
+                $search = ["client_id" => $app->client_id, "parent_id" => $id, "parent_type" => $aptObj->type, "active" => 1, "published" => 1];
+                $scope->reviews = $reviews = find_objects("review", $search, $searchOptions);
+                $scope->review_count = count_objects("review", $search);
+                $scope->items = $items = find_objects('review_item', ['site_id' => $siteObj->id, 'parent_type' => $aptObj->type]);
+                break;
+            case "terms":
+                break;
+            case "pricing":
+                break;
+            case "list":
+                $host_ids = user_host_list($u_id);
+                $pSearch = array("host_id" => $host_ids);
+                $pSearch = array_merge_json($pSearch, $siteObj->property_filters);
+                $start = $scope->start = $_GET['start'] ?: 0;        
+
+                $pOptions = array('limit' => 10, 'start' => $start);
+
+                $scope->rental_list = $rentals = find_objects($ptype, $pSearch, $pOptions);
+                $scope->rental_count = $count = count_objects($ptype, $pSearch);
+
+                foreach($rentals as $aptObj) { /** check if we can list */
+                    if($aptObj->active) continue;
+                    $steps = property_remaining_steps($siteObj, $aptObj->type, $aptObj->id);
+                    $aptObj->steps_remaining = count($steps); 
+                }
+                break;
+          
+            default:
+                return controller_error($app, "Unknown subview {$subview}");
+                break;
+        }
+        return;
   
-}
+    }
   
 /** alias */
-function controller_rental($app, $options = []) {
-  return controller_rental_detail($app, $options);
-}
-
-function controller_rental_detail($app, $options = []) {  
-  global $u_id, $__USER, $__LANGUAGE;
-  $__header = $app->header; 
-  $siteObj = $app->site;
-  $scope = $app->page->scope;
-  $scope->stack = caller_stack();
-  $pageObj = $app->page;
-      
-  print_log("controller_rental_detail: scope=".dump($scope,true), 'app', LOG_LEVEL_TEST);
-  extract($_GET);
-  
-  $__header->scripts[] = "/afr/bower/fullcalendar/dist/fullcalendar.js";
-  $__header->styles[] = "/afr/bower/fullcalendar/dist/fullcalendar.css";
-  $__header->styles[] = "/afr/bower/foundation-icon-fonts/foundation-icons.css";
-  $__header->styles[] = "/afr/css/afr-air.css";
-
-  $ver = $app->version ?: date('md');
-    
-  $imageAr = array();
-  if($data = $options['data']) { // from fetch-template
-    extract($data);    
-  }
-  
-  $t = $ptype = $scope->property_type = $siteObj->property_type ?: 'shortstay';
-  $id = $obj_id = $apt_id = $scope->obj_id = $scope->apt_id = pick_first($scope->rental_id, $scope->apt_id, $scope->obj_id, $_GET['apt_id'] ?: $_GET['obj_id'], $options['apt_id'] ?: $options['obj_id'], $app->object_id);  
-  
-  if(!$id) return controller_error($app, "Missing rental ID");
-
-  
-  $aptObj = get_object($t, $id);
-  if(!$aptObj) return controller_error($app, "Rental not found");
-      
-  /** This controller is also used by rental edit */
-  $edit = $pageObj->page_type == PAGE_EDIT_PROPERTY;
-  $scope->auth_edit = $auth_edit = auth_rental($aptObj);  
-  if($edit && !$auth_edit) return controller_error($app, "None of your rentals found");
-  
-  /** viewing deactivated property */ 
-  if(!$aptObj->active && !$edit) {
-    if($auth_edit) {
-      $scope->message = "Preview: Rental not activated";
-    } else {
-      return controller_error($app, "No active rental found", '403');
+    function controller_rental($app, $options = []) {
+        return controller_rental_detail($app, $options);
     }
-  }
-  
-  
-  /** viewing active property - not edit - update page views */ 
-  if($aptObj->active && !$edit) {
-    $pv = ($aptObj->pageviews ?: 0) + 1;
-    update_object('property', ['pageviews' => $pv], $aptObj->id);
-  }
-  
-  $qs = get_query_string();
-  $scope->search_url = $app->search_url = site_page_link($siteObj->id, PAGE_RENTAL_SEARCH).($qs ? "?{$qs}" : "");
-  
-  $in = $_GET['in'] ? date2sql($in) : '';
-  $out = $_GET['out'] ? date2sql($out) : '';
-  $ng = $_GET['ng'] ?: 1; 
-  $nd = $in && $out && $in > $out ? datediff('days', $in, $out) : 0;
 
-  $url = property_geolink($aptObj);
-  $this_url = this_path();
-  $script = $_SERVER['SCRIPT_NAME'];
-  $method = $_SERVER['REQUEST_METHOD'];
-  $ref    = $_SERVER['HTTP_REFERER'];
-  
-  $redirect = $url != $this_url && !$edit && !$scope->ajax && $method == 'GET' && !strpos($script, 'ajax.php') ? 1 : 0;
-  if(0 && $redirect) {
-    print_log("rental_controller: redirecting: script: {$script} method:{$method} ref:{$ref}", 'rental', LOG_LEVEL_TEST);
-    $qs = get_query_string();
-    if($qs) $url .= "?{$qs}";
-    redirect($url);
-  }
-  
-  $scope->id = $aptObj->id; /** important or template won't work */
-  $scope->rental = $orgAptObj = clone $aptObj; /** something (price breakdown) changes $aptObj */
-  $scope->property_link = property_geolink($aptObj);
-
-  if($host_id = $aptObj->host_id) {    
-    $hostObj = get_user($host_id);
-    $scope->host = $hostObj;
-  }
-
-  unset($aptObj->address_number);
-  unset($aptObj->address_suffix);
-  unset($aptObj->address_postcode);
-  $scope->address = get_address_string($aptObj, ', ');
-
-  /** Property Guide */    
-  $descObjs = find_objects('property_description', ["property_id" => $aptObj->id, "active" => 1]);
-  //dump($descObjs);
-  $descriptions = array();
-  $description = '';
-  $description_more = '';
-  
-  
-  foreach($descObjs as $descObj) {
-    $type = $descObj->type;
-    if($type == DESC_TYPE_PROPERTY) {
-      if($descObj->site_id == $siteObj->id && $descObj->language == $__LANGUAGE) {
-        $description = nl2br($descObj->description);
-      } else {
-        unset($descObj->id); // so we can save per site and language
-        if(!$description) { // will be ignored or overwritten by above if correct site+language is found
-          $description = nl2br($descObj->description);
-          if($descObj->language != $__LANGUAGE) {
-            $debug = "(Lang={$descObj->language} this={$__LANGUAGE})<br>";
-            $debug =  '';
-            $description = $debug.$description; 
-          }
-        }
-      }
-    } else {
-      $descTypeObj = get_object('description_type', $type);
-      if(!$descTypeObj->private) $description_more .= html_h4(phrase($descTypeObj->name, CAPITALIZE)).nl2br($descObj->description);
-    }
-    
-    $descriptions[$descObj->type] = $descObj;
+    function controller_rental_detail($app, $options = []) {  
+        global $u_id, $__USER, $__LANGUAGE;
+        $__header = $app->header; 
+        $siteObj = $app->site;
+        $scope = $app->page->scope;
+        $scope->stack = caller_stack();
+        $pageObj = $app->page;
           
-  }
+        print_log("controller_rental_detail: scope=".dump($scope,true), 'app', LOG_LEVEL_TEST);
+        extract($_GET);
 
-  /** check avaialbility, including num_guests, min/max stay, changeover, etc */
-  $scope->rate_average = 0;  
-  $scope->discount_rate_average = 0;
-  $scope->discount = '';
-  $scope->description = $description.$description_more; /** used for public site */
-  $scope->guides = $descriptions;
+        $__header->scripts[] = "/afr/bower/fullcalendar/dist/fullcalendar.js";
+        $__header->styles[] = "/afr/bower/fullcalendar/dist/fullcalendar.css";
+        $__header->styles[] = "/afr/bower/foundation-icon-fonts/foundation-icons.css";
+        $__header->styles[] = "/afr/css/afr-air.css";
+
+        $ver = $app->version ?: date('md');
+
+        $imageAr = array();
+        if($data = $options['data']) { // from fetch-template
+            extract($data);    
+        }
   
-  if($in && $out) { /** search - get average rate */
-    
-    list($avail, $reason) = rental_availability($aptObj, ['in' => $in, 'out' => $out, 'ng' => $ng]);
-    $scope->available = $avail;
-    $scope->reason = $reason;
-    $scope->rate_title = $aptObj->source_id == SOURCE_ID_INTERHOME ? "Approx." : "Average"; 
+        $t = $ptype = $scope->property_type = $siteObj->property_type ?: 'shortstay';
+        $id = $obj_id = $apt_id = $scope->obj_id = $scope->apt_id = pick_first($scope->rental_id, $scope->apt_id, $scope->obj_id, $_GET['apt_id'] ?: $_GET['obj_id'], $options['apt_id'] ?: $options['obj_id'], $app->object_id);  
+  
+        if(!$id) return controller_error($app, "Missing rental ID");
 
-    
-    $searchObj = array2obj($_GET, array('map' => 'urldecode'));
-    $searchObj->in = $in;
-    $searchObj->out = $out;
-    $searchObj->t = $aptObj->type; 
-    $searchObj->apt_id = $aptObj->id; 
-    
-    $city_id = $aptObj->city_id;
-    $priceObj = get_average_rate($aptObj, $in, $out, $ng, true);
-    
-    print_log("Rate object for {$aptObj->name} in details:".dump($priceObj, true), 'property-search', LOG_LEVEL_TEST);
-    
-    $scope->rate = $priceObj;
-    $scope->rate_average = $aptObj->rate_average = $avg = round($priceObj->average);
-    $scope->rate_currency = $priceObj->currency;
-
-    $scope->rate_unit = $rate_unit = 'night';
-    if($priceObj->average_weekly) {
-      $scope->rate_unit = $rate_unit = 'week';
-      $scope->rate_average = round($priceObj->average_weekly);
-    } elseif($priceObj->average_monthly) {
-      $scope->rate_unit = $rate_unit = 'month';
-      $scope->rate_average = round($priceObj->average_monthly);
-    }
-    
-    if($priceObj->average_discounted) {
-      $scope->discount = $aptObj->discount = $priceObj->discount;
-      $scope->discount_rate_average = $aptObj->discount_rate_average = $priceObj->average_discounted;
-    }
-    
-    /**
-    
-    $scope->price_breakdown = print_price_breakdown($aptObj, $priceObj);
-
-    $scope->price_breakdown_link = 
-      html_fancybox_link(
-        ajax_operation_link('price-breakdown', $searchObj, array('public' => true)),  
-        phrase('price_breakdown', CAPITALIZE), 
-        array('class' => 'price-breakdown-link', 'data-url' => ajax_operation_link('price-breakdown', null, array('public' => true)), 'data-data' => array('t' => $t, 'apt_id' => $aptObj->id, 'in' => $in, 'out' => $out, 'ng' => $ng)));
+  
+        $aptObj = get_object($t, $id);
+        if(!$aptObj) return controller_error($app, "Rental not found");
       
-    if(isset($_GET['foo'])) {
-      echo("Average for $ng guests from $in to $out = $avg<br>");
-      dump($priceObj);
-    }
-    */
+        /** This controller is also used by rental edit */
+        $edit = $pageObj->page_type == PAGE_EDIT_PROPERTY;
+        $scope->auth_edit = $auth_edit = auth_rental($aptObj);  
+        if($edit && !$auth_edit) return controller_error($app, "None of your rentals found");
+  
+        /** viewing deactivated property */ 
+        if(!$aptObj->active && !$edit) {
+            if($auth_edit) {
+                $scope->message = "Preview: Rental not activated";
+            } else {
+                return controller_error($app, "No active rental found", '403');
+            }
+        }
+  
+  
+        /** viewing active property - not edit - update page views */ 
+        if($aptObj->active && !$edit) {
+            $pv = ($aptObj->pageviews ?: 0) + 1;
+            update_object('property', ['pageviews' => $pv], $aptObj->id);
+        }
+  
+        $qs = get_query_string();
+        $scope->search_url = $app->search_url = site_page_link($siteObj->id, PAGE_RENTAL_SEARCH).($qs ? "?{$qs}" : "");
+  
+        $in = $_GET['in'] ? date2sql($in) : '';
+        $out = $_GET['out'] ? date2sql($out) : '';
+        $ng = $_GET['ng'] ?: 1; 
+        $nd = $in && $out && $in > $out ? datediff('days', $in, $out) : 0;
+
+        $url = property_geolink($aptObj);
+        $this_url = this_path();
+        $script = $_SERVER['SCRIPT_NAME'];
+        $method = $_SERVER['REQUEST_METHOD'];
+        $ref    = $_SERVER['HTTP_REFERER'];
+
+        $redirect = $url != $this_url && !$edit && !$scope->ajax && $method == 'GET' && !strpos($script, 'ajax.php') ? 1 : 0;
+        if(0 && $redirect) {
+            print_log("rental_controller: redirecting: script: {$script} method:{$method} ref:{$ref}", 'rental', LOG_LEVEL_TEST);
+            $qs = get_query_string();
+            if($qs) $url .= "?{$qs}";
+                redirect($url);
+            }
+  
+            $scope->id = $aptObj->id; /** important or template won't work */
+            $scope->rental = $orgAptObj = clone $aptObj; /** something (price breakdown) changes $aptObj */
+            $scope->property_link = property_geolink($aptObj);
+
+            if($host_id = $aptObj->host_id) {    
+                $hostObj = get_user($host_id);
+                $scope->host = $hostObj;
+            }
+
+            unset($aptObj->address_number);
+            unset($aptObj->address_suffix);
+            unset($aptObj->address_postcode);
+            $scope->address = get_address_string($aptObj, ', ');
+
+            /** Property Guide */    
+            $descObjs = find_objects('property_description', ["property_id" => $aptObj->id, "active" => 1]);
+            //dump($descObjs);
+            $descriptions = array();
+            $description = '';
+            $description_more = '';
+  
+  
+            foreach($descObjs as $descObj) {
+                $type = $descObj->type;
+                if($type == DESC_TYPE_PROPERTY) {
+                    if($descObj->site_id == $siteObj->id && $descObj->language == $__LANGUAGE) {
+                        $description = nl2br($descObj->description);
+                    } else {
+                        unset($descObj->id); // so we can save per site and language
+                        if(!$description) { // will be ignored or overwritten by above if correct site+language is found
+                            $description = nl2br($descObj->description);
+                            if($descObj->language != $__LANGUAGE) {
+                                $debug = "(Lang={$descObj->language} this={$__LANGUAGE})<br>";
+                                $debug =  '';
+                                $description = $debug.$description; 
+                            }
+                        }
+                    }
+                } else {
+                    $descTypeObj = get_object('description_type', $type);
+                    if(!$descTypeObj->private) $description_more .= html_h4(phrase($descTypeObj->name, CAPITALIZE)).nl2br($descObj->description);
+                }
     
-  } else {
+                $descriptions[$descObj->type] = $descObj;
+          
+            }
+
+            /** check avaialbility, including num_guests, min/max stay, changeover, etc */
+            $scope->rate_average = 0;  
+            $scope->discount_rate_average = 0;
+            $scope->discount = '';
+            $scope->description = $description.$description_more; /** used for public site */
+            $scope->guides = $descriptions;
+
+            if($in && $out) { /** search - get average rate */
     
-    $currency = strtoupper($aptObj->currency);
-    $rate = $aptObj->rate_day;
-    if($currency != SYSTEM_CURRENCY) {
-      $aptObj->rate_day = round(get_exchange_rate($currency, SYSTEM_CURRENCY, $rate));
-      $aptObj->currency = SYSTEM_CURRENCY;
-      print_log("{$aptObj->id} {$currency}{$rate} => {$aptObj->currency}{$aptObj->rate_day}", 'rental-rate', LOG_LEVEL_TEST);
-      $scope->rental = $aptObj;
-    }
+                list($avail, $reason) = rental_availability($aptObj, ['in' => $in, 'out' => $out, 'ng' => $ng]);
+                $scope->available = $avail;
+                $scope->reason = $reason;
+                $scope->rate_title = $aptObj->source_id == SOURCE_ID_INTERHOME ? "Approx." : "Average"; 
+
+
+                $searchObj = array2obj($_GET, array('map' => 'urldecode'));
+                $searchObj->in = $in;
+                $searchObj->out = $out;
+                $searchObj->t = $aptObj->type; 
+                $searchObj->apt_id = $aptObj->id; 
+
+                $city_id = $aptObj->city_id;
+                $priceObj = get_average_rate($aptObj, $in, $out, $ng, true);
+
+                print_log("Rate object for {$aptObj->name} in details:".dump($priceObj, true), 'property-search', LOG_LEVEL_TEST);
+
+                $scope->rate = $priceObj;
+                $scope->rate_average = $aptObj->rate_average = $avg = round($priceObj->average);
+                $scope->rate_currency = $priceObj->currency;
+
+                $scope->rate_unit = $rate_unit = 'night';
+                if($priceObj->average_weekly) {
+                    $scope->rate_unit = $rate_unit = 'week';
+                    $scope->rate_average = round($priceObj->average_weekly);
+                } elseif($priceObj->average_monthly) {
+                    $scope->rate_unit = $rate_unit = 'month';
+                    $scope->rate_average = round($priceObj->average_monthly);
+                }
+
+                if($priceObj->average_discounted) {
+                    $scope->discount = $aptObj->discount = $priceObj->discount;
+                    $scope->discount_rate_average = $aptObj->discount_rate_average = $priceObj->average_discounted;
+                }
     
-    $scope->rate_currency = $aptObj->currency;
-    $scope->rate_average = $aptObj->rate_average = $aptObj->rate_day;
-  }
-  
-  /** used for single calendar */
-  if($orgAptObj->discount_week) $orgAptObj->rate_week = 0; /** discount takes precedence over fixed rate */
-  if($orgAptObj->discount_month) $orgAptObj->rate_month = 0; /** discount takes precedence over fixed rate */
-  if($orgAptObj->discount_2_weeks) $orgAptObj->rate_2_weeks = 0; /** discount takes precedence over fixed rate */
-  if($orgAptObj->discount_3_weeks) $orgAptObj->rate_3_weeks = 0; /** discount takes precedence over fixed rate */
-  
-  $rate_weekend = $aptObj->rate_weekend > 0 ? $aptObj->rate_weekend : $aptObj->rate_day;
-  $scope->single_calendar_rental = 
-    array("id" => $aptObj->id, 
-          "name" => htmlspecialchars($aptObj->name, ENT_QUOTES), 
-          "type" => $aptObj->type, 
-          "host_id" => $aptObj->host_id,
-          "owner_id" => $aptObj->owner_id, /** for historical reasons */
-          "currency" => $aptObj->currency, "cur" => get_currency_symbol($aptObj->currency,true), 
-          "rate_unit" => $rate_unit,
-          "rate_day" => $orgAptObj->rate_day,            
-          "rate_week" => $orgAptObj->rate_week, 
-          "rate_2_weeks" => $orgAptObj->rate_2_weeks, 
-          "rate_3_weeks" => $orgAptObj->rate_3_weeks, 
-          "rate_month" => $orgAptObj->rate_month, 
-          "rate_weekend" => $rate_weekend, 
-          "rate_extraperson" => $aptObj->rate_extraperson ?: 0, 
-          "rate_average" => $aptObj->rate_average ?: $aptObj->rate_day, 
-          "discount_rate_average" => $aptObj->discount_rate_average ?: 0, 
-          "rate_num_guests" => $aptObj->rate_num_guests ?: 2, 
-          "discount_week" => $orgAptObj->discount_week, 
-          "discount_2_weeks" => $orgAptObj->discount_2_weeks, 
-          "discount_3_weeks" => $orgAptObj->discount_3_weeks, 
-          "discount_month" => $orgAptObj->discount_month,
-          "ng" => $ng, "in" => $in, "out" => $out, "nd" => $nd, "changeover" => $aptObj->changeover);    
-  
-  if(!$edit) { /** public details page */
-    $mediaObjs = property_images($id) ?: explode(',', $aptObj->media);
-    if($mediaObjs) {
-      foreach($mediaObjs as $mediaObj) {
-        $image = new stdClass;
-        $image->src = print_media($mediaObj, array('size' => 'big', 'source_only' => true));
-        $image->title = $mediaObj->name;
-        $imageAr[] = $image;
-      }
-    }
-    $scope->images = $imageAr;
+                /**
+                
+                $scope->price_breakdown = print_price_breakdown($aptObj, $priceObj);
 
-    $scope->calendar = 1; // show availability calendar 
+                $scope->price_breakdown_link = 
+                  html_fancybox_link(
+                    ajax_operation_link('price-breakdown', $searchObj, array('public' => true)),  
+                    phrase('price_breakdown', CAPITALIZE), 
+                    array('class' => 'price-breakdown-link', 'data-url' => ajax_operation_link('price-breakdown', null, array('public' => true)), 'data-data' => array('t' => $t, 'apt_id' => $aptObj->id, 'in' => $in, 'out' => $out, 'ng' => $ng)));
+                  
+                if(isset($_GET['foo'])) {
+                  echo("Average for $ng guests from $in to $out = $avg<br>");
+                  dump($priceObj);
+                }
+                */
     
-    $nearbyApts = location_find_nearest($t, $aptObj->location_lat, $aptObj->location_long, array('limit' => 4, 'exclude' => $aptObj->id));
-    foreach($nearbyApts as $nearbyApt) {
-      if($nearbyApt->currency != SYSTEM_CURRENCY) {
-        $currency = $nearbyApt->currency; // just for logging
-        $rate = $nearbyApt->rate_day; // just for logging
-        $nearbyApt->rate_day = round(get_exchange_rate($nearbyApt->currency, SYSTEM_CURRENCY, $nearbyApt->rate_day));
-        $nearbyApt->currency = SYSTEM_CURRENCY;
-        print_log("nearby: {$nearbyApt->id} {$currency}{$rate} => {$nearbyApt->currency}{$nearbyApt->rate_day}", 'rental-rate', LOG_LEVEL_TEST);
-      }
-    }
-    $scope->nearby_apts = $nearbyApts;
-
-    if($siteObj->golf_site) {
-      //echo("Got here ptype=$t nearbyapts=".count($scope->nearby_apts));
-      $scope->nearby_golf = location_find_nearest('golf_club', $aptObj->location_lat, $aptObj->location_long, array('limit' => 4));
-    }
-    $scope->edit_link = $auth_edit ? property_edit_link($t, $id, true) : "";
-
-    //$start = $scope->start = $_GET['start'] ?: 0;
-    //$limit = $scope->limit = 10;
-    $review_search = ["client_id" => $app->client_id, "parent_id" => $id, "parent_type" => $aptObj->type, "active" => 1, "published" => 1];
-    $scope->reviews = find_objects("review", $review_search, ["limit" => 10]);
-    $scope->review_count = count_objects("review", $review_search);
+            } else {
     
-    if(strip_blank($aptObj->quote)) {        
-      $scope->quote = $aptObj->quote;
-    } else {
-      $quote = host_quote($aptObj->host_id, $id);
-      $scope->quote = $quote ? $quote->quote : '';        
-    }
+            $currency = strtoupper($aptObj->currency);
+            $rate = $aptObj->rate_day;
+            if($currency != SYSTEM_CURRENCY) {
+                $aptObj->rate_day = round(get_exchange_rate($currency, SYSTEM_CURRENCY, $rate));
+                $aptObj->currency = SYSTEM_CURRENCY;
+                print_log("{$aptObj->id} {$currency}{$rate} => {$aptObj->currency}{$aptObj->rate_day}", 'rental-rate', LOG_LEVEL_TEST);
+                $scope->rental = $aptObj;
+            }
+
+            $scope->rate_currency = $aptObj->currency;
+            $scope->rate_average = $aptObj->rate_average = $aptObj->rate_day;
+        }
+  
+        /** used for single calendar */
+        if($orgAptObj->discount_week) $orgAptObj->rate_week = 0; /** discount takes precedence over fixed rate */
+        if($orgAptObj->discount_month) $orgAptObj->rate_month = 0; /** discount takes precedence over fixed rate */
+        if($orgAptObj->discount_2_weeks) $orgAptObj->rate_2_weeks = 0; /** discount takes precedence over fixed rate */
+        if($orgAptObj->discount_3_weeks) $orgAptObj->rate_3_weeks = 0; /** discount takes precedence over fixed rate */
+
+        $rate_weekend = $aptObj->rate_weekend > 0 ? $aptObj->rate_weekend : $aptObj->rate_day;
+        $scope->single_calendar_rental = 
+        array(
+            "id" => $aptObj->id, 
+            "name" => htmlspecialchars($aptObj->name, ENT_QUOTES), 
+            "type" => $aptObj->type, 
+            "host_id" => $aptObj->host_id,
+            "owner_id" => $aptObj->owner_id, /** for historical reasons */
+            "currency" => $aptObj->currency, "cur" => get_currency_symbol($aptObj->currency,true), 
+            "rate_unit" => $rate_unit,
+            "rate_day" => $orgAptObj->rate_day,            
+            "rate_week" => $orgAptObj->rate_week, 
+            "rate_2_weeks" => $orgAptObj->rate_2_weeks, 
+            "rate_3_weeks" => $orgAptObj->rate_3_weeks, 
+            "rate_month" => $orgAptObj->rate_month, 
+            "rate_weekend" => $rate_weekend, 
+            "rate_extraperson" => $aptObj->rate_extraperson ?: 0, 
+            "rate_average" => $aptObj->rate_average ?: $aptObj->rate_day, 
+            "discount_rate_average" => $aptObj->discount_rate_average ?: 0, 
+            "rate_num_guests" => $aptObj->rate_num_guests ?: 2, 
+            "discount_week" => $orgAptObj->discount_week, 
+            "discount_2_weeks" => $orgAptObj->discount_2_weeks, 
+            "discount_3_weeks" => $orgAptObj->discount_3_weeks, 
+            "discount_month" => $orgAptObj->discount_month,
+            "ng" => $ng, "in" => $in, "out" => $out, "nd" => $nd, "changeover" => $aptObj->changeover
+        );    
+  
+        if(!$edit) { /** public details page */
+            $mediaObjs = property_images($id) ?: explode(',', $aptObj->media);
+            if($mediaObjs) {
+                foreach($mediaObjs as $mediaObj) {
+                    $image = new stdClass;
+                    $image->src = print_media($mediaObj, array('size' => 'big', 'source_only' => true));
+                    $image->title = $mediaObj->name;
+                    $imageAr[] = $image;
+                }
+            }
+            $scope->images = $imageAr;
+
+            $scope->calendar = 1; // show availability calendar 
     
-    if($peak_exceptions = find_surcharge_exceptions($aptObj)) {    
-      $exceptions = html_h4(phrase('exceptions', CAPITALIZE).':');
-      $exceptions .= print_exceptions($aptObj->type, $id, $peak_exceptions);;
-      $scope->description .= $exceptions; 
-    }
+            $nearbyApts = location_find_nearest($t, $aptObj->location_lat, $aptObj->location_long, array('limit' => 4, 'exclude' => $aptObj->id));
+            foreach($nearbyApts as $nearbyApt) {
+                if($nearbyApt->currency != SYSTEM_CURRENCY) {
+                    $currency = $nearbyApt->currency; // just for logging
+                    $rate = $nearbyApt->rate_day; // just for logging
+                    $nearbyApt->rate_day = round(get_exchange_rate($nearbyApt->currency, SYSTEM_CURRENCY, $nearbyApt->rate_day));
+                    $nearbyApt->currency = SYSTEM_CURRENCY;
+                    print_log("nearby: {$nearbyApt->id} {$currency}{$rate} => {$nearbyApt->currency}{$nearbyApt->rate_day}", 'rental-rate', LOG_LEVEL_TEST);
+                }
+            }
+            $scope->nearby_apts = $nearbyApts;
+
+            if($siteObj->golf_site) {
+                //echo("Got here ptype=$t nearbyapts=".count($scope->nearby_apts));
+                $scope->nearby_golf = location_find_nearest('golf_club', $aptObj->location_lat, $aptObj->location_long, array('limit' => 4));
+            }
+            $scope->edit_link = $auth_edit ? property_edit_link($t, $id, true) : "";
+
+            //$start = $scope->start = $_GET['start'] ?: 0;
+            //$limit = $scope->limit = 10;
+            $review_search = ["client_id" => $app->client_id, "parent_id" => $id, "parent_type" => $aptObj->type, "active" => 1, "published" => 1];
+            $scope->reviews = find_objects("review", $review_search, ["limit" => 10]);
+            $scope->review_count = count_objects("review", $review_search);
+            
+            if(strip_blank($aptObj->quote)) {        
+                $scope->quote = $aptObj->quote;
+            } else {
+                $quote = host_quote($aptObj->host_id, $id);
+                $scope->quote = $quote ? $quote->quote : '';        
+            }
     
-  }
-  
-  
-  $facAr = $aptObj->facilities ? explode(',', $aptObj->facilities) : array();
-  $facs = array();
-  foreach($facAr as $fac_id) {
-    $facObj = new stdClass;
-    $facObj->id = $fac_id;
-    $facObj->name = get_object("facility", $fac_id, "name");
-    $facObj->icon = rental_facility_icon($fac_id) ?: "fa fa-check";
-    $facs[] = $facObj;
-  }
-
-  $scope->facs = $facs; // $scope->facilities = aptObj->facilities, already in use
-  $scope->single_calendar_edit = $cal_edit = false;
-  $event = 'rental-calendar-availability';
-  $scope->single_calendar_url = ajax_operation_link($event, array('id' => $id, 'edit' => 0), array('public' => true));
-  $calOptions = array("selectable" => true, "editable" => false);
-  
-  if($in) $calOptions['defaultDate'] = $in;
-  $scope->single_calendar_options = $calOptions;
-  
-  $today = today();      
-  $yesterday = yesterday();      
-  if($aptObj->calendar_startdate || $aptObj->calendar_startdate < $yesterday) {
-    $res = rental_update_calendar($aptObj);
-    if($res->success && is_array($res->data)) {
-      $aptObj->calendar_availability = $res->data['calendar_availability'];
-      $aptObj->calendar_startdate = $res->data['calendar_startdate'];
-    }
-  }
-
-  
-  $availabilty = [];
-  if($aptObj->calendar_availability && $aptObj->calendar_startdate) {
-    $offset = day_diff($aptObj->calendar_startdate, $today); // how many days ago
-    $avail = substr($aptObj->calendar_availability, $offset);
-    $length = strlen($avail);
-    $blockedDates = [];
-    if(strpos($avail, 'N') !== false) {
-      //die("got here avail=$avail");
-      $arr = str_split($avail);
-      $d = $today;
-      foreach($arr as $a) {
-        if($a == 'N') $blockedDates[] = date(DATEPICKER_FORMAT_PHP, strtotime($d));
-        $d = next_day($d);
-      }
-    }
+            if($peak_exceptions = find_surcharge_exceptions($aptObj)) {    
+                $exceptions = html_h4(phrase('exceptions', CAPITALIZE).':');
+                $exceptions .= print_exceptions($aptObj->type, $id, $peak_exceptions);;
+                $scope->description .= $exceptions; 
+            }
     
-    $availabilty = ["blocked_dates" => $blockedDates, "first" => $today, "last" => add_day($today, $length),  "length" => $length];
-  } 
+        }
   
-  if($changeover = $aptObj->changeover) {
-
-    /** note - convert to 0=sun in JavaScript due to https://bootstrap-datepicker.readthedocs.io/en/latest/options.html#daysofweekdisabled */
-    $wd = [0 =>'sun',1=>'mon',2=>'tue',3=>'wed',4=>'thu',5=>'fri',6=>'sat'];
-    if($changeover == 7) $changeover = 0; 
-    unset($wd[$changeover]);
-    $availabilty["blocked_weekdays"] = array_keys($wd); // block these days for check-in 
-    
-  }
   
-  $scope->availability = count($availabilty) ? $availabilty : '';
+        $facAr = $aptObj->facilities ? explode(',', $aptObj->facilities) : array();
+        $facs = array();
+        foreach($facAr as $fac_id) {
+            $facObj = new stdClass;
+            $facObj->id = $fac_id;
+            $facObj->name = get_object("facility", $fac_id, "name");
+            $facObj->icon = rental_facility_icon($fac_id) ?: "fa fa-check";
+            $facs[] = $facObj;
+        }
 
-  $scope->data = array("t" => $t, "id" => $id, "reset"  => 1); // send to ajax fetch-template method and back to this controller
+        $scope->facs = $facs; // $scope->facilities = aptObj->facilities, already in use
+        $scope->single_calendar_edit = $cal_edit = false;
+        $event = 'rental-calendar-availability';
+        $scope->single_calendar_url = ajax_operation_link($event, array('id' => $id, 'edit' => 0), array('public' => true));
+        $calOptions = array("selectable" => true, "editable" => false);
 
-  //die("ok, got here end id={$id} tpl:{$app->page->template} scope".dump($scope,true));
+        if($in) $calOptions['defaultDate'] = $in;
+        $scope->single_calendar_options = $calOptions;
+
+        $today = today();      
+        $yesterday = yesterday();      
+        if($aptObj->calendar_startdate || $aptObj->calendar_startdate < $yesterday) {
+            $res = rental_update_calendar($aptObj);
+            if($res->success && is_array($res->data)) {
+                $aptObj->calendar_availability = $res->data['calendar_availability'];
+                $aptObj->calendar_startdate = $res->data['calendar_startdate'];
+            }
+        }
+
   
-  return;
-}
+        $availabilty = [];
+        if($aptObj->calendar_availability && $aptObj->calendar_startdate) {
+            $offset = day_diff($aptObj->calendar_startdate, $today); // how many days ago
+            $avail = substr($aptObj->calendar_availability, $offset);
+            $length = strlen($avail);
+            $blockedDates = [];
+        if(strpos($avail, 'N') !== false) {
+          //die("got here avail=$avail");
+            $arr = str_split($avail);
+            $d = $today;
+            foreach($arr as $a) {
+                if($a == 'N') $blockedDates[] = date(DATEPICKER_FORMAT_PHP, strtotime($d));
+                $d = next_day($d);
+            }
+        }   
 
-function controller_rental_inquiry($app, $options = []) {
-  $options['request_type'] = 'inquiry';
-  rental_booking_handler($app, $options);
-  $scope = $app->page->scope;
+        $availabilty = ["blocked_dates" => $blockedDates, "first" => $today, "last" => add_day($today, $length),  "length" => $length];
+        } 
   
-  $resObj = $scope->booking;
-  switch($resObj->status) {
-  case STATUS_DRAFT:
-    break;
-  case STATUS_INQUIRY:
-    $scope->template = "rental-inquiry-success.html";
-    break;
-  default:
-    break;
-  }
+        if($changeover = $aptObj->changeover) {
+
+            /** note - convert to 0=sun in JavaScript due to https://bootstrap-datepicker.readthedocs.io/en/latest/options.html#daysofweekdisabled */
+            $wd = [0 =>'sun',1=>'mon',2=>'tue',3=>'wed',4=>'thu',5=>'fri',6=>'sat'];
+            if($changeover == 7) $changeover = 0; 
+            unset($wd[$changeover]);
+            $availabilty["blocked_weekdays"] = array_keys($wd); // block these days for check-in 
+
+        }
   
-  return;
-}
+        $scope->availability = count($availabilty) ? $availabilty : '';
 
-function controller_rental_request($app, $options = []) {
-  $options['request_type'] = 'request';
-  rental_booking_handler($app, $options);
-  $scope = $app->page->scope;
+        $scope->data = array("t" => $t, "id" => $id, "reset"  => 1); // send to ajax fetch-template method and back to this controller
 
-  $resObj = $scope->booking;
-  switch($resObj->status) {
-  case STATUS_DRAFT:
-    break;
-  case STATUS_REQUEST:
-    $scope->template = "rental-request-success.html";
-    break;
-  default:
-    break;
-  }
+        //die("ok, got here end id={$id} tpl:{$app->page->template} scope".dump($scope,true));
+  
+        return;
+    }
 
-  return;
-}
+    function controller_rental_inquiry($app, $options = []) {
+        $options['request_type'] = 'inquiry';
+        rental_booking_handler($app, $options);
+        $scope = $app->page->scope;
 
-function controller_rental_booking($app, $options = []) {
-  $options['request_type'] = 'booking';
-  rental_booking_handler($app, $options);
-  return;
-}
+        $resObj = $scope->booking;
+        switch($resObj->status) {
+            case STATUS_DRAFT:
+                break;
+            case STATUS_INQUIRY:
+                $scope->template = "rental-inquiry-success.html";
+                break;
+            default:
+                break;
+        }
+
+        return;
+    }
+
+    function controller_rental_request($app, $options = []) {
+        $options['request_type'] = 'request';
+        rental_booking_handler($app, $options);
+        $scope = $app->page->scope;
+
+        $resObj = $scope->booking;
+        switch($resObj->status) {
+            case STATUS_DRAFT:
+                break;
+            case STATUS_REQUEST:
+                $scope->template = "rental-request-success.html";
+                break;
+            default:
+                break;
+        }
+        return;
+    }
+
+    function controller_rental_booking($app, $options = []) {
+        $options['request_type'] = 'booking';
+        rental_booking_handler($app, $options);
+        return;
+    }
 
 
 /** common handler for inquiry/request/booking above*/
-function rental_booking_handler($app, $options = array()) {
-  $siteObj = $app->site;
-  $pageObj = $app->page;
-  $scope = $app->page->scope;
-  $obj_id = $slug = $scope->obj_id = $app->object_slug ?: $app->object_id;
-  if(!$obj_id) return scope_error($app, "Missing rental ID", '404');
-  $obj_type = pick_first($scope->property_type, $app->object_type, $pageObj->property_type, $siteObj->property_type, 'shortstay');  
-  $obj = $aptObj = $scope->rental = get_object($obj_type, $obj_id);
-  if(!$obj) return scope_error($app, "Rental {$slug} not found", '404');
-  
-  extract($_GET);
-  $in  = $_GET['in'] ? date2sql($in) : '';
-  $out = $_GET['out'] ? date2sql($out) : '';
-  $ng  = $_GET['ng'] ?: 1;
-  $res_id  = $_GET['rid'];
-  
-  if($res_id) {
-    $resObj = get_object('reservation', $rid);
-    // security
-    $auth_res = auth_res($resObj);
-    if($auth_res < USER_LEVEL_GUEST) return controller_error($app, "Not authorized");    
-  } elseif($in && $out && $ng) {
-    $resData = search2res(['in' => $in, 'out' => $out, 'ng' => $ng, 'property_type' => $obj_type, 'apt_id' => $obj_id]);
-    //echo("gh in=$in out=$out ng=$ng t=$obj_type id=$obj_id".dump($resData,true));
-    if($error = $resData['error']) {
-      $scope->error = $error;
-    }
+    function rental_booking_handler($app, $options = array()) {
+        $siteObj = $app->site;
+        $pageObj = $app->page;
+        $scope = $app->page->scope;
+        $obj_id = $slug = $scope->obj_id = $app->object_slug ?: $app->object_id;
+        if(!$obj_id) return scope_error($app, "Missing rental ID", '404');
+        $obj_type = pick_first($scope->property_type, $app->object_type, $pageObj->property_type, $siteObj->property_type, 'shortstay');  
+        $obj = $aptObj = $scope->rental = get_object($obj_type, $obj_id);
+        if(!$obj) return scope_error($app, "Rental {$slug} not found", '404');
 
-    $resObj = array2obj($resData);
-  } else {
-    return controller_error($app, "Missing search parameters");
-  }
+        extract($_GET);
+        $in  = $_GET['in'] ? date2sql($in) : '';
+        $out = $_GET['out'] ? date2sql($out) : '';
+        $ng  = $_GET['ng'] ?: 1;
+        $res_id  = $_GET['rid'];
+
+        if($res_id) {
+            $resObj = get_object('reservation', $rid);
+            // security
+            $auth_res = auth_res($resObj);
+            if($auth_res < USER_LEVEL_GUEST) return controller_error($app, "Not authorized");    
+        } elseif($in && $out && $ng) {
+            $resData = search2res(['in' => $in, 'out' => $out, 'ng' => $ng, 'property_type' => $obj_type, 'apt_id' => $obj_id]);
+            //echo("gh in=$in out=$out ng=$ng t=$obj_type id=$obj_id".dump($resData,true));
+            if($error = $resData['error']) {
+                $scope->error = $error;
+            }
+
+            $resObj = array2obj($resData);
+        } else {
+            return controller_error($app, "Missing search parameters");
+        }
   
   
-  if($aptObj->source_id == SOURCE_ID_INTERHOME && $aptObj->guid) {
+        if($aptObj->source_id == SOURCE_ID_INTERHOME && $aptObj->guid) {
     
-    $result = intherome_live_availability($aptObj->guid, strip_time($resObj->checkin), strip_time($resObj->checkout), $resObj->num_guests);
-    print_log("Before Interhome Rate: {$resObj->currency} {$resObj->rate_base} Total: {$resObj->total} Fee: {$resObj->fee_service} GT: {$resObj->grand_total}", 'interhome', LOG_LEVEL_TEST);
-    
-    if($result->success) {
-      $total = $result->total;
-      $currency = $result->currency;
-      $rate_day = $total / $resObj->num_days;
-      $service_fee = service_fee($total);
-      $dest_id = SOURCE_ID_INTERHOME;
+            $result = intherome_live_availability($aptObj->guid, strip_time($resObj->checkin), strip_time($resObj->checkout), $resObj->num_guests);
+            print_log("Before Interhome Rate: {$resObj->currency} {$resObj->rate_base} Total: {$resObj->total} Fee: {$resObj->fee_service} GT: {$resObj->grand_total}", 'interhome', LOG_LEVEL_TEST);
+            
+            if($result->success) {
+                $total = $result->total;
+                $currency = $result->currency;
+                $rate_day = $total / $resObj->num_days;
+                $service_fee = service_fee($total);
+                $dest_id = SOURCE_ID_INTERHOME;
+
+                if($res_id) { /** no longer in use ? */
+                    if($total) update_object('reservation', array('rate_base' => $rate_day, 'currency' => $currency, 'fee_service' => $service_fee, 'dest_id' => $dest_id), $res_id);
+                    $resObj = get_object('reservation', $res_id); // reload
+                } else {
+                    $resObj->currency = $currency;
+                    $resObj->rate_base = $rate_day;
+                    $resObj->total = $total;
+                    $resObj->fee_service = $service_fee;
+                    $resObj->grand_total = $total + $service_fee;
+                    $resObj->dest_id = $dest_id;
+                }
+              
+                if(!$app->live) $scope->messages = $result->message;
+                $scope->source_services = $result->services;
+                print_log("Ok, Interhome Rate: {$rate_day} Total: {$total} Fee: {$service_fee} GT: {$resObj->grand_total}", 'interhome', LOG_LEVEL_TEST);
+            } else {
+                $scope->source_error = $result->error ?: "Unknown error from Booking Partner";
+                $ts = now();
+                print_log("$ts: Interhome request failed: id:{$resObj->res_id} property:{$aptObj->id} in:".strip_time($resObj->checkin)." out:".strip_time($resObj->checkout)." guest:{$resObj->guest_id} Errors:".dump($result, true), 'interhome', LOG_LEVEL_ALWAYS);
+            }
+        }
       
-      if($res_id) { /** no longer in use ? */
-        if($total) update_object('reservation', array('rate_base' => $rate_day, 'currency' => $currency, 'fee_service' => $service_fee, 'dest_id' => $dest_id), $res_id);
-        $resObj = get_object('reservation', $res_id); // reload
-      } else {
-        $resObj->currency = $currency;
-        $resObj->rate_base = $rate_day;
-        $resObj->total = $total;
-        $resObj->fee_service = $service_fee;
-        $resObj->grand_total = $total + $service_fee;
-        $resObj->dest_id = $dest_id;
-      }
-      
-      if(!$app->live) $scope->messages = $result->message;
-      $scope->source_services = $result->services;
-      print_log("Ok, Interhome Rate: {$rate_day} Total: {$total} Fee: {$service_fee} GT: {$resObj->grand_total}", 'interhome', LOG_LEVEL_TEST);
-    } else {
-      $scope->source_error = $result->error ?: "Unknown error from Booking Partner";
-      $ts = now();
-      print_log("$ts: Interhome request failed: id:{$resObj->res_id} property:{$aptObj->id} in:".strip_time($resObj->checkin)." out:".strip_time($resObj->checkout)." guest:{$resObj->guest_id} Errors:".dump($result, true), 'interhome', LOG_LEVEL_ALWAYS);
-    }
-  }
-  
  
-  $scope->booking = $resObj;  
-  $scope->search_url = $app->search_url ?: site_page_link($siteObj->id, PAGE_RENTAL_SEARCH);
-  $scope->feeArray = array('fee_service' => "Service Fee", 'fee_cleaning' => "Cleaning Fee", 'fee_booking' => "Booking Fee");
+        $scope->booking = $resObj;  
+        $scope->search_url = $app->search_url ?: site_page_link($siteObj->id, PAGE_RENTAL_SEARCH);
+        $scope->feeArray = array('fee_service' => "Service Fee", 'fee_cleaning' => "Cleaning Fee", 'fee_booking' => "Booking Fee");
   
-  return;
-}
-
-function controller_dictionary($app, $options = []) {
-  global $u_id, $__USER;
-  $__header = $app->header; 
-  $siteObj = $app->site;
-  $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
-  $__header->scripts[] = "/afr/bower/table-export/jquery.base64.js";
-  $__header->scripts[] = "/afr/bower/table-export/tableExport.js";
-  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js";
-  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js"; /** todo: support other languages, use $app->locale  */
-  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/export/bootstrap-table-export.js";
-  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/editable/bootstrap-table-editable.min.js";
-  $__header->scripts[] = "/afr/bower/x-editable/dist/bootstrap3-editable/js/bootstrap-editable.js";
-
-  $__header->styles[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.css";
-  $__header->styles[] = "/afr/bower/bootstrap-table/dist/extensions/editable/bootstrap-editable.css";
-
-
-  $scope = $app->page->scope;
-  $errors = $messages = array();
-  
-  $obj_type = 'dictionary';
-
-  $filters = array();
-  $tbl = get_object_table($obj_type);
-
-  //$filters["{$tbl}.site_id"] = [ATT_DEFAULT_NULL, $siteObj->id];  
-  //$filters["{$tbl}.site_id"] = array('term' => ['!=', 'text_*'], 'site_id' => ['$or', [$siteObj->id, '$NULL']]);
-  if($site_id = $_GET['site_id']) $filters["{$tbl}.site_id"] = $site_id;
-  else $filters["{$tbl}.site_id"] = ['$or', [$siteObj->id, '$NULL']];
-  //'language' => $language, 
-   
-  foreach(array('language','site_id') as $fld) {
-    if($val = trim($_GET[$fld])) $filters[$fld] = $val;
-  }
-  
-  if($__USER->user_level < USER_LEVEL_SYSTEM && $siteObj->id == 265)  $filters['site_id'] = $siteObj->id;
-  
-  $scope->filters = $filters;
-  $filter_json = count($filters) ? json_encode($filters) : '';
-  $scope->obj_type = $obj_type;
-  $scope->data_url = "/ajax.php?oper=get-rows&obj_type=$obj_type".($filter_json ? "&filters=".urlencode($filter_json) : '');
-  $scope->edit_url = "/ajax.php?oper=save&obj_type=$obj_type";
-  $scope->title = "Dictionary";
-    
-  return;
-}
-
-function controller_users($app, $options = []) {
-  global $u_id;
-  $__header = $app->header; 
-  $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
-  $__header->scripts[] = "/afr/bower/table-export/jquery.base64.js";
-  $__header->scripts[] = "/afr/bower/table-export/tableExport.js";
-  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js";
-  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js"; /** todo: support other languages, use $app->locale  */
-  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/export/bootstrap-table-export.js";
-  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/editable/bootstrap-table-editable.min.js";
-  $__header->scripts[] = "/afr/bower/x-editable/dist/bootstrap3-editable/js/bootstrap-editable.js";  
-  $__header->styles[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.css";
-  $__header->styles[] = "/afr/bower/bootstrap-table/dist/extensions/editable/bootstrap-editable.css";
-
-  $scope = $app->page->scope;
-  $errors = $messages = array();
-  $client_id = $scope->client_id = $app->client_id;
-  $client_name = $client_id ? get_object('client', $client_id, 'name') : '';
-  
-  $obj_type = $options['obj_type'] ?: 'user';
-
-  $filters = array();
-  $tbl = get_object_table($obj_type);
-  $filters["{$tbl}.client_id"] = $client_id;
-  foreach(array('user_level','org_id','start','end') as $fld) {
-    if($val = trim($_GET[$fld])) {
-      switch($fld) {
-      case 'start':
-        $filters['created'] = array(">=", date2sql($val));
-        break;
-      case 'end':
-        $filters['created'] = array("<=", date2sql($val));
-        break;
-      case 'user_level':
-        $filters['user_level'] = array("=", $val);
-        break;
-      default:
-        $filters[$fld] = $val;
-        break;
-      }
-    }
-  }
-  
-  $scope->filters = $filters;
-  $filter_json = count($filters) ? json_encode($filters) : '';
-  $scope->obj_type = $obj_type;
-  $scope->data_url = "/ajax.php?oper=get-rows&obj_type=$obj_type".($filter_json ? "&filters=".urlencode($filter_json) : '');
-  $scope->edit_url = "/ajax.php?oper=edit-user";
-  $scope->title = ucfirst($obj_type)."s ".($client_id ? " for $client_name" : "");
-    
-  return;
-}
-
-function controller_backend($app, $options = []) {
-  global $u_id, $u_level,$__CLASS_FLAGS;
-  $__header = $app->header; 
-  $siteObj = $app->site;
-  $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
-  //$__header->scripts[] = "/afr/bower/table-export/jquery.base64.js";
-  $__header->scripts[] = "/afr/js/jquery.base64.js"; /** Fix: https://github.com/wenzhixin/bootstrap-table/issues/189 */
-  $__header->scripts[] = "/afr/bower/table-export/tableExport.js";
-  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js";
-  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js"; /** todo: support other languages, use $app->locale  */
-  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/export/bootstrap-table-export.js";
-  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.js";
-  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/filter-control/bootstrap-table-filter-control.js";
-  $__header->styles[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.css";
-  $__header->styles[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.css";
-
-  $limit = 50;
-
-  $scope = $app->page->scope;  
-  $scope->class_flags = $__CLASS_FLAGS;
-  $obj_type = $_GET['obj_type'];
-  
-  $classes = array();
-  if($u_level < USER_LEVEL_ADMIN) return controller_error($app, "Not authorized", 401);
-  $scope->classes = $classes = admin_menu_items($siteObj, $options);  
-  
-  if($obj_type) {
-    $scope->obj_type = $obj_type;
-    $scope->obj_name = get_object_name($obj_type);
-    $scope->obj_key = get_object_key($obj_type);
-    
-    /** this is if classes are stored in DB */
-    if($classObj = get_object('class', $obj_type, '', array('ignore_filters' => 1))) { /** read from db */     
-      $scope->class_def = $classObj;
-      $scope->class_attributes = find_objects('attribute', array('class' => $obj_type));
-      $scope->class_security = find_objects('security', array('node' => $obj_type));
-    }
-    
-    //echo("obj-type={$obj_type} class=".dump($classObj,true));
-    /** read from file, disabled 
-    $class_found = false;
-    if($class_header = get_class_header($obj_type)) { 
-      $class_found = true;
-      $class_user_level = $class_header[CLASS_USER_LEVEL];
-    }
-    */
-   
-    $actions = array('view', 'list', 'add', 'edit', 'del', 'copy');
-    
-    foreach($actions as $ac) {
-      $key = 'auth_'.$ac;
-      $scope->$key = auth_action($obj_type, $ac);
-    }
-    if(!$classObj) {
-      //return scope_error($app, "$obj_type not found", '404');
-    } elseif($classObj->user_level > $u_level) {
-      $scope->error = "Not authorized (User level)";
-      return;
-    } elseif(!$scope->auth_list) {
-      return scope_error($app, "Not authorized (List)", '404');
-    }
-    $class_def = get_class_def($obj_type);
-    $class_fields = $class_def->fields;
-    $fields = array();
-    foreach($class_fields as $field => $attributes) {
-      if(!($attributes[ATT_FLAGS] & AF_HIDE_LIST)) $fields[$field] = $attributes[ATT_NAME];      
-    }
-    $scope->fields = $fields;
-    $scope->data_url = "/ajax.php?oper=list&obj_type=$obj_type&limit=$limit";
-        
-    //$scope->auth_add = auth_action($obj_type, 'add');
-  } else {
-    //$scope->classes = get_classes();
-  }
-  //dump($items);
-  
-  return;
-}
-
-
-function controller_payments($app, $options = []) {
-  // redirect_secure();
-  $options['obj_type'] = 'payment';
-  controller_invoices($app, $options);
-  return;
-}
-
-function controller_payouts($app, $options = []) {
-  // redirect_secure();
-  $options['obj_type'] = 'withdrawal';
-  controller_invoices($app, $options);
-  return;
-}
-
-function controller_invoices($app, $options = []) {
-  // redirect_secure();
-  global $u_id, $u_level;
-  $__header = $app->header; 
-  $siteObj = $app->site;
-  
-  $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
-  $__header->scripts[] = "/afr/bower/table-export/jquery.base64.js";
-  $__header->scripts[] = "/afr/bower/table-export/tableExport.js";
-  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js";
-  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js"; /** todo: support other languages, use $app->locale  */
-  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/export/bootstrap-table-export.js";
-  $__header->styles[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.css";
-
-  $scope = $app->page->scope;
-  $errors = $messages = array();
-  $client_id = $scope->client_id = $app->client_id;
-  $client_name = $client_id ? get_object('client', $client_id, 'name') : '';
-  $host_ids = [];
-  
-  if($siteObj->property_site) {
-    $host_ids = user_host_list($u_id) ?: array();
-  }
-  $ptype = pick_first($siteObj->property_type, $app->property_type, "shortstay");
-  $filters = array();
-  $filters['client_id'] = $client_id;
-  $system_user = 0;
-  if($u_level == USER_LEVEL_SYSTEM) {
-    $system_user = $scope->system_user = 1;
-  } elseif(count($host_ids)) { 
-    $filters['host_id'] = $host_ids;
-  } elseif($siteObj->property_site) {
-    $scope->error = "You are not a host, and not authorized to manage any hosts";
-    return;
-  }
-  
-  
-  $scope->booking_link = site_page_link($siteObj, PAGE_BOOKING);
-  
-  $obj_type = $options['obj_type'] ?: 'invoice';
-  if(!in_array($obj_type, array('invoice', 'payment', 'withdrawal'))) {
-    $scope->error = "Invalid class $obj_type";
-    return;
-  }
-  
-  switch($obj_types) {
-    case "invoice";
-    break;
-    case "payment";
-    break;
-    case "withdrawal";
-    break;    
-  }
-  /** handle filters */
-  foreach(array('status','org_id','start','end', 'payment_type', 'payment_status', 'sender_id', 'recipient_id', 'currency', 'host_id') as $fld) {
-    if($val = trim($_GET[$fld])) {
-      switch($fld) {        
-        case 'start':
-          $filters['sent_date'] = array(">=", date2sql($val));
-          break;
-        case 'end':
-          $filters['sent_date'] = array("<=", date2sql($val));
-          break;
-        case 'status':
-          $filters['status'] = array("=", $val);
-          break;
-        case 'payment_status':
-          $filters['payment_status'] = array(">=", $val);
-          break;
-        default:
-          $filters[$fld] = $val;
-          break;
-      }
-    }
-  }
-  
-  if($_GET['start'] && $_GET['end']) $filters['sent_date'] = array("><", date2sql($_GET['start']), date2sql($_GET['end']));  
-  //echo("type=$obj_type".dump($filters, true));
-  
-  $scope->filters = $filters;
-  $filter_json = count($filters) ? json_encode($filters) : '';
-  $scope->obj_type = $obj_type;
-  $obj_name = get_object_name($obj_type);
-  $scope->data_url = "/ajax.php?oper=get-rows&obj_type=$obj_type".($filter_json ? "&filters=".urlencode($filter_json) : '');
-  $scope->title = $obj_name."s ".($client_id ? " for $client_name" : "");
-  
-  if(in_array($obj_type, array('payment', 'invoice'))) {
-    $org_ids = find_objects($obj_type, array('client_id' => $client_id), array('fields' => 'distinct org_id'));
-    $scope->org_ids = array_filter($org_ids);
-  } else { // Payouts
-    
-    /** Filters from form */
-    $scope->host_id = $host_id = $_GET['host_id'] ?: 0;
-    $scope->currency = $currency = $_GET['currency'] ?: $currencies[0];
-    if($host_id) {
-      $scope->host = $hostObj = get_user($host_id);
-      $scope->host_name = $host_name = get_user_name($hostObj);
+        return;
     }
 
-    $scope->title = "Past Payouts";
-    //if($filters['recipient_id']) $search['recipient_id'] = $recipient_id;
-    //if($filters['currency']) $search['payment_currency'] = $currency;  // todo chooser  
+    function controller_dictionary($app, $options = []) {
+        global $u_id, $__USER;
+        $__header = $app->header; 
+        $siteObj = $app->site;
+        $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
+        $__header->scripts[] = "/afr/bower/table-export/jquery.base64.js";
+        $__header->scripts[] = "/afr/bower/table-export/tableExport.js";
+        $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js";
+        $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js"; /** todo: support other languages, use $app->locale  */
+        $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/export/bootstrap-table-export.js";
+        $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/editable/bootstrap-table-editable.min.js";
+        $__header->scripts[] = "/afr/bower/x-editable/dist/bootstrap3-editable/js/bootstrap-editable.js";
+
+        $__header->styles[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.css";
+        $__header->styles[] = "/afr/bower/bootstrap-table/dist/extensions/editable/bootstrap-editable.css";
 
 
-    /** Outstanding Payments */
-    $search = array();
-    if(!$system_user) $search['host_id'] = $host_ids;  
-    
-    if($start = $_GET['ostart']) $search['created'] = array(">=", date2sql($start));
-    if($end = $_GET['oend']) $search['created'] = array("<=", date2sql($end));
+        $scope = $app->page->scope;
+        $errors = $messages = array();
 
-    $search['client_id'] = $client_id;
-    $search['gateway_id'] = GATEWAY_PAYPAL;
-    $search['payment_status'] = array(PAYMENT_STATUS_COMPLETED, PAYMENT_STATUS_PARTIALLY_REFUNDED);  
-    $search['payment_type'] = array(PAYMENT_TYPE_CREDIT_CARD, PAYMENT_TYPE_PAYPAL, PAYMENT_TYPE_CREDIT_CARD_CAPTURE, PAYMENT_TYPE_ECHECK, PAYMENT_TYPE_REFUND);  
-    //$search['payment_net'] = array('>=', INV_TOLERANCE);  
-    $search['tx_id'] = array('>', 0);    
-    $search['withdrawal_id'] = array('=', ATT_DEFAULT_NULL);  // todo: this excludes partial withdrawals
+        $obj_type = 'dictionary';
 
-    //$scope->currencies = $currencies = find_objects("payment", $search, array("fields" => "distinct(payment_currency) as currency"));
-    $scope->currencies = $currencies = array("" => "Select Currency...", "EUR" => "Euro", "USD" => "US Dollars");
+        $filters = array();
+        $tbl = get_object_table($obj_type);
 
-    $hostsAr = array();
-    $hostsAr[0] = "Select...";
-    
+        //$filters["{$tbl}.site_id"] = [ATT_DEFAULT_NULL, $siteObj->id];  
+        //$filters["{$tbl}.site_id"] = array('term' => ['!=', 'text_*'], 'site_id' => ['$or', [$siteObj->id, '$NULL']]);
+        if($site_id = $_GET['site_id']) $filters["{$tbl}.site_id"] = $site_id;
+        else $filters["{$tbl}.site_id"] = ['$or', [$siteObj->id, '$NULL']];
+        //'language' => $language, 
 
-    $tbl = get_object_table('user');
-    $user_fields = array("{$tbl}.id", 'concat(user_profile.first_name, " ", user_profile.last_name) as name'); 
+        foreach(array('language','site_id') as $fld) {
+            if($val = trim($_GET[$fld])) $filters[$fld] = $val;
+        }
 
-    if($host_ids = find_objects('payment', $search, array('fields' => "distinct host_id"))) {
-      $hosts = find_objects('user', array("{$tbl}.id" => $host_ids), array('fields' => $user_fields));
-      foreach($hosts as $host) $hostsAr[$host->id] = $host->name;
-      $scope->outstanding_hosts = $hostsAr;
+        if($__USER->user_level < USER_LEVEL_SYSTEM && $siteObj->id == 265)  $filters['site_id'] = $siteObj->id;
+
+        $scope->filters = $filters;
+        $filter_json = count($filters) ? json_encode($filters) : '';
+        $scope->obj_type = $obj_type;
+        $scope->data_url = "/ajax.php?oper=get-rows&obj_type=$obj_type".($filter_json ? "&filters=".urlencode($filter_json) : '');
+        $scope->edit_url = "/ajax.php?oper=save&obj_type=$obj_type";
+        $scope->title = "Dictionary";
+
+        return;
     }
 
-    if($host_id) $search['host_id'] = $host_id;    
-    if($currency) $search['payment_currency'] = $currency;
-    
-    $search_json = json_encode($search);    
-    $scope->outstanding_url = "/ajax.php?oper=get-rows&obj_type=payment&filters=".urlencode($search_json);
-    
-    /** Outstanding Corrections and Transfers */
-    $search = array();
-    if(!$system_user) $search['host_id'] = $host_ids;    
-    $search['client_id'] = $client_id;
-    // $search['payment_status'] = array(PAYMENT_STATUS_COMPLETED, PAYMENT_STATUS_PARTIALLY_REFUNDED);  
-    //$search['payment_type'] = array(PAYMENT_TYPE_TRANSFER, PAYMENT_TYPE_CORRECTION);  
-    $search['payment_type'] = PAYMENT_TYPE_CORRECTION;  
-    //$search['payment_net'] = array('>=', INV_TOLERANCE);  
-    $search['withdrawal_id'] = array('=', ATT_DEFAULT_NULL);  // todo: this excludes partial withdrawals
-    if($host_id) $search['host_id'] = $host_id;
-    if($currency) $search['payment_currency'] = $currency;
+    function controller_users($app, $options = []) {
+        global $u_id;
+        $__header = $app->header; 
+        $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
+        $__header->scripts[] = "/afr/bower/table-export/jquery.base64.js";
+        $__header->scripts[] = "/afr/bower/table-export/tableExport.js";
+        $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js";
+        $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js"; /** todo: support other languages, use $app->locale  */
+        $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/export/bootstrap-table-export.js";
+        $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/editable/bootstrap-table-editable.min.js";
+        $__header->scripts[] = "/afr/bower/x-editable/dist/bootstrap3-editable/js/bootstrap-editable.js";  
+        $__header->styles[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.css";
+        $__header->styles[] = "/afr/bower/bootstrap-table/dist/extensions/editable/bootstrap-editable.css";
 
-    $search_json = json_encode($search);    
-    $scope->correction_url = "/ajax.php?oper=get-rows&obj_type=payment&filters=".urlencode($search_json);
+        $scope = $app->page->scope;
+        $errors = $messages = array();
+        $client_id = $scope->client_id = $app->client_id;
+        $client_name = $client_id ? get_object('client', $client_id, 'name') : '';
+
+        $obj_type = $options['obj_type'] ?: 'user';
+
+        $filters = array();
+        $tbl = get_object_table($obj_type);
+        $filters["{$tbl}.client_id"] = $client_id;
+        foreach(array('user_level','org_id','start','end') as $fld) {
+            if($val = trim($_GET[$fld])) {
+                switch($fld) {
+                    case 'start':
+                        $filters['created'] = array(">=", date2sql($val));
+                    break;
+                    case 'end':
+                        $filters['created'] = array("<=", date2sql($val));
+                    break;
+                    case 'user_level':
+                        $filters['user_level'] = array("=", $val);
+                    break;
+                    default:
+                        $filters[$fld] = $val;
+                    break;
+                }
+            }
+        }
+  
+        $scope->filters = $filters;
+        $filter_json = count($filters) ? json_encode($filters) : '';
+        $scope->obj_type = $obj_type;
+        $scope->data_url = "/ajax.php?oper=get-rows&obj_type=$obj_type".($filter_json ? "&filters=".urlencode($filter_json) : '');
+        $scope->edit_url = "/ajax.php?oper=edit-user";
+        $scope->title = ucfirst($obj_type)."s ".($client_id ? " for $client_name" : "");
     
-    $hostsAr = array();
-    $hostsAr[0] = "Select Host...";
-    if($scope->host_ids = $host_ids = find_objects('property', array('client_id' => $client_id, 'type' => $ptype, 'active' => 1), array('fields' => "distinct host_id"))) {
-      $hosts = find_objects('user', array("{$tbl}.id" => $host_ids), array('fields' => $user_fields));
-      foreach($hosts as $host) $hostsAr[$host->id] = $host->name;
-      $scope->hosts = $hostsAr;
+        return;
     }
-    if($system_user) $scope->paypal_balance = $balance = paypal_get_balance();
-    
-  }
-  
-  return;
-}
 
-function controller_dashboard($app, $options = []) {
-  $scope = $app->page->scope;
-  $siteObj = $app->site;
+    function controller_backend($app, $options = []) {
+        global $u_id, $u_level,$__CLASS_FLAGS;
+        $__header = $app->header; 
+        $siteObj = $app->site;
+        $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
+        //$__header->scripts[] = "/afr/bower/table-export/jquery.base64.js";
+        $__header->scripts[] = "/afr/js/jquery.base64.js"; /** Fix: https://github.com/wenzhixin/bootstrap-table/issues/189 */
+        $__header->scripts[] = "/afr/bower/table-export/tableExport.js";
+        $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js";
+        $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js"; /** todo: support other languages, use $app->locale  */
+        $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/export/bootstrap-table-export.js";
+        $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.js";
+        $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/filter-control/bootstrap-table-filter-control.js";
+        $__header->styles[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.css";
+        $__header->styles[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.css";
 
-  $inbox_scope = controller_inbox($app, $options);
-  $scope->threads = $inbox_scope->threads;
-  
-  if($siteObj->property_site) {
-    $bookings_scope = controller_bookings($app, $options);
-    foreach($bookings_scope as $k => $v) $scope->$k = $v;
-  }
-  
-  //$scope->debug = "Dashboard: Coming soon!";
-  return;
-}
+        $limit = 50;
 
-function controller_bookings($app, $options = []) {
-  global $u_id, $u_level;
-  $pageObj = $app->page;
-  $__header = $app->header;   
-  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js";
-  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js"; /** todo: support other languages, use $app->locale  */    
-  $__header->styles[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.css";
-    
-  $scope = $app->page->scope;
-  // redirect_secure();
+        $scope = $app->page->scope;  
+        $scope->class_flags = $__CLASS_FLAGS;
+        $obj_type = $_GET['obj_type'];
 
-  $errors = $messages = array();
+        $classes = array();
+        if($u_level < USER_LEVEL_ADMIN) return controller_error($app, "Not authorized", 401);
+        $scope->classes = $classes = admin_menu_items($siteObj, $options);  
 
-  $slug = $app->object_slug;  
-  $obj_type = $scope->obj_type = "reservation"; 
-  
-  $all_hosts = 0;
-  if($u_level >= USER_LEVEL_STAFF) {
-    $host_id = $slug ?: 0;
-    if($host_id && !get_user($host_id)) return controller_error($app, "User {$slug} not found");    
-  } elseif($u_level >= USER_LEVEL_HOST) {
-    $host_id = $slug ?: $u_id;
-    $host_ids = user_host_list($u_id);
-    if($host_id != $u_id && in_array($host_id, $host_ids)) return controller_error($app, "User {$slug} not authorized");
-  } else {
-    $host_id = $u_id;
-  }
-  
-  $inline = $pageObj->page_type == PAGE_DASHBOARD;
+        if($obj_type) {
+            $scope->obj_type = $obj_type;
+            $scope->obj_name = get_object_name($obj_type);
+            $scope->obj_key = get_object_key($obj_type);
 
-  // my bookings - or that of user in slug - or all bookings (if staff and no slug)
-  $search = array("res_id" => ['>', 0], "type" => ['>', RES_TYPE_ADMIN], "status" => ['!=', [STATUS_DRAFT, STATUS_BLOCKED]]);
-  //$search['paid'] = ['>', 0];
-  
-  if($host_id) $search['host_id'] = $host_id; 
+            /** this is if classes are stored in DB */
+            if($classObj = get_object('class', $obj_type, '', array('ignore_filters' => 1))) { /** read from db */     
+                $scope->class_def = $classObj;
+                $scope->class_attributes = find_objects('attribute', array('class' => $obj_type));
+                $scope->class_security = find_objects('security', array('node' => $obj_type));
+            }
 
-  if($inline) {
-    $start = $scope->start = $_GET['start'] ?: 0;
-    $limit = $scope->limit = 50;
-    $searchOptions = array("fields" => $fields, "start" => $start, "limit" => $limit);
-    
-    $bookings = find_objects("reservation", $search, $searchOptions);
-    $scope->booking_count = count_objects("reservation", $search);
-    
-    foreach($bookings as $k => $booking) {
-      $booking->chat_count = count_objects('chat', ['parent_type' => "reservation", 'parent_id' => $booking->res_id]);;
-      $bookings[$k] = $booking;
-    }  
-    $scope->bookings = $bookings;
-  } else {
-    $scope->bookings_url = "/ajax.php?oper=get-rows&obj_type=reservation&filters=".urlencode(json_encode($search));
-  }
-  
-  //$scope->booking_count = count($bookings);
+            //echo("obj-type={$obj_type} class=".dump($classObj,true));
+            /** read from file, disabled 
+            $class_found = false;
+            if($class_header = get_class_header($obj_type)) { 
+              $class_found = true;
+              $class_user_level = $class_header[CLASS_USER_LEVEL];
+            }
+            */
 
-  // my trips
-  $search = array("guest_id" => $u_id, "status" => ['!=', STATUS_DRAFT]);
-  if($inline) {
-    $fields = array('res_id','created','status','city_id','city_name','checkin','checkout','apartment_name','currency','grand_total', 'chat_count');
-    $start = $scope->start = $_GET['start'] ?: 0;
-    $limit = $scope->limit = 50;
-    $searchOptions = array("fields" => $fields, "start" => $start, "limit" => $limit);
-    $trips = find_objects("reservation", $search, $searchOptions);
-    foreach($trips as $k => $trip) {
-      $trip->chat_count = count_objects('chat', ['parent_type' => "reservation", 'parent_id' => $trip->res_id]);;
-      $trips[$k] = $trip;
+            $actions = array('view', 'list', 'add', 'edit', 'del', 'copy');
+
+            foreach($actions as $ac) {
+                $key = 'auth_'.$ac;
+                $scope->$key = auth_action($obj_type, $ac);
+            }
+            if(!$classObj) {
+                //return scope_error($app, "$obj_type not found", '404');
+            } elseif($classObj->user_level > $u_level) {
+                $scope->error = "Not authorized (User level)";
+                return;
+            } elseif(!$scope->auth_list) {
+                return scope_error($app, "Not authorized (List)", '404');
+            }
+            $class_def = get_class_def($obj_type);
+            $class_fields = $class_def->fields;
+            $fields = array();
+            foreach($class_fields as $field => $attributes) {
+                if(!($attributes[ATT_FLAGS] & AF_HIDE_LIST)) $fields[$field] = $attributes[ATT_NAME];      
+            }
+            $scope->fields = $fields;
+            $scope->data_url = "/ajax.php?oper=list&obj_type=$obj_type&limit=$limit";
+            
+            //$scope->auth_add = auth_action($obj_type, 'add');
+        } else {
+            //$scope->classes = get_classes();
+        }
+        //dump($items);
+
+        return;
     }
-    $scope->trips = $trips;
-    $scope->trip_count = count_objects("reservation", $search);
-  } else {
-    $scope->trips_url = "/ajax.php?oper=get-rows&obj_type=reservation&filters=".json_encode($search);
-  }
+
+    function controller_payments($app, $options = []) {
+        // redirect_secure();
+        $options['obj_type'] = 'payment';
+        controller_invoices($app, $options);
+        return;
+    }
+
+    function controller_payouts($app, $options = []) {
+        // redirect_secure();
+        $options['obj_type'] = 'withdrawal';
+        controller_invoices($app, $options);
+        return;
+    }
+
+    function controller_invoices($app, $options = []) {
+        // redirect_secure();
+        global $u_id, $u_level;
+        $__header = $app->header; 
+        $siteObj = $app->site;
+
+        $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
+        $__header->scripts[] = "/afr/bower/table-export/jquery.base64.js";
+        $__header->scripts[] = "/afr/bower/table-export/tableExport.js";
+        $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js";
+        $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js"; /** todo: support other languages, use $app->locale  */
+        $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/export/bootstrap-table-export.js";
+        $__header->styles[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.css";
+
+        $scope = $app->page->scope;
+        $errors = $messages = array();
+        $client_id = $scope->client_id = $app->client_id;
+        $client_name = $client_id ? get_object('client', $client_id, 'name') : '';
+        $host_ids = [];
+
+        if($siteObj->property_site) {
+            $host_ids = user_host_list($u_id) ?: array();
+        }
+        $ptype = pick_first($siteObj->property_type, $app->property_type, "shortstay");
+        $filters = array();
+        $filters['client_id'] = $client_id;
+        $system_user = 0;
+        if($u_level == USER_LEVEL_SYSTEM) {
+            $system_user = $scope->system_user = 1;
+        } elseif(count($host_ids)) { 
+            $filters['host_id'] = $host_ids;
+        } elseif($siteObj->property_site) {
+            $scope->error = "You are not a host, and not authorized to manage any hosts";
+            return;
+        }
+
+
+        $scope->booking_link = site_page_link($siteObj, PAGE_BOOKING);
+
+        $obj_type = $options['obj_type'] ?: 'invoice';
+        if(!in_array($obj_type, array('invoice', 'payment', 'withdrawal'))) {
+            $scope->error = "Invalid class $obj_type";
+            return;
+        }
+
+        switch($obj_types) {
+            case "invoice";
+                break;
+            case "payment";
+                break;
+            case "withdrawal";
+                break;    
+        }
+        /** handle filters */
+        foreach(array('status','org_id','start','end', 'payment_type', 'payment_status', 'sender_id', 'recipient_id', 'currency', 'host_id') as $fld) {
+            if($val = trim($_GET[$fld])) {
+                switch($fld) {        
+                    case 'start':
+                        $filters['sent_date'] = array(">=", date2sql($val));
+                        break;
+                    case 'end':
+                        $filters['sent_date'] = array("<=", date2sql($val));
+                        break;
+                    case 'status':
+                        $filters['status'] = array("=", $val);
+                        break;
+                    case 'payment_status':
+                        $filters['payment_status'] = array(">=", $val);
+                        break;
+                    default:
+                        $filters[$fld] = $val;
+                        break;
+                }
+            }
+        }
+
+        if($_GET['start'] && $_GET['end']) $filters['sent_date'] = array("><", date2sql($_GET['start']), date2sql($_GET['end']));  
+        //echo("type=$obj_type".dump($filters, true));
+
+        $scope->filters = $filters;
+        $filter_json = count($filters) ? json_encode($filters) : '';
+        $scope->obj_type = $obj_type;
+        $obj_name = get_object_name($obj_type);
+        $scope->data_url = "/ajax.php?oper=get-rows&obj_type=$obj_type".($filter_json ? "&filters=".urlencode($filter_json) : '');
+        $scope->title = $obj_name."s ".($client_id ? " for $client_name" : "");
+
+        if(in_array($obj_type, array('payment', 'invoice'))) {
+            $org_ids = find_objects($obj_type, array('client_id' => $client_id), array('fields' => 'distinct org_id'));
+            $scope->org_ids = array_filter($org_ids);
+        } else { // Payouts
+
+            /** Filters from form */
+            $scope->host_id = $host_id = $_GET['host_id'] ?: 0;
+            $scope->currency = $currency = $_GET['currency'] ?: $currencies[0];
+            if($host_id) {
+                $scope->host = $hostObj = get_user($host_id);
+                $scope->host_name = $host_name = get_user_name($hostObj);
+            }
+
+            $scope->title = "Past Payouts";
+            //if($filters['recipient_id']) $search['recipient_id'] = $recipient_id;
+            //if($filters['currency']) $search['payment_currency'] = $currency;  // todo chooser  
+
+
+            /** Outstanding Payments */
+            $search = array();
+            if(!$system_user) $search['host_id'] = $host_ids;  
+
+            if($start = $_GET['ostart']) $search['created'] = array(">=", date2sql($start));
+            if($end = $_GET['oend']) $search['created'] = array("<=", date2sql($end));
+
+            $search['client_id'] = $client_id;
+            $search['gateway_id'] = GATEWAY_PAYPAL;
+            $search['payment_status'] = array(PAYMENT_STATUS_COMPLETED, PAYMENT_STATUS_PARTIALLY_REFUNDED);  
+            $search['payment_type'] = array(PAYMENT_TYPE_CREDIT_CARD, PAYMENT_TYPE_PAYPAL, PAYMENT_TYPE_CREDIT_CARD_CAPTURE, PAYMENT_TYPE_ECHECK, PAYMENT_TYPE_REFUND);  
+            //$search['payment_net'] = array('>=', INV_TOLERANCE);  
+            $search['tx_id'] = array('>', 0);    
+            $search['withdrawal_id'] = array('=', ATT_DEFAULT_NULL);  // todo: this excludes partial withdrawals
+
+            //$scope->currencies = $currencies = find_objects("payment", $search, array("fields" => "distinct(payment_currency) as currency"));
+            $scope->currencies = $currencies = array("" => "Select Currency...", "EUR" => "Euro", "USD" => "US Dollars");
+
+            $hostsAr = array();
+            $hostsAr[0] = "Select...";
+
+
+            $tbl = get_object_table('user');
+            $user_fields = array("{$tbl}.id", 'concat(user_profile.first_name, " ", user_profile.last_name) as name'); 
+
+            if($host_ids = find_objects('payment', $search, array('fields' => "distinct host_id"))) {
+                $hosts = find_objects('user', array("{$tbl}.id" => $host_ids), array('fields' => $user_fields));
+                foreach($hosts as $host) $hostsAr[$host->id] = $host->name;
+                $scope->outstanding_hosts = $hostsAr;
+            }
+
+            if($host_id) $search['host_id'] = $host_id;    
+            if($currency) $search['payment_currency'] = $currency;
+
+            $search_json = json_encode($search);    
+            $scope->outstanding_url = "/ajax.php?oper=get-rows&obj_type=payment&filters=".urlencode($search_json);
+
+            /** Outstanding Corrections and Transfers */
+            $search = array();
+            if(!$system_user) $search['host_id'] = $host_ids;    
+            $search['client_id'] = $client_id;
+            // $search['payment_status'] = array(PAYMENT_STATUS_COMPLETED, PAYMENT_STATUS_PARTIALLY_REFUNDED);  
+            //$search['payment_type'] = array(PAYMENT_TYPE_TRANSFER, PAYMENT_TYPE_CORRECTION);  
+            $search['payment_type'] = PAYMENT_TYPE_CORRECTION;  
+            //$search['payment_net'] = array('>=', INV_TOLERANCE);  
+            $search['withdrawal_id'] = array('=', ATT_DEFAULT_NULL);  // todo: this excludes partial withdrawals
+            if($host_id) $search['host_id'] = $host_id;
+            if($currency) $search['payment_currency'] = $currency;
+
+            $search_json = json_encode($search);    
+            $scope->correction_url = "/ajax.php?oper=get-rows&obj_type=payment&filters=".urlencode($search_json);
+
+            $hostsAr = array();
+            $hostsAr[0] = "Select Host...";
+            if($scope->host_ids = $host_ids = find_objects('property', array('client_id' => $client_id, 'type' => $ptype, 'active' => 1), array('fields' => "distinct host_id"))) {
+                $hosts = find_objects('user', array("{$tbl}.id" => $host_ids), array('fields' => $user_fields));
+                foreach($hosts as $host) $hostsAr[$host->id] = $host->name;
+                $scope->hosts = $hostsAr;
+            }
+            if($system_user) $scope->paypal_balance = $balance = paypal_get_balance();
+
+        }
+        return;
+    }
+
+    function controller_dashboard($app, $options = []) {
+        $scope = $app->page->scope;
+        $siteObj = $app->site;
+
+        $inbox_scope = controller_inbox($app, $options);
+        $scope->threads = $inbox_scope->threads;
+
+        if($siteObj->property_site) {
+            $bookings_scope = controller_bookings($app, $options);
+            foreach($bookings_scope as $k => $v) $scope->$k = $v;
+        }
+
+        //$scope->debug = "Dashboard: Coming soon!";
+        return;
+    }
+
+    function controller_bookings($app, $options = []) {
+        global $u_id, $u_level;
+        $pageObj = $app->page;
+        $__header = $app->header;   
+        $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js";
+        $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js"; /** todo: support other languages, use $app->locale  */    
+        $__header->styles[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.css";
+
+        $scope = $app->page->scope;
+        // redirect_secure();
+
+        $errors = $messages = array();
+
+        $slug = $app->object_slug;  
+        $obj_type = $scope->obj_type = "reservation"; 
+
+        $all_hosts = 0;
+        if($u_level >= USER_LEVEL_STAFF) {
+            $host_id = $slug ?: 0;
+            if($host_id && !get_user($host_id)) return controller_error($app, "User {$slug} not found");    
+        } elseif($u_level >= USER_LEVEL_HOST) {
+            $host_id = $slug ?: $u_id;
+            $host_ids = user_host_list($u_id);
+            if($host_id != $u_id && in_array($host_id, $host_ids)) return controller_error($app, "User {$slug} not authorized");
+        } else {
+            $host_id = $u_id;
+        }
+      
+        $inline = $pageObj->page_type == PAGE_DASHBOARD;
+
+        // my bookings - or that of user in slug - or all bookings (if staff and no slug)
+        $search = array("res_id" => ['>', 0], "type" => ['>', RES_TYPE_ADMIN], "status" => ['!=', [STATUS_DRAFT, STATUS_BLOCKED]]);
+        //$search['paid'] = ['>', 0];
   
-  return;
-}
+        if($host_id) $search['host_id'] = $host_id; 
+
+        if($inline) {
+            $start = $scope->start = $_GET['start'] ?: 0;
+            $limit = $scope->limit = 50;
+            $searchOptions = array("fields" => $fields, "start" => $start, "limit" => $limit);
+    
+            $bookings = find_objects("reservation", $search, $searchOptions);
+            $scope->booking_count = count_objects("reservation", $search);
+    
+            foreach($bookings as $k => $booking) {
+                $booking->chat_count = count_objects('chat', ['parent_type' => "reservation", 'parent_id' => $booking->res_id]);;
+                $bookings[$k] = $booking;
+            }  
+            $scope->bookings = $bookings;
+        } else {
+            $scope->bookings_url = "/ajax.php?oper=get-rows&obj_type=reservation&filters=".urlencode(json_encode($search));
+        }
+  
+        //$scope->booking_count = count($bookings);
+
+        // my trips
+        $search = array("guest_id" => $u_id, "status" => ['!=', STATUS_DRAFT]);
+        if($inline) {
+            $fields = array('res_id','created','status','city_id','city_name','checkin','checkout','apartment_name','currency','grand_total', 'chat_count');
+            $start = $scope->start = $_GET['start'] ?: 0;
+            $limit = $scope->limit = 50;
+            $searchOptions = array("fields" => $fields, "start" => $start, "limit" => $limit);
+            $trips = find_objects("reservation", $search, $searchOptions);
+            foreach($trips as $k => $trip) {
+                $trip->chat_count = count_objects('chat', ['parent_type' => "reservation", 'parent_id' => $trip->res_id]);;
+                $trips[$k] = $trip;
+            }
+            $scope->trips = $trips;
+            $scope->trip_count = count_objects("reservation", $search);
+        } else {
+            $scope->trips_url = "/ajax.php?oper=get-rows&obj_type=reservation&filters=".json_encode($search);
+        }
+  
+        return;
+    }
 
 /** no security (used in mail templates called from crontab) - copy to booking_status 
     fetch booking, rental, guest, host */
-function controller_booking($app, $options = []) {
-  global $u_id, $u_level;
-  $scope = $app->page->scope;
-  $errors = $messages = array();
-  print_log("controller_booking:".dump($scope,true), 'app', LOG_LEVEL_TEST);
+    function controller_booking($app, $options = []) {
+        global $u_id, $u_level;
+        $scope = $app->page->scope;
+        $errors = $messages = array();
+        print_log("controller_booking:".dump($scope,true), 'app', LOG_LEVEL_TEST);
 
-  $obj_type = $scope->obj_type = "reservation"; 
-  $obj_id = $res_id = $scope->obj_id = $scope->res_id = pick_first($scope->res_id ?: $scope->obj_id, $_GET['res_id'] ?: $_GET['obj_id'], $options['res_id'] ?: $options['obj_id'], $app->object_id);
-  $obj = $resObj = $res_id ? get_object($obj_type, $obj_id) : ''; // force reload     
-  // print_log("controller_booking: res_id=$obj_id".dump($obj,true), 'app', LOG_LEVEL_TEST);
+        $obj_type = $scope->obj_type = "reservation"; 
+        $obj_id = $res_id = $scope->obj_id = $scope->res_id = pick_first($scope->res_id ?: $scope->obj_id, $_GET['res_id'] ?: $_GET['obj_id'], $options['res_id'] ?: $options['obj_id'], $app->object_id);
+        $obj = $resObj = $res_id ? get_object($obj_type, $obj_id) : ''; // force reload     
+        // print_log("controller_booking: res_id=$obj_id".dump($obj,true), 'app', LOG_LEVEL_TEST);
 
-  if(!$resObj) {
-    $errors[] = "Booking {$obj_id} not found"; 
-    $scope->error = $errors;
-    return;
-  }
+        if(!$resObj) {
+            $errors[] = "Booking {$obj_id} not found"; 
+            $scope->error = $errors;
+            return;
+        }
   
-  
-  $status = $resObj->status;
-  $apt_id = $resObj->apt_id;
-  $property_type = $resObj->property_type;
-  $aptObj = ($apt_id && is_property_type($property_type)) ? get_object($property_type, $apt_id) : null;    
-  if(!$aptObj) return controller_error($app, "Rental not found");
-  
-  $pin = $scope->pin_code = pick_first($_GET['pin'], $options['pin'], $scope->pin, $scope->pin_code);
 
-  $scope->host_id = $host_id = $obj->host_id;
-  $scope->is_host = $is_host = $u_id && $host_id && $u_id == $host_id;
-  $scope->guest_id = $guest_id = $obj->guest_id;
-  $scope->is_guest = $is_guest = $u_id && $guest_id && $u_id == $guest_id;
-  $hostObj = $host_id ? get_user($host_id) : null;
-  
-  if($guest_id) {
-    $guestObj = get_user($guest_id);
-  } else {
-    $guestObj = new stdClass;
-    $keys = array('salutation', 'first_name', 'last_name', 'email_address', 'phone', 'city', 'country');
-    foreach($keys as $key) $guestObj->$key = $resObj->$key;
-    $guestObj->display_name = get_name_string($guestObj);
-  }
-  
-  $scope->id = $res_id = $resObj->res_id;
-  $scope->rental = $aptObj;
-  $scope->booking = $resObj;
-  $scope->guest = $guestObj;
-  $scope->host = $hostObj;
-  $scope->public_link = booking_link($resObj, true);
-  $scope->pin = $pin;
+        $status = $resObj->status;
+        $apt_id = $resObj->apt_id;
+        $property_type = $resObj->property_type;
+        $aptObj = ($apt_id && is_property_type($property_type)) ? get_object($property_type, $apt_id) : null;    
+        if(!$aptObj) return controller_error($app, "Rental not found");
 
-  $scope->type_name = booking_type_name($resObj); 
-  // print_log("controller_booking done:".dump($scope,true), 'app', LOG_LEVEL_TEST);
-      
-  return;
-}
-  
-function controller_booking_status($app, $options = []) {
-  global $u_id, $u_level;
-  $__header = $app->header; 
-  $siteObj = $app->site;
-  $ver = $app->version ?: date('md');
-  if($u_level >= USER_LEVEL_STAFF) $__header->scripts[] = "/afr/js/admincal-dialog.js?v=$ver"; 
-  controller_booking($app, $options);
-  $scope = $app->page->scope;  
-  if($scope->error) return;
-  
-  $resObj   = $scope->booking;
-  $is_host  = $scope->is_host;
-  $is_guest = $scope->is_guest;
-  $pin      = $scope->pin_code;
-  $res_id   = $resObj->res_id;
-  
-  if($u_id) { // we're logged in 
-    $user_id = $u_id;
-    $auth_level = auth_res($resObj);
-  } elseif($pin) { // check pin
-    $scope->pin_code = $pin;
-    $auth_level = myhash($resObj->booking_pin) == $pin ? USER_LEVEL_GUEST : 0;
-    if(!$auth_level) $auth_level = myhash_old($resObj->booking_pin) == $pin ? USER_LEVEL_GUEST : 0; // grandfather clause
-    if(!$auth_level) {
-      $scope->error = "Invalid PIN";
-      $scope->template = '403';
-      $pin = '';
-      return;
-    }
-  } else { // redirect to login
-    redirect_login();
-    return;
-  }
-  
-  print_log("res_id:{$res_id} pin:{$pin} auth:{$auth_level}", 'booking', LOG_LEVEL_TEST);
-  
-  $scope->auth_level = $auth_level;
-  $scope->auth_edit = $auth_edit = $auth_level > 0; // can edit?
-  if(!$auth_level) {
-    $scope->error = "Not authorized";
-    $scope->template = '403';
-    return;
-  }  
-  
-  $scope->data = array_filter(array("obj_type" => 'reservation', "res_id" => $res_id, "pin"  => $pin)); // send to ajax fetch-template method and back to this controller (in options)
-  $scope->is_admin = $is_admin = $u_level >= USER_LEVEL_ADMIN;
-  $scope->can_cancel = ($is_guest && in_array($status, [STATUS_INQUIRY, STATUS_REQUEST, STATUS_PROPOSED, STATUS_PENDING, STATUS_RESERVED, STATUS_COMPLETE])) || 
-                       ($is_host && in_array($status, [STATUS_PROPOSED, STATUS_PENDING, STATUS_RESERVED, STATUS_COMPLETE])) || 
-                       $is_admin;  
-  
-  $scope->can_alter = 0; /** todo: implement */
-  
-    
-  if($auth_edit) {
-    $misArray = reservation_invoice_mismatch($resObj, array('values' => 1));
-    if($difference = $misArray['difference']) {
-      $scope->mismatch = $misArray;
-    }      
-  }    
-  
-  if($errors) {
-    $scope->error = $errors;
-    $scope->template = "403";    
-    return;
-  }
-    
-  //$scope->rate_box = print_rate_box($resObj, $is_host ? USER_LEVEL_OWNER : USER_LEVEL_GUEST); /** get rid of */
-  $scope->uploader = object_media_uploader("reservation", $res_id, 'upload');
-  
-  /** template specific */
-  //$scope->view = $template = pick_first($_GET['view'], $_GET['template'], $options['template'], "_booking-status-overview.html");
-  //if($template && strpos($template, '_booking-status-') === false) $template = $scope->view = "_booking-status-{$template}.html"; // allow shortform
-  
-  $obj_type = 'reservation';
-  $obj_id = $res_id;
-  
-  $subview = $app->page->subview ?: 'overview';    
-  $app->page->subtemplate = "_booking-status-{$subview}.html";
-  switch($subview) {
-    case "overview":
-      // find invoices and payments
-      $invSearch = array();
-      $invSearch['parent_type'] = 'reservation';
-      $invSearch['parent_id'] = $res_id;  
-      $invSearch['status'] = array('>=', INV_STATUS_DRAFT);
-      //$fields = array('invoice.id', 'invoice_id', 'type', 'status', 'start_date', 'end_date');
-      $scope->invoices = $invObjs = find_objects('invoice', $invSearch, array('sort' => 'type, start_date'));
-      $scope->inv_id = $inv_id = count($invObjs) ? $invObjs[0]->id : 0;
-      $scope->invoice = $inv_id ? get_object('invoice', $inv_id) : null;
-      
-      if($auth_level >= USER_LEVEL_STAFF) {
-        $scope->change_log = $log = object_change_log($obj_type, $obj_id);
-        $scope->mail_log = object_mail_log($obj_type, $obj_id);
-      }
+        $pin = $scope->pin_code = pick_first($_GET['pin'], $options['pin'], $scope->pin, $scope->pin_code);
 
-      $payments = booking_payments($res_id);
-      $resObj->payments = $payments ? payment_rows($payments, $auth_level) : [];
-      
-      //dump($invObjs);
-      break;
-    case "edit":
-      break;
-      
-    case "share":
-      break;
+        $scope->host_id = $host_id = $obj->host_id;
+        $scope->is_host = $is_host = $u_id && $host_id && $u_id == $host_id;
+        $scope->guest_id = $guest_id = $obj->guest_id;
+        $scope->is_guest = $is_guest = $u_id && $guest_id && $u_id == $guest_id;
+        $hostObj = $host_id ? get_user($host_id) : null;
 
-    case "upload":
-      break;
-      
-    case "payment":
-      break;
-    
-    /** fix */
-    case "feedback":
-      if($feedback = find_object("feedback", array("parent_type" => "reservation", "parent_id" => $resObj->res_id))) {
-        // show existing feedback
-        $scope->feedback = $feedback;
-        $scope->foo = 'found';
+        if($guest_id) {
+            $guestObj = get_user($guest_id);
+        } else {
+            $guestObj = new stdClass;
+            $keys = array('salutation', 'first_name', 'last_name', 'email_address', 'phone', 'city', 'country');
+            foreach($keys as $key) $guestObj->$key = $resObj->$key;
+            $guestObj->display_name = get_name_string($guestObj);
+        }
+  
+        $scope->id = $res_id = $resObj->res_id;
+        $scope->rental = $aptObj;
+        $scope->booking = $resObj;
+        $scope->guest = $guestObj;
+        $scope->host = $hostObj;
+        $scope->public_link = booking_link($resObj, true);
+        $scope->pin = $pin;
 
-      } elseif($auth_edit) { // show form
-        $scope->foo = 'yes';
-        $scope->purpose = get_objects_assoc("feedback_purpose", "", array('first' => phrase('select', CAPITALIZE)));
-        $scope->profile = get_objects_assoc("feedback_profile", "", array('first' => phrase('select', CAPITALIZE)));
-      } else {
-        $scope->foo = 'not';
-      }
-      break;
-      
-    case "chat":
-      $host_id = $resObj->host_id;
-      $guest_id = $resObj->guest_id ?: "reservation_".$resObj->res_id;
-      
-      $scope->sender_id = $user_id;
-      $scope->receiver_id = $user_id == $resObj->host_id ? $guest_id : $host_id;
-      $scope->parent_type = "reservation";
-      $scope->parent_id = $resObj->res_id;
-      $scope->user_ids = [$guest_id, $host_id];
-      $scope->thread = find_objects("chat", array("parent_type" => "reservation", "parent_id" => $resObj->res_id));
-      //dump($scope->chat);
-      break;
+        $scope->type_name = booking_type_name($resObj); 
+        // print_log("controller_booking done:".dump($scope,true), 'app', LOG_LEVEL_TEST);
           
-    case "itinerary": /** itinerary */
-      $scope->pdf_url = create_pdf_booking($resObj); // always create fresh PDF on view
-      break;
-      
-    case "send": /** proposal */
-      if(!in_array($resObj->status, array(STATUS_PROPOSED, STATUS_RESERVED, STATUS_COMPLETE))) {
-        $scope->error = "Invalid reservation status";
-        $scope->template = '403';
         return;
-      }
+    }
+  
+    function controller_booking_status($app, $options = []) {
+        global $u_id, $u_level;
+        $__header = $app->header; 
+        $siteObj = $app->site;
+        $ver = $app->version ?: date('md');
+        if($u_level >= USER_LEVEL_STAFF) $__header->scripts[] = "/afr/js/admincal-dialog.js?v=$ver"; 
+        controller_booking($app, $options);
+        $scope = $app->page->scope;  
+        if($scope->error) return;
 
-      list($guest_text, $host_text, $staff_text) = booking_mail_message($resObj);
-      
-      
-      //$mail_scope = ['profile_id' => $resObj->host_id,
-      //               'booking' => $resObj, 
-      //               'rental' => $aptObj, 
-      //               'receiver_name' => $guest_name, 
-      //               'receiver_role' => 'guest', 
-      //               'receiver_id' => $resObj->guest_id, 
-      //               'main_message' => $guest_text];
-      //$scope->mail_scope = $mail_scope;            
-      
-      
-      //$body = smarty_mail_template($siteObj, $template, ['scope' => $mail_scope, 'controller' => $controller]);
-      //echo("body = $body");
-      
-      $mail = new stdClass;
-      
-      $mail->template = $template = "mail/mail-booking";    
-      $mail->controller = $controller = "booking";            
-      $mail->from = site_email($resObj->site_id, true) ?: site_email($siteObj);    
-      $mail->subject = mail_subject('reservation', $resObj);
-      $mail->main_message = $guest_text;
+        $resObj   = $scope->booking;
+        $is_host  = $scope->is_host;
+        $is_guest = $scope->is_guest;
+        $pin      = $scope->pin_code;
+        $res_id   = $resObj->res_id;
 
-      $guest_name =  $resObj->guest_id ? get_user_name($resObj->guest_id) : get_name_string($resObj);
-      $mail->recipient = $mail->to = guest_email($resObj, true) ?: email_recipient($resObj->email_address, $guest_name);    
-      $mail->receiver_role = 'guest';
-      $mail->receiver_id = $resObj->guest_id;
-
-      $mail->obj_name = 'booking';
-      $mail->obj_type = 'reservation';
-      $mail->obj_id = $resObj->res_id;
-      $mail->action = '';
-      $scope->mail  = $mail; 
-
-      break;
-
-    case "recalculate":
-      print_log("recalc:", 'invoice', LOG_LEVEL_TEST);
-      
-      $search = array('res_id' => $res_id, 'status' => array('>=', INV_STATUS_DRAFT));
-      $fields = array('invoice.id', 'invoice_id', 'start_date', 'end_date', 'total', 'paid', 'balance', 'sequence', 'locked', 'concerning');
-      $options = array('fields' => $fields, 'sort' => 'sequence', 'debug_query' => 0);
-      $scope->before = $before = find_objects('invoice', $search, $options);
-      $all_ids = [];
-      foreach($before as $invObj) $all_ids[] = $invObj->id;
-      //foreach($before as &$invObj) $invObj->concerning = "foo";
-      //$message = html_h2('before').invoice_debug_print($res_id);
-      
-      
-      $inv_ids = add_reservation_invoices($res_id);
-      //dump($inv_ids);
-      if($inv_ids === false) {
-        $scope->error = "Failed to recalcuate invoices - is this a booking from a remote source? ";
-      } else {
-        foreach($all_ids as $inv_id) recalculate_invoice($inv_id);
-        //$invObjs = find_reservation_invoices($res_id, array('search' => array('type' => INV_TYPE_BOOKING, 'status' => array('>=', STATUS_ALL))));
-        //$inv_ids = array_find_key($invObs, 'id');
-        
-        $scope->after = $after = find_objects('invoice', $search, $options);     
-        
-        /** calc extras - from update_invoice_total */
-        $count = count($all_ids);
-        $inv_id_list = $count ? implode(',', $all_ids) : '';
-        print_log("recalc: count=$count list=$inv_id_list for $res_id", "invoice", LOG_LEVEL_ALWAYS);  
-        if($count) {
-          $extra_li_types = implode(',', array(LI_TYPE_PRODUCT, LI_TYPE_SERVICES, LI_TYPE_EXTRAS, LI_TYPE_CATERING));
-          $qs = "SELECT sum(total) FROM inv_lineitem WHERE inv_id IN ($inv_id_list) AND type IN ($extra_li_types)";
-          $extras = db_getOne($qs); 
-          print_log("recalc: update_invoice_total: other charges=$extras from $inv_id_list for $res_id", "invoice", LOG_LEVEL_ALWAYS);  
-          print_log("qs: $qs", "invoice", LOG_LEVEL_ALWAYS);  
-          db_query("UPDATE reservation SET other_charges = '$extras' WHERE res_id=$res_id");
-          booking_update_total($res_id);
+        if($u_id) { // we're logged in 
+            $user_id = $u_id;
+            $auth_level = auth_res($resObj);
+        } elseif($pin) { // check pin
+            $scope->pin_code = $pin;
+            $auth_level = myhash($resObj->booking_pin) == $pin ? USER_LEVEL_GUEST : 0;
+            if(!$auth_level) $auth_level = myhash_old($resObj->booking_pin) == $pin ? USER_LEVEL_GUEST : 0; // grandfather clause
+            if(!$auth_level) {
+                $scope->error = "Invalid PIN";
+                $scope->template = '403';
+                $pin = '';
+                return;
+            }
+        } else { // redirect to login
+            redirect_login();
+            return;
         }
-        
-        $resObj = get_object('reservation', $res_id);
-        
-      }
-       
-    case "cancel":
-      if(!$is_host && !$is_guest && !$is_admin) {
-        $scope->error = "Only guest and host can cancel a booking";
-        $scope->template = "404";
-      }
-      break;
-
-    default:
-      return controller_error($app, "Unknown subview {$subview}");
-      break;
-  }
   
-  $scope->booking = $resObj;
-  return;
-}
-
-function controller_payment_status($app, $options = []) {
-  $scope = $app->page->scope;
-  $options['prefix'] = "_payment";
- 
-  /** normally we use invoice ID, but for mails, we pass payment ID */
-  if($payment_id = $scope->payment_id) {
-    $paymentObj = $scope->payment = get_object('payment', $payment_id);
-    $scope->inv_id = $paymentObj->inv_id;
-  }
+        print_log("res_id:{$res_id} pin:{$pin} auth:{$auth_level}", 'booking', LOG_LEVEL_TEST);
   
-  controller_invoice_status($app, $options); // much the same
-  return;
-}
-
-/** base controller, also used by mail */ 
-function controller_payment($app, $options = []) {
-  $scope = $app->page->scope;
-  $options['prefix'] = "_payment";
- 
-  /** normally we use invoice ID, but for mails, we pass payment ID */
-  if($payment_id = $scope->payment_id) {
-    $paymentObj = $scope->payment = get_object('payment', $payment_id);
-    $scope->inv_id = $paymentObj->inv_id;
-  }
-  controller_invoice($app, $options);
-  return;
-}
-
-/** base controller, also used by mail */ 
-function controller_invoice($app, $options = []) {
-  $scope = $app->page->scope;  
+        $scope->auth_level = $auth_level;
+        $scope->auth_edit = $auth_edit = $auth_level > 0; // can edit?
+        if(!$auth_level) {
+            $scope->error = "Not authorized";
+            $scope->template = '403';
+            return;
+        }  
   
-  $errors = $messages = array();
-  $obj_type = $scope->obj_type = "invoice"; 
-  $obj_id = $inv_id = $scope->obj_id = $scope->inv_id = pick_first($scope->inv_id ?: $scope->obj_id, $_GET['inv_id'] ?: $_GET['obj_id'], $options['inv_id'] ?: $options['obj_id'], $app->object_id);
-  $pin = pick_first($_GET['pin'], $options['pin'], $scope->pin, $scope->pin_code);
-  $obj = $invObj = $inv_id ? get_object($obj_type, $obj_id) : '';  
+        $scope->data = array_filter(array("obj_type" => 'reservation', "res_id" => $res_id, "pin"  => $pin)); // send to ajax fetch-template method and back to this controller (in options)
+        $scope->is_admin = $is_admin = $u_level >= USER_LEVEL_ADMIN;
+        $scope->can_cancel = ($is_guest && in_array($status, [STATUS_INQUIRY, STATUS_REQUEST, STATUS_PROPOSED, STATUS_PENDING, STATUS_RESERVED, STATUS_COMPLETE])) || 
+                           ($is_host && in_array($status, [STATUS_PROPOSED, STATUS_PENDING, STATUS_RESERVED, STATUS_COMPLETE])) || 
+                           $is_admin;  
 
-  print_log("controller_invoice: inv_id={$inv_id} pin={$pin} id: {$invObj->id}".dump($scope,true), 'app', LOG_LEVEL_TEST);
+        $scope->can_alter = 0; /** todo: implement */
   
-  if(!$invObj) return controller_error("Invoice not found", '403');
-
-  $scope->obj_id = $obj_id;
-  $scope->obj_type = $obj_type;
-  $scope->obj = $scope->invoice = $obj;
-  $scope->pin = $pin;
-  $scope->host_id = $host_id = $obj->host_id;
-  $scope->is_host = $is_host = $u_id && $host_d && $u_id == $host_id;
-  $scope->guest_id = $guest_id = $obj->guest_id;
-  $scope->is_guest = $is_guest = $u_id && $guest_id && $u_id == $guest_id;
-  return;
-}
-
-function controller_invoice_status($app, $options = []) {
-  global $u_id, $u_level, $__LIVE;
-  $__header = $app->header; 
-  $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
-  $__header->styles[] = "/afr/css/print.css";
-  
-  $errors = $messages = array();
-
-  $siteObj = $app->site;
-  
-  controller_invoice($app, $options);
-  $scope = $app->page->scope;  
-  if($scope->error) return;
-  
-  $obj_type = $scope->obj_type; 
-  $obj_id = $inv_id = $scope->inv_id = $scope->obj_id;
-  $obj = $invObj = $scope->obj;  
-  $pin = $scope->pin;
-  $host_id = $scope->host_id;
-  $is_host = $scope->is_host;
-  $guest_id = $scope->guest_id;
-  $is_guest = $scope->is_guest;
-  $site_id = $siteObj->id;
-
-
-  /** security */
-  if($u_id) { // we're logged in 
-    $user_id = $u_id;
-    $auth_level = auth_invoice($invObj);
-  } elseif($pin) { // check pin
-    $scope->pin_code = $pin;
-    $auth_level = myhash($invObj->booking_pin) == $pin ? USER_LEVEL_GUEST : 0;
-    print_log("gh pin={$pin} auth:{$auth_level} id: {$invObj->id}", 'invoice', LOG_LEVEL_TEST);
-    if(!$auth_level) $auth_level = myhash_old($invObj->booking_pin) == $pin ? USER_LEVEL_GUEST : 0; // grandfather clause
-    if(!$auth_level) return controller_error("Invalid PIN", '403');
-  } else { // redirect to login
-    redirect_login();
-    return;
-  }
-
-  print_log("ok pin={$pin} auth:{$auth_level} id: {$invObj->id}", 'invoice', LOG_LEVEL_TEST);
-
-  $scope->auth_level = $auth_level;
-  $scope->data = array_filter(array("obj_type" => 'invoice', "inv_id" => $inv_id, "pin"  => $pin)); // send to ajax fetch-template method and back to this controller (in options)
-  
-  if(!$auth_level) {
-    $scope->error = "Unauthorized";
-    $scope->template = '403';
-    return;
-  }
-  
-  
-  $scope->auth_edit_invoice = $scope->auth_invoice = $auth_edit = $auth_level >= USER_LEVEL_STAFF; // can edit?
-  $scope->show_contact = $auth_edit || $is_guest || $pin; 
-  
-  if($auth_edit) {
-    $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js";
-    $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js"; /** todo: support other languages, use $app->locale  */
-    $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/editable/bootstrap-table-editable.js";
-    $__header->scripts[] = "/afr/bower/x-editable/dist/bootstrap3-editable/js/bootstrap-editable.js";
     
-    $__header->styles[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.css";
-    $scope->data_url = "/ajax.php?oper=get-rows&obj_type=inv_lineitem&search=$inv_id"; //&return=rows";
-    $scope->edit_url = "/ajax.php?oper=edit&obj_type=inv_lineitem";
-    $scope->title = "Edit invoice ".$invObj->invoice_number ?: $inv_id;
-    
-    
-    $scope->inv_ids = $invObj->sequence ? find_objects('invoice', ['parent_type' => $invObj->parent_type, 'parent_id' => $invObj->parent_id], ['field' => 'invoice.id']) : [];
-    $org_id = $invObj->org_id;
-    $contact_id = $invObj->contact_id;
-    $scope->contact = $contact_id ? get_object('contact', $contact_id) : null;
-    $scope->contacts = $org_id ? find_objects('contact', ['org_id' => $org_id, 'active' => 1], ['sort' => 'organization, first_name']) : [];
-    
-  }
+        if($auth_edit) {
+            $misArray = reservation_invoice_mismatch($resObj, array('values' => 1));
+            if($difference = $misArray['difference']) {
+                $scope->mismatch = $misArray;
+            }      
+        }    
 
-  $scope->public_link = $public_link = invoice_link($invObj, true);
-
-  $parent_type = $invObj->parent_type;
-  $parent_id = $invObj->parent_id;
-  $guest_id = 0;
-  $le_id = $invObj->legal_entity_id;
-  $scope->legal_id = $le_id;
-  $scope->reeleezee_username = $le_id ? get_object('legal_entity', $le_id, 'reeleezee_username') : '';
-  
-  $resObj = null;
-  if($parent_type && $parent_id) {
-    $parentObj = get_object($parent_type, $parent_id);
-    if($parent_type == 'reservation') $resObj =  $parentObj;
-    $scope->type_name = booking_type_name($resObj);     
-  }
-  $aptObj = $resObj = null;
-  switch($parent_type) {
-  case 'reservation':
-    $scope->booking = $resObj = $parentObj;  
-    $scope->due_now = $invObj->due_now = get_due_now($invObj, $resObj);   // how much is due now (either full amount or percentage of total
-    //echo("Due = $due_now");
-    $apt_id = $resObj->apt_id;
-    $ptype = $resObj->property_type;
-    $scope->rental = $aptObj = $apt_id && $ptype ? get_object($ptype, $apt_id) : null;
-    $guest_id = $resObj->guest_id; 
-    break;
-  default:
-    break;
-  }
-
-  //$scope->view = $template = pick_first($_GET['view'], $_GET['template'], $options['template'], "_invoice-overview.html");
-  //if($template && strpos($template, '_invoice-') === false) $template = $scope->view = "_invoice-{$template}.html"; // allow shortform
-  $ctrl = $app->page->controller;
-  if($ctrl == 'payment_status') { /** this controller is also used for payments */
-    $prefix = 'payment';
-    $default_subview = 'payment';
-  } else {
-    $prefix = 'invoice';
-    $default_subview = 'overview';
-  }
-
-  $subview = $app->page->subview ?: $default_subview; 
-  $app->page->subtemplate = "_{$prefix}-{$subview}.html";
-  
-  print_log("controller_invoice_status: inv_id={$inv_id} pin={$pin} id={$invObj->id} ctrl={$ctrl} subview={$subview} prefix={$prefix}", 'app', LOG_LEVEL_TEST);
-  
-  switch($subview) {
-  case "overview":
-    if($auth_level >= USER_LEVEL_STAFF) {
-      $scope->change_log = object_change_log($obj_type, $obj_id);
-      $scope->mail_log = $mail_log = object_mail_log($obj_type, $obj_id);
-    }
-  
-    break;
-  case "receive":
-    $paymentTypes = array(PAYMENT_TYPE_CREDIT_CARD, PAYMENT_TYPE_CASH, PAYMENT_TYPE_BANK, PAYMENT_TYPE_PAYPAL, PAYMENT_TYPE_AGENT);
-    $scope->payment_types = find_objects_assoc('payment_type', array('id' => $paymentTypes), array('first' => phrase('select', CAPITALIZE).'...'));
-    $scope->payment_statuses = array(PAYMENT_STATUS_COMPLETED => 'Completed', PAYMENT_STATUS_PENDING => 'Pending');
-    $scope->currencies = get_currencies();
-    break;
-  case "export":
-    break;
-  case "recalculate":
-    $res_id = $invObj->res_id;
-    $scope->invoice_before = invoice_rows($inv_id);
-    recalculate_invoice($inv_id);
-    $scope->invoice_after = invoice_rows($inv_id);
-    break;
+        if($errors) {
+            $scope->error = $errors;
+            $scope->template = "403";    
+            return;
+        }
     
-  case "payment":
-    
-    /** set up Mollie, PayPal */
-    $live = $app->live || $app->live_payments_test;
-    $scope->paypal_key = $pp_key = get_config(($live ? "ppu" : "pput"), $siteObj->id);
-    $scope->mollie_key = $mollie_key = get_config(($live ? "ml" : "mt"), $siteObj->id);
-    $scope->mollie_methods = $mollie_methods = mollie_methods($mollie_key);    
+        //$scope->rate_box = print_rate_box($resObj, $is_host ? USER_LEVEL_OWNER : USER_LEVEL_GUEST); /** get rid of */
+        $scope->uploader = object_media_uploader("reservation", $res_id, 'upload');
 
-    /** look for PayPal return */
-    if($scope->txn_id = $_GET['tx']) {
-      $scope->tx_st = $_GET['st'];
-      $scope->tx_currency = $_GET['cc'];
-      $scope->tx_amount = $_GET['amt'];
-    }
-    
-    if($resObj && ($resObj->status == STATUS_RESERVED || $resObj->status == STATUS_COMPLETE) && $invObj->head_invoice && $invObj->type == INV_TYPE_BOOKING) { 
-      $template = "mail/booking-mail";
-      $guest_text = "this is a test";
-      $mail_scope = ['receiver' => 'guest', 'profile_id' => $resObj->host_id, 'res_id' => $resObj->res_id, 'title' => "{$dear} {$guest_name},", 'personal_message' => $guest_text];
-      $mail_template_options = [
-        'scope' => $mail_scope, 
-        'controller' => 'booking_status', 'replyto' => "noreply@{$siteObj->domain}"];
-      //$body = smarty_mail_template($siteObj, $template, $mail_template_options);      
+        /** template specific */
+        //$scope->view = $template = pick_first($_GET['view'], $_GET['template'], $options['template'], "_booking-status-overview.html");
+        //if($template && strpos($template, '_booking-status-') === false) $template = $scope->view = "_booking-status-{$template}.html"; // allow shortform
+
+        $obj_type = 'reservation';
+        $obj_id = $res_id;
+
+        $subview = $app->page->subview ?: 'overview';    
+        $app->page->subtemplate = "_booking-status-{$subview}.html";
+        switch($subview) {
+            case "overview":
+                // find invoices and payments
+                $invSearch = array();
+                $invSearch['parent_type'] = 'reservation';
+                $invSearch['parent_id'] = $res_id;  
+                $invSearch['status'] = array('>=', INV_STATUS_DRAFT);
+                //$fields = array('invoice.id', 'invoice_id', 'type', 'status', 'start_date', 'end_date');
+                $scope->invoices = $invObjs = find_objects('invoice', $invSearch, array('sort' => 'type, start_date'));
+                $scope->inv_id = $inv_id = count($invObjs) ? $invObjs[0]->id : 0;
+                $scope->invoice = $inv_id ? get_object('invoice', $inv_id) : null;
+
+                if($auth_level >= USER_LEVEL_STAFF) {
+                    $scope->change_log = $log = object_change_log($obj_type, $obj_id);
+                    $scope->mail_log = object_mail_log($obj_type, $obj_id);
+                }
+
+                $payments = booking_payments($res_id);
+                $resObj->payments = $payments ? payment_rows($payments, $auth_level) : [];
       
-      $scope->mail_template = $template;    
-      $scope->mail_controller = 'booking_status';    
-      $scope->sender = $from;    
-      $scope->receiver = $to;    
-      $scope->subject = booking_mail_subject($resObj);    
-      $scope->preview = $body;
-    }
-    
-    /**
-    $ccObjs = array();    
-    if($u_id == $guest_id) { // user is paying
-      $ccObjs = cc_user_cards($guest_id);  
-    } elseif($auth_edit) { // owner, staff
-      $ccObjs = cards_on_file(array('parent_type' => $parent_type, 'parent_id' => $parent_id));
-    }
-    if(count($ccObjs)) $scope->cards = cc_cards_printable($ccObjs);
-    */
-    break;
-  case "print":
-    
-    purge_invoices($inv_id);
-    //dump($invObj);
-    $scope->pdf_url = $pdf_url = create_pdf_invoice($invObj); // always create fresh PDF on view
-    print_log("url of {$invObj->id}= {$pdf_url}", 'invoice', LOG_LEVEL_ALWAYS);
-    break;
-    
-  case "send":
-    $invoice_id_required = get_object('legal_entity', $invObj->legal_entity_id, 'invoice_id_required') ? 1 : 0;
-    if($invoice_id_required && !trim($invObj->invoice_id)) {
-      $errors[] = "An Invoice ID is required before sending this invoice";
-      if(1) {
-        $export_link = html_link(invoice_link($invObj)."/export", "export", ['class' => 'click-target', 'data-target' => '#invoice_export_link']);
-        $errors[] = "Perhaps you need to $export_link the invoice first?";
-      }
-      $scope->error = $errors;
-      return;
-    }
-
-    $scope->mail_log = $mail_log = object_mail_log($obj_type, $obj_id);
-    
-    $pdf_url = create_pdf_invoice($invObj); // always create fresh PDF on view   
-
-    $guest_text = phrase('you have a new invoice from %s (attached)', CAPS, $siteObj->name);
-    $guest_name =  $invObj->guest_id ? get_user_name($invObj->guest_id) : get_name_string($invObj);
-    $recipient = guest_email($invObj, true) ?: email_recipient($invObj->email_address, $guest_name);
-    $guest_name = "People who pay";    
-    $site_name = str_replace(' ', '-', $siteObj->name);
-    $invoice_id = $invObj->invoice_id ?: $invObj->id;
-    
-    
-    $mail = new stdClass;
-    
-    $mail->template = $template = "mail/mail-invoice";    
-    $mail->controller = $controller = "invoice";            
-    $mail->sender = site_email($invObj->site_id, true) ?: site_email($siteObj);    
-    $mail->recipient = $recipient;
-    $mail->receiver_name = $guest_name;
-    $mail->subject = mail_subject('invoice', $invObj);
-    $mail->body = $body;
-    $mail->main_message = phrase('you have a new invoice from %s (attached)', CAPS, $siteObj->name);
-    $mail->personal_message = ""; 
-    $mail->attachment = docroot().$pdf_url;
-    $mail->attachment_name = str_replace(' ', '_', "$site_name invoice $invoice_id").'.pdf';
-    $mail->obj_name = 'invoice';
-    $mail->obj_type = 'invoice';
-    $mail->obj_id = $invObj->id;
-
-    $scope->mail  = $mail; 
-    
-    break;
-  case "share":
-    break;
-    
-  default:
-    return controller_error($app, "Unknown subview {$subview}");
-    break;
-  }
-  
-  $payments = invoice_payments($inv_id);
-  $invObj->payments = $payments ? payment_rows($payments, $auth_level) : [];
-
-  $scope->invoice_rows = invoice_rows($invObj, $auth_level);  
-  $scope->invoice = $invObj;  
-  return;
-  
-}
-
-function controller_forgot_password($app, $options = []) {
-  global $u_id;
-  $scope = $app->page->scope;
-  $errors = array();
-  
-  if($guid = $_GET['guid']) {
-
-    /** new: using phpauth */
-    $phpauth = user_phpauth();    
-    $result = $phpauth->verifyKey($guid);
-    if($result['error']) {
-      $errors[] = $result['message'];
-    } else {
-      $prObj = new stdClass();
-      $prObj->id = $result['id'];
-      $prObj->user_id = $result['user_id'];
-      $prObj->guid = $guid;
-      $scope->reset = $prObj;
-    }
-
-    if($errors) {
-      $scope->error= $errors;
-      $scope->template = '403';      
-      return;
-    }
-    $scope->message = $messages;  
-    $scope->template = "reset-password.html";
-  }
-
-  $scope->user_id = $u_id;
-  return;
-}
-
-
-function controller_user_account($app, $options = []) {
-  global $u_id, $u_level;
-  $__header = $app->header; 
-  $__header->scripts[] = "/afr/bower/iban/iban.js";
-  $siteObj = $app->site;
-  
-  //print_log("controller_user_account 1 u_id=$u_id", 'smarty', LOG_LEVEL_TEST);
-  $scope = $app->page->scope;
-  if(!$u_id) {
-    redirect_login();
-    //$scope->redirect = site_pagetype_link($siteObj, PAGE_LOGIN)."?ref=".site_pagetype_link($siteObj, PAGE_PROFILE);
-    return;
-  }
-  
-  $obj_type = $scope->obj_type = $app->object_type;
-  $obj_id = $scope->obj_id = $app->object_id;
-  $obj = $obj_type && $obj_id ? get_object($obj_type, $obj_id) : null;
-
-  if($obj_type == 'user' && $obj_id && $obj) { // from slug
-    $user_id = $obj_id;
-    $userObj = $obj;
-  } else {
-    $user_id = $u_id;
-    $userObj = $app->user ?: get_object('user', $user_id); // logged in user, already merged with profile
-  }
-  // for now
-  // later (allow admins to edit other profiles): $scope->auth_edit = $auth_edit = auth_action('user', 'edit', $u_id);
-
-  $scope->profile = $scope->user = $userObj;
-  $scope->user_id = $userObj->id;
-  $scope->auth_edit = $scope->auth_edit_account = $auth_edit = auth_user_account($user_id);
-    
-  if(!$auth_edit) {
-    $scope->error = "Unauthorized";
-    $scope->template = "404";
-    return;
-  }
-  
-  //$scope->view = $template = pick_first($_GET['view'], $_GET['template'], $options['template'], "_user-account-notifications.html");
-  //if($template && strpos($template, '_user-account-') === false) $template = $scope->view = "_user-account-{$template}.html"; // allow shortform
-
-  // public
-  // ["notifications","security","privacy","password","linking","payout","transactions"]
-  $subview = $app->page->subview ?: 'notifications';    
-  $app->page->subtemplate = "_user-account-{$subview}.html";
-  switch($subview) {
-    case "notifications":
-      break;
-    case "security":
-      break;
-    case "privacy":
-      break;
-    case "password":
-      break;
-    /**
-    case "cards":
-      $ccObjs = cc_user_cards($user_id);  
-      $scope->cards = cc_cards_printable($ccObjs);      
-      break;
-      */
-    case "linking":
-      $scope->link_requests = find_objects('user_map', ['host_user_id' => $user_id, 'verified' => 0]);
-      $scope->linked_users  = find_objects('user_map', ['user_id' => $user_id]);
-      $scope->auth_users    = find_objects('user_map', ['host_user_id' => $user_id, 'verified' => 1]);
-      break;
-    case "payout":
-      break;
-    case "transactions":
-      $start = $scope->start = $_GET['start'] ?: 0;
-      $limit = $scope->limit = 10;
-      $scope->transactions = find_objects('payment', array("host_id" => $u_id));
-
-      //$fields = array('res_id','created','status','city_id','city_name','checkin','checkout','apartment_name','currency','grand_total', 'chat_count');
-      $fields = '';
-      $searchOptions = array("fields" => $fields, "start" => $start, "limit" => $limit);
-      $search = array("host_id" => $user_id, "status" => array(STATUS_COMPLETEED));
-      $scope->transactions = find_objects("payment", $search, $searchOptions);
-      $scope->transaction_count = count_objects("payment", $search);
-      break;
-    default:
-      return controller_error($app, "Unknown subview {$subview}");
-      break;
-  }
-  //dump($scope);
-  return;  
-}
-
-/** new public: view user profile */
-function controller_user_profile($app, $options = []) {
-  //echo "hi";
-  //global $u_id, $u_level;
-  $u_id = $app->user->id;
-  $__header = $app->header; 
-  $__header->scripts[] = "/afr/bower/lightslider/dist/js/lightslider.min.js";
-  $__header->styles[] = "/afr/js/vp/vp.min.css{$cachebust}";
-
-  $__header->scripts[] = "/afr/js/vp/vp.js{$cachebust}";
-  $__header->scripts[] = "/afr/js/sw.js";
-  $__header->styles[] = "/afr/bower/lightslider/dist/css/lightslider.min.css";
-  $siteObj = $app->site;
-    
-  if($providers = $app->scope->provider_keys) {
-    foreach($providers as $provider_id) { 
-      if(in_array($provider_id, $providers)) $scope->provider_profiles[$provider_id] =  find_object('provider_profile', array('site_id' => $siteObj->id, 'user_id' => $user_id, 'provider_id' => $provider_id));
-    }
-  }
-
-  $scope = $app->page->scope;
-  
-  $obj_type = $scope->obj_type = $app->page->object_type ?: 'user';
-  $obj_id = $scope->obj_id = $app->page->object_id;
-
-  //die("t={$obj_type} id={$obj_id}");
-  $obj = $obj_type && $obj_id ? get_object($obj_type, $obj_id) : null;
-  
-  if($obj_type == 'user' && $obj_id && $obj) { // from slug
-    $user_id = $obj_id;
-    $userObj = $obj;
-    if(!$userObj->active) {
-      if($u_level < USER_LEVEL_STAFF) return controller_error($app, "User not found", 404);
-      $scope->message = "User not active";
-    }
-  } else {
-    //if(!$u_id) {          
-    //  $scope->error = "Missing User ID and not logged in";
-    //  $scope->template = "404";
-    //  return;
-    //}
-    $user_id = $u_id;
-    $userObj = $app->user ?: get_object('user', $user_id); // logged in user, already merged with profile
-  }
-  
-  //dump($userObj);
-  // for now     
-  // later (allow admins to edit other profiles): $scope->auth_edit = $auth_edit = auth_action('user', 'edit', $u_id);
-
-  $scope->profile = $scope->user = $userObj;
-  $scope->user_id = $userObj->id;
-  $curator_profile = get_user($app->object_id);
-  $scope->curator_id = $curator_profile->id;
-  $scope->curator_name = $curator_profile->display_name;
-  $scope->curator_photo = $curator_profile->photo;
-  $scope->curator_address_formatted = $curator_profile->address_formatted;
-  $scope->curator_social = $curator_profile->social;
- 
-  $scope->auth_edit = $auth_edit = $scope->auth_edit_user = auth_user_profile($user_id);
-  
-  $scope->auth_login = auth_login($user_id) && $u_id != $user_id;
-  
-  //die("ctrl: {$app->page->controller} tpl {$app->page->template}");
-  //die("u_id={$u_id} user_id={$user_id} edit={$auth_edit} al=".$scope->auth_login. " e=".$scope->auth_edit_user);
-  
-  /** property sites */
-  if($ptype = $siteObj->property_type) {
-    $scope->guest_reviews = find_objects("feedback", array("parent_type" => "reservation", "host_id" => $user_id, "published" => 1));
-    $scope->host_reviews  = find_objects("feedback", array("parent_type" => "user", "parent_id" => $user_id, "published" => 1));
-    $scope->host_listings = $host_listings = find_objects($ptype, array("host_id" => $user_id, "active" => 1), ["limit" => 25, "fields" => ['id', 'active', 'guid', 'type','name', 'media', 'address_city', 'address_country']]);
-    //dump($host_listings);
-    $scope->host_listings_count = count_objects($ptype, array("host_id" => $user_id, "active" => 1));
-  }
-  
-  /** todo: art website or override */
-  
-  return;
-}
-
-/** new: edit user profile */
-function controller_edit_profile($app, $options = []) {
-  global $u_id, $u_level;
-  $__header = $app->header; 
-  $siteObj = $app->site;
-  
-  $__header->scripts[] = "/afr/bower/bootstrap-tags/dist/js/bootstrap-tags.min.js";
-  $__header->scripts[] = "/afr/bower/geocomplete/jquery.geocomplete.min.js";
-  $__header->scripts[] = "/afr/bower/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js";
-  $__header->scripts[] = "https://cdnjs.cloudflare.com/ajax/libs/bootstrap-timepicker/0.5.2/js/bootstrap-timepicker.min.js";
-  $__header->styles[] = "/afr/bower/bootstrap-tags/dist/css/bootstrap-tags.css";
-  $__header->styles[] = "/afr/bower/bootstrap-datepicker/dist/css/bootstrap-datepicker.css";
-  $__header->styles[] = "https://cdnjs.cloudflare.com/ajax/libs/bootstrap-timepicker/0.5.2/css/bootstrap-timepicker.min.css";
-
-  $__header->scripts[] = "/afr/js/afr_gmap.js";
-
-  $ptype = $siteObj->property_type ?: "";
-  $scope = $app->page->scope;
-  $scope->path = this_path();
-  
-  $obj_type = $scope->obj_type = $app->object_type;
-  $obj_id = $scope->obj_id = $app->object_id;
-  $obj = $obj_type && $obj_id ? get_object($obj_type, $obj_id) : null;
-
-  if($obj_type == 'user' && $obj_id && $obj) { // from slug
-    $user_id = $obj_id;
-    $userObj = get_user($obj_id);
-  } else {
-    $userObj = get_user($u_id); 
-    $user_id = $u_id;
-  }
-
-  $scope->profile = $scope->user = $userObj;
-  $scope->user_id = $userObj->id;
-  $scope->auth_edit = $auth_edit = $scope->auth_edit_user = auth_user_profile($user_id);
-
-  //die("edit $user_id = $auth_edit");
-
-  if(!$auth_edit) {
-    $scope->error = "Unauthorized $user_id";
-    $scope->template = "404";
-    return;
-  }
-  
-  //$scope->view = $template = pick_first($_GET['view'], $_GET['template'], $options['template'], "_user-profile-overview.html");
-  //if($template && strpos($template, '_user-profile-') === false) $template = $scope->view = "_user-profile-{$template}.html"; // allow shortform
-  
-  if($provider_id = $_GET["provider_id"]) {
-    $result = user_provider_profile($siteObj, $provider_id, $u_id);
-    if($result->success) {
-      $profileObj = $result->data;
-      $scope->debug = dump($profileObj, true);
-    } else {
-      $scope->error = $result->error;
-    }
-    $subview = 'verification';
-  } else {
-    $subview = $app->page->subview ?: 'overview';    
-  }
-
-  $scope->uploader = user_profile_uploader($user_id, array("view" => "list", "handler" => "user_photo_handler")); // doesn't work in switch, as dependencies are not loaded      
-  $scope->passport_uploader = user_profile_uploader($user_id, array("view" => "list", "field" => "passport", "resize" => 0)); // doesn't work in switch, as dependencies are not loaded      
-
-  $app->page->subtemplate = "_user-profile-edit-{$subview}.html";
-  
-  switch($subview) {
-    case "artist":
-    case "gallery":
-    case "collector":
-    case "overview":
-    case "settings":
-    case "details":
-    case "photos":
-      break;
-
-    case "message":
-      $inbox_scope = controller_inbox($app, $options);
+                //dump($invObjs);
+                break;
+            case "edit":
+                break;
       
-      if($user_id == $u_id) {
-        $scope->error = phrase('you cannot send a message to yourself', CAPITALIZE);
-      }
-      $scope->parent_type = $_GET['parent_type'];
-      $scope->parent_id = $_GET['parent_id'];
-      $scope->sender_id = $u_id;
-      $scope->receiver_id = $user_id;
-      $scope->form_redirect = $scope->thread_id = $thread_id = chat_thread_id((array) $scope);
-      break;
-    case "history":
-      $fields = array('res_id','created','status','city_id','city_name','checkin','checkout','apartment_name','currency','grand_total', 'chat_count');
-      $start = $scope->start = $_GET['start'] ?: 0;
-      $limit = $scope->limit = 10;
-      $search = array("guest_id" => $user_id, "status" => ['!=', STATUS_DRAFT]);
-      $searchOptions = array("fields" => $fields, "start" => $start, "limit" => $limit);
-      $trips = find_objects("reservation", $search, $searchOptions);
-      foreach($trips as $k => $trip) {
-        $trip->chat_count = count_objects('chat', ['parent_type' => "reservation", 'parent_id' => $trip->res_id]);;
-        $trips[$k] = $trip;
-      }
-      
-      $scope->trips = $trips;
-      $scope->trip_count = count_objects("reservation", $search);
-      break;
-    case "bookings":
-      $fields = array('res_id','created','status','city_id','city_name','checkin','checkout','apartment_name','currency','grand_total', 'chat_count');
-      $start = $scope->start = $_GET['start'] ?: 0;
-      $limit = $scope->limit = 10;
-      $searchOptions = array("fields" => $fields, "start" => $start, "limit" => $limit);
-      $host_ids = user_host_list($user_id) ?: $user_id;
-      $search = array("host_id" => $host_ids, "status" => array('<>', array(STATUS_DRAFT, STATUS_BLOCKED)));
-      $scope->bookings = find_objects("reservation", $search, $searchOptions);
-      $scope->booking_count = count_objects("reservation", $search);
-      break;
-    case "wishlist":
-      $search = array("site_id" => $siteObj->id, "user_id" => $user_id);
-      $wishlistObjs = find_objects("wishlist", $search) ?: array();
-      foreach($wishlistObjs as &$wishlistObj) {
-        $wishlistObj->obj = get_object($wishlistObj->obj_type, $wishlistObj->obj_id);
-      }
-      $scope->wishlist = $wishlistObjs;
-      break;
-    case "inbox":
-      $inbox_scope = controller_inbox($app, $options);
-      $scope->threads = $inbox_scope->threads;
-      $scope->inv_id = $inbox_scope->inv_id;
-      break;
-    case "verification":
-      if($providers = $app->scope->provider_keys) {
-        foreach($providers as $provider_id) { 
-          if(in_array($provider_id, $providers)) $scope->provider_profiles[$provider_id] =  find_object('provider_profile', array('site_id' => $siteObj->id, 'user_id' => $u_id, 'provider_id' => $provider_id));
-        }
-      }
-      break;
+            case "share":
+                break;
 
-    default:
-      return controller_error($app, "Unknown subview {$subview}");
-      break;
-  }
-
-  
-   //$scope->message = "u_id=$u_id user_id=$user_id auth=$auth_edit se={$scope->auth_edit} t2=$template";
-   //$scope->auth_edit = 111;
-   //$scope->auth_edit_user = 112;
-   //return;
-   //die("gh3");
-
-  //echo("o=$obj_id t=$template".dump($scope,true)); 
-  return;    
-}
-
-function controller_artist_profile($app, $options = []) {
-  //echo "addf";
-  global $u_id;
-  $__header = $app->header; 
-  $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
-  $__header->styles[] = "/afr/js/vp/vp.min.css{$cachebust}";
-
-  $__header->scripts[] = "/afr/js/vp/vp.js{$cachebust}";
-  $__header->scripts[] = "/afr/js/sw.js";
-  $__header->styles[] = "/afr/css/gallery/afr_gallery.css?ver={$app->version}";
-
-  $scope = $app->page->scope;
-  controller_user_profile($app,$options);
-  $obj_type = $scope->obj_type = $scope->obj_type ?: $app->object_type;
-  $obj_id = $scope->obj_id =  $scope->obj_id ?: $app->object_id;
-  //$obj_id = $media_id = $scope->obj_id = $scope->obj_id ?: $app->object_id;
-  $obj = $obj_type && $obj_id ? get_object($obj_type, $obj_id) : null;
-  $siteObj = $app->site;
-  $scope->url = site_full_url($siteObj)."/profile/".$obj_id;
-
-  //$scope->collection = $collectionObj = find_object('media_collection',array('user_id' => $obj_id));
-  //$scope->curator = get_user($collectionObj->user_id);
-  
-  //print_r($scope->curator);
-
-  if(!$obj_id) $obj_id = $u_id;
-  
-  //echo("ot=$obj_type id=$obj_id");
-  //die('gh');
-  if($obj_type == 'user' && $obj_id) { // from slug
-    $user_id = $obj_id;
-    $userObj = get_user($obj_id);
-    //$scope->curator_id = user_has_role($userObj, USER_ROLE_CURATOR) ? $userObj->id : 0;
-    //print_r($userObj);
-  } else {
-    $userObj = $app->user; // logged in user, already merged with profile
-    $user_id = $u_id;
-  }
-  
-  $scope->profile = $userObj;
-  //dump($userObj);
-  $scope->auth_edit = $auth_edit = auth_user_profile($user_id);
-  $scope->auth_login = auth_login($user_id);
-
-  //Mail For Time being in user profile page
-  if($obj_id){
-    $scope->mail_controller = 'gallery_artworks';
-    $scope->mail_template = 'mail/mail-profile.html';
-    
-    $scope->obj_id = $obj_id;
-  }
-  
-  $scope->auth_edit = $scope->auth_edit_user = $auth_edit; // scope auth_edit overrridden somewhere
-  //die("AL=".$scope->auth_login." edit=".$auth_edit);
-
-  // $al = auth_login($user_id);
-  // echo("<br><br><br><br>user_id=$user_id u_id=$u_id auth_edit: $auth_edit al: $al");  
-  // if($auth_edit) return controller_traveler_profile($app, $options);
-  
-  $is_curator = $user_id && user_has_role($user_id, USER_ROLE_CURATOR);
-  $is_artist = $user_id && user_has_role($user_id, USER_ROLE_ARTIST);
-
-  // find curators  
-  $scope->curator_ids = $curator_ids =find_objects('media_collection_map', array('artist_id' => $user_id, 'curator_id' => array('>', 0)), array('fields' => 'distinct curator_id', 'debug_query' => 0));
-
-  $start = 0;
-  $limit = 40;
-  
-  if($is_curator) {
-    $scope->template = "user-profile-curator.html";
-    $scope->curator_id = $curator_id = $user_id;
-    
-    $scope->artist_artworks = gallery_selected_artworks($user_id, ['start' => $start, 'limit' => $limit]);
-    $scope->my_projects = $cur_projects = find_objects('media_collection', array('user_id' => $curator_id, 'type' => MEDIA_COLLECTION_TYPE_EXHIBITION, 'active' => 1), ['start' => $start, 'limit' => $limit]);
-    //print_r($cur_projects);
-    $my_projects = $cur_exhibition = [];
-    foreach($cur_projects as $cur_project){
-      $artists = json_decode($cur_project->artist_ids, True);
-      $get_date = $get_type = [];
-          $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $cur_project->id, 'active'=>1]);
-        foreach($get_artworks as $artwork){
-            $get_date[] = $artwork->original_year;
-            $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
-            $get_type[] = get_artwork_type($find_art->type);
-        }
-          $mini =  min(array_filter($get_date));
-          $max = max(array_filter($get_date));
-      if(count($artists) == 1){
-        if(in_array($curator_id, $artists)){
-            $my_projects[] = $cur_project;
-          if($cur_project->subtype == 40){
-            $selection_type = implode(', ' , array_unique(array_filter($get_type)));
-            if($mini == $max)
-              $selection_range = "Selection (".$mini.")";
-            elseif($mini < $max)
-              $selection_range =  "Selection (".$mini."-".$max.")";
-            else
-            $selection_range =  "Selection";
-            $cur_project->selection_range = $selection_range;
-            $cur_project->selection_type = $selection_type;
-          }
-        }
-        if($artists[0] != $curator_id){
-          $cur_exhibition[] = $cur_project;
-          if($cur_project->subtype == 40){
-            $selection_type = implode(', ' , array_unique(array_filter($get_type)));
-            if($mini == $max)
-              $selection_range = "Selection (".$mini.")";
-            elseif($mini < $max)
-              $selection_range =  "Selection (".$mini."-".$max.")";
-            else
-            $selection_range =  "Selection";
-            $cur_project->selection_range = $selection_range;
-            $cur_project->selection_type = $selection_type;
-          }
-        }
-      }else{
-        $cur_exhibition[] = $cur_project;
-        if($cur_project->subtype == 40){
-            $selection_type = implode(', ' , array_unique(array_filter($get_type)));
-            if($mini == $max)
-              $selection_range = "Selection (".$mini.")";
-            elseif($mini < $max)
-              $selection_range =  "Selection (".$mini."-".$max.")";
-            else
-            $selection_range =  "Selection";
-            $cur_project->selection_range = $selection_range;
-            $cur_project->selection_type = $selection_type;
-          }
-      }
-    }
-    $scope->my_projects = $my_projects;
-    //dump($cur_exhibition);
-    $scope->curator_exhibition = $cur_exhibition;
-    //echo "2";
-    
-    $scope->curator_artworks = gallery_unique_artworks(array_find_key($curator_exhibitions, 'id'), ['start' => $start, 'limit' => $limit]);
-    $curator_profile = get_user($curator_id);
-    $scope->curator_id = $curator_profile->id;
-    $scope->curator_name = $curator_profile->display_name;
-    $scope->curator_photo = $curator_profile->photo;
-    $scope->curator_address_formatted = $curator_profile->address_formatted;
-    $scope->curator_social = $curator_profile->social;
-    //dump($scope->curator_name);
-  } elseif($is_artist) {
-    $scope->template = "user-profile-artist.html";    
-
-    $scope->artist_id = $artist_id = $user_id;
-    $scope->artist_projects = $artist_projects = find_objects('media_collection', 
-      array('user_id' => $artist_id, 'type' => MEDIA_COLLECTION_TYPE_PROJECT, 'active' => 1), ['start' => $start, 'limit' => $limit]);
-    if($project_ids = array_find_key($artist_projects, 'id')) {
-      //$scope->artist_artworks = gallery_unique_artworks($project_ids, ['start' => $start, 'limit' => $limit]); 
-    }
-
-    $scope->artist_artworks = gallery_selected_artworks($user_id, ['start' => $start, 'limit' => $limit]);
-    
-    /* Hidden for tym being by pradeepa
-    $artist_exhibitions_ids = find_objects('media_collection_map', 
-      array('artist_id' => $artist_id, 'user_id' => ['!=', $curator_id], 'collection_type' =>MEDIA_COLLECTION_TYPE_EXHIBITION, 'active' => 1), 
-      array('fields' => 'distinct media_collection_id', ['start' => $start, 'limit' => $limit]));
-    
-    $scope->artist_exhibitions = find_objects('media_collection', 
-      array('id' => $artist_exhibitions_ids, 'active' => 1), ['start' => $start, 'limit' => $limit]);
-    */
-
-    /*To view Exhibitions curated by gallery in artist profile*/
-    $curator_profile = get_user($curator_ids[0]);
-    $scope->curator_id = $curator_id = $curator_profile->id;
-    $scope->curator_name = $curator_profile->display_name;
-    $scope->curator_photo = $curator_profile->photo;
-    $scope->curator_address_formatted = $curator_profile->address_formatted;
-    $scope->curator_social = $curator_profile->social;
-    //dump($curator_profile);
-    $cur_projects = find_objects('media_collection', array('user_id' => $curator_id, 'type' => MEDIA_COLLECTION_TYPE_EXHIBITION, 'active' => 1), ['start' => $start, 'limit' => $limit]);
-    
-    $my_projects = $cur_exhibition = [];
-    foreach($cur_projects as $cur_project){
-      $artists = json_decode($cur_project->artist_ids, True);
-      if(count($artists) == 1){
-        if(in_array($curator_id, $artists)){
-            $my_projects[] = $cur_project;
-        }
-      }
-    }
-    if($user_id == $curator_id)
-      $scope->my_projects = $my_projects;
-
-    $curator_exhibition = find_objects('media_collection', array('user_id' => $curator_id, 'type' => MEDIA_COLLECTION_TYPE_EXHIBITION, 'active' => 1, 'subtype' => [10,20,30,40] ), ['start' => $start, 'limit' => $limit]);
-    $cur_arr = $artist_arr = [];
-
-    foreach($curator_exhibition as $curator_exhibitions){
-      $artists = json_decode($curator_exhibitions->artist_ids, True);
-      $get_date = $get_type = [];
-          $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $curator_exhibitions->id, 'active'=>1]);
-        foreach($get_artworks as $artwork){
-            $get_date[] = $artwork->original_year;
-            $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
-            $get_type[] = get_artwork_type($find_art->type);
-        }
-          $mini =  min(array_filter($get_date));
-          $max = max(array_filter($get_date));
-      if(count($artists) >1){
-        if(($user_id != $curator_id) && (in_array($artist_id, $artists)) && (in_array($curator_id, $artists))){
-          $artist_arr[] = $curator_exhibitions;
-          if($curator_exhibitions->subtype == 40){
-            $selection_type = implode(', ' , array_unique(array_filter($get_type)));
-            if($mini == $max)
-              $selection_range = "Selection (".$mini.")";
-            elseif($mini < $max)
-              $selection_range =  "Selection (".$mini."-".$max.")";
-            else
-            $selection_range =  "Selection";
-            $curator_exhibitions->selection_range = $selection_range;
-            $curator_exhibitions->selection_type = $selection_type;
-          }
-        }
-        if(in_array($curator_id, $artists) && ($curator_id != $artists) ){
-          $cur_arr[] = $curator_exhibitions;
-          if($curator_exhibitions->subtype == 40){
-            $selection_type = implode(', ' , array_unique(array_filter($get_type)));
-            if($mini == $max)
-              $selection_range = "Selection (".$mini.")";
-            elseif($mini < $max)
-              $selection_range =  "Selection (".$mini."-".$max.")";
-            else
-            $selection_range =  "Selection";
-            $curator_exhibitions->selection_range = $selection_range;
-            $curator_exhibitions->selection_type = $selection_type;
-          }
-        }
-      }else{
-        if($artists[0] != $curator_id){
-          $cur_arr[] = $curator_exhibitions;
-          if($curator_exhibitions->subtype == 40){
-            $selection_type = implode(', ' , array_unique(array_filter($get_type)));
-            if($mini == $max)
-              $selection_range = "Selection (".$mini.")";
-            elseif($mini < $max)
-              $selection_range =  "Selection (".$mini."-".$max.")";
-            else
-            $selection_range =  "Selection";
-            $curator_exhibitions->selection_range = $selection_range;
-            $curator_exhibitions->selection_type = $selection_type;
-          }
-        }
-        if(($user_id != $curator_id) && ($artists[0] == $artist_id)){
-          $artist_arr[] = $curator_exhibitions;
-          if($curator_exhibitions->subtype == 40){
-            $selection_type = implode(', ' , array_unique(array_filter($get_type)));
-            if($mini == $max)
-              $selection_range = "Selection (".$mini.")";
-            elseif($mini < $max)
-              $selection_range =  "Selection (".$mini."-".$max.")";
-            else
-            $selection_range =  "Selection";
-            $curator_exhibitions->selection_range = $selection_range;
-            $curator_exhibitions->selection_type = $selection_type;
-          }
-        }
-      }
-    }
-    $scope->artist_exhibitions = $artist_arr;
-    
-    $scope->curator_exhibition = $cur_arr;
-    //echo "3";
-        
-  } else {
-    $scope->template = "user-profile-collector.html";
-  }
-  $display_name = $title = $userObj->display_name;
-  
-  $img_src = print_media($userObj->photo, array('source_only' => true, 'full' => true));
-
-  /** Add facebook Open Graph tags */
-  $__header->meta[] = array('property' => 'og:type', 'content' => 'article');
-  $__header->meta[] = array('property' => 'og:image', 'content' => add_https($img_src));
-  $__header->meta[] = array('property' => 'og:url', 'content' => $url);
-  $__header->meta[] = array('property' => 'og:title', 'content' => $display_name);
-  $__header->meta[] = array('property' => 'og:description', 'content' =>  strip_tags($userObj->description));    
-  $__header->meta[] = array('property' => 'article:author', 'content' =>  "https://www.facebook.com/vpatinabv");    
-
-  $__header->link[] = array('property' => 'image_src', 'content' =>  add_https($img_src));    
-  $app->page->author = $display_name;    
-  $app->page->description = strip_tags($userObj->description);   
-  $app->page->title = $title;    
-  
-  $app->page->template = $scope->template;
-  //die("ctrl: {$app->page->controller} tpl {$app->page->template}");
-  //print_r($scope);
-  
-  return;  
-}                           
-
-
-
-function controller_inbox_item($app, $options=[]) {
-   $scope->foo = "bar";
-   return;
-}
-
-/** only used for mail */
-function controller_chat($app, $options=[]) {
-  global $u_id;
-  if(!$u_id) return;
-  $user_id = $u_id;  
-  
-  $scope = $app->page->scope;
-  $chat_id = pick_first($scope->chat_id, $option['chat_id'], $scope->obj_id, $option['obj_id']);
-  $receiver_id = pick_first($scope->receiver_id, $option['receiver_id']); // to whom this mail is sent
-  
-  $scope->messages = [];
-  if($chat_id) { /** todo: security */
-    $chatObj = $scope->chat = get_object('chat', $chat_id);
-    $sender_id = $chatObj->sender_id;
-    $scope->sender = get_user($sender_id);
-    $scope->parent_type = $parent_type = $chatObj->parent_type;
-    $scope->parent_id   = $parent_id = $chatObj->parent_id;
-    if($parent_type && $parent_id) {
-      $parentObj = get_object($parent_type, $parent_id);
-      
-      switch($parent_type) {
-      case 'reservation':
-        $scope->booking = $parentObj;
-        $scope->rental = get_object('property', $parentObj->apt_id);
-        $scope->profile_id = $receiver_id == $parentObj->host_id ?  $parentObj->guest_id : $parentObj->host_id;
-        
-        break;
-      default:
-        break;
-      }
-    }
-    
-    $thread_id = $chatObj->thread;
-    $scope->limit = $limit = 10;
-    $scope->count = count_objects("chat", array("thread" => $thread_id));
-    $chatObjs = find_objects("chat", array("thread" => $thread_id), array("sort" => "created DESC", "limit" => $limit));
-    $scope->thread_id = $thread_id;
-    $scope->thread = $chatObjs;
-  }
-  return;
-}
-
-/** used for inbox page */
-function controller_inbox($app, $options=[]) {
-  global $u_id, $u_level;
-  $scope = $app->page->scope;
-  if(!$u_id) return;
-  $user_id = $u_id;  
-
-  $thread_id = pick_first($scope->thread, $option['thread'], $app->object_slug);
-
-  if($thread_id) { // get one thread
-    $user_ids = explode('-', $thread_id);
-    if(count($user_ids) < 2 || ($u_level < USER_LEVEL_STAFF && !in_array($u_id, $user_ids))) {
-      $scope->error = "Invalid thread";      
-      return;      
-    }
-
-    
-    $chatObjs = find_objects("chat", array("thread" => $thread_id), array("sort" => "created DESC", "limit" => 0));
-
-    
-    if($scope->count = $count = count($chatObjs)) {
-      $chatObj = $chatObjs[0]; // get first
-
-      $scope->chat = $chatObj;
-      
-      $scope->parent_type = $parent_type = $chatObj->parent_type;
-      $scope->parent_id   = $parent_id = $chatObj->parent_id;
-            
-      if($parent_type != 'reservation') { // look for any chat with reservation in this thread
-        if($res_id = find_object("chat", array("thread" => $thread_id, "parent_type" => "reservation"), "parent_id")) {
-          $scope->parent_type = $parent_type = 'reservation';
-          $scope->parent_id   = $parent_id = $res_id;
-        }
-      }
-          
-      if($parent_type && $parent_id) $scope->parent = $parentObj = get_object($parent_type, $parent_id);
-      
-      switch($parent_type) {
-      case 'reservation':
-        $scope->booking = $resObj = $parentObj; // get_object("reservation", $parent_id);
-        $scope->invoice = $invObj = booking_invoice($resObj);
-        $scope->inv_id = $invObj->id;
-        if($resObj->property_type && $resObj->apt_id) $scope->rental = get_object($resObj->property_type, $resObj->apt_id);
-        break;
-      case 'shortstay':
-        $scope->rental = $parentObj; // get_object($parent_type, $parent_id);
-        break;
-      default:
-        break;
-      }
-      
-      // mark as read
-      $unreadSearch = ["thread" => $thread_id, "read_on" => ATT_DEFAULT_NULL, "receiver_id" => $user_id];
-      list($count, $errors) = update_objects("chat", ["read_on" => now()], $unreadSearch);
-      
-    }
-    
-    //$scope->this_sender_id = $user_ids[0];
-    //$receiver_id = $user_ids[1];
-    $scope->user_id1 = $user_ids[0];
-    $scope->user_id2 = $user_ids[1];
-    $scope->user_ids = $user_ids;
-    
-    if(in_array($u_id, $user_ids)) { // we're in this chat
-      $scope->sender_id = $u_id;
-      if($other_user_id = chat_thread_user($thread_id, $user_id)) { // get other user
-        $scope->receiver_id = $other_user_id;
-        $scope->other_user = get_user($other_user_id);
-      }
-    } else { // we're not in this chat (staff)
-      $scope->sender_id = $sender_id = $user_ids[0];
-      $scope->receiver_id = $receiver_id = isint($user_ids[1]) ? $user_ids[1] : 0;
-      $scope->other_user = get_user($sender_id); 
-      $scope->first_user = $receiver_id ? get_user($receiver_id) : null; 
-    }
+            case "upload":
+                break;
               
-    $scope->thread_id = $thread_id;
-    $scope->thread = $chatObjs;
-    //die("count=$count".dump($scope,true));
+            case "payment":
+                break;
     
-  } else { // find all threads
+            /** fix */
+            case "feedback":
+                if($feedback = find_object("feedback", array("parent_type" => "reservation", "parent_id" => $resObj->res_id))) {
+                    // show existing feedback
+                    $scope->feedback = $feedback;
+                    $scope->foo = 'found';
 
-    $chatFields = array("thread", "max(id) as id, thread, max(created) as created", 
-                "max(distinct(parent_type)) as parent_type", "max(distinct(parent_id)) as parent_id",
-                "count(*) as count");
-    $chatOptions = array('group' => 'thread', 'fields' => $chatFields, 'sort' => 'created desc', "debug_query" => false);
-    $chatSearch[DB_LOGICAL_OR] = array("sender_id" => $user_id, "receiver_id" => $user_id);    
-    $scope->threads = $threads = find_objects("chat", $chatSearch, $chatOptions);
-    foreach($threads as &$thread) {
-      $thread->other_user_id = chat_thread_user($thread->thread, $user_id); // get other user
+                } elseif($auth_edit) { // show form
+                    $scope->foo = 'yes';
+                    $scope->purpose = get_objects_assoc("feedback_purpose", "", array('first' => phrase('select', CAPITALIZE)));
+                    $scope->profile = get_objects_assoc("feedback_profile", "", array('first' => phrase('select', CAPITALIZE)));
+                } else {
+                    $scope->foo = 'not';
+                }
+                break;
       
-      $alertSearch = ["thread" => $thread->thread, "read_on" => ATT_DEFAULT_NULL, "receiver_id" => $user_id, "status_change" => [">", 0]];
-      $unreadSearch = ["thread" => $thread->thread, "read_on" => ATT_DEFAULT_NULL, "receiver_id" => $user_id];
-      
-      $thread->alert = count_objects("chat", $alertSearch);
-      $thread->unread_count = $unread = count_objects("chat", $unreadSearch);
-    }
-  }
-  return;
-}
+            case "chat":
+                $host_id = $resObj->host_id;
+                $guest_id = $resObj->guest_id ?: "reservation_".$resObj->res_id;
 
-
-
-function controller_event($app, $options = []) {
-  global $u_level, $auth_edit;
-  $__header = $app->header; 
-  $ver = $app->version ?: date('md');
-  $siteObj = $app->site;
-  
-  
-  $__header->scripts[] = "/afr/bower/geocomplete/jquery.geocomplete.min.js";
-  $__header->scripts[] = "/afr/js/afr_gmap.js";
-  $__header->scripts[] = "/afr/jquery/periodpicker/build/jquery.periodpicker.full.min.js";
-
-  $__header->scripts[] = "/afr/bower/bootstrap-confirmation2/bootstrap-confirmation.js";    
-  $__header->scripts[] = "/afr/js/event-form.js?v=$ver";    
-  $__header->styles[] = "/afr/jquery/periodpicker/build/jquery.periodpicker.min.css";
-  
-  $scope = $app->page->scope;
-  $obj_type = 'event';
-  
-  $city = $options['city'] ?: 'Amsterdam';
-  $country = $options['country'] ?: 'NL';
-  $fields = array("id", "name", "notes", "start_address", "start_time", "end_time", "startdatetime", "enddatetime", "startdate", "enddate", "location_lat", "location_long","location_bounds","address_street","address_number","address_city","address_postcode","address_state","address_country","address_formatted");
-  $id = pick_first($_GET['id'], $options['id'], $_GET['article_id'], $app->object_id, $app->object_slug, $scope->event_id, $options['event_id']);
-
-  $scope->auth_add_event = $u_level >= USER_LEVEL_EDITOR ? 1 : 0;
-  
-  if($id) {
-    $scope->event = $obj = get_object($obj_type, $id);
-    if($obj->user_level > $u_level) return controller_error($app, "Not authorized", 401);
-    $scope->id = $obj->id;
-    if($media = $obj->media) $scope->media_list = explode(',', $media);
-    $scope->uploader = object_media_uploader($obj_type, $id);
-    $scope->auth_edit_event = $u_level >= USER_LEVEL_EDITOR || auth_event($obj);
-    object_increment($obj_type, $id, 'views');
-    
-    return;
-  }
-
-  // could return here if array not needed in single view
-  // return;
-  
-  // below only used if Javascript is disabled
-  $where = $_GET['e'];  
-  $eventSearch = array('site_id' => $siteObj->id, 'active' => 1, 'end_time' => ['>=', today()], 'user_level' => array('<=', $u_level));
-  switch($where) {
-  case 'l': // local
-    $eventSearch['address_city'] = 'Amsterdam';
-    break;
-  case 'n': // local
-    $eventSearch['address_country'] = 'NL';
-    break;
-  case 'i': // local
-    $eventSearch['address_country'] = array('!=', 'NL');
-    break;
-  default:
-    break;
-  }
-    
-  if(is_array($search)) $eventSearch = array_merge($search, $eventSearch);
-  $events = find_objects('event', $eventSearch, array('sort' => 'start_time'));
-  foreach($events as &$event) { // assign classes for sorting
-    if(strtolower($event->address_city) == strtolower($city)) $class = "local";    
-    elseif(strtolower($event->address_country) == strtolower($country)) $class = "national";
-    else $class = $event->address_country ? "international" : "";
-    $event->loc_class = $class;
-    $event->auth_edit_event = $u_level >= USER_LEVEL_EDITOR || auth_event($event);
-  }
-  
-  
-  $scope->events = $events;
-  return;  
-}
-
-function controller_blog($app, $options = []) {
-  global $u_level;
-  $scope = $app->page->scope;
-  
-  $options['object_subtype'] = ARTICLE_TYPE_BLOG;  
-  controller_article($app, $options);
-  
-  $scope->auth_add_blog = $u_level >= USER_LEVEL_EDITOR ? 1 : 0;
-  return;  
-}
-
-function controller_news($app, $options = []) {
-  global $u_level;
-  $scope = $app->page->scope;
-  
-  $options['object_subtype'] = ARTICLE_TYPE_NEWS;
-  controller_article($app, $options);
-  
-  $scope->auth_add_news = $u_level >= USER_LEVEL_EDITOR ? 1 : 0;
-  return;  
-}
-
-// generic controller for articles (news, blogs, etc). Requires that article type is set 
-
-function controller_article($app, $options = []) {
-  global $u_level, $__LANG;
-  $pageObj = $app->page;
-  $siteObj = $app->site;
-  $scope = $app->page->scope;
-  $obj_type = 'article';
-  $fields = array("id", "type", "title", "content");
-
-  $scope->auth_add_article = $auth_add = $auth_edit = $u_level >= USER_LEVEL_EDITOR ? 1 : 0;
-  
-  $id = $scope->obj_id = $app->object_id;
-  $options['article_id'] = $obj_id;
-
-  $scope->type = $type = pick_first($options['object_subtype'], $scope->object_subtype, $pageObj->object_subtype);
-
-  $lang = $options['language'] ?: $__LANG;
-  $user_level = $u_level ?: 0;
-
-  $page_size = isset($options['page_size']) ? $options['page_size'] : 5; // for pagination
-  $hard_limit = 20;
-  
-  $scope->start = $start = isset($_GET['start']) ? $_GET['start'] : 0;
-  $scope->limit = $limit = $page_size ?: $hard_limit;
-  
-  $add = $scope->add = isset($_GET['add']) && $auth_add;
-
-  $search = ['site_id' => $siteObj->id, 'type' => $type, 'language' => $lang, 'active' => 1, 'user_level' => array('<=', $u_level ?: 0)];
-  if(!$auth_add) $search['published'] = 1;
-  
-  $searchOptions = ["sort" => "post_date DESC", "start" => $start, "limit" => $limit];
-  $articles = find_objects($obj_type, $search, $searchOptions);  
-  
-  $sidebar_limit = 5;
-  $scope->recent  = find_objects($obj_type, $search, array('sort' => 'created desc', 'limit' => $sidebar_limit));  
-  $scope->popular = find_objects($obj_type, $search, array('sort' => 'views desc', 'limit' => $sidebar_limit));  
-  
-  if($id) {    
-    $obj = get_object($obj_type, $id);
-    $scope->article_id = $obj->id;
-    $scope->auth_edit_article = $obj->auth_edit_article = $auth_edit = $u_level >= USER_LEVEL_EDITOR || auth_article($obj);
-    $scope->comments = find_objects('comment', array("article_id" => $id, 'active' => 1));
-    if($auth_edit) {
-      jfu_dependencies($app); // load scripts + css for new file uploader
-      if(isset($_GET['publish'])) {
-        $publish = $_GET['publish'] ? 1 : 0;        
-        if($publish != $obj->published) {
-          list($id, $errors) = update_object('article', ['published' => $publish], $id);
-          if($errors) return controller_error($app, $errors);          
-          $obj->published = $published;
-        }
-      }
-
-      //$scope->article->json_data = object_json_data($obj_type, $obj, $fields);
-      $scope->comments = $comments = find_objects('comment', ['article_id' => $id, 'active' => 1], ['sort' => 'created']);
-      $scope->comment_count = count($comments); 
-    } elseif(!$obj->published) {
-      return controller_error($app, "Not authorized");
-    }
-    
-    $scope->edit = $edit = isset($_GET['edit']) && $auth_edit;
-    if(!$edit) object_increment($obj_type, $id, 'views');
-    $scope->article = $obj;
-    
-  } elseif($add) {
-    // do nothing
-  } elseif($type) {
-    
-  
-    if($auth_edit) {
-      foreach($articles as &$article) {
-        //$article->json_data = object_json_data($obj_type, $article, $fields);
-        $article->auth_edit_article = $u_level >= USER_LEVEL_EDITOR || auth_article($article);
-      }
-    }
-    
-    $scope->count = $count = count_objects('article', $search);
-    //echo("Found $count articles");dump($search);
-    $scope->articles = $articles;
-    //dump($articles);
-    
-  } else {
-    $scope->error = "No article ID or type set";
-  }
-
-  
-  return;
-}
-
-// todo: add limit, sort, paging
-function controller_faq($app, $options = []) {
-  global $__LANG;
-  global $u_level, $auth_edit;
-  $siteObj = $app->site;
-  
-  $scope = $app->page->scope;
-  $obj_type = 'article';
-  $facs = [];
-  
-  $search = ['site_id' => $siteObj->id, 'type' => ARTICLE_TYPE_FAQ, 'language' => $siteObj->default_language, 'active' => 1];
-  $articleObjs = find_objects('article', $search, []);
-  //dump($articleObjs);die("gh");
-  foreach($articleObjs as $articleObj) {
-    if($__LANG != $siteObj->default_language) {
-      $descSearch = ['parent_type' => 'article', 'parent_id' => $articleObj->id];
-      if($descObj = find_object('object_description', $descSearch)) {
-        $articleObj->title = $descObj->title;
-        $articleObj->content = $descObj->description;
-        $desc_id = $descObj->id;
-      } else {
-        $descData = array_merge($descSearch, ['title' => $articleObj->title, 'description' => $articleObj->content, 'language' => $__LANG]);
-        list($desc_id, $errors) = add_object('object_description', $descData);        
-        //$articleObj->content = $descObj->content;
-      }
-      $articleObj->obj_type = 'object_description';    
-      $articleObj->obj_id = $desc_id;    
-      $articleObj->content_field = 'description';
-    } else {
-      $articleObj->obj_type = 'article';
-      $articleObj->obj_id = $articleObj->id;    
-      $articleObj->content_field = 'content';
-    }
-    $facs[] = $articleObj;
-  }
-  //dump($facs);
-  $scope->articles = $facs;
-  $scope->auth_edit_article = $u_level >= USER_LEVEL_STAFF;
-  return;
-}
-
-
-
-function controller_golf_club($app, $options = []) {
-  global $u_id, $__LANG;
-  $__header = $app->header; 
-  $scope = $app->page->scope;
-  $ver = $app->version ?: date('md');
-  $__header->styles[] = "/afr/css/afr-air.css";
-  $obj_type = 'golf_club';
-  $slug = $app->object_slug;
-  $id = $obj_id = $golf_club_id = $scope->obj_id = $scope->golf_club_id = pick_first($scope->golf_club_id, $scope->obj_id, $_GET['obj_id'], $options['obj_id'], $app->object_id);
-  
-  if(!$id) { 
-    $error = $slug ? "$slug not found" : "No golf club specified";
-    return scope_error($app, $error, '403');
-  }
-
-  $obj = get_object($obj_type, $id);    
-   
-  if(!$obj) return scope_error($app, "Golf club {$slug} not found", '404');
-  $scope->golf_club = $obj;
-  
-  // $mediaObjs = object_images($obj_type, $id);
-  $images = $obj->images ? json_decode($obj->images) : [];
-  foreach($images as $mediaObj) {
-    $image = new stdClass;
-    $image->src = $mediaObj->filename;
-    $image->title = $mediaObj->name;
-    if($copyright = $mediaObj->copyright_name) {
-      $copyright = html_i('', 'fa fa-copyright')." $copyright";
-      $copyright_link = $mediaObj->copyright_url;
-      $copyright_text = $copyright_link ? html_link($copyright_link, $copyright, array('target' => 'ext')) : $copyright;
-      $image->copyright = html_div($copyright_text, 'copyright');        
-    }
-    $imageAr[] = $image;
-  }
-  
-
-  $search = ['parent_type' => 'golf_club', 'parent_id' => $obj->id, 'language' => $__LANG];
-  if($descObj = find_object('object_description', $search)) {
-    $scope->description = $descObj;
-  } elseif($descObj = find_object('object_description', ['parent_type' => 'golf_club', 'parent_id' => $obj->id])) { // any language
-    $descData = ['language' => $__LANG];
-    foreach(['site_id', 'parent_type', 'parent_id', 'type', 'description'] as $f) $descData[$f] = $descObj->$f;
-    list($desc_id, $errors) = add_object('object_description', $descData);
-    if($desc_id) $scope->description = get_object('object_description', $desc_id);
-    if($errors) $scope->error = $errors;
-  }
-  
-  $scope->golf_courses = $golf_courses = find_objects('golf_course', array('golf_club_id' => $id)) ?: array();
-  //dump($golf_courses);
-  
-  //dump($imageAr);
-  $scope->images = $imageAr;
-  $scope->nearby_golf = location_find_nearest('golf_club', $obj->location_lat, $obj->location_long, array('limit' => 4, 'exclude' => $obj->id));
-  $scope->nearby_apts = location_find_nearest('shortstay', $obj->location_lat, $obj->location_long, array('limit' => 4));      
-  $scope->reviews = find_objects('review', array("client_id" => $app->client_id, "parent_type" => $obj_type, "parent_id" => $id, "published" => 1, "active" => 1));
-
-  $facAr = $obj->facilities ? explode(',', $obj->facilities) : array();
-  $facs = array();
-  foreach($facAr as $fac_id) {
-    $facObj = new stdClass;
-    $facObj->id = $fac_id;
-    $facObj->name = get_object("facility", $fac_id, "name");
-    $facObj->icon = rental_facility_icon($fac_id) ?: "fa fa-check";
-    $facs[] = $facObj;
-  }
-  $scope->facs = $facs; // $scope->facilities = aptObj->facilities, already in use
-  
-  return;
-}
-
-/** mail preview function - for staff and higher only */
-function controller_review($app, $options = []) {
-  global $u_id, $u_level, $__CLIENT_ID, $__SITE;
-  $siteObj = $app->site;
-  $scope = $app->page->scope;
-
-  $obj_id = $scope->obj_id = $app->object_id;
-  $obj_type = $scope->obj_type = $app->object_type;
-  $obj = $obj_type && $obj_id ? get_object($obj_type, $obj_id) : null;
-  
-
-  $parent_type = pick_first($options['parent_type'], $_GET['_pt'], $siteObj->review_type);
-  $parent_id = pick_first($options['parent_id'], $_GET['_pid']);
-  $pin = $_GET['_pin'];
-
-  if($obj) { /** View existing review */
-    $scope->review = $obj;
-    $parent_type = $obj->parent_type;
-    $parent_id = $obj->parent_id;
-    
-  } elseif($parent_type) { /** add new review */
-    $allow_multiple_reviews = 0;
-    
-    $scope->parent_type = $parent_type;
-    if($parent_id) {
-      $scope->parent_id = $parent_id;
-      $scope->parent_object = $parentObj = get_object($parent_type, $parent_id);
-      
-      
-      switch($parent_type) {          
-        case 'reservation':
-          $allow_multiple_reviews = 1;
+                $scope->sender_id = $user_id;
+                $scope->receiver_id = $user_id == $resObj->host_id ? $guest_id : $host_id;
+                $scope->parent_type = "reservation";
+                $scope->parent_id = $resObj->res_id;
+                $scope->user_ids = [$guest_id, $host_id];
+                $scope->thread = find_objects("chat", array("parent_type" => "reservation", "parent_id" => $resObj->res_id));
+                //dump($scope->chat);
+            break;
           
-          $resObj = $parentObj;
-          if(!$resObj) return controller_error($app, phrase("booking not found", CAPS));
-          
-          $scope->reviewed_obj_type = $parent_type;
-          $scope->reviewed_obj_id = $parent_id;
-          $scope->reviewed_object = $parentObj;
-
-          $scope->parent_id = $parent_id = $resObj->apt_id; /** we actually want to review the rental */ 
-          $scope->parent_type = $parent_type = $resObj->property_type;
-          $scope->parent_object = $parentObj = get_object($resObj->property_type, $resObj->apt_id);
-          
-          
-          $today = today();
-          $review_cutoff = BOOKING_REVIEW_PERIOD;
-          $last_review_date = add_day(strip_time($resObj->checkout), $review_cutoff);
-          if($u_id) {
-            if($u_level < USER_LEVEL_STAFF && $resObj->guest_id && $u_id != $resObj->guest_id) return controller_error($app, phrase("only the guest can rate bookings", CAPS));
-          } else {
-            if($resObj->guest_id) redirect_login();
-            if(myhash($resObj->booking_pin) != $pin) return controller_error($app, phrase("missing or invalid code", CAPS));           
-          }
-          if($reviewObj = find_object('review', ['reviewed_obj_type' => 'reservation', 'reviewed_obj_id' => $resObj->res_id])) {
-            return controller_error($app, phrase("you already rated this %s on %s", CAPS, get_object_name('reservation'), sql2human($reviewObj->created)));
-          }                              
-          if(!in_array($resObj->status, [STATUS_RESERVED, STATUS_COMPLETE])) return controller_error($app, phrase("only confirmed bookings can be rated", CAPS));
-          if($today > $last_review_date)  return controller_error($app, phrase("the review period expired on %s", CAPS, sql2human($last_review_date)));
-          if(strip_time($resObj->checkout) > $today)  return controller_error($app, phrase("you cannot rate the booking until you check out on %s", CAPS, sql2human($resObj->checkout)));
-          break;
-        default:
-          break;      
-      }
-    } 
-  
-    /** only allow user to review same item once ? Doesn't make sense for bookings, since they can stay in same flat twice... */
-    if($u_id && !$allow_multiple_reviews) {
-      if($reviewObj = find_object('review', ['user_id' => $u_id, 'parent_type' => $parent_type, 'parent_id' => $parent_id])) {
-        return controller_error($app, phrase("you already rated this %s on %s", CAPS, get_object_name($parent_type), sql2human($reviewObj->created)));
-        //$scope->review = $reviewObj;
-      }
-    }
-  
-  }
-  
-  $scope->items = $items = find_objects('review_item', ['site_id' => $siteObj->id, 'parent_type' => $parent_type]);
-  if(!count($items)) return controller_error($app, "No review items found for $parent_type");
-    
-  if(!$obj && !$parent_type) return controller_error($app, "No review or parent");
-  
-  return;
-}
-
-/** mail preview function - for staff and higher only */
-function controller_mail_campaign($app, $options = []) {
-  global $u_id, $u_level, $__CLIENT_ID, $__SITE, $__USER;
-  global $__SITE_ROLES;
-  $siteObj = $app->site;
-  $scope = $app->page->scope;
-  $campaign_id = pick_first($_GET['campaign_id'], $app->object_id, $app->object_slug, $scope->campaign_id, $options['campaign_id']);
-
-  $step = 0;
-  if($campaign_id) {
-    $scope->campaign = $campaignObj = get_object('mail_campaign', $campaign_id);
-    $scope->campaign_id = $campaignObj->id;
-    $step = isset($_GET['preview']) ? 3 : 2;
-  }
-  
-  $scope->step = $step;
-  
-  $search = ['user.site_id' => $siteObj->id, 'active' => 1];
-  
-  $receiver_roles = $_GET['receiver_roles'];
-  $selected_roles = $receiver_roles ? explode(',', $receiver_roles) : [];
-  $selected_roles_str = [];
-  
-  if(!$step) {
-    $receiver_count = $_GET['receiver_count'];
-    $active_since = $_GET['active_since'];
-    $name = trim($_GET['name']);  
-    
-    if($active_since) $search['last_login'] = ['>=', date2sql($active_since)];  
-    $scope->users  = $users = find_objects('user', $search);
-    $scope->user_count  = $count = count($users);
-    
-    $roleObjs = find_objects('user_role', [], ['sort' => 'id']);
-    $roles = $role_terms = [];
-    foreach($roleObjs as $roleObj) {
-      if(is_array($__SITE_ROLES) && !in_array($roleObj->id, $__SITE_ROLES)) continue;
-      $roleSearch = array_merge($search, ["roles & {$roleObj->id}" => $roleObj->id]);
-      $users = find_objects('user', $roleSearch, ['debug_query' => 0]);
-      $count = $roleObj->count = count($users);
-      if($count || in_array($roleObj->id, $selected_roles)) $roles[] = $roleObj;
-      if(in_array($roleObj->id, $selected_roles)) $selected_roles_str[] = $roleObj->name;
-    }
-    //echo("gh roles=".dump($roles,true));
-    if($receiver_roles) {
-      list($recipients, $errors) = campaign_recipients($_GET);
-      if($errors) {
-        $scope->error = $errors;
-      } else {
-        $scope->receiver_count = $receiver_count = count($recipients);
-        $scope->message = "{$receiver_count} unique recipients found (some users have multiple roles)";
-      }
+            case "itinerary": /** itinerary */
+                $scope->pdf_url = create_pdf_booking($resObj); // always create fresh PDF on view
+            break;
       
-      // dump($recipients);
-      /**
-      if(count($selected_roles) > 1) {
-        foreach($selected_roles as $role_id) $role_terms["roles & {$role_id}"] = $role_id;
-        $roleSearch = array_merge($search, [DB_LOGICAL_OR => $role_terms]);
-      } else {
-        $roleSearch = $search;
-        $role_id = $selected_roles[0];
-        $roleSearch["roles & {$role_id}"] = $role_id;
-      }
-      $scope->selected_users  = $selected_users = find_objects('user', $roleSearch);      
-      $scope->receiver_count  = $receiver_count = count($selected_users);
-      $active_str = $active_since ? "active since $active_since" : "";
-      $roles_str = implode(',', $selected_roles_str);
-      if($receiver_count) {
-        $scope->message = "{$receiver_count} active users with roles $roles_str $active_str";
-      } else {
-        $scope->error = "No active users found with roles $roles_str $active_str";
-      }
-      */
+            case "send": /** proposal */
+                if(!in_array($resObj->status, array(STATUS_PROPOSED, STATUS_RESERVED, STATUS_COMPLETE))) {
+                    $scope->error = "Invalid reservation status";
+                    $scope->template = '403';
+                    return;
+                }
 
-      if($_GET['submit']) { // show step 2
-        $campaign = array2obj($_GET);
-        $campaign->sender = site_email($siteObj, $siteObj->name); 
-        $campaign->subject = ""; // "[{$siteObj->shortname}]"; 
-        $campaign->replyto = email_recipient(get_user_email($__USER),get_user_name($__USER));
-        $campaign->recipients = json_encode($recipients); 
-        $campaign->receiver_count = $receiver_count;
-        if($active_since) $campaign->active_since = date2sql($active_since);
+                list($guest_text, $host_text, $staff_text) = booking_mail_message($resObj);
+
+
+                //$mail_scope = ['profile_id' => $resObj->host_id,
+                //               'booking' => $resObj, 
+                //               'rental' => $aptObj, 
+                //               'receiver_name' => $guest_name, 
+                //               'receiver_role' => 'guest', 
+                //               'receiver_id' => $resObj->guest_id, 
+                //               'main_message' => $guest_text];
+                //$scope->mail_scope = $mail_scope;            
+
+
+                //$body = smarty_mail_template($siteObj, $template, ['scope' => $mail_scope, 'controller' => $controller]);
+                //echo("body = $body");
+
+                $mail = new stdClass;
+
+                $mail->template = $template = "mail/mail-booking";    
+                $mail->controller = $controller = "booking";            
+                $mail->from = site_email($resObj->site_id, true) ?: site_email($siteObj);    
+                $mail->subject = mail_subject('reservation', $resObj);
+                $mail->main_message = $guest_text;
+
+                $guest_name =  $resObj->guest_id ? get_user_name($resObj->guest_id) : get_name_string($resObj);
+                $mail->recipient = $mail->to = guest_email($resObj, true) ?: email_recipient($resObj->email_address, $guest_name);    
+                $mail->receiver_role = 'guest';
+                $mail->receiver_id = $resObj->guest_id;
+
+                $mail->obj_name = 'booking';
+                $mail->obj_type = 'reservation';
+                $mail->obj_id = $resObj->res_id;
+                $mail->action = '';
+                $scope->mail  = $mail; 
+
+                break;
+
+            case "recalculate":
+                print_log("recalc:", 'invoice', LOG_LEVEL_TEST);
+
+                $search = array('res_id' => $res_id, 'status' => array('>=', INV_STATUS_DRAFT));
+                $fields = array('invoice.id', 'invoice_id', 'start_date', 'end_date', 'total', 'paid', 'balance', 'sequence', 'locked', 'concerning');
+                $options = array('fields' => $fields, 'sort' => 'sequence', 'debug_query' => 0);
+                $scope->before = $before = find_objects('invoice', $search, $options);
+                $all_ids = [];
+                foreach($before as $invObj) $all_ids[] = $invObj->id;
+                //foreach($before as &$invObj) $invObj->concerning = "foo";
+                //$message = html_h2('before').invoice_debug_print($res_id);
+
+
+                $inv_ids = add_reservation_invoices($res_id);
+                //dump($inv_ids);
+                if($inv_ids === false) {
+                    $scope->error = "Failed to recalcuate invoices - is this a booking from a remote source? ";
+                } else {
+                    foreach($all_ids as $inv_id) recalculate_invoice($inv_id);
+                    //$invObjs = find_reservation_invoices($res_id, array('search' => array('type' => INV_TYPE_BOOKING, 'status' => array('>=', STATUS_ALL))));
+                    //$inv_ids = array_find_key($invObs, 'id');
         
-        // printable list of roles
-        $roleObjs = find_objects('user_role', ['id' => $selected_roles]);
-        $roles = [];
-        foreach($roleObjs as $roleObj) $roles[] = $roleObj->name;
+                    $scope->after = $after = find_objects('invoice', $search, $options);     
+        
+                    /** calc extras - from update_invoice_total */
+                    $count = count($all_ids);
+                    $inv_id_list = $count ? implode(',', $all_ids) : '';
+                    print_log("recalc: count=$count list=$inv_id_list for $res_id", "invoice", LOG_LEVEL_ALWAYS);  
+                    if($count) {
+                        $extra_li_types = implode(',', array(LI_TYPE_PRODUCT, LI_TYPE_SERVICES, LI_TYPE_EXTRAS, LI_TYPE_CATERING));
+                        $qs = "SELECT sum(total) FROM inv_lineitem WHERE inv_id IN ($inv_id_list) AND type IN ($extra_li_types)";
+                        $extras = db_getOne($qs); 
+                        print_log("recalc: update_invoice_total: other charges=$extras from $inv_id_list for $res_id", "invoice", LOG_LEVEL_ALWAYS);  
+                        print_log("qs: $qs", "invoice", LOG_LEVEL_ALWAYS);  
+                        db_query("UPDATE reservation SET other_charges = '$extras' WHERE res_id=$res_id");
+                        booking_update_total($res_id);
+                    }
+        
+                    $resObj = get_object('reservation', $res_id);
+        
+                }
+       
+            case "cancel":
+                if(!$is_host && !$is_guest && !$is_admin) {
+                    $scope->error = "Only guest and host can cancel a booking";
+                    $scope->template = "404";
+                }
+                break;
 
-        $scope->receiver_roles_str = implode(", ", $roles);
-        $scope->step = 2; // passed to template, not switch statement below
-        $scope->receiver_count = $receiver_count;        
-        $scope->campaign = $campaign;
-      }
+            default:
+                return controller_error($app, "Unknown subview {$subview}");
+                break;
+        }
+  
+        $scope->booking = $resObj;
+        return;
     }
-    
-    $scope->selected_roles = $selected_roles;
-    $scope->roles = $roles;
-    
-  }
-      
-  return;
-}
 
-/** contact form */
-function controller_contact($app, $options = []) {
-  global $__USER;
-  $scope = $app->page->scope;
-  $siteObj = $app->site;
+    function controller_payment_status($app, $options = []) {
+        $scope = $app->page->scope;
+        $options['prefix'] = "_payment";
 
-  $scope->replyto_sender = 1;
-  $__header = $app->header; 
-  $__header->base_scripts[] = "//www.google.com/recaptcha/api.js";
+        /** normally we use invoice ID, but for mails, we pass payment ID */
+        if($payment_id = $scope->payment_id) {
+            $paymentObj = $scope->payment = get_object('payment', $payment_id);
+            $scope->inv_id = $paymentObj->inv_id;
+        }
 
-  //die("contact ctrl".dump($scope,true));
-  print_log("controller_contact: scope=".dump($scope,true), 'mail', LOG_LEVEL_TEST);
+        controller_invoice_status($app, $options); // much the same
+        return;
+    }
+
+    /** base controller, also used by mail */ 
+    function controller_payment($app, $options = []) {
+        $scope = $app->page->scope;
+        $options['prefix'] = "_payment";
+
+        /** normally we use invoice ID, but for mails, we pass payment ID */
+        if($payment_id = $scope->payment_id) {
+            $paymentObj = $scope->payment = get_object('payment', $payment_id);
+            $scope->inv_id = $paymentObj->inv_id;
+        }
+        controller_invoice($app, $options);
+        return;
+    }
+
+/** base controller, also used by mail */ 
+    function controller_invoice($app, $options = []) {
+        $scope = $app->page->scope;  
+
+        $errors = $messages = array();
+        $obj_type = $scope->obj_type = "invoice"; 
+        $obj_id = $inv_id = $scope->obj_id = $scope->inv_id = pick_first($scope->inv_id ?: $scope->obj_id, $_GET['inv_id'] ?: $_GET['obj_id'], $options['inv_id'] ?: $options['obj_id'], $app->object_id);
+        $pin = pick_first($_GET['pin'], $options['pin'], $scope->pin, $scope->pin_code);
+        $obj = $invObj = $inv_id ? get_object($obj_type, $obj_id) : '';  
+
+        print_log("controller_invoice: inv_id={$inv_id} pin={$pin} id: {$invObj->id}".dump($scope,true), 'app', LOG_LEVEL_TEST);
+
+        if(!$invObj) return controller_error("Invoice not found", '403');
+
+        $scope->obj_id = $obj_id;
+        $scope->obj_type = $obj_type;
+        $scope->obj = $scope->invoice = $obj;
+        $scope->pin = $pin;
+        $scope->host_id = $host_id = $obj->host_id;
+        $scope->is_host = $is_host = $u_id && $host_d && $u_id == $host_id;
+        $scope->guest_id = $guest_id = $obj->guest_id;
+        $scope->is_guest = $is_guest = $u_id && $guest_id && $u_id == $guest_id;
+        return;
+    }
+
+    function controller_invoice_status($app, $options = []) {
+        global $u_id, $u_level, $__LIVE;
+        $__header = $app->header; 
+        $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
+        $__header->styles[] = "/afr/css/print.css";
+
+        $errors = $messages = array();
+
+        $siteObj = $app->site;
+
+        controller_invoice($app, $options);
+        $scope = $app->page->scope;  
+        if($scope->error) return;
+
+        $obj_type = $scope->obj_type; 
+        $obj_id = $inv_id = $scope->inv_id = $scope->obj_id;
+        $obj = $invObj = $scope->obj;  
+        $pin = $scope->pin;
+        $host_id = $scope->host_id;
+        $is_host = $scope->is_host;
+        $guest_id = $scope->guest_id;
+        $is_guest = $scope->is_guest;
+        $site_id = $siteObj->id;
+
+
+        /** security */
+        if($u_id) { // we're logged in 
+            $user_id = $u_id;
+            $auth_level = auth_invoice($invObj);
+        } elseif($pin) { // check pin
+            $scope->pin_code = $pin;
+            $auth_level = myhash($invObj->booking_pin) == $pin ? USER_LEVEL_GUEST : 0;
+            print_log("gh pin={$pin} auth:{$auth_level} id: {$invObj->id}", 'invoice', LOG_LEVEL_TEST);
+        if(!$auth_level) $auth_level = myhash_old($invObj->booking_pin) == $pin ? USER_LEVEL_GUEST : 0; // grandfather clause
+        if(!$auth_level) return controller_error("Invalid PIN", '403');
+        } else { // redirect to login
+            redirect_login();
+            return;
+        }
+
+        print_log("ok pin={$pin} auth:{$auth_level} id: {$invObj->id}", 'invoice', LOG_LEVEL_TEST);
+
+        $scope->auth_level = $auth_level;
+        $scope->data = array_filter(array("obj_type" => 'invoice', "inv_id" => $inv_id, "pin"  => $pin)); // send to ajax fetch-template method and back to this controller (in options)
   
-  /** all of the below currently only used for vPatina plugin */
+        if(!$auth_level) {
+            $scope->error = "Unauthorized";
+            $scope->template = '403';
+            return;
+        }
   
-  if($sender = trim(urldecode($_GET['sender']))) {
-    list($email, $name) = parse_recipient($sender);
-    $scope->sender_name = $name;
-    $scope->sender_email = $email;
-    //echo("s=$sender n=$name e=$email"); 
-  } elseif($__USER) {
-    $scope->sender_name = $__USER->display_name;
-    $scope->sender_email = $__USER->email_address;
-    $scope->sender_phone = $__USER->phone;
-  }
-  if($recipient = trim(urldecode($_GET['recipient']))) {
-    list($email, $name) = parse_recipient($recipient);
-    $scope->receiver_name = $name;
-    $scope->receiver_email = $email;
-  }
-  if($subject = trim(urldecode($_GET['subject']))) $scope->subject = $subject;
+  
+        $scope->auth_edit_invoice = $scope->auth_invoice = $auth_edit = $auth_level >= USER_LEVEL_STAFF; // can edit?
+        $scope->show_contact = $auth_edit || $is_guest || $pin; 
+  
+        if($auth_edit) {
+            $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js";
+            $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js"; /** todo: support other languages, use $app->locale  */
+            $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/editable/bootstrap-table-editable.js";
+            $__header->scripts[] = "/afr/bower/x-editable/dist/bootstrap3-editable/js/bootstrap-editable.js";
 
-  if($msg = trim(urldecode($_GET['msg']))) $scope->main_message = $msg;
-  //else $scope->main_message = "You have a message from the contact form.";
-  else $scope->main_message = "An inquiry via {$siteObj->name}:";
+            $__header->styles[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.css";
+            $scope->data_url = "/ajax.php?oper=get-rows&obj_type=inv_lineitem&search=$inv_id"; //&return=rows";
+            $scope->edit_url = "/ajax.php?oper=edit&obj_type=inv_lineitem";
+            $scope->title = "Edit invoice ".$invObj->invoice_number ?: $inv_id;
 
-  extract($_GET);
+
+            $scope->inv_ids = $invObj->sequence ? find_objects('invoice', ['parent_type' => $invObj->parent_type, 'parent_id' => $invObj->parent_id], ['field' => 'invoice.id']) : [];
+            $org_id = $invObj->org_id;
+            $contact_id = $invObj->contact_id;
+            $scope->contact = $contact_id ? get_object('contact', $contact_id) : null;
+            $scope->contacts = $org_id ? find_objects('contact', ['org_id' => $org_id, 'active' => 1], ['sort' => 'organization, first_name']) : [];
+
+        }
+
+        $scope->public_link = $public_link = invoice_link($invObj, true);
+
+        $parent_type = $invObj->parent_type;
+        $parent_id = $invObj->parent_id;
+        $guest_id = 0;
+        $le_id = $invObj->legal_entity_id;
+        $scope->legal_id = $le_id;
+        $scope->reeleezee_username = $le_id ? get_object('legal_entity', $le_id, 'reeleezee_username') : '';
+
+        $resObj = null;
+        if($parent_type && $parent_id) {
+            $parentObj = get_object($parent_type, $parent_id);
+        if($parent_type == 'reservation') $resObj =  $parentObj;
+            $scope->type_name = booking_type_name($resObj);     
+        }
+        $aptObj = $resObj = null;
+        switch($parent_type) {
+            case 'reservation':
+                $scope->booking = $resObj = $parentObj;  
+                $scope->due_now = $invObj->due_now = get_due_now($invObj, $resObj);   // how much is due now (either full amount or percentage of total
+            //echo("Due = $due_now");
+                $apt_id = $resObj->apt_id;
+                $ptype = $resObj->property_type;
+                $scope->rental = $aptObj = $apt_id && $ptype ? get_object($ptype, $apt_id) : null;
+                $guest_id = $resObj->guest_id; 
+                break;
+            default:
+                break;
+        }
+
+        //$scope->view = $template = pick_first($_GET['view'], $_GET['template'], $options['template'], "_invoice-overview.html");
+        //if($template && strpos($template, '_invoice-') === false) $template = $scope->view = "_invoice-{$template}.html"; // allow shortform
+        $ctrl = $app->page->controller;
+        if($ctrl == 'payment_status') { /** this controller is also used for payments */
+            $prefix = 'payment';
+            $default_subview = 'payment';
+        } else {
+            $prefix = 'invoice';
+            $default_subview = 'overview';
+        }
+
+        $subview = $app->page->subview ?: $default_subview; 
+        $app->page->subtemplate = "_{$prefix}-{$subview}.html";
+  
+        print_log("controller_invoice_status: inv_id={$inv_id} pin={$pin} id={$invObj->id} ctrl={$ctrl} subview={$subview} prefix={$prefix}", 'app', LOG_LEVEL_TEST);
+  
+        switch($subview) {
+        case "overview":
+            if($auth_level >= USER_LEVEL_STAFF) {
+                $scope->change_log = object_change_log($obj_type, $obj_id);
+                $scope->mail_log = $mail_log = object_mail_log($obj_type, $obj_id);
+            }
+  
+            break;
+        case "receive":
+            $paymentTypes = array(PAYMENT_TYPE_CREDIT_CARD, PAYMENT_TYPE_CASH, PAYMENT_TYPE_BANK, PAYMENT_TYPE_PAYPAL, PAYMENT_TYPE_AGENT);
+            $scope->payment_types = find_objects_assoc('payment_type', array('id' => $paymentTypes), array('first' => phrase('select', CAPITALIZE).'...'));
+            $scope->payment_statuses = array(PAYMENT_STATUS_COMPLETED => 'Completed', PAYMENT_STATUS_PENDING => 'Pending');
+            $scope->currencies = get_currencies();
+            break;
+        case "export":
+            break;
+        case "recalculate":
+            $res_id = $invObj->res_id;
+            $scope->invoice_before = invoice_rows($inv_id);
+            recalculate_invoice($inv_id);
+            $scope->invoice_after = invoice_rows($inv_id);
+            break;
     
-  $scope->provider_keys = $pk = $app->scope->provider_keys; // find_objects('provider_key', array('site_id' => $siteObj->id, 'active' => 1), array("field" => "provider_id"));
+        case "payment":
+    
+            /** set up Mollie, PayPal */
+            $live = $app->live || $app->live_payments_test;
+            $scope->paypal_key = $pp_key = get_config(($live ? "ppu" : "pput"), $siteObj->id);
+            $scope->mollie_key = $mollie_key = get_config(($live ? "ml" : "mt"), $siteObj->id);
+            $scope->mollie_methods = $mollie_methods = mollie_methods($mollie_key);    
+
+            /** look for PayPal return */
+            if($scope->txn_id = $_GET['tx']) {
+                $scope->tx_st = $_GET['st'];
+                $scope->tx_currency = $_GET['cc'];
+                $scope->tx_amount = $_GET['amt'];
+            }
+    
+            if($resObj && ($resObj->status == STATUS_RESERVED || $resObj->status == STATUS_COMPLETE) && $invObj->head_invoice && $invObj->type == INV_TYPE_BOOKING) { 
+                $template = "mail/booking-mail";
+                $guest_text = "this is a test";
+                $mail_scope = ['receiver' => 'guest', 'profile_id' => $resObj->host_id, 'res_id' => $resObj->res_id, 'title' => "{$dear} {$guest_name},", 'personal_message' => $guest_text];
+                $mail_template_options = [
+                'scope' => $mail_scope, 
+                'controller' => 'booking_status', 'replyto' => "noreply@{$siteObj->domain}"];
+                //$body = smarty_mail_template($siteObj, $template, $mail_template_options);      
+
+                $scope->mail_template = $template;    
+                $scope->mail_controller = 'booking_status';    
+                $scope->sender = $from;    
+                $scope->receiver = $to;    
+                $scope->subject = booking_mail_subject($resObj);    
+                $scope->preview = $body;
+            }
+    
+            /**
+            $ccObjs = array();    
+            if($u_id == $guest_id) { // user is paying
+              $ccObjs = cc_user_cards($guest_id);  
+            } elseif($auth_edit) { // owner, staff
+              $ccObjs = cards_on_file(array('parent_type' => $parent_type, 'parent_id' => $parent_id));
+            }
+            if(count($ccObjs)) $scope->cards = cc_cards_printable($ccObjs);
+            */
+            break;
+        case "print":
+    
+            purge_invoices($inv_id);
+            //dump($invObj);
+            $scope->pdf_url = $pdf_url = create_pdf_invoice($invObj); // always create fresh PDF on view
+            print_log("url of {$invObj->id}= {$pdf_url}", 'invoice', LOG_LEVEL_ALWAYS);
+            break;
+    
+        case "send":
+            $invoice_id_required = get_object('legal_entity', $invObj->legal_entity_id, 'invoice_id_required') ? 1 : 0;
+            if($invoice_id_required && !trim($invObj->invoice_id)) {
+              $errors[] = "An Invoice ID is required before sending this invoice";
+                if(1) {
+                    $export_link = html_link(invoice_link($invObj)."/export", "export", ['class' => 'click-target', 'data-target' => '#invoice_export_link']);
+                    $errors[] = "Perhaps you need to $export_link the invoice first?";
+                }
+                $scope->error = $errors;
+                return;
+            }
+
+            $scope->mail_log = $mail_log = object_mail_log($obj_type, $obj_id);
+            
+            $pdf_url = create_pdf_invoice($invObj); // always create fresh PDF on view   
+
+            $guest_text = phrase('you have a new invoice from %s (attached)', CAPS, $siteObj->name);
+            $guest_name =  $invObj->guest_id ? get_user_name($invObj->guest_id) : get_name_string($invObj);
+            $recipient = guest_email($invObj, true) ?: email_recipient($invObj->email_address, $guest_name);
+            $guest_name = "People who pay";    
+            $site_name = str_replace(' ', '-', $siteObj->name);
+            $invoice_id = $invObj->invoice_id ?: $invObj->id;
+            
+            
+            $mail = new stdClass;
+            
+            $mail->template = $template = "mail/mail-invoice";    
+            $mail->controller = $controller = "invoice";            
+            $mail->sender = site_email($invObj->site_id, true) ?: site_email($siteObj);    
+            $mail->recipient = $recipient;
+            $mail->receiver_name = $guest_name;
+            $mail->subject = mail_subject('invoice', $invObj);
+            $mail->body = $body;
+            $mail->main_message = phrase('you have a new invoice from %s (attached)', CAPS, $siteObj->name);
+            $mail->personal_message = ""; 
+            $mail->attachment = docroot().$pdf_url;
+            $mail->attachment_name = str_replace(' ', '_', "$site_name invoice $invoice_id").'.pdf';
+            $mail->obj_name = 'invoice';
+            $mail->obj_type = 'invoice';
+            $mail->obj_id = $invObj->id;
+
+            $scope->mail  = $mail; 
+    
+            break;
+        case "share":
+            break;
+    
+        default:
+            return controller_error($app, "Unknown subview {$subview}");
+            break;
+        }
+  
+        $payments = invoice_payments($inv_id);
+        $invObj->payments = $payments ? payment_rows($payments, $auth_level) : [];
+
+        $scope->invoice_rows = invoice_rows($invObj, $auth_level);  
+        $scope->invoice = $invObj;  
+        return;
+    }
+
+    function controller_forgot_password($app, $options = []) {
+        global $u_id;
+        $scope = $app->page->scope;
+        $errors = array();
+
+        if($guid = $_GET['guid']) {
+
+        /** new: using phpauth */
+        $phpauth = user_phpauth();    
+        $result = $phpauth->verifyKey($guid);
+        if($result['error']) {
+            $errors[] = $result['message'];
+        } else {
+            $prObj = new stdClass();
+            $prObj->id = $result['id'];
+            $prObj->user_id = $result['user_id'];
+            $prObj->guid = $guid;
+            $scope->reset = $prObj;
+        }
+
+        if($errors) {
+            $scope->error= $errors;
+            $scope->template = '403';      
+            return;
+        }
+        $scope->message = $messages;  
+        $scope->template = "reset-password.html";
+        }
+
+        $scope->user_id = $u_id;
+        return;
+    }
+
+
+    function controller_user_account($app, $options = []) {
+        global $u_id, $u_level;
+        $__header = $app->header; 
+        $__header->scripts[] = "/afr/bower/iban/iban.js";
+        $siteObj = $app->site;
+
+        //print_log("controller_user_account 1 u_id=$u_id", 'smarty', LOG_LEVEL_TEST);
+        $scope = $app->page->scope;
+        if(!$u_id) {
+            redirect_login();
+            //$scope->redirect = site_pagetype_link($siteObj, PAGE_LOGIN)."?ref=".site_pagetype_link($siteObj, PAGE_PROFILE);
+            return;
+        }
+  
+        $obj_type = $scope->obj_type = $app->object_type;
+        $obj_id = $scope->obj_id = $app->object_id;
+        $obj = $obj_type && $obj_id ? get_object($obj_type, $obj_id) : null;
+
+        if($obj_type == 'user' && $obj_id && $obj) { // from slug
+            $user_id = $obj_id;
+            $userObj = $obj;
+        } else {
+            $user_id = $u_id;
+            $userObj = $app->user ?: get_object('user', $user_id); // logged in user, already merged with profile
+        }
+        // for now
+        // later (allow admins to edit other profiles): $scope->auth_edit = $auth_edit = auth_action('user', 'edit', $u_id);
+
+        $scope->profile = $scope->user = $userObj;
+        $scope->user_id = $userObj->id;
+        $scope->auth_edit = $scope->auth_edit_account = $auth_edit = auth_user_account($user_id);
+
+        if(!$auth_edit) {
+            $scope->error = "Unauthorized";
+            $scope->template = "404";
+            return;
+        }
+  
+        //$scope->view = $template = pick_first($_GET['view'], $_GET['template'], $options['template'], "_user-account-notifications.html");
+        //if($template && strpos($template, '_user-account-') === false) $template = $scope->view = "_user-account-{$template}.html"; // allow shortform
+
+        // public
+        // ["notifications","security","privacy","password","linking","payout","transactions"]
+        $subview = $app->page->subview ?: 'notifications';    
+        $app->page->subtemplate = "_user-account-{$subview}.html";
+        switch($subview) {
+            case "notifications":
+                break;
+            case "security":
+                break;
+            case "privacy":
+                break;
+            case "password":
+                break;
+            /**
+            case "cards":
+                $ccObjs = cc_user_cards($user_id);  
+                $scope->cards = cc_cards_printable($ccObjs);      
+            break;
+            */
+            case "linking":
+                $scope->link_requests = find_objects('user_map', ['host_user_id' => $user_id, 'verified' => 0]);
+                $scope->linked_users  = find_objects('user_map', ['user_id' => $user_id]);
+                $scope->auth_users    = find_objects('user_map', ['host_user_id' => $user_id, 'verified' => 1]);
+                break;
+            case "payout":
+                break;
+            case "transactions":
+                $start = $scope->start = $_GET['start'] ?: 0;
+                $limit = $scope->limit = 10;
+                $scope->transactions = find_objects('payment', array("host_id" => $u_id));
+
+                //$fields = array('res_id','created','status','city_id','city_name','checkin','checkout','apartment_name','currency','grand_total', 'chat_count');
+                $fields = '';
+                $searchOptions = array("fields" => $fields, "start" => $start, "limit" => $limit);
+                $search = array("host_id" => $user_id, "status" => array(STATUS_COMPLETEED));
+                $scope->transactions = find_objects("payment", $search, $searchOptions);
+                $scope->transaction_count = count_objects("payment", $search);
+                break;
+            default:
+                return controller_error($app, "Unknown subview {$subview}");
+                break;
+        }
+        //dump($scope);
+        return;  
+    }
+
+    /** new public: view user profile */
+    function controller_user_profile($app, $options = []) {
+        //echo "hi";
+        //global $u_id, $u_level;
+        $u_id = $app->user->id;
+        $__header = $app->header; 
+        $__header->scripts[] = "/afr/bower/lightslider/dist/js/lightslider.min.js";
+        $__header->styles[] = "/afr/js/vp/vp.min.css{$cachebust}";
+
+        $__header->scripts[] = "/afr/js/vp/vp.js{$cachebust}";
+        $__header->scripts[] = "/afr/js/sw.js";
+        $__header->styles[] = "/afr/bower/lightslider/dist/css/lightslider.min.css";
+        $siteObj = $app->site;
+
+        if($providers = $app->scope->provider_keys) {
+            foreach($providers as $provider_id) { 
+              if(in_array($provider_id, $providers)) $scope->provider_profiles[$provider_id] =  find_object('provider_profile', array('site_id' => $siteObj->id, 'user_id' => $user_id, 'provider_id' => $provider_id));
+                }
+            }
+
+            $scope = $app->page->scope;
+
+            $obj_type = $scope->obj_type = $app->page->object_type ?: 'user';
+            $obj_id = $scope->obj_id = $app->page->object_id;
+
+            //die("t={$obj_type} id={$obj_id}");
+            $obj = $obj_type && $obj_id ? get_object($obj_type, $obj_id) : null;
+  
+            if($obj_type == 'user' && $obj_id && $obj) { // from slug
+                $user_id = $obj_id;
+                $userObj = $obj;
+                if(!$userObj->active) {
+                    if($u_level < USER_LEVEL_STAFF) return controller_error($app, "User not found", 404);
+                    $scope->message = "User not active";
+                }
+            } else {
+                //if(!$u_id) {          
+                //  $scope->error = "Missing User ID and not logged in";
+                //  $scope->template = "404";
+                //  return;
+                //}
+                $user_id = $u_id;
+                $userObj = $app->user ?: get_object('user', $user_id); // logged in user, already merged with profile
+            }
+  
+            //dump($userObj);
+            // for now     
+            // later (allow admins to edit other profiles): $scope->auth_edit = $auth_edit = auth_action('user', 'edit', $u_id);
+            $scope->profile = $scope->user = $userObj;
+            $scope->user_id = $userObj->id;
+            $curator_profile = get_user($app->object_id);
+            $scope->curator_id = $curator_profile->id;
+            // dump(find_objects('media_collection', ['user_id' => $scope->curator_id, 'subtype' => 40, 'active' => 1]));
+
+            $scope->curator_name = $curator_profile->display_name;
+            $scope->curator_photo = $curator_profile->photo;
+            $scope->email = $curator_profile->email;
+
+            $scope->curator_address_formatted = $curator_profile->address_formatted;
+            $scope->curator_social = $curator_profile->social;
+
+            $scope->auth_edit = $auth_edit = $scope->auth_edit_user = auth_user_profile($user_id);
+
+            $scope->auth_login = auth_login($user_id) && $u_id != $user_id;
+
+            //die("ctrl: {$app->page->controller} tpl {$app->page->template}");
+            //die("u_id={$u_id} user_id={$user_id} edit={$auth_edit} al=".$scope->auth_login. " e=".$scope->auth_edit_user);
+
+            /** property sites */
+            if($ptype = $siteObj->property_type) {
+                $scope->guest_reviews = find_objects("feedback", array("parent_type" => "reservation", "host_id" => $user_id, "published" => 1));
+                $scope->host_reviews  = find_objects("feedback", array("parent_type" => "user", "parent_id" => $user_id, "published" => 1));
+                $scope->host_listings = $host_listings = find_objects($ptype, array("host_id" => $user_id, "active" => 1), ["limit" => 25, "fields" => ['id', 'active', 'guid', 'type','name', 'media', 'address_city', 'address_country']]);
+                //dump($host_listings);
+                $scope->host_listings_count = count_objects($ptype, array("host_id" => $user_id, "active" => 1));
+            }
+  
+            /** todo: art website or override */
+  
+        return;
+    }
+
+    /** new: edit user profile */
+    function controller_edit_profile($app, $options = []) {
+        global $u_id, $u_level;
+        $__header = $app->header; 
+        $siteObj = $app->site;
+
+        $__header->scripts[] = "/afr/bower/bootstrap-tags/dist/js/bootstrap-tags.min.js";
+        $__header->scripts[] = "/afr/bower/geocomplete/jquery.geocomplete.min.js";
+        $__header->scripts[] = "/afr/bower/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js";
+        $__header->scripts[] = "https://cdnjs.cloudflare.com/ajax/libs/bootstrap-timepicker/0.5.2/js/bootstrap-timepicker.min.js";
+        $__header->styles[] = "/afr/bower/bootstrap-tags/dist/css/bootstrap-tags.css";
+        $__header->styles[] = "/afr/bower/bootstrap-datepicker/dist/css/bootstrap-datepicker.css";
+        $__header->styles[] = "https://cdnjs.cloudflare.com/ajax/libs/bootstrap-timepicker/0.5.2/css/bootstrap-timepicker.min.css";
+
+        $__header->scripts[] = "/afr/js/afr_gmap.js";
+
+        $ptype = $siteObj->property_type ?: "";
+        $scope = $app->page->scope;
+        $scope->path = this_path();
+
+        $obj_type = $scope->obj_type = $app->object_type;
+        $obj_id = $scope->obj_id = $app->object_id;
+        $obj = $obj_type && $obj_id ? get_object($obj_type, $obj_id) : null;
+
+        if($obj_type == 'user' && $obj_id && $obj) { // from slug
+            $user_id = $obj_id;
+            $userObj = get_user($obj_id);
+        } else {
+            $userObj = get_user($u_id); 
+            $user_id = $u_id;
+        }
+
+        $scope->profile = $scope->user = $userObj;
+        $scope->user_id = $userObj->id;
+        $scope->auth_edit = $auth_edit = $scope->auth_edit_user = auth_user_profile($user_id);
+
+        //die("edit $user_id = $auth_edit");
+
+        if(!$auth_edit) {
+            $scope->error = "Unauthorized $user_id";
+            $scope->template = "404";
+            return;
+        }
+  
+        //$scope->view = $template = pick_first($_GET['view'], $_GET['template'], $options['template'], "_user-profile-overview.html");
+        //if($template && strpos($template, '_user-profile-') === false) $template = $scope->view = "_user-profile-{$template}.html"; // allow shortform
+  
+        if($provider_id = $_GET["provider_id"]) {
+            $result = user_provider_profile($siteObj, $provider_id, $u_id);
+            if($result->success) {
+                $profileObj = $result->data;
+                $scope->debug = dump($profileObj, true);
+            } else {
+                $scope->error = $result->error;
+            }
+            $subview = 'verification';
+        } else {
+            $subview = $app->page->subview ?: 'overview';    
+        }
+
+        $scope->uploader = user_profile_uploader($user_id, array("view" => "list", "handler" => "user_photo_handler")); // doesn't work in switch, as dependencies are not loaded      
+        $scope->passport_uploader = user_profile_uploader($user_id, array("view" => "list", "field" => "passport", "resize" => 0)); // doesn't work in switch, as dependencies are not loaded      
+
+        $app->page->subtemplate = "_user-profile-edit-{$subview}.html";
+  
+        switch($subview) {
+            case "artist":
+            case "gallery":
+            case "collector":
+            case "overview":
+            case "settings":
+            case "details":
+            case "photos":
+              break;
+
+            case "message":
+                $inbox_scope = controller_inbox($app, $options);
           
-  return;
-}
+                if($user_id == $u_id) {
+                    $scope->error = phrase('you cannot send a message to yourself', CAPITALIZE);
+                }
+                $scope->parent_type = $_GET['parent_type'];
+                $scope->parent_id = $_GET['parent_id'];
+                $scope->sender_id = $u_id;
+                $scope->receiver_id = $user_id;
+                $scope->form_redirect = $scope->thread_id = $thread_id = chat_thread_id((array) $scope);
+                break;
+            case "history":
+                $fields = array('res_id','created','status','city_id','city_name','checkin','checkout','apartment_name','currency','grand_total', 'chat_count');
+                $start = $scope->start = $_GET['start'] ?: 0;
+                $limit = $scope->limit = 10;
+                $search = array("guest_id" => $user_id, "status" => ['!=', STATUS_DRAFT]);
+                $searchOptions = array("fields" => $fields, "start" => $start, "limit" => $limit);
+                $trips = find_objects("reservation", $search, $searchOptions);
+                foreach($trips as $k => $trip) {
+                    $trip->chat_count = count_objects('chat', ['parent_type' => "reservation", 'parent_id' => $trip->res_id]);;
+                    $trips[$k] = $trip;
+                }
 
-/** mail preview function - for staff and higher only */
-function controller_mail($app, $options = []) {
-  global $u_id, $u_level, $__CLIENT_ID, $__SITE, $__USER;
-  $scope = $app->page->scope;
-  $siteObj = $app->site;
+                $scope->trips = $trips;
+                $scope->trip_count = count_objects("reservation", $search);
+                break;
+            case "bookings":
+                $fields = array('res_id','created','status','city_id','city_name','checkin','checkout','apartment_name','currency','grand_total', 'chat_count');
+                $start = $scope->start = $_GET['start'] ?: 0;
+                $limit = $scope->limit = 10;
+                $searchOptions = array("fields" => $fields, "start" => $start, "limit" => $limit);
+                $host_ids = user_host_list($user_id) ?: $user_id;
+                $search = array("host_id" => $host_ids, "status" => array('<>', array(STATUS_DRAFT, STATUS_BLOCKED)));
+                $scope->bookings = find_objects("reservation", $search, $searchOptions);
+                $scope->booking_count = count_objects("reservation", $search);
+                break;
+            case "wishlist":
+                $search = array("site_id" => $siteObj->id, "user_id" => $user_id);
+                $wishlistObjs = find_objects("wishlist", $search) ?: array();
+                foreach($wishlistObjs as &$wishlistObj) {
+                    $wishlistObj->obj = get_object($wishlistObj->obj_type, $wishlistObj->obj_id);
+                }
+                $scope->wishlist = $wishlistObjs;
+                break;
+            case "inbox":
+                $inbox_scope = controller_inbox($app, $options);
+                $scope->threads = $inbox_scope->threads;
+                $scope->inv_id = $inbox_scope->inv_id;
+                break;
+                case "verification":
+                if($providers = $app->scope->provider_keys) {
+                foreach($providers as $provider_id) { 
+                  if(in_array($provider_id, $providers)) $scope->provider_profiles[$provider_id] =  find_object('provider_profile', array('site_id' => $siteObj->id, 'user_id' => $u_id, 'provider_id' => $provider_id));
+                    }
+                }
+                break;
 
-  $mid = pick_first($scope->obj_id, $scope->mail_id, $option['obj_id'], $scope->obj_id, $_GET['mid'], $app->object_id);
-  $uid = $_GET['uid'];
+            default:
+                return controller_error($app, "Unknown subview {$subview}");
+                break;
+        }
 
-  $mailObj = null;
-  if($mid) {
-    $mailObj = get_object('mail_queue', $mid);
-    $auth_mail = auth_mail($mailObj);
-  } else if($uid) { // UID is almost impossible to guess, so no log-in/auth required other than correct client ID
-    $mailObj = find_object('mail_queue', ['guid' => $uid]);
-    $auth_mail = $mailObj->client_id == $__CLIENT_ID;
-  }
   
-  if($mailObj && !$auth_mail) {
-    return scope_error($app, "Unauthorized $mid", '403');
-  }
-  
-  $scope->auth_mail = $auth_mail;
-  $scope->show_address_book = 0;
-  
-  if($mailObj) {
-    $scope->mail = $mailObj;
-   
-  } elseif($u_id && $u_level >= USER_LEVEL_STAFF) { /** blank mail template */
-    $scope->mail_template = $template = "mail/mail-generic";
-    
-    $sender_name = user_display_name($__USER->id);
-    
-    $guest_name =  $resObj->guest_id ? get_user_name($resObj->guest_id) : get_name_string($resObj);
-    $mail_scope = ['receiver_name' => "", 
-                   'receiver_role' => 'user', 
-                   'receiver_id' => 0, 
-                   'main_message' => phrase('you have a message from %s', CAPS, $sender_name)];
-    
-    $body = smarty_mail_template($siteObj, $template, ['scope' => $mail_scope]);
-    
-    $mail = new stdClass;
-    $mail->template = $template = "mail/mail-booking";    
-    $mail->controller = $controller = "booking";            
-    $mail->scope = $mail_scope;
-    $mail->from = user_email($__USER, true) ?: site_email($siteObj);    
-    $mail->to = "";    
-    $mail->subject = mail_subject('mail');
-    $mail->body = $body; 
-    $mail->action = '';
-    $scope->mail  = $mail;
-    
-    $scope->show_address_book = $u_id ? 1 : 0;
-    
-  } elseif($u_id) {
-    return controller_error($app, phrase("nothing to see here", CAPS));    
-  } else {
-    return controller_error($app, phrase("please log in", CAPS));    
-  }
-     
-  return;
-}
+        //$scope->message = "u_id=$u_id user_id=$user_id auth=$auth_edit se={$scope->auth_edit} t2=$template";
+        //$scope->auth_edit = 111;
+        //$scope->auth_edit_user = 112;
+        //return;
+        //die("gh3");
 
-function controller_share($app, $options = []) {
-  $user_id = $app->user_id;
-  $user = $app->user;
-  $__header = $app->header; 
-  $siteObj = $app->site;  
-  $scope = $app->page->scope;
-  
-  /** new */
-  $obj_type = $_GET['obj_type'] ?: '';
-  $obj_id = $_GET['obj_id'] ?: 0;
-  $template = $_GET['template'] ?: '';
-  $controller = $_GET['controller'] ?: '';
-  $flag = 0;
-  //echo("ot={$obj_type} id:{$obj_id}");
-  if($obj_type == 'artwork_media'){
-    $obj_type= 'artwork';
-    $flag = 1;
-  } 
-  $public = ['artwork', 'media_collection_map', 'collection', 'media_collection'];
-  if($obj_type && $obj_id && in_array($obj_type, $public)) {
-    if(!in_array($obj_type, $public)) return controller_error($app, "Unsupported object type $obj_type");
-    $obj = get_object($obj_type, $obj_id);
-    if(!$obj) return controller_error($app, "{$obj_type} {$obj_id} not found");
-    
-    if(!$template) { /** figure out template/controller based on object type */
-      switch($obj_type) {
-      case 'media_collection_map':
-      case 'artwork':
-        $template = 'mail-artwork.html';
-        $controller = 'gallery_artworks';
-        if($flag)
-          $obj_type = 'artwork';
-        else
-          $obj_type = 'media_collection_map';
-        break;
-      case 'media_collection':
-      case 'collection':
-        $template = 'mail-collection.html';
-        $controller = 'gallery_collections';
-        $obj_type = 'media_collection';
-        break;
-      case 'artwork_media':
-        $template = 'mail-artwork.html';
-        $controller = 'gallery_artworks';
-        $obj_type = 'artwork';
-        break;
-      default:
-        return controller_error($app, "Unsupported object type $obj_type");      
-      }
-      //echo("tpl={$template}");
+        //echo("o=$obj_id t=$template".dump($scope,true)); 
+        return;    
     }
-  }
+
+    function controller_artist_profile($app, $options = []) {
+        dump('Ashiii');
+        
+        //echo "addf";
+        global $u_id;
+        $__header = $app->header; 
+        $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
+        $__header->styles[] = "/afr/js/vp/vp.min.css{$cachebust}";
+
+        $__header->scripts[] = "/afr/js/vp/vp.js{$cachebust}";
+        $__header->scripts[] = "/afr/js/sw.js";
+        $__header->styles[] = "/afr/css/gallery/afr_gallery.css?ver={$app->version}";
+
+        $scope = $app->page->scope;
+        controller_user_profile($app,$options);
+        $obj_type = $scope->obj_type = $scope->obj_type ?: $app->object_type;
+        $obj_id = $scope->obj_id =  $scope->obj_id ?: $app->object_id;
+        //$obj_id = $media_id = $scope->obj_id = $scope->obj_id ?: $app->object_id;
+        $obj = $obj_type && $obj_id ? get_object($obj_type, $obj_id) : null;
+        $siteObj = $app->site;
+        $scope->url = site_full_url($siteObj)."/profile/".$obj_id;
+
+        //$scope->collection = $collectionObj = find_object('media_collection',array('user_id' => $obj_id));
+        //$scope->curator = get_user($collectionObj->user_id);
+
+        //print_r($scope->curator);
+
+        if(!$obj_id) $obj_id = $u_id;
   
-  // https://test.vpatina.com/share/?url=https%3A%2F%2Ftest.vpatina.com%2Fexhibition%2Fclementine~1743&obj_type=media_collection&obj_id=1743&subject=foobar&_aid=17425&recipient=Thea+VG+<theo%40vpatina.com>
+        //echo("ot=$obj_type id=$obj_id");
+        //die('gh');
+        if($obj_type == 'user' && $obj_id) { // from slug
+            $user_id = $obj_id;
+            $userObj = get_user($obj_id);
+            //$scope->curator_id = user_has_role($userObj, USER_ROLE_CURATOR) ? $userObj->id : 0;
+            //print_r($userObj);
+        } else {
+            $userObj = $app->user; // logged in user, already merged with profile
+            $user_id = $u_id;
+        }
   
-  if($subject = $_GET['subject']) $scope->hide_subject = 1; 
-  $mail = new stdClass;
+        $scope->profile = $userObj;
+        //dump($userObj);
+        $scope->auth_edit = $auth_edit = auth_user_profile($user_id);
+        $scope->auth_login = auth_login($user_id);
+
+        //Mail For Time being in user profile page
+        if($obj_id){
+            $scope->mail_controller = 'gallery_artworks';
+            $scope->mail_template = 'mail/mail-profile.html';
+
+            $scope->obj_id = $obj_id;
+        }
   
-  $sender = $_GET['sender'] ?: '';
-  if(!$sender && $user) $sender = user_email($user);
+        $scope->auth_edit = $scope->auth_edit_user = $auth_edit; // scope auth_edit overrridden somewhere
+        //die("AL=".$scope->auth_login." edit=".$auth_edit);
+
+        // $al = auth_login($user_id);
+        // echo("<br><br><br><br>user_id=$user_id u_id=$u_id auth_edit: $auth_edit al: $al");  
+        // if($auth_edit) return controller_traveler_profile($app, $options);
   
-  $mail->obj_type = $obj_type;
-  $mail->obj_name = $obj_name = $obj_type ? get_object_name($_GET['obj_type'], LOWERCASE) : '';
-  $mail->obj_id = $obj_id;
+        $is_curator = $user_id && user_has_role($user_id, USER_ROLE_CURATOR);
+        $is_artist = $user_id && user_has_role($user_id, USER_ROLE_ARTIST);
+
+        // find curators  
+        $scope->curator_ids = $curator_ids =find_objects('media_collection_map', array('artist_id' => $user_id, 'curator_id' => array('>', 0)), array('fields' => 'distinct curator_id', 'debug_query' => 0));
+
+        $start = 0;
+        $limit = 40;
   
-  $mail->template = $template;    
-  $mail->controller = $controller;       
-  $mail->sender = $sender;
-  $mail->recipient = $recipient = $_GET['recipient'] ?: '';
-  //$mail->subject = $user ? user_display_name($user)." shared this with you from {$app->site->name}" : "Shared with you from {$app->site->name}";
-  $mail->subject = $subject ?: "I thought you might be interested in this {$obj_name}";
-  $mail->main_message = '';
-  //dump($mail);
-  $scope->mail  = $mail; 
+        if($is_curator) {
+            $scope->template = "user-profile-curator.html";
+            $scope->curator_id = $curator_id = $user_id;
+            
+            $scope->artist_artworks = gallery_selected_artworks($user_id, ['start' => $start, 'limit' => $limit]);
+            $scope->my_projects = $cur_projects = find_objects('media_collection', array('user_id' => $curator_id, 'type' => MEDIA_COLLECTION_TYPE_EXHIBITION, 'active' => 1), ['start' => $start, 'limit' => $limit]);
+            //print_r($cur_projects);
+            $my_projects = $cur_exhibition = [];
+            foreach($cur_projects as $cur_project){
+                $artists = json_decode($cur_project->artist_ids, True);
+                $get_date = $get_type = [];
+                $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $cur_project->id, 'active'=>1]);
+                foreach($get_artworks as $artwork){
+                    $get_date[] = $artwork->original_year;
+                    $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
+                    $get_type[] = get_artwork_type($find_art->type);
+                }
+                $mini =  min(array_filter($get_date));
+                $max = max(array_filter($get_date));
+                if(count($artists) == 1){
+                    if(in_array($curator_id, $artists)){
+                        $my_projects[] = $cur_project;
+                    if($cur_project->subtype == 40){
+                            $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                            if($mini == $max)
+                                $selection_range = "Selection (".$mini.")";
+                            elseif($mini < $max)
+                                $selection_range =  "Selection (".$mini."-".$max.")";
+                            else
+                                $selection_range =  "Selection";
+                            $cur_project->selection_range = $selection_range;
+                            $cur_project->selection_type = $selection_type;
+                        }
+                    }
+                    if($artists[0] != $curator_id){
+                        $cur_exhibition[] = $cur_project;
+                        if($cur_project->subtype == 40){
+                            $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                            if($mini == $max)
+                                $selection_range = "Selection (".$mini.")";
+                            elseif($mini < $max)
+                                $selection_range =  "Selection (".$mini."-".$max.")";
+                            else
+                                $selection_range =  "Selection";
+                            $cur_project->selection_range = $selection_range;
+                            $cur_project->selection_type = $selection_type;
+                        }
+                    }
+                }else{
+                    $cur_exhibition[] = $cur_project;
+                    if($cur_project->subtype == 40){
+                        $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                        if($mini == $max)
+                            $selection_range = "Selection (".$mini.")";
+                        elseif($mini < $max)
+                            $selection_range =  "Selection (".$mini."-".$max.")";
+                        else
+                            $selection_range =  "Selection";
+                        $cur_project->selection_range = $selection_range;
+                        $cur_project->selection_type = $selection_type;
+                    }
+                }
+            }
+            $scope->my_projects = $my_projects;
+            //dump($cur_exhibition);
+            $scope->curator_exhibition = $cur_exhibition;
+            //echo "2";
+            
+            $scope->curator_artworks = gallery_unique_artworks(array_find_key($curator_exhibitions, 'id'), ['start' => $start, 'limit' => $limit]);
+            $curator_profile = get_user($curator_id);
+            $scope->curator_id = $curator_profile->id;
+            $scope->curator_name = $curator_profile->display_name;
+            $scope->curator_photo = $curator_profile->photo;
+            $scope->curator_address_formatted = $curator_profile->address_formatted;
+            $scope->curator_social = $curator_profile->social;
+            //dump($scope->curator_name);
+        } elseif($is_artist) {
+            $scope->template = "user-profile-artist.html";    
+
+            $scope->artist_id = $artist_id = $user_id;
+            $scope->artist_projects = $artist_projects = find_objects('media_collection', 
+              array('user_id' => $artist_id, 'type' => MEDIA_COLLECTION_TYPE_PROJECT, 'active' => 1), ['start' => $start, 'limit' => $limit]);
+            if($project_ids = array_find_key($artist_projects, 'id')) {
+              //$scope->artist_artworks = gallery_unique_artworks($project_ids, ['start' => $start, 'limit' => $limit]); 
+            }
+
+            $scope->artist_artworks = gallery_selected_artworks($user_id, ['start' => $start, 'limit' => $limit]);
+            
+            /* Hidden for tym being by pradeepa
+            $artist_exhibitions_ids = find_objects('media_collection_map', 
+              array('artist_id' => $artist_id, 'user_id' => ['!=', $curator_id], 'collection_type' =>MEDIA_COLLECTION_TYPE_EXHIBITION, 'active' => 1), 
+              array('fields' => 'distinct media_collection_id', ['start' => $start, 'limit' => $limit]));
+            
+            $scope->artist_exhibitions = find_objects('media_collection', 
+              array('id' => $artist_exhibitions_ids, 'active' => 1), ['start' => $start, 'limit' => $limit]);
+            */
+
+            /*To view Exhibitions curated by gallery in artist profile*/
+            $curator_profile = $curator_ids[0]!=null ? get_user($curator_ids[0]) : get_user($user_id) ;
+            // $curator_profile = get_user($curator_ids[0]);
+            $scope->curator_id = $curator_id = $curator_profile->id;
+            $scope->curator_name = $curator_profile->display_name;
+            $scope->curator_photo = $curator_profile->photo;
+            $scope->curator_address_formatted = $curator_profile->address_formatted;
+            $scope->curator_social = $curator_profile->social;
+            //dump($curator_profile);
+            $cur_projects = find_objects('media_collection', array('user_id' => $curator_id, 'type' => MEDIA_COLLECTION_TYPE_EXHIBITION, 'active' => 1), ['start' => $start, 'limit' => $limit]);
+    
+            $my_projects = $cur_exhibition = [];
+            foreach($cur_projects as $cur_project){
+                $artists = json_decode($cur_project->artist_ids, True);
+                if(count($artists) == 1){
+                    if(in_array($curator_id, $artists)){
+                        $my_projects[] = $cur_project;
+                    }   
+                }
+            }
+            if($user_id == $curator_id)
+                $scope->my_projects = $my_projects;
+
+            $curator_exhibition = find_objects('media_collection', array('user_id' => $curator_id, 'type' => MEDIA_COLLECTION_TYPE_EXHIBITION, 'active' => 1, 'subtype' => [10,20,30,40] ), ['start' => $start, 'limit' => $limit]);
+            $cur_arr = $artist_arr = [];
+
+            foreach($curator_exhibition as $curator_exhibitions){
+                $artists = json_decode($curator_exhibitions->artist_ids, True);
+                $get_date = $get_type = [];
+                $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $curator_exhibitions->id, 'active'=>1]);
+                foreach($get_artworks as $artwork){
+                    $get_date[] = $artwork->original_year;
+                    $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
+                    $get_type[] = get_artwork_type($find_art->type);
+                }
+                $mini =  min(array_filter($get_date));
+                $max = max(array_filter($get_date));
+                if(count($artists) >1){
+                    if(($user_id != $curator_id) && (in_array($artist_id, $artists)) && (in_array($curator_id, $artists))){
+                        $artist_arr[] = $curator_exhibitions;
+                        if($curator_exhibitions->subtype == 40){
+                        $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                            if($mini == $max)
+                                $selection_range = "Selection (".$mini.")";
+                            elseif($mini < $max)
+                                $selection_range =  "Selection (".$mini."-".$max.")";
+                            else
+                                $selection_range =  "Selection";
+                            $curator_exhibitions->selection_range = $selection_range;
+                            $curator_exhibitions->selection_type = $selection_type;
+                        }
+                    }
+                    if(in_array($curator_id, $artists) && ($curator_id != $artists) ){
+                        $cur_arr[] = $curator_exhibitions;
+                        if($curator_exhibitions->subtype == 40){
+                            $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                            if($mini == $max)
+                                $selection_range = "Selection (".$mini.")";
+                            elseif($mini < $max)
+                                $selection_range =  "Selection (".$mini."-".$max.")";
+                            else
+                                $selection_range =  "Selection";
+                            $curator_exhibitions->selection_range = $selection_range;
+                            $curator_exhibitions->selection_type = $selection_type;
+                        }
+                    }
+                }else{
+                    if($artists[0] != $curator_id){
+                        $cur_arr[] = $curator_exhibitions;
+                        if($curator_exhibitions->subtype == 40){
+                            $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                            if($mini == $max)
+                                $selection_range = "Selection (".$mini.")";
+                            elseif($mini < $max)
+                                $selection_range =  "Selection (".$mini."-".$max.")";
+                            else
+                                $selection_range =  "Selection";
+                            $curator_exhibitions->selection_range = $selection_range;
+                            $curator_exhibitions->selection_type = $selection_type;
+                        }
+                    }
+                    if(($user_id != $curator_id) && ($artists[0] == $artist_id)){
+                        $artist_arr[] = $curator_exhibitions;
+                        if($curator_exhibitions->subtype == 40){
+                            $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                            if($mini == $max)
+                                $selection_range = "Selection (".$mini.")";
+                            elseif($mini < $max)
+                                $selection_range =  "Selection (".$mini."-".$max.")";
+                            else
+                                $selection_range =  "Selection";
+                            $curator_exhibitions->selection_range = $selection_range;
+                            $curator_exhibitions->selection_type = $selection_type;
+                        }
+                    }
+                }
+            }
+            $scope->artist_exhibitions = $artist_arr;
+    
+            $scope->curator_exhibition = $cur_arr;
+            //echo "3";
+        
+        } else {
+            $scope->template = "user-profile-collector.html";
+        }
+        $display_name = $title = $userObj->display_name;
+
+        $img_src = print_media($userObj->photo, array('source_only' => true, 'full' => true));
+
+        /** Add facebook Open Graph tags */
+        $__header->meta[] = array('property' => 'og:type', 'content' => 'article');
+        $__header->meta[] = array('property' => 'og:image', 'content' => add_https($img_src));
+        $__header->meta[] = array('property' => 'og:url', 'content' => $url);
+        $__header->meta[] = array('property' => 'og:title', 'content' => $display_name);
+        $__header->meta[] = array('property' => 'og:description', 'content' =>  strip_tags($userObj->description));    
+        $__header->meta[] = array('property' => 'article:author', 'content' =>  "https://www.facebook.com/vpatinabv");    
+
+        $__header->link[] = array('property' => 'image_src', 'content' =>  add_https($img_src));    
+        $app->page->author = $display_name;    
+        $app->page->description = strip_tags($userObj->description);   
+        $app->page->title = $title;    
+
+        $app->page->template = $scope->template;
+        //die("ctrl: {$app->page->controller} tpl {$app->page->template}");
+        //print_r($scope);
+
+        return;  
+    }                           
+
+
+
+    function controller_inbox_item($app, $options=[]) {
+       $scope->foo = "bar";
+       return;
+    }
+
+    /** only used for mail */
+    function controller_chat($app, $options=[]) {
+        global $u_id;
+        if(!$u_id) return;
+        $user_id = $u_id;  
+
+        $scope = $app->page->scope;
+        $chat_id = pick_first($scope->chat_id, $option['chat_id'], $scope->obj_id, $option['obj_id']);
+        $receiver_id = pick_first($scope->receiver_id, $option['receiver_id']); // to whom this mail is sent
+
+        $scope->messages = [];
+        if($chat_id) { /** todo: security */
+            $chatObj = $scope->chat = get_object('chat', $chat_id);
+            $sender_id = $chatObj->sender_id;
+            $scope->sender = get_user($sender_id);
+            $scope->parent_type = $parent_type = $chatObj->parent_type;
+            $scope->parent_id   = $parent_id = $chatObj->parent_id;
+            if($parent_type && $parent_id) {
+                $parentObj = get_object($parent_type, $parent_id);
+
+                switch($parent_type) {
+                    case 'reservation':
+                        $scope->booking = $parentObj;
+                        $scope->rental = get_object('property', $parentObj->apt_id);
+                        $scope->profile_id = $receiver_id == $parentObj->host_id ?  $parentObj->guest_id : $parentObj->host_id;
+
+                    break;
+                    default:
+                    break;
+                }
+            }
+
+            $thread_id = $chatObj->thread;
+            $scope->limit = $limit = 10;
+            $scope->count = count_objects("chat", array("thread" => $thread_id));
+            $chatObjs = find_objects("chat", array("thread" => $thread_id), array("sort" => "created DESC", "limit" => $limit));
+            $scope->thread_id = $thread_id;
+            $scope->thread = $chatObjs;
+        }
+        return;
+    }
+
+    /** used for inb.............................................................................................................................................................
+    ox page */
+    function controller_inbox($app, $options=[]) {
+        global $u_id, $u_level;
+        $scope = $app->page->scope;
+        if(!$u_id) return;
+        $user_id = $u_id;  
+
+        $thread_id = pick_first($scope->thread, $option['thread'], $app->object_slug);
+
+        if($thread_id) { // get one thread
+            $user_ids = explode('-', $thread_id);
+            if(count($user_ids) < 2 || ($u_level < USER_LEVEL_STAFF && !in_array($u_id, $user_ids))) {
+                $scope->error = "Invalid thread";      
+                return;      
+            }
+
+    
+            $chatObjs = find_objects("chat", array("thread" => $thread_id), array("sort" => "created DESC", "limit" => 0));
+
+    
+            if($scope->count = $count = count($chatObjs)) {
+                $chatObj = $chatObjs[0]; // get first
+
+                $scope->chat = $chatObj;
+
+                $scope->parent_type = $parent_type = $chatObj->parent_type;
+                $scope->parent_id   = $parent_id = $chatObj->parent_id;
+                    
+                if($parent_type != 'reservation') { // look for any chat with reservation in this thread
+                    if($res_id = find_object("chat", array("thread" => $thread_id, "parent_type" => "reservation"), "parent_id")) {
+                        $scope->parent_type = $parent_type = 'reservation';
+                        $scope->parent_id   = $parent_id = $res_id;
+                    }
+                }
+                  
+                if($parent_type && $parent_id) $scope->parent = $parentObj = get_object($parent_type, $parent_id);
+      
+                switch($parent_type) {
+                    case 'reservation':
+                        $scope->booking = $resObj = $parentObj; // get_object("reservation", $parent_id);
+                        $scope->invoice = $invObj = booking_invoice($resObj);
+                        $scope->inv_id = $invObj->id;
+                        if($resObj->property_type && $resObj->apt_id) $scope->rental = get_object($resObj->property_type, $resObj->apt_id);
+                    break;
+                    case 'shortstay':
+                        $scope->rental = $parentObj; // get_object($parent_type, $parent_id);
+                        break;
+                    default:
+                        break;
+                }
+      
+                // mark as read
+                $unreadSearch = ["thread" => $thread_id, "read_on" => ATT_DEFAULT_NULL, "receiver_id" => $user_id];
+                list($count, $errors) = update_objects("chat", ["read_on" => now()], $unreadSearch);
+      
+            }
+    
+            //$scope->this_sender_id = $user_ids[0];
+            //$receiver_id = $user_ids[1];
+            $scope->user_id1 = $user_ids[0];
+            $scope->user_id2 = $user_ids[1];
+            $scope->user_ids = $user_ids;
+    
+            if(in_array($u_id, $user_ids)) { // we're in this chat
+                $scope->sender_id = $u_id;
+                if($other_user_id = chat_thread_user($thread_id, $user_id)) { // get other user
+                    $scope->receiver_id = $other_user_id;
+                    $scope->other_user = get_user($other_user_id);
+                }
+            } else { // we're not in this chat (staff)
+                $scope->sender_id = $sender_id = $user_ids[0];
+                $scope->receiver_id = $receiver_id = isint($user_ids[1]) ? $user_ids[1] : 0;
+                $scope->other_user = get_user($sender_id); 
+                $scope->first_user = $receiver_id ? get_user($receiver_id) : null; 
+            }
+              
+            $scope->thread_id = $thread_id;
+            $scope->thread = $chatObjs;
+            //die("count=$count".dump($scope,true));
+    
+        } else { // find all threads
+
+            $chatFields = array("thread", "max(id) as id, thread, max(created) as created", 
+                        "max(distinct(parent_type)) as parent_type", "max(distinct(parent_id)) as parent_id",
+                        "count(*) as count");
+            $chatOptions = array('group' => 'thread', 'fields' => $chatFields, 'sort' => 'created desc', "debug_query" => false);
+            $chatSearch[DB_LOGICAL_OR] = array("sender_id" => $user_id, "receiver_id" => $user_id);    
+            $scope->threads = $threads = find_objects("chat", $chatSearch, $chatOptions);
+            foreach($threads as &$thread) {
+                $thread->other_user_id = chat_thread_user($thread->thread, $user_id); // get other user
+
+                $alertSearch = ["thread" => $thread->thread, "read_on" => ATT_DEFAULT_NULL, "receiver_id" => $user_id, "status_change" => [">", 0]];
+                $unreadSearch = ["thread" => $thread->thread, "read_on" => ATT_DEFAULT_NULL, "receiver_id" => $user_id];
+
+                $thread->alert = count_objects("chat", $alertSearch);
+                $thread->unread_count = $unread = count_objects("chat", $unreadSearch);
+            }
+        }
+        return;
+    }
+
+    function controller_event($app, $options = []) {
+        global $u_level, $auth_edit;
+        $__header = $app->header; 
+        $ver = $app->version ?: date('md');
+        $siteObj = $app->site;
+
+
+        $__header->scripts[] = "/afr/bower/geocomplete/jquery.geocomplete.min.js";
+        $__header->scripts[] = "/afr/js/afr_gmap.js";
+        $__header->scripts[] = "/afr/jquery/periodpicker/build/jquery.periodpicker.full.min.js";
+
+        $__header->scripts[] = "/afr/bower/bootstrap-confirmation2/bootstrap-confirmation.js";    
+        $__header->scripts[] = "/afr/js/event-form.js?v=$ver";    
+        $__header->styles[] = "/afr/jquery/periodpicker/build/jquery.periodpicker.min.css";
+
+        $scope = $app->page->scope;
+        $obj_type = 'event';
+
+        $city = $options['city'] ?: 'Amsterdam';
+        $country = $options['country'] ?: 'NL';
+        $fields = array("id", "name", "notes", "start_address", "start_time", "end_time", "startdatetime", "enddatetime", "startdate", "enddate", "location_lat", "location_long","location_bounds","address_street","address_number","address_city","address_postcode","address_state","address_country","address_formatted");
+        $id = pick_first($_GET['id'], $options['id'], $_GET['article_id'], $app->object_id, $app->object_slug, $scope->event_id, $options['event_id']);
+
+        $scope->auth_add_event = $u_level >= USER_LEVEL_EDITOR ? 1 : 0;
+
+        if($id) {
+            $scope->event = $obj = get_object($obj_type, $id);
+            if($obj->user_level > $u_level) return controller_error($app, "Not authorized", 401);
+            $scope->id = $obj->id;
+            if($media = $obj->media) $scope->media_list = explode(',', $media);
+            $scope->uploader = object_media_uploader($obj_type, $id);
+            $scope->auth_edit_event = $u_level >= USER_LEVEL_EDITOR || auth_event($obj);
+            object_increment($obj_type, $id, 'views');
+
+            return;
+        }
+
+        // could return here if array not needed in single view
+        // return;
   
-  return;
-}
+        // below only used if Javascript is disabled
+        $where = $_GET['e'];  
+        $eventSearch = array('site_id' => $siteObj->id, 'active' => 1, 'end_time' => ['>=', today()], 'user_level' => array('<=', $u_level));
+        switch($where) {
+            case 'l': // local
+                $eventSearch['address_city'] = 'Amsterdam';
+            break;
+            case 'n': // local
+                $eventSearch['address_country'] = 'NL';
+            break;
+            case 'i': // local
+                $eventSearch['address_country'] = array('!=', 'NL');
+            break;
+            default:
+            break;
+        }
+    
+        if(is_array($search)) $eventSearch = array_merge($search, $eventSearch);
+        $events = find_objects('event', $eventSearch, array('sort' => 'start_time'));
+        foreach($events as &$event) { // assign classes for sorting
+            if(strtolower($event->address_city) == strtolower($city)) $class = "local";    
+            elseif(strtolower($event->address_country) == strtolower($country)) $class = "national";
+            else $class = $event->address_country ? "international" : "";
+            $event->loc_class = $class;
+            $event->auth_edit_event = $u_level >= USER_LEVEL_EDITOR || auth_event($event);
+        }
+  
+  
+        $scope->events = $events;
+        return;  
+    }
+
+    function controller_blog($app, $options = []) {
+        global $u_level;
+        $scope = $app->page->scope;
+
+        $options['object_subtype'] = ARTICLE_TYPE_BLOG;  
+        controller_article($app, $options);
+
+        $scope->auth_add_blog = $u_level >= USER_LEVEL_EDITOR ? 1 : 0;
+        return;  
+    }
+
+    function controller_news($app, $options = []) {
+        global $u_level;
+        $scope = $app->page->scope;
+
+        $options['object_subtype'] = ARTICLE_TYPE_NEWS;
+        controller_article($app, $options);
+
+        $scope->auth_add_news = $u_level >= USER_LEVEL_EDITOR ? 1 : 0;
+        return;  
+    }
+
+    // generic controller for articles (news, blogs, etc). Requires that article type is set 
+
+    function controller_article($app, $options = []) {
+        global $u_level, $__LANG;
+        $pageObj = $app->page;
+        $siteObj = $app->site;
+        $scope = $app->page->scope;
+        $obj_type = 'article';
+        $fields = array("id", "type", "title", "content");
+
+        $scope->auth_add_article = $auth_add = $auth_edit = $u_level >= USER_LEVEL_EDITOR ? 1 : 0;
+
+        $id = $scope->obj_id = $app->object_id;
+        $options['article_id'] = $obj_id;
+
+        $scope->type = $type = pick_first($options['object_subtype'], $scope->object_subtype, $pageObj->object_subtype);
+
+        $lang = $options['language'] ?: $__LANG;
+        $user_level = $u_level ?: 0;
+
+        $page_size = isset($options['page_size']) ? $options['page_size'] : 5; // for pagination
+        $hard_limit = 20;
+
+        $scope->start = $start = isset($_GET['start']) ? $_GET['start'] : 0;
+        $scope->limit = $limit = $page_size ?: $hard_limit;
+
+        $add = $scope->add = isset($_GET['add']) && $auth_add;
+
+        $search = ['site_id' => $siteObj->id, 'type' => $type, 'language' => $lang, 'active' => 1, 'user_level' => array('<=', $u_level ?: 0)];
+        if(!$auth_add) $search['published'] = 1;
+
+        $searchOptions = ["sort" => "post_date DESC", "start" => $start, "limit" => $limit];
+        $articles = find_objects($obj_type, $search, $searchOptions);  
+
+        $sidebar_limit = 5;
+        $scope->recent  = find_objects($obj_type, $search, array('sort' => 'created desc', 'limit' => $sidebar_limit));  
+        $scope->popular = find_objects($obj_type, $search, array('sort' => 'views desc', 'limit' => $sidebar_limit));  
+
+        if($id) {    
+            $obj = get_object($obj_type, $id);
+            $scope->article_id = $obj->id;
+            $scope->auth_edit_article = $obj->auth_edit_article = $auth_edit = $u_level >= USER_LEVEL_EDITOR || auth_article($obj);
+            $scope->comments = find_objects('comment', array("article_id" => $id, 'active' => 1));
+            if($auth_edit) {
+                jfu_dependencies($app); // load scripts + css for new file uploader
+                if(isset($_GET['publish'])) {
+                    $publish = $_GET['publish'] ? 1 : 0;        
+                    if($publish != $obj->published) {
+                        list($id, $errors) = update_object('article', ['published' => $publish], $id);
+                        if($errors) return controller_error($app, $errors);          
+                        $obj->published = $published;
+                    }
+                }
+
+            //$scope->article->json_data = object_json_data($obj_type, $obj, $fields);
+            $scope->comments = $comments = find_objects('comment', ['article_id' => $id, 'active' => 1], ['sort' => 'created']);
+            $scope->comment_count = count($comments); 
+        } elseif(!$obj->published) {
+            return controller_error($app, "Not authorized");
+        }
+
+        $scope->edit = $edit = isset($_GET['edit']) && $auth_edit;
+        if(!$edit) object_increment($obj_type, $id, 'views');
+            $scope->article = $obj;
+
+        } elseif($add) {
+            // do nothing
+        } elseif($type) {
+            if($auth_edit) {
+                foreach($articles as &$article) {
+                    //$article->json_data = object_json_data($obj_type, $article, $fields);
+                    $article->auth_edit_article = $u_level >= USER_LEVEL_EDITOR || auth_article($article);
+                }
+            }
+            $scope->count = $count = count_objects('article', $search);
+            //echo("Found $count articles");dump($search);
+            $scope->articles = $articles;
+            //dump($articles);
+        } else {
+            $scope->error = "No article ID or type set";
+        }
+        return;
+    }
+
+    // todo: add limit, sort, paging
+    function controller_faq($app, $options = []) {
+        global $__LANG;
+        global $u_level, $auth_edit;
+        $siteObj = $app->site;
+
+        $scope = $app->page->scope;
+        $obj_type = 'article';
+        $facs = [];
+
+        $search = ['site_id' => $siteObj->id, 'type' => ARTICLE_TYPE_FAQ, 'language' => $siteObj->default_language, 'active' => 1];
+        $articleObjs = find_objects('article', $search, []);
+        //dump($articleObjs);die("gh");
+        foreach($articleObjs as $articleObj) {
+            if($__LANG != $siteObj->default_language) {
+                $descSearch = ['parent_type' => 'article', 'parent_id' => $articleObj->id];
+                if($descObj = find_object('object_description', $descSearch)) {
+                    $articleObj->title = $descObj->title;
+                    $articleObj->content = $descObj->description;
+                    $desc_id = $descObj->id;
+                } else {
+                    $descData = array_merge($descSearch, ['title' => $articleObj->title, 'description' => $articleObj->content, 'language' => $__LANG]);
+                    list($desc_id, $errors) = add_object('object_description', $descData);        
+                    //$articleObj->content = $descObj->content;
+                }
+                $articleObj->obj_type = 'object_description';    
+                $articleObj->obj_id = $desc_id;    
+                $articleObj->content_field = 'description';
+            } else {
+                $articleObj->obj_type = 'article';
+                $articleObj->obj_id = $articleObj->id;    
+                $articleObj->content_field = 'content';
+            }
+            $facs[] = $articleObj;
+        }
+        //dump($facs);
+        $scope->articles = $facs;
+        $scope->auth_edit_article = $u_level >= USER_LEVEL_STAFF;
+        return;
+    }
+
+    function controller_golf_club($app, $options = []) {
+        global $u_id, $__LANG;
+        $__header = $app->header; 
+        $scope = $app->page->scope;
+        $ver = $app->version ?: date('md');
+        $__header->styles[] = "/afr/css/afr-air.css";
+        $obj_type = 'golf_club';
+        $slug = $app->object_slug;
+        $id = $obj_id = $golf_club_id = $scope->obj_id = $scope->golf_club_id = pick_first($scope->golf_club_id, $scope->obj_id, $_GET['obj_id'], $options['obj_id'], $app->object_id);
+  
+        if(!$id) { 
+            $error = $slug ? "$slug not found" : "No golf club specified";
+            return scope_error($app, $error, '403');
+        }
+
+        $obj = get_object($obj_type, $id);    
+   
+        if(!$obj) return scope_error($app, "Golf club {$slug} not found", '404');
+        $scope->golf_club = $obj;
+  
+        // $mediaObjs = object_images($obj_type, $id);
+        $images = $obj->images ? json_decode($obj->images) : [];
+        foreach($images as $mediaObj) {
+            $image = new stdClass;
+            $image->src = $mediaObj->filename;
+            $image->title = $mediaObj->name;
+            if($copyright = $mediaObj->copyright_name) {
+                $copyright = html_i('', 'fa fa-copyright')." $copyright";
+                $copyright_link = $mediaObj->copyright_url;
+                $copyright_text = $copyright_link ? html_link($copyright_link, $copyright, array('target' => 'ext')) : $copyright;
+                $image->copyright = html_div($copyright_text, 'copyright');        
+            }
+            $imageAr[] = $image;
+        }
+  
+
+        $search = ['parent_type' => 'golf_club', 'parent_id' => $obj->id, 'language' => $__LANG];
+        if($descObj = find_object('object_description', $search)) {
+            $scope->description = $descObj;
+        } elseif($descObj = find_object('object_description', ['parent_type' => 'golf_club', 'parent_id' => $obj->id])) { // any language
+            $descData = ['language' => $__LANG];
+            foreach(['site_id', 'parent_type', 'parent_id', 'type', 'description'] as $f) $descData[$f] = $descObj->$f;
+            list($desc_id, $errors) = add_object('object_description', $descData);
+            if($desc_id) $scope->description = get_object('object_description', $desc_id);
+            if($errors) $scope->error = $errors;
+        }
+  
+        $scope->golf_courses = $golf_courses = find_objects('golf_course', array('golf_club_id' => $id)) ?: array();
+        //dump($golf_courses);
+
+        //dump($imageAr);
+        $scope->images = $imageAr;
+        $scope->nearby_golf = location_find_nearest('golf_club', $obj->location_lat, $obj->location_long, array('limit' => 4, 'exclude' => $obj->id));
+        $scope->nearby_apts = location_find_nearest('shortstay', $obj->location_lat, $obj->location_long, array('limit' => 4));      
+        $scope->reviews = find_objects('review', array("client_id" => $app->client_id, "parent_type" => $obj_type, "parent_id" => $id, "published" => 1, "active" => 1));
+
+        $facAr = $obj->facilities ? explode(',', $obj->facilities) : array();
+        $facs = array();
+        foreach($facAr as $fac_id) {
+            $facObj = new stdClass;
+            $facObj->id = $fac_id;
+            $facObj->name = get_object("facility", $fac_id, "name");
+            $facObj->icon = rental_facility_icon($fac_id) ?: "fa fa-check";
+            $facs[] = $facObj;
+        }
+        $scope->facs = $facs; // $scope->facilities = aptObj->facilities, already in use
+
+        return;
+    }
+
+    /** mail preview function - for staff and higher only */
+    function controller_review($app, $options = []) {
+        global $u_id, $u_level, $__CLIENT_ID, $__SITE;
+        $siteObj = $app->site;
+        $scope = $app->page->scope;
+
+        $obj_id = $scope->obj_id = $app->object_id;
+        $obj_type = $scope->obj_type = $app->object_type;
+        $obj = $obj_type && $obj_id ? get_object($obj_type, $obj_id) : null;
+
+
+        $parent_type = pick_first($options['parent_type'], $_GET['_pt'], $siteObj->review_type);
+        $parent_id = pick_first($options['parent_id'], $_GET['_pid']);
+        $pin = $_GET['_pin'];
+
+        if($obj) { /** View existing review */
+            $scope->review = $obj;
+            $parent_type = $obj->parent_type;
+            $parent_id = $obj->parent_id;
+
+        } elseif($parent_type) { /** add new review */
+            $allow_multiple_reviews = 0;
+    
+            $scope->parent_type = $parent_type;
+            if($parent_id) {
+                    $scope->parent_id = $parent_id;
+                    $scope->parent_object = $parentObj = get_object($parent_type, $parent_id);
+                  
+          
+                switch($parent_type) {          
+                    case 'reservation':
+                        $allow_multiple_reviews = 1;
+
+                        $resObj = $parentObj;
+                        if(!$resObj) return controller_error($app, phrase("booking not found", CAPS));
+                        $scope->reviewed_obj_type = $parent_type;
+                        $scope->reviewed_obj_id = $parent_id;
+                        $scope->reviewed_object = $parentObj;
+
+                        $scope->parent_id = $parent_id = $resObj->apt_id; /** we actually want to review the rental */ 
+                        $scope->parent_type = $parent_type = $resObj->property_type;
+                        $scope->parent_object = $parentObj = get_object($resObj->property_type, $resObj->apt_id);
+                        $today = today();
+                        $review_cutoff = BOOKING_REVIEW_PERIOD;
+                        $last_review_date = add_day(strip_time($resObj->checkout), $review_cutoff);
+                        if($u_id) {
+                            if($u_level < USER_LEVEL_STAFF && $resObj->guest_id && $u_id != $resObj->guest_id) return controller_error($app, phrase("only the guest can rate bookings", CAPS));
+                        } else {
+                            if($resObj->guest_id) redirect_login();
+                            if(myhash($resObj->booking_pin) != $pin) return controller_error($app, phrase("missing or invalid code", CAPS));           
+                        }
+                        if($reviewObj = find_object('review', ['reviewed_obj_type' => 'reservation', 'reviewed_obj_id' => $resObj->res_id])) {
+                            return controller_error($app, phrase("you already rated this %s on %s", CAPS, get_object_name('reservation'), sql2human($reviewObj->created)));
+                        }                              
+                        if(!in_array($resObj->status, [STATUS_RESERVED, STATUS_COMPLETE])) return controller_error($app, phrase("only confirmed bookings can be rated", CAPS));
+                        if($today > $last_review_date)  return controller_error($app, phrase("the review period expired on %s", CAPS, sql2human($last_review_date)));
+                        if(strip_time($resObj->checkout) > $today)  return controller_error($app, phrase("you cannot rate the booking until you check out on %s", CAPS, sql2human($resObj->checkout)));
+                        break;
+                    default:
+                        break;      
+                }
+            } 
+      
+            /** only allow user to review same item once ? Doesn't make sense for bookings, since they can stay in same flat twice... */
+            if($u_id && !$allow_multiple_reviews) {
+                if($reviewObj = find_object('review', ['user_id' => $u_id, 'parent_type' => $parent_type, 'parent_id' => $parent_id])) {
+                    return controller_error($app, phrase("you already rated this %s on %s", CAPS, get_object_name($parent_type), sql2human($reviewObj->created)));
+                    //$scope->review = $reviewObj;
+                }
+            }
+      
+        }
+  
+        $scope->items = $items = find_objects('review_item', ['site_id' => $siteObj->id, 'parent_type' => $parent_type]);
+        if(!count($items)) return controller_error($app, "No review items found for $parent_type");
+
+        if(!$obj && !$parent_type) return controller_error($app, "No review or parent");
+
+        return;
+    }
+
+    /** mail preview function - for staff and higher only */
+    function controller_mail_campaign($app, $options = []) {
+        global $u_id, $u_level, $__CLIENT_ID, $__SITE, $__USER;
+        global $__SITE_ROLES;
+        $siteObj = $app->site;
+        $scope = $app->page->scope;
+        $campaign_id = pick_first($_GET['campaign_id'], $app->object_id, $app->object_slug, $scope->campaign_id, $options['campaign_id']);
+
+        $step = 0;
+        if($campaign_id) {
+            $scope->campaign = $campaignObj = get_object('mail_campaign', $campaign_id);
+            $scope->campaign_id = $campaignObj->id;
+            $step = isset($_GET['preview']) ? 3 : 2;
+        }
+  
+        $scope->step = $step;
+  
+        $search = ['user.site_id' => $siteObj->id, 'active' => 1];
+  
+        $receiver_roles = $_GET['receiver_roles'];
+        $selected_roles = $receiver_roles ? explode(',', $receiver_roles) : [];
+        $selected_roles_str = [];
+  
+        if(!$step) {
+            $receiver_count = $_GET['receiver_count'];
+            $active_since = $_GET['active_since'];
+            $name = trim($_GET['name']);  
+    
+            if($active_since) $search['last_login'] = ['>=', date2sql($active_since)];  
+            $scope->users  = $users = find_objects('user', $search);
+            $scope->user_count  = $count = count($users);
+    
+            $roleObjs = find_objects('user_role', [], ['sort' => 'id']);
+            $roles = $role_terms = [];
+            foreach($roleObjs as $roleObj) {
+                if(is_array($__SITE_ROLES) && !in_array($roleObj->id, $__SITE_ROLES)) continue;
+                $roleSearch = array_merge($search, ["roles & {$roleObj->id}" => $roleObj->id]);
+                $users = find_objects('user', $roleSearch, ['debug_query' => 0]);
+                $count = $roleObj->count = count($users);
+                if($count || in_array($roleObj->id, $selected_roles)) $roles[] = $roleObj;
+                if(in_array($roleObj->id, $selected_roles)) $selected_roles_str[] = $roleObj->name;
+            }
+            //echo("gh roles=".dump($roles,true));
+            if($receiver_roles) {
+                list($recipients, $errors) = campaign_recipients($_GET);
+                if($errors) {
+                    $scope->error = $errors;
+                } else {
+                    $scope->receiver_count = $receiver_count = count($recipients);
+                    $scope->message = "{$receiver_count} unique recipients found (some users have multiple roles)";
+                }
+      
+                // dump($recipients);
+                /**
+                if(count($selected_roles) > 1) {
+                foreach($selected_roles as $role_id) $role_terms["roles & {$role_id}"] = $role_id;
+                $roleSearch = array_merge($search, [DB_LOGICAL_OR => $role_terms]);
+                } else {
+                $roleSearch = $search;
+                $role_id = $selected_roles[0];
+                $roleSearch["roles & {$role_id}"] = $role_id;
+                }
+                $scope->selected_users  = $selected_users = find_objects('user', $roleSearch);      
+                $scope->receiver_count  = $receiver_count = count($selected_users);
+                $active_str = $active_since ? "active since $active_since" : "";
+                $roles_str = implode(',', $selected_roles_str);
+                if($receiver_count) {
+                $scope->message = "{$receiver_count} active users with roles $roles_str $active_str";
+                } else {
+                $scope->error = "No active users found with roles $roles_str $active_str";
+                }
+                */
+
+                if($_GET['submit']) { // show step 2
+                    $campaign = array2obj($_GET);
+                    $campaign->sender = site_email($siteObj, $siteObj->name); 
+                    $campaign->subject = ""; // "[{$siteObj->shortname}]"; 
+                    $campaign->replyto = email_recipient(get_user_email($__USER),get_user_name($__USER));
+                    $campaign->recipients = json_encode($recipients); 
+                    $campaign->receiver_count = $receiver_count;
+                    if($active_since) $campaign->active_since = date2sql($active_since);
+
+                    // printable list of roles
+                    $roleObjs = find_objects('user_role', ['id' => $selected_roles]);
+                    $roles = [];
+                    foreach($roleObjs as $roleObj) $roles[] = $roleObj->name;
+
+                    $scope->receiver_roles_str = implode(", ", $roles);
+                    $scope->step = 2; // passed to template, not switch statement below
+                    $scope->receiver_count = $receiver_count;        
+                    $scope->campaign = $campaign;
+                }
+            }
+    
+            $scope->selected_roles = $selected_roles;
+            $scope->roles = $roles;
+    
+        }
+      
+        return;
+    }
+
+    /** contact form */
+    function controller_contact($app, $options = []) {
+        global $__USER;
+        $scope = $app->page->scope;
+        $siteObj = $app->site;
+
+        $scope->replyto_sender = 1;
+        $__header = $app->header; 
+        $__header->base_scripts[] = "//www.google.com/recaptcha/api.js";
+
+        //die("contact ctrl".dump($scope,true));
+        print_log("controller_contact: scope=".dump($scope,true), 'mail', LOG_LEVEL_TEST);
+
+        /** all of the below currently only used for vPatina plugin */
+
+        if($sender = trim(urldecode($_GET['sender']))) {
+            list($email, $name) = parse_recipient($sender);
+            $scope->sender_name = $name;
+            $scope->sender_email = $email;
+            //echo("s=$sender n=$name e=$email"); 
+        } elseif($__USER) {
+            $scope->sender_name = $__USER->display_name;
+            $scope->sender_email = $__USER->email_address;
+            $scope->sender_phone = $__USER->phone;
+        }
+        if($recipient = trim(urldecode($_GET['recipient']))) {
+            list($email, $name) = parse_recipient($recipient);
+            $scope->receiver_name = $name;
+            $scope->receiver_email = $email;
+        }
+        if($subject = trim(urldecode($_GET['subject']))) $scope->subject = $subject;
+
+        if($msg = trim(urldecode($_GET['msg']))) $scope->main_message = $msg;
+        //else $scope->main_message = "You have a message from the contact form.";
+        else $scope->main_message = "An inquiry via {$siteObj->name}:";
+
+        extract($_GET);
+
+        $scope->provider_keys = $pk = $app->scope->provider_keys; // find_objects('provider_key', array('site_id' => $siteObj->id, 'active' => 1), array("field" => "provider_id"));
+              
+        return;
+    }
+
+    /** mail preview function - for staff and higher only */
+    function controller_mail($app, $options = []) {
+        global $u_id, $u_level, $__CLIENT_ID, $__SITE, $__USER;
+        $scope = $app->page->scope;
+        $siteObj = $app->site;
+
+        $mid = pick_first($scope->obj_id, $scope->mail_id, $option['obj_id'], $scope->obj_id, $_GET['mid'], $app->object_id);
+        $uid = $_GET['uid'];
+
+        $mailObj = null;
+        if($mid) {
+            $mailObj = get_object('mail_queue', $mid);
+            $auth_mail = auth_mail($mailObj);
+        } else if($uid) { // UID is almost impossible to guess, so no log-in/auth required other than correct client ID
+            $mailObj = find_object('mail_queue', ['guid' => $uid]);
+            $auth_mail = $mailObj->client_id == $__CLIENT_ID;
+        }
+  
+        if($mailObj && !$auth_mail) {
+            return scope_error($app, "Unauthorized $mid", '403');
+        }
+  
+        $scope->auth_mail = $auth_mail;
+        $scope->show_address_book = 0;
+  
+        if($mailObj) {
+            $scope->mail = $mailObj;
+   
+        } elseif($u_id && $u_level >= USER_LEVEL_STAFF) { /** blank mail template */
+            $scope->mail_template = $template = "mail/mail-generic";
+
+            $sender_name = user_display_name($__USER->id);
+
+            $guest_name =  $resObj->guest_id ? get_user_name($resObj->guest_id) : get_name_string($resObj);
+            $mail_scope = ['receiver_name' => "", 
+                           'receiver_role' => 'user', 
+                           'receiver_id' => 0, 
+                           'main_message' => phrase('you have a message from %s', CAPS, $sender_name)];
+
+            $body = smarty_mail_template($siteObj, $template, ['scope' => $mail_scope]);
+
+            $mail = new stdClass;
+            $mail->template = $template = "mail/mail-booking";    
+            $mail->controller = $controller = "booking";            
+            $mail->scope = $mail_scope;
+            $mail->from = user_email($__USER, true) ?: site_email($siteObj);    
+            $mail->to = "";    
+            $mail->subject = mail_subject('mail');
+            $mail->body = $body; 
+            $mail->action = '';
+            $scope->mail  = $mail;
+
+            $scope->show_address_book = $u_id ? 1 : 0;
+    
+        } elseif($u_id) {
+            return controller_error($app, phrase("nothing to see here", CAPS));    
+        } else {
+            return controller_error($app, phrase("please log in", CAPS));    
+        }
+     
+        return;
+    }
+
+    function controller_share($app, $options = []) {
+        $user_id = $app->user_id;
+        $user = $app->user;
+        $__header = $app->header; 
+        $siteObj = $app->site;  
+        $scope = $app->page->scope;
+
+        /** new */
+        $obj_type = $_GET['obj_type'] ?: '';
+        $obj_id = $_GET['obj_id'] ?: 0;
+        $template = $_GET['template'] ?: '';
+        $controller = $_GET['controller'] ?: '';
+        $flag = 0;
+        //echo("ot={$obj_type} id:{$obj_id}");
+        if($obj_type == 'artwork_media'){
+            $obj_type= 'artwork';
+            $flag = 1;
+        } 
+        $public = ['artwork', 'media_collection_map', 'collection', 'media_collection'];
+        if($obj_type && $obj_id && in_array($obj_type, $public)) {
+            if(!in_array($obj_type, $public)) return controller_error($app, "Unsupported object type $obj_type");
+            $obj = get_object($obj_type, $obj_id);
+            if(!$obj) return controller_error($app, "{$obj_type} {$obj_id} not found");
+
+            if(!$template) { /** figure out template/controller based on object type */
+                switch($obj_type) {
+                    case 'media_collection_map':
+                    case 'artwork':
+                        $template = 'mail-artwork.html';
+                        $controller = 'gallery_artworks';
+                        if($flag)
+                            $obj_type = 'artwork';
+                        else
+                            $obj_type = 'media_collection_map';
+                    break;
+                    case 'media_collection':
+                    case 'collection':
+                        $template = 'mail-collection.html';
+                        $controller = 'gallery_collections';
+                        $obj_type = 'media_collection';
+                    break;
+                    case 'artwork_media':
+                        $template = 'mail-artwork.html';
+                        $controller = 'gallery_artworks';
+                        $obj_type = 'artwork';
+                    break;
+                    default:
+                        return controller_error($app, "Unsupported object type $obj_type");      
+                }
+                //echo("tpl={$template}");
+            }
+        }
+  
+        // https://test.vpatina.com/share/?url=https%3A%2F%2Ftest.vpatina.com%2Fexhibition%2Fclementine~1743&obj_type=media_collection&obj_id=1743&subject=foobar&_aid=17425&recipient=Thea+VG+<theo%40vpatina.com>
+  
+        if($subject = $_GET['subject']) $scope->hide_subject = 1; 
+        $mail = new stdClass;
+  
+        $sender = $_GET['sender'] ?: '';
+        if(!$sender && $user) $sender = user_email($user);
+  
+        $mail->obj_type = $obj_type;
+        $mail->obj_name = $obj_name = $obj_type ? get_object_name($_GET['obj_type'], LOWERCASE) : '';
+        $mail->obj_id = $obj_id;
+
+        $mail->template = $template;    
+        $mail->controller = $controller;       
+        $mail->sender = $sender;
+        $mail->recipient = $recipient = $_GET['recipient'] ?: '';
+        //$mail->subject = $user ? user_display_name($user)." shared this with you from {$app->site->name}" : "Shared with you from {$app->site->name}";
+        $mail->subject = $subject ?: "I thought you might be interested in this {$obj_name}";
+        $mail->main_message = '';
+        //dump($mail);
+        $scope->mail  = $mail; 
+  
+        return;
+    }
 
 /** vPatina + Art controllers */
 /** using old code: todo: replace with new controllers and templates */
      
 
-function controller_gallery_artists($app, $options = []) {
-  global $u_id;
-  $__header = $app->header; 
-  $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
-  $__header->scripts[] = '/afr/js/afr_gallery.js?ver='.$app->version;  
-  $__header->scripts[] = "/afr/js/sw.js";
-  $scope = $app->page->scope;
-  $scope->items = $scope->objects;  
-  $siteObj = $app->site;
-  // unset($scope->objects);
+    function controller_gallery_artists($app, $options = []) {
+        global $u_id;
+        $__header = $app->header; 
+        $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
+        $__header->scripts[] = '/afr/js/afr_gallery.js?ver='.$app->version;  
+        $__header->scripts[] = "/afr/js/sw.js";
+        $scope = $app->page->scope;
+        $scope->items = $scope->objects;  
+        $siteObj = $app->site;
+        // unset($scope->objects);
 
-  if($obj_id = $artist_id = $scope->obj_id = $app->object_id) {
-    return  controller_artist_profile($app, $options);
+        if($obj_id = $artist_id = $scope->obj_id = $app->object_id) {
+            return  controller_artist_profile($app, $options);
 
-  } else { /** browse artists: todo */
-    $myCollectionObj = gallery_find_user_collection($siteObj, $u_id);
-    $scope->my_collection_id = $collection_id = $myCollectionObj->id;
-    $scope->items = $scope->objects ?: gallery_collection_images($siteObj, $collection_id, array('return' => 'object'));
-    // unset($scope->objects);
-  }
+        } else { /** browse artists: todo */
+            $myCollectionObj = gallery_find_user_collection($siteObj, $u_id);
+            $scope->my_collection_id = $collection_id = $myCollectionObj->id;
+            $scope->items = $scope->objects ?: gallery_collection_images($siteObj, $collection_id, array('return' => 'object'));
+        // unset($scope->objects);
+        }
 
-  return;
-}
-
-function controller_gallery_curators($app, $options = []) {
-  global $u_id;
-  $__header = $app->header; 
-  $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
-  $__header->scripts[] = '/afr/js/afr_gallery.js?ver='.$app->version;
-  $__header->scripts[] = "/afr/js/sw.js";
-  $siteObj = $app->site;
-  
-  $scope = $app->page->scope;
-  $scope->items = $scope->objects;
-
-  if($obj_id = $artist_id = $scope->obj_id = $app->object_id) {
-    return  controller_artist_profile($app, $options);
-
-  } else { /** browse curators: todo */
-    $myCollectionObj = gallery_find_user_collection($siteObj, $u_id);
-    $scope->my_collection_id = $collection_id = $myCollectionObj->id;
-    $scope->items = $scope->objects ?: gallery_collection_images($siteObj, $collection_id, array('return' => 'object'));
-    // unset($scope->objects);
-  }
-  
-  return;
-}
-
-
-// my-vpatina (view, explore art)
-function controller_art_viewer($app, $options = []) {
-  global $u_id;
-  $__header = $app->header; 
-  $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
-  $__header->styles[] = "/afr/css/gallery/afr_gallery.css?ver={$app->version}";
-  $siteObj = $app->site;
-  
-  $scope = $app->page->scope;
-  $aif = $_GET['_aif'];
-  $scope->my_collection_id = $collection_id = gallery_find_user_collection($siteObj, $u_id, array('return' => 'id'));    
-
-  /** follow media from GET var (plugin) */
-  if(isint($aif)) {
-    if(!$collection_id) return controller_error($app, "Missing user collection");
-    $mediaObj = get_object('media', $aif);
-    if(!$mediaObj) return controller_error($app, "Artwork not found");
-    $media_name = $mediaObj->name ?: "this artwork";
-    if($mapObj = find_object('media_collection_map', array('media_id' => $aif, 'media_collection_id' => $collection_id))) {
-      $scope->warning = "You already follow $media_name";
-    } else {
-      $result = gallery_publish_image($siteObj, $aif, $collection_id);
-      if($result->success) {
-        $scope->message = "You now follow $media_name";
-      } else {
-        $scope->error = $result->error;
-      }
+        return;
     }
-    $scope->follow_id = $aif; 
-  }
-  
-  //dump($myCollectionObj);
-  
-  return;
-}  
 
-/** new backend for vPatina */
-function controller_gallery_backend($app, $options = []) {
-  global $u_id, $u_level;
-  $scope = $app->page->scope;
-  $errors = $messages = [];  
-  if(!$u_id) {
-    redirect_login();
-    return;
-  }
-  $scope->u_id = $u_id;
-  if($u_level < USER_LEVEL_ARTIST) return scope_error($app, "Unauthorized", '403');
+    function controller_gallery_curators($app, $options = []) {
+        global $u_id;
+        $__header = $app->header; 
+        $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
+        $__header->scripts[] = '/afr/js/afr_gallery.js?ver='.$app->version;
+        $__header->scripts[] = "/afr/js/sw.js";
+        $siteObj = $app->site;
 
-  $scope->user = $userObj = $app->user;
-  $siteObj = $app->site;
-//dump($userObj);
-  $__header = $app->header; 
-  $__header->styles[] = "/afr/css/afr_sidebar.css?ver={$app->version}";
-  $__header->styles[] = "/afr/css/gallery/afr_gallery.css?ver={$app->version}";
-  $__header->styles[] = "/afr/bower/tag-it/css/jquery.tagit.css";
-  $__header->styles[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.css?v=1.11";
-  $__header->styles[] = "https://cdnjs.cloudflare.com/ajax/libs/bootstrap-timepicker/0.5.2/css/bootstrap-timepicker.min.css";
-  $__header->styles[] = "/afr/bower/bootstrap-datepicker/dist/css/bootstrap-datepicker.css";
-  $__header->styles[] = "/afr/bower/bootstrap-tags/dist/css/bootstrap-tags.css";
-  $__header->styles[] = "/afr/bower/bootstrap-toggle/css/bootstrap-toggle.min.css";
-  $__header->styles[] = "/afr/bower/bootstrap-table/dist/extensions/filter-control/bootstrap-table-filter-control.css";
-  $__header->styles[] = "/afr/css/evol-colorpicker.min.css";
-  $__header->styles[] = "/afr/css/magicsuggest-min.css";
-  $__header->styles[] = "/afr/css/lightgallery/lightgallery.css";
+        $scope = $app->page->scope;
+        $scope->items = $scope->objects;
 
-  $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
+        if($obj_id = $artist_id = $scope->obj_id = $app->object_id) {
+            return  controller_artist_profile($app, $options);
 
-  $__header->scripts[] = "/afr/bower/geocomplete/jquery.geocomplete.min.js";
-  $__header->scripts[] = "/afr/bower/confirm-bootstrap/confirm-bootstrap.js";
-  $__header->scripts[] = "/afr/bower/bootstrap-toggle/js/bootstrap-toggle.min.js";
+        } else { /** browse curators: todo */
+            $myCollectionObj = gallery_find_user_collection($siteObj, $u_id);
+            $scope->my_collection_id = $collection_id = $myCollectionObj->id;
+            $scope->items = $scope->objects ?: gallery_collection_images($siteObj, $collection_id, array('return' => 'object'));
+            // unset($scope->objects);
+        }
 
-  $__header->scripts[] = "/afr/js/afr_gmap.js";
-  $__header->scripts[] = "/afr/bower/bootstrap-confirmation2/bootstrap-confirmation.js";    
-  $__header->scripts[] = "/afr/js/event-form.js?ver={$app->version}";    
-  
-  //$__header->scripts[] = "/afr/bower/jquery.are-you-sure/jquery.are-you-sure.js";
-
-  $__header->scripts[] = "/afr/js/afr_gallery_backend.js?ver={$app->version}";
-
-  $__header->scripts[] = "/afr/bower/bootstrap-tags/dist/js/bootstrap-tags.min.js";
-
-  $__header->scripts[] = "/afr/bower/tag-it/js/tag-it.min.js";
-  $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
-  $__header->scripts[] = "/afr/bower/table-export/jquery.base64.js?v=1.11";
-  $__header->scripts[] = "/afr/js/jquery.base64.js"; /** Fix: https://github.com/wenzhixin/bootstrap-table/issues/189 */
-  $__header->scripts[] = "/afr/bower/table-export/tableExport.js?v=1.11";
-  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js?v=1.11";
-  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js?v=1.11"; /** todo: support other languages, use $app->locale  */
-  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/export/bootstrap-table-export.js?v=1.11";
-  $__header->scripts[] = "https://cdnjs.cloudflare.com/ajax/libs/bootstrap-timepicker/0.5.2/js/bootstrap-timepicker.min.js";
-  $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/filter-control/bootstrap-table-filter-control.min.js";
-  $__header->scripts[] = "/afr/bower/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js";
-  $__header->scripts[] = "/afr/js/evol-colorpicker.min.js";  //Colour picker
-  $__header->scripts[] = "/afr/js/sw.js";
-  $__header->scripts[] = "/afr/js/magicsuggest-min.js";
-  $__header->scripts[] = "/afr/js/lightgallery/lightgallery-all.min.js";
-  $__header->styles[] = "/afr/js/vp/vp.min.css{$cachebust}";
-  
-  if(0) { // cloudinary direct upload
-    require_once("xml/xml_cloudinary.inc");
-    $ci_config = get_config('ci', $siteObj->id);
-    if(!$ci_config) return scope_error($app, "Missing Cloudinary Configuration");
-    if(!$ci_config->preset_name) return scope_error($app, "Missing Cloudinary Preset");
-    
-    $signature = cloudinary_signature($app->site);
-    $cloudinaryData = ["timestamp" => time(), "callback" => rtrim($app->site_url,'/')."/cloudinary_cors.html", "signature" => $signature, "api_key" => $ci_config->api_key];
-    $scope->cloudinary_data = $cloudinaryData;
-    $scope->cloudinary_config = $ci_config;
-
-    $__header->scripts[] =  "/afr/bower/blueimp-file-upload/js/vendor/jquery.ui.widget.js";             
-    $__header->scripts[] =  "/afr/bower/blueimp-file-upload/js/jquery.iframe-transport.js";              
-    $__header->scripts[] =  "/afr/bower/blueimp-file-upload/js/jquery.fileupload.js";                                                                   
-    $__header->scripts[] =  "/afr/bower/cloudinary-jquery-file-upload/cloudinary-jquery-file-upload.js"; 
-    $__header->scripts[] =  "script:$.cloudinary.config({\"api_key\":\"{$ci_config->api_key}\",\"cloud_name\":\"{$ci_config->cloud_name}\"});"; 
-  } else { // local server upload (to cloudinary from server)
-    jfu_dependencies($app); // load scripts + css for new file uploader
-  }
-  
-
-  // artwork
-  $artist_ids = ($u_level < USER_LEVEL_ADMIN) ? user_artist_list($app->user_id) : find_objects('user', ['user.site_id' => $app->site->id, 'roles & '.USER_ROLE_ARTIST => ['>', 0]], ['fields' => 'user.id']);
-  
-  $artist_count = count($artist_ids);
-  $user_ids = array_unique(array_merge($artist_ids, [$u_id]));
-  
-  $subview = $app->page->subview = $app->page->subview ?: 'artworks';
-  //$subview = $app->page->subview ?: 'artworks';
-  $partial = isset($_GET['_pv']) && $_GET['_pv'];
-
-  $app->page->subtemplate = "_gallery-backend-{$subview}.html";
-  
-  if(!$partial) { /** don't need to do this in partial view */
-    $artists = [];
-    foreach($artist_ids as $artist_id) {
-      $artists[$artist_id] = user_display_name($artist_id);
+        return;
     }
-    $scope->artists = json_encode($artists);
-    $scope->user_ids = json_encode(array_keys($artists));
-  }
-  
-  $scope->obj_id = $id = $obj_id = $app->page->object_id;
-  $get_str = '';
-  $column = $_GET['col'] ?0: 1;
-  $scope->add_to = $add_to = $_GET['add_to'] ?: 0;
-  $scope->add_to_profile = $add_to_profile = $_GET['add_to_profile'] ?: 0;
-  $scope->add_to_profile1 = $add_to_profile1 = $_GET['add_to_profile1'] ?: 0;
-  $scope->add_to_website = $add_to_website = $_GET['add_to_website'] ?: 0;
-  $scope->add_to_manualexb = $add_to_manualexb = $_GET['add_to_manualexb'] ?: 0;
 
-  if($_GET['add_to_relatedart']){
-    $scope->add_to_relatedart = $add_to_relatedart = $_GET['add_to_relatedart'] ?: 0;
-    $scope->get_str = $get_str = "add_to_relatedart=$add_to_relatedart";
-  } 
-  if($_GET['add_to_artworkimg']){
-    $scope->add_to_artworkimg = $add_to_artworkimg = $_GET['add_to_artworkimg'] ?: 0;
-    $scope->get_str = $get_str = "add_to_artworkimg=$add_to_artworkimg";
-  } 
-  if($_GET['add_to_logo']){
-    $scope->add_to_logo = $add_to_logo = $_GET['add_to_logo'] ?: 0;
-    $scope->get_str = $get_str = "add_to_logo=$add_to_logo";
-  }
-  if($_GET['add_to_logo1']){
-    $scope->add_to_logo1 = $add_to_logo1 = $_GET['add_to_logo1'] ?: 0;
-    $scope->get_str = $get_str = "add_to_logo1=$add_to_logo1";
-  }
-  if($_GET['add_to_media']){
-    $scope->add_to_media = $add_to_media = $_GET['add_to_media'] ?: 0;
-    $scope->get_str = $get_str = "add_to_media=$add_to_media";
-  }
-  if($_GET['add_to_exbart']){
-    $scope->add_to_exbart = $add_to_exbart = $_GET['add_to_exbart'] ?: 0;
-    $scope->get_str = $get_str = "add_to_exbart=$add_to_exbart";
-  }
-  if($_GET['add_to_exbtitle']){
-    $scope->add_to_exbtitle = $add_to_exbtitle = $_GET['add_to_exbtitle'] ?: 0;
-    $scope->get_str = $get_str = "add_to_exbtitle=$add_to_exbtitle";
-  }
-  if($_GET['add_to_websiteimg']){
-    $scope->add_to_websiteimg = $add_to_websiteimg = $_GET['add_to_websiteimg'] ?: 0;
-    $scope->get_str = $get_str = "add_to_websiteimg=$add_to_websiteimg";
-  }
-  if($_GET['_pv'] == 'viewartistpage'){
-    $scope->getpv = $getpv = ($_GET['_pv'] == 'viewartistpage');
-    $scope->page_id = $_GET['page_id'];
-    $scope->user_id = $_GET['user_id'];
-    $scope->site_id = $_GET['site_id'];
-  }
-  if($add_to_website){
-    $scope->page_id = $_GET['page_id'];
-    $scope->user_id = $_GET['user_id'];
-    $scope->site_id = $add_to_website;
-  }
-  if($add_to_manualexb){
-    $scope->page_id = $_GET['page_id'];
-    $scope->user_id = $_GET['user_id'];
-    $scope->site_id = $add_to_manualexb;
-  }
 
-  $scope->hide_related = 1; /** don't show related images in preview */
-  $scope->artist_id = user_has_role($userObj, USER_ROLE_ARTIST) ? $userObj->id : 0;
-  $scope->curator_id = user_has_role($userObj, USER_ROLE_CURATOR) ? $userObj->id : 0;
-  $scope->backend = 1;
-
-  //dump($scope->curator_id);
-  
-  $action = $app->page->action ?: '';
-  
-  $addCollectionObj = $add_to ? get_object('media_collection', $add_to) : get_object('media_collection_map', ['artist_id'=>$add_to]);
-  
-  
-  //$obj_type = $app->page->object_type;
-  //$obj = $obj_id && $obj_type ? get_object($obj_type, $obj_id) : null;
-  
-  $auth_edit = 0;
-  $edit = $action == 'edit' ? 1 : 0;
-  $add = $action == 'add' ? 1 : 0;
-
-  switch($subview) {
-    case "settings":
-      $scope->section = 'settings';
-      $app->page->subtemplate = $sub = '_gallery-backend-settings.html';
-      break;
-    case "tutorial":
-      $scope->section = 'tutorial';
-      $scope->obj_type = $obj_type = "tutorial";
-      $app->page->subtemplate = $sub = '_gallery-backend-tutorial.html';
-      $app->page->itemview = 'tutorial';
-      $app->page->listview = 'tutorial';
-      
-      break;
-    case "ACsettings":
-      $scope->section = 'ACsettings';
-      $scope->obj_type = $obj_type = "ACsettings";
-      $id = $app->user_id;
-      $scope->obj_id = $id;
-      
-      if(!$add) {   
-        if(!$id) return controller_error($app, "Missing ID");
-        $scope->profile = $profile_data= get_user($id);
-        controller_artist_profile($app);
-        $user_id = $id;
-        $artwork_ids = $_GET['add_art'];
-        $media_ids = $_GET['add_logo'];
-  
-        if($artwork_ids || $media_ids) { // cannot be both
-          $ids = $artwork_ids ?: $media_ids; 
-          $what = $artwork_ids ? 'artwork' : 'media'; 
-          $ids = explode(',', $ids);
-          $changed = '';
-
-          if(($what == 'media') && (count($ids)>1)) 
-            return json_error("Cannot upload more than one media");
-
-          foreach($ids as $this_id) {
-            $existing = $what == 'artwork' ? $artwork_ids : $media_ids;
-            if(in_array($this_id, $existing)) continue; // already exists
-
-            $result = $what == 'artwork' ? gallery_publish_artwork($siteObj, $this_id, $user_id) : gallery_publish_logo($siteObj, $this_id, $user_id);
-
-            if($error = $result->error) return json_error($error);
-            if($message = $result->message ?: $result->messages) $messages = array_merge_smart($messages, $message);
-            
-            $changed = $what;
-            $mapObj = $result->data;
-            $artist_id = $mapObj->artist_id;
-            if(!in_array($artist_id, $artist_ids)) $artist_ids[] = $artist_id;
-          }
-                    
-          switch($changed) { // reload
-            case 'artwork':
-              $art = find_objects('media_collection_map', ['user_id' => $user_id, 'artwork_id' => ['>', 0]]);
-              break;
-            case 'logo':
-              $media = find_objects('user_profile', ['user_id' => $user_id]);
-              break;
-            default:
-              break;
-          }
-        }
-      }     
-
-      $data = db_getAll("select * from opening_hours where user_id='$id'");
-      $scope->timing = $data;
-      $app->page->subtemplate = $sub = '_gallery-backend-ACsettings.html';
-      $scope->auth_edit_profile = in_array($profile->user_id, $artist_ids) || $scope->auth_edit_user;
-      $app->page->itemview = 'ACsettings';
-      $app->page->listview = 'ACsettings';
-    break;
-
-    //-----------------------vignesh Implimented----------------//
-
-      case "crud":
-      $scope->section = 'crud';
-      $scope->obj_type = $obj_type = "cruds";
-      //dump($obj_type);exit;
-      if(!$add) {
-        if(!$id) return controller_error($app, "Missing ID");
-
-        //$get_data = db_getAll("select * from crud where id='$scope->obj_id'");
-        $get_data = find_objects($obj_type, array('id' => $scope->obj_id));
-
-        //$crud_datas = [];
-        foreach($get_data as $val){
-             $scope->id = $val->id;
-             $scope->name = $val->name;
-             $scope->email = $val->email;
-             $scope->mobile = $val->mobile;
-        }
-
-      }
-      //die("u_id={$app->user_id } Auth_artist: {$auth_artist} auth_artwork={$scope->auth_edit_artwork}".dump($artist_ids,true));
-      
-      $app->page->subtemplate = $sub = '_gallery-backend-crud-form.html';
-      $app->page->itemview = 'crud';
-      $app->page->listview = 'cruds';
-      print_log("action={$action} type={$obj_type} id={$obj_id} name={$obj->name} edit={$edit} auth={$auth_edit} sub={$sub}", 'backend', LOG_LEVEL_TEST);
-      
-      break;
-
-      case "cruds":
-      $scope->section = 'crud';
-      $scope->obj_type = $obj_type = "cruds";
-      $app->page->itemview = 'crud';
-      $app->page->listview = 'crud';
-      //dump($scope);
-      $filters = ['active' => 1];
-      $filter_json = count($filters) ? json_encode($filters) : '';
-      $scope->list_url = "/ajax.php?oper=get-rows&obj_type=cruds".($filter_json ? "&filters=".urlencode($filter_json) : '');
-      break;
-
-      //---------------------------End Vignesh Implimented------------------//
-
-//-----------------------Jemima Implimented----------------//
-
-      	case "company":
-
-			$scope->section = 'company';
-			$scope->obj_type = $obj_type = "company";
-
-
-
-      		if(!$add) {
-        		if(!$id) return controller_error($app, "Missing ID");
-
-
-				//$get_data = db_getAll("select * from company where id='$scope->obj_id'");
-				$get_data = find_objects('company', array('id' => $scope->obj_id));
-
-				//$crud_datas = [];
-				foreach($get_data as $val){
-				     $scope->id = $val->id;
-				     $scope->name = $val->name;
-				     $scope->email = $val->email;
-				     $scope->mobile = $val->mobile;
-				}
-
-      		}
-      		//die("u_id={$app->user_id } Auth_artist: {$auth_artist} auth_artwork={$scope->auth_edit_artwork}".dump($artist_ids,true));
-      
-			$app->page->subtemplate = $sub = '_gallery-backend-company-form.html';
-			$app->page->itemview = 'company';
-			$app->page->listview = 'companies';
-
-			print_log("action={$action} type={$obj_type} id={$obj_id} name={$obj->name} edit={$edit} auth={$auth_edit} sub={$sub}", 'backend', LOG_LEVEL_TEST);
-      
-      	break;
-
-      	case "companies":
-			$scope->section = 'company';
-			$scope->obj_type = $obj_type = "company";
-			$app->page->itemview = 'company';
-			$app->page->listview = 'companies';
-			//dump($scope);
-			$filters = ['active' => 1];
-			$filter_json = count($filters) ? json_encode($filters) : '';
-			$scope->list_url = "/ajax.php?oper=get-rows&obj_type=company".($filter_json ? "&filters=".urlencode($filter_json) : '');
-      	break;
-
-//---------------------------End Jemima Implimented------------------//
-      
-    case "artwork":
-      $scope->section = 'artwork';
-      $scope->obj_type = $obj_type = "artwork";
-      $scope->artwork_media = $_GET['artwork_media'];
-
-      if(!$add) {
-        if(!$id) return controller_error($app, "Missing ID");
-        controller_gallery_artworks($app);
-        $obj = $scope->artwork;
-        $scope->auth_edit_artwork = $obj ? ($auth_artist || gallery_auth_media($obj_type, $obj, $u_id, $artist_ids)) : false;
-        $scope->related_images = find_objects('artwork_media', ['artwork_id'=>$id], ['sort'=> 'row_order asc']);
-        $scope->description_type = get_objects('artwork_related_type');
-
-        $artwork_ids = $_GET['add_artwork'];
-        $artwork_media_id = $_GET['artwork_media'];
-        $media_ids = $_GET['add_relatedart'];
-
-        if($artwork_ids || $media_ids) { // cannot be both
-          $ids = $artwork_ids ?: $media_ids; 
-          $what = $artwork_ids ? 'artwork' : 'media'; 
-          $ids = explode(',', $ids);
-          $changed = '';
-
-          if(($what) && (count($ids)>1)) 
-            return json_error("Cannot upload more than one media");
-
-          foreach($ids as $this_id) {
-            $existing = $what == 'artwork' ? $artwork_ids : $media_ids;
-            if(in_array($this_id, $existing)) continue; // already exists
-
-            $result = $what == 'artwork' ? gallery_publish_artworkimg($siteObj, $this_id, $id) : gallery_publish_relatedimg($siteObj, $this_id, $artwork_media_id) ;
-
-            if($error = $result->error) return json_error($error);
-            if($message = $result->message ?: $result->messages) $messages = array_merge_smart($messages, $message);
-            
-            $changed = $what;
-            $mapObj = $result->data;
-            $artist_id = $mapObj->artist_id;
-            if(!in_array($artist_id, $artist_ids)) $artist_ids[] = $artist_id;
-          }
-                    
-          switch($changed) { // reload
-            case 'artwork':
-              $art = find_objects('media_collection_map', ['user_id' => $user_id, 'artwork_id' => ['>', 0]]);
-              break;
-            case 'media':
-              $media = find_objects('artwork_media', ['user_id' => $user_id]);
-              break;
-            default:
-              break;
-          }
-        }
-      }
-      //die("u_id={$app->user_id } Auth_artist: {$auth_artist} auth_artwork={$scope->auth_edit_artwork}".dump($artist_ids,true));
-      
-      $app->page->subtemplate = $sub = '_gallery-backend-artwork.html';
-      $app->page->itemview = 'artwork';
-      $app->page->listview = 'artworks';
-      print_log("action={$action} type={$obj_type} id={$obj_id} title={$obj->title} edit={$edit} auth={$auth_edit} sub={$sub}", 'backend', LOG_LEVEL_TEST);
-      
-      break;
-
-    case "artworks":
-      $scope->section = 'artwork';
-      $scope->obj_type = $obj_type = "artwork";
-      $app->page->itemview = 'artwork';
-      $app->page->listview = 'artworks';
-
-      $filters = [];
-      if($add_to) $filters = ['active' => 1];
-      
-      if($addCollectionObj && $addCollectionObj->artist_ids && strlen($addCollectionObj->artist_ids) > 2) {
-        $filters['artist_id'] = json_decode($addCollectionObj->artist_ids);
-      }elseif($add_to_profile){
-        $filters['artist_id'] = json_decode($add_to_profile);
-      }elseif($add_to_profile1){
-        $filters['artist_id'] = json_decode($add_to_profile1);
-      }else {
-        $filters[DB_LOGICAL_OR2] = ['user_id' => $app->user_id, 'artist_id' => $artist_ids];
-      }
-      $filter_json = count($filters) ? json_encode($filters) : '';
-      $scope->list_url = "/ajax.php?oper=get-rows&obj_type=artwork".($filter_json ? "&filters=".urlencode($filter_json) : '');
-      break;
-
-    case "vault":
-      $scope->section = 'vault';
-      $scope->obj_type = $obj_type = "media_folder";
-      $app->page->itemview = 'vault';
-      $app->page->listview = 'vaults';
-      $scope->user_profile = $user_profile = get_user($app->user_id);
-      $scope->list_media = find_objects('media_folder', ['user_id'=>$app->user_id, 'filename'=>'Uploads']);
-      $app->page->subtemplate = $sub = '_gallery-backend-vault.html';
-
-      $tags = get_objects('media_tags');
-      foreach($tags as $tag){
-        $tag_arr[] = $tag->name;
-      }
-      if($edit) {      
-        if(!$id) return controller_error($app, "Missing ID");
-        $scope->vault = $obj = get_object($obj_type, $id);
-      }
-      $scope->tags=  $tag_arr;
-      print_log("action={$action} type={$obj_type} id={$obj_id} title={$obj->title} edit={$edit} auth={$auth_edit} sub={$sub}", 'backend', LOG_LEVEL_TEST);
-
-      break;
-
-    case "vaults":
-      $scope->section = 'vault';
-      $scope->obj_type = $obj_type = "media_folder";
-      $app->page->itemview = 'vault';
-      $app->page->listview = 'vaults';
-      $scope->add_to_folder = $add_to_folder = 1;
-      $scope->folderlist = find_objects('media_folder', ['user_id' => $app->user_id, 'active' => 1], ['sort' => 'created asc']);
-      $scope->imagecount = count(find_objects('media', ['user_id' => $app->user_id, 'active' => 1]));
-      $user = get_user($app->user_id);
-      if($user->roles == 256) $scope->limitcount = 'unlimited';
-      else $scope->limitcount = '100 image';
-      
-      $scope->vault_page = 0;
-      $add_to_vault = 0;
-      $media_ids = $_GET['add_folderimg'];
-      $folder_id = $_GET['folder_id'];
-
-      if($id || $get_str){
-        if(!$column) 
-          $scope->vault_page = 0;
-        else
-          $scope->vault_page = 1;
-        $scope->add_to_vault = $add_to_vault = 1; 
-      }
-
-      if($media_ids) { // cannot be both
-        $ids = $media_ids; 
-        $what = 'media'; 
-        $ids = explode(',', $ids);
-        $changed = '';
-        foreach($ids as $this_id) {
-          $existing = $what == $media_ids;
-          if(in_array($this_id, $existing)) continue; // already exists
-          $result = $what = gallery_publish_folderimg($siteObj, $this_id, $folder_id);
-          if($error = $result->error) return json_error($error);
-          if($message = $result->message ?: $result->messages) $messages = array_merge_smart($messages, $message);
-          
-          $changed = $what;
-          $mapObj = $result->data;
-          $artist_id = $mapObj->artist_id;
-          if(!in_array($artist_id, $artist_ids)) $artist_ids[] = $artist_id;
-        }                 
-        switch($changed) { // reload
-          case 'media':
-            $media = find_objects('media', ['user_id' => $user_id]);
-            break;
-          default:
-            break;
-        }
-      }
-      $filters = [];
-      if($id) {
-        $scope->folder = $folder = get_object($obj_type, $id);
-        $title = $folder->filename ? $folder->filename : "Untitled folder";
-        $up_link = $folder->parent_id ? 
-          reverse_route($app, 'backend:subview:id', ['subview' => 'vaults', 'id' => $folder->parent_id]) : 
-          reverse_route($app, 'backend:subview', ['subview' => 'vaults']);
-        $title .= " <a class='ajax-loader' href='{$up_link}?_pv=1' data-target='#subview-container'><i class='fa fa-level-up'></i></a>";
-        $scope->title = "<i class='fa fa-folder'></i> ".$title;
-        if($folder->rank == 1){
-          $filters['user_id'] = $app->user_id;
-          $filters['folder_id'] = 0;
-          $filters['active'] = 1;
-          
-          $filter_json = count($filters) ? json_encode($filters) : '';
-          $scope->list_url = "/ajax.php?oper=get-rows&obj_type=media".($filter_json ? "&filters=".urlencode($filter_json) : '');
-        }else{
-          $filters['folder_id'] = $id;
-          $filters['active'] = 1;
-          $filter_json = count($filters) ? json_encode($filters) : '';
-          $scope->list_url = "/ajax.php?oper=get-rows&obj_type=media&".$get_str."&".($filter_json ? "&filters=".urlencode($filter_json) : '');
-        } 
-      }elseif($add_to_vault){
-        $filters['user_id'] = $app->user_id;
-        $filters['active'] = 1;
-        $filter_json = count($filters) ? json_encode($filters) : '';
-        $scope->list_url = "/ajax.php?oper=get-rows&obj_type=media_folder".($filter_json ? "&filters=".urlencode($filter_json) : '');
-      }else{
-        $filters['user_id'] = $app->user_id;
-        $filters['active'] = 1;
-        $filter_json = count($filters) ? json_encode($filters) : '';
-        $scope->list_url = "/ajax.php?oper=get-rows&obj_type=media_folder".($filter_json ? "&filters=".urlencode($filter_json) : '');
-      }
-      
-      break;
-
-    case "plugin":
-      $scope->section = 'plugin';
-      $scope->obj_type = $obj_type = "plugin";
-      if($add) {
-        $pt = $_GET['_pt'];
-        $pid = $_GET['_pid'];
-        if(!$pt) return controller_error($app, "Missing Parent Type");
-        if(!$pid) return controller_error($app, "Missing Parent ID");
-        $scope->parent_type = $pt;
-        $scope->parent_id = $pid;
-        $scope->parent_object = $pObj = get_object($pt, $pid);
-      } else {
-        if(!$id) return controller_error($app, "Missing ID");
-        $scope->plugin = $obj = get_object('plugin', $id);
-        $scope->preview = plugin_javascript(['shid' => $id, 'pid' => $obj->parent_id]);
-        $pt = $obj->parent_type;
-        $pid = $obj->parent_id;
-
-        $scope->auth_edit_plugin = $u_level >= USER_LEVEL_STAFF || auth_object('plugin', $obj);
-        $auth_obj = auth_object('plugin', $obj);
-        
-        /** fetch collection info */
-        if($pt == 'media_collection' && $pid) {
-          $scope->collection = get_object($pt, $pid);
-        }
-            
-        //$app->object_type = $pt;
-        //$app->object_id = $pid;
-        //controller_gallery_collections($app);        
-        //$app->object_type = 'plugin';
-        //$app->object_id = $id;
-      }
-      
-      $app->page->itemview = 'plugin';
-      $app->page->listview = 'plugins';
-            
-      $scope->images = $images = find_objects('media_collection_map', ['media_collection_id' => $pid, 'active' => 1], ['sort' => 'rank']);
-      break;
-
-    case "plugins":
-      $scope->section = 'plugin';
-      $scope->obj_type = $obj_type = "plugin";
-      $app->page->itemview = 'plugin';
-      $app->page->listview = 'plugins';
-
-      $filters = $u_level < USER_LEVEL_ADMIN ? ['user_id' => $app->user_id] : [];
-      $pt = $_GET['_pt'];
-      $pid = $_GET['_pid'];
-      if($pt && $pid) {
-        $scope->parent_type = $pt;
-        $scope->parent_id = $pid;
-        $filters['parent_type'] = $pt;
-        $filters['parent_id'] = $pid;
-      }
-      
-      $filter_json = count($filters) ? json_encode($filters) : '';
-      $scope->list_url = "/ajax.php?oper=get-rows&obj_type=plugin&amp;sort=id%20desc&amp;".($filter_json ? "&filters=".urlencode($filter_json) : '');
-      break;
-
-    case "website":
-      $scope->section = 'website';
-      $scope->obj_type = $obj_type = "minisite";
-      if($_GET['page_id']){
-        $page_id = $_GET['page_id'];
-        $scope->page_id = $page_id;
-      }      
-      if($_GET['user_id']){
-        $userid = $_GET['user_id'];
-        $scope->userid = $userid;
-      }      
-      if($_GET['add_exb'])
-        $exhibition_ids = $_GET['add_exb'];
-
-      if($_GET['add_weblogo'])
-        $logo_id = $_GET['add_weblogo'];
-
-      if($_GET['add_manual']){
-        $add_manual = $_GET['add_manual'];
-      }
-
-      $error = '';
-      $changed = '';
-
-      if(!$add) {      
-        if(!$id) return controller_error($app, "Missing ID");
-        $scope->minisite = $obj = get_object($obj_type, $id);
-        
-        //fetch artist from minisite_page
-        $colSearch = ['user_id' => $obj->user_id, id=> $page_id, 'active' => 1];
-        $collectionobj = find_object('minisite_page', $colSearch);
-
-        $artists = json_decode($collectionobj->search, True);
-        foreach($artists as $artist){
-          $scope->viewartist[] = $viewartist[] = get_user($artist);
-        }
-        $artists1 = json_decode($collectionobj->search1, True);
-        foreach($artists1 as $artist){
-          $scope->viewartist1[] = $viewartist1[] = get_user($artist);
-        }
-
-        if($exhibition_ids) { // adding single exhibition
-          $singleExb = add_single_exb($exhibition_ids, $page_id);
-        }
-        if($add_manual){
-          $manualExb = add_manual_exb($add_manual, $page_id);
-        }
-
-        if($logo_id) { // cannot be both
-          $ids = $logo_id; 
-          $what = 'media'; 
-          $ids = explode(',', $ids);
-          $changed = '';
-
-          if(($what == 'media') && (count($ids)>1)) 
-            return json_error("Cannot upload more than one media");
-
-          foreach($ids as $this_id) {
-            $existing = $what == 'media';
-            if(in_array($this_id, $existing)) continue; // already exists
-
-            $result = gallery_publish_weblogo($siteObj, $this_id, $id);
-            if($error = $result->error) return json_error($error);
-            if($message = $result->message ?: $result->messages) $messages = array_merge_smart($messages, $message);
-            
-            $changed = $what;
-            $mapObj = $result->data;
-            $artist_id = $mapObj->artist_id;
-            if(!in_array($artist_id, $artist_ids)) $artist_ids[] = $artist_id;
-          }
-          switch($changed) { // reload
-            case 'media':
-              $media = find_objects('minisite', ['user_id' => $user_id]);
-              break;
-            default:
-              break;
-          }
-        }
-        
-        $scope->auth_edit_minisite = $u_level >= USER_LEVEL_STAFF || auth_object('minisite', $obj);   
-      }      
-      $colSearch = ['id' =>$id, 'user_id' => $obj->user_id, 'active' => 1];
-      $scope->minisiteobj = $minisiteobj = find_object('minisite', $colSearch);
-      $scope->site_title = $sitetitle = $minisiteobj->name;
-      $scope->fonts = $fonts = get_objects('minisite_font');
-      $scope->menus = $menus = get_objects('minisite_menu');
-      $scope->hover = $hover = find_objects('minisite_hover', ['active'=>1], ['sort' => 'rank asc']); 
-      
-      $colSearch = ['minisite_id' => $id ,'user_id' => $obj->user_id, 'active' => 1];
-      $scope->pagelist = $pagelist = find_objects('minisite_page', $colSearch, ['sort' => 'row_order asc']);
-
-      $scope->exhibition_layout_organic = $exhibition_organic = find_objects('minisite_parent_layout', ['page_type' => 30, 'page_subtype' => 1, layout_type=>10, 'active' => 1], ['sort' => 'row_order asc']);
-      $scope->exhibition_layout_landscape = $exhibition_landscape = find_objects('minisite_parent_layout', ['page_type' => 30, 'page_subtype' => 1, layout_type=>20, 'active' => 1], ['sort' => 'row_order asc']);
-      $scope->exhibition_layout_timeline = $exhibition_timeine = find_objects('minisite_parent_layout', ['page_type' => 30, 'page_subtype' => 1, layout_type=>30, 'active' => 1], ['sort' => 'row_order asc']);
-      $scope->exhibition_layout_magazine = $exhibition_magazine = find_objects('minisite_parent_layout', ['page_type' => 30, 'page_subtype' => 1, layout_type=>40, 'active' => 1], ['sort' => 'row_order asc']);
-
-      $scope->exhibition_sublayout_full = $exhibition_full = find_objects('minisite_parent_layout', ['page_type' => 30, 'page_subtype' => 2, layout_type=>10, 'active' => 1], ['sort' => 'row_order asc']);
-      $scope->exhibition_sublayout_art = $exhibition_art = find_objects('minisite_parent_layout', ['page_type' => 30, 'page_subtype' => 2, layout_type=>20, 'active' => 1], ['sort' => 'row_order asc']);
-
-      $scope->exhibition_singlelayout_full = $exhibition_full = find_objects('minisite_parent_layout', ['page_type' => 60, 'page_subtype' => 2, layout_type=>10, 'active' => 1], ['sort' => 'row_order asc']);
-      $scope->exhibition_singlelayout_art = $exhibition_art = find_objects('minisite_parent_layout', ['page_type' => 60, 'page_subtype' => 2, layout_type=>20, 'active' => 1], ['sort' => 'row_order asc']);
-
-      $scope->single_exhibition = $single_exhibition = find_object('exhibition_map', ['page_id' => $page_id, 'active' => 1, 'type'=>'single'] );
-      $scope->manual_exhibition = $manual_exhibition = find_objects('exhibition_map', ['page_id' => $page_id, 'active' => 1, 'type'=>'manual'], ['sort' => 'rank asc'] );
-
-      $scope->artist_layout = $artist_layout = find_objects('minisite_parent_layout', ['page_type' => 20, 'page_subtype' => 1, 'active'=>1], ['sort' => 'row_order asc']);
-      $scope->artist_sub_layout = $artist_sub_layout = find_objects('minisite_layout', ['type' => 20,'subtype' => 1, 'active' => 1]);
-
-      $scope->artist_subLayout_full= $artist_full = find_objects('minisite_parent_layout', ['page_type' => 20, 'page_subtype' => 2, layout_type=>10, 'active'=>1], ['sort' => 'row_order asc']);
-      $scope->artist_subLayout_cv= $artist_cv = find_objects('minisite_parent_layout', ['page_type' => 20, 'page_subtype' => 2, layout_type=>20, 'active'=>1], ['sort' => 'row_order asc']);
-      $scope->artist_subLayout_SA= $artist_SA = find_objects('minisite_parent_layout', ['page_type' => 20, 'page_subtype' => 2, layout_type=>30, 'active'=>1], ['sort' => 'row_order asc']);
-
-      $scope->contact_layout = $contact_layout = find_objects('minisite_layout', ['type' => 40, 'subtype' => 1, 'active'=>1], ['sort' => 'row_order asc']);
-      $scope->single_exb_layout = $single_exb_layout = find_objects('minisite_layout', ['type' => 60, 'subtype' => 1, 'active'=>1], ['sort' => 'row_order asc']);
-
-      $col = ['id' => $page_id, 'user_id' => $obj->user_id, 'active' => 1];
-      $scope->minisitepage = $minisitepage = find_object('minisite_page', $col);
-      $scope->minisite_page_type = $minisite_page_type = find_objects('minisite_page_type', ['active'=>1], ['sort'=>'row_order']);
-      $scope->userprofile = $userprofile = get_user($obj->user_id);
-
-      //Sorting CV details
-      $awards = json_decode($userprofile->awards);
-      $solo_shows = json_decode($userprofile->solo_shows_);
-      $group_shows = json_decode($userprofile->group_shows_);
-      $press_data = json_decode($userprofile->press_data);
-      
-      uasort($awards, 'sortMonths');
-      uasort($solo_shows, 'sortMonths');
-      uasort($group_shows, 'sortMonths');
-      uasort($press_data, 'sortMonths');
-
-      $scope->awards = json_encode($awards, TRUE);
-      $scope->solo_shows = json_encode($solo_shows, TRUE);
-      $scope->group_shows = json_encode($group_shows, TRUE);
-      $scope->press_data = json_encode($press_data, TRUE);
-      
-      $profileSearch = ['user_id' => $obj->user_id];
-      $scope->baseprofile = $profile = find_objects('user_profile', $profileSearch);
-      
-      $time = db_getAll("select * from opening_hours where user_id='$obj->user_id'");
-      $scope->timing = $time;
-
-      $sub = $app->host_sub;
-      $app->page->itemview = 'website';
-      $app->page->listview = 'websites';
-      if($_GET['domain'] && is_url("https://{$sub}.{$obj->domain}")) {
-        $scope->url = $url = "https://{$sub}.{$obj->domain}"; 
-      } else {
-        $scope->url = $url = "https://{$_SERVER['SERVER_NAME']}/$obj->user_id/{$obj->url}"; 
-      }
-      $scope->title = "URL: <a href='{$url}' target='website'>{$url}</a>";
-      break;
-
-    case "websites":
-      $scope->section = 'website';
-      $scope->obj_type = $obj_type = "minisite";
-      $app->page->itemview = 'website';
-      $app->page->listview = 'websites';
-
-      $filters = $u_level < USER_LEVEL_ADMIN ? ['user_id' => $app->user_id] : [];
-      $filter_json = count($filters) ? json_encode($filters) : '';
-      $scope->list_url = "/ajax.php?oper=get-rows&obj_type=minisite&amp;sort=id%20desc&amp;".($filter_json ? "&filters=".urlencode($filter_json) : '');
-      break;
-      
-    case "medium":
-      $scope->section = 'media';
-      $scope->obj_type = $obj_type = "media";
-      if($_GET['folder'])
-        $scope->folder = $_GET['folder'];
-      else{
-        $folder = find_object('media_folder', ['user_id'=> $app->user_id, 'rank' => 1]);
-        $scope->folder = $folder->id;
-      }
-      if(!$add) {      
-        if(!$id) return controller_error($app, "Missing ID");
-        $scope->media = $obj = get_object('media', $id);
-        $scope->owner = get_user($obj->user_id);
-        $scope->auth_edit_media = $u_level >= USER_LEVEL_STAFF || gallery_auth_media($obj_type, $obj, $obj->user_id);
-        $tags = get_objects('media_tags');
-        foreach($tags as $tag){
-          $tag_arr[] = $tag->name;
-        }
-        $scope->tags=  $tag_arr;
-      }
-
-      $app->page->itemview = 'medium';
-      $app->page->listview = 'vaults';
-      break;
-      
-    case "media":
-      $scope->section = 'media';
-      $scope->obj_type = $obj_type = "media";
-      $app->page->itemview = 'medium';
-      $app->page->listview = 'media';
-
-      $filters = ['active' => 1];
-      //$filters[DB_LOGICAL_OR2] = ['user_id' => $app->user_id, 'artist_id' => $artist_ids]; 
-      $filters[DB_LOGICAL_OR2] = ['user_id' => $app->user_id, 'artist_id' => $artist_ids]; 
-      $filter_json = count($filters) ? json_encode($filters) : '';
-      $scope->list_url = "/ajax.php?oper=get-rows&obj_type=media".($filter_json ? "&filters=".urlencode($filter_json) : '');
-      break;
-
-    case "network":
-      $scope->section = 'network';
-      $app->page->itemview = 'profile';
-      $app->page->listview = 'network';
-	    $scope->obj_type = $obj_type = "artist"; //Bala
-      
-      $filters = ['active' => 1, 'user.site_id' => $app->site->id];
-      if($u_level < USER_LEVEL_ADMIN) $filters['user_id'] = $user_ids;
-      $filter_json = count($filters) ? json_encode($filters) : '';
-      $scope->list_url = "/ajax.php?oper=get-rows&obj_type=user&amp;sort=id%20desc&amp;".($filter_json ? "&filters=".urlencode($filter_json) : '');
-      break;
-    case "settings":
-      $scope->section = 'settings';
-      break;
-    case "profile":
-      $scope->section = 'network';
-      $scope->obj_type = $obj_type = "artist";
-      //controller_gallery_collections($app);
-      if(!$add) {   
-        if(!$id) return controller_error($app, "Missing ID");
-        if($_GET['profile_id']) $id = $scope->id = $scope->obj_id = get_object('user_profile', $id, 'user_id');
-        $scope->profile = $profile_data= get_user($id);
-        controller_artist_profile($app);
-        $profile = $scope->profile;
-
-        $user_id = $id;
-        $scope->connectedExhibition = db_getAll("select title from media_collection where type='120' AND active='1' AND user_id= '$user_id' OR artist_id = '$user_id' OR artist_ids LIKE '%$user_id%' ");
-        $scope->connectedArtwork = db_getAll("select title from artwork where active='1' and user_id='$user_id' or artist_id='$user_id' OR artist_ids LIKE '%$user_id%' ");
-        
-        $ids = '';
-        if($_GET['add_art']){
-          $ids = $_GET['add_art'];
-          $artwork_ids = $_GET['add_art'];
-          $what = 'artwork';
-        }elseif($_GET['add_folderimg']){
-          $ids = $_GET['add_folderimg'];
-          $media_ids = $_GET['add_media'];
-          $what = 'media';
-        }else{
-          $ids = $_GET['add_logo'];
-          $logo_id = $_GET['add_logo'];
-          $what = 'logo';
-        }
-        
-        if($ids) { // cannot be both
-          $getExhibition = find_object('media_collection', ['user_id' => $user_id, 'type' => 150, 'active' =>1 ]);
-          $exhibition =[];
-          if(!$getExhibition->id){
-            $exhibition['user_id'] = $user_id;
-            $exhibition['type'] = 150;
-            $exhibition['title'] = 'Selected Artwork';
-            $exhibition['curator_id'] = $user_id;
-            list($exhi_id, $errors) = add_object('media_collection', $exhibition);
-            if($errors) json_error($errors);
-          }
-          $collection_id = ($getExhibition->id) ? $getExhibition->id : $exhi_id;
-
-          $ids = explode(',', $ids);
-          if(($what == 'logo') && (count($ids)>1)) 
-            return json_error("Cannot upload more than one media");
-
-          $changed = '';
-          foreach($ids as $this_id) {
-            if($what == 'artwork')    $existing = $artwork_ids;
-            elseif($what == 'media')  $existing = $media_ids;
-            else                      $existing = $logo_id;
-
-            if(in_array($this_id, $existing)) continue; // already exists
-            if($what == 'artwork')
-              $result =  gallery_publish_artwork($siteObj, $this_id, $collection_id, $user_id);
-            elseif($what == 'media')
-              $result = gallery_publish_folderimgart($siteObj, $this_id, $user_id);
-            else
-              $result = gallery_publish_logo($siteObj, $this_id, $user_id);
-
-            if($error = $result->error) return json_error($error);
-            if($message = $result->message ?: $result->messages) $messages = array_merge_smart($messages, $message);
-            
-            $changed = $what;
-            $mapObj = $result->data;
-            $artist_id = $mapObj->artist_id;
-            if(!in_array($artist_id, $artist_ids)) $artist_ids[] = $artist_id;
-          }
-                    
-          switch($changed) { // reload
-            case 'artwork':
-              $art = find_objects('media_collection_map', ['user_id' => $user_id, 'artwork_id' => ['>', 0]]);
-              break;
-            case 'media':
-              $media = find_objects('media_collection_map', ['user_id' => $user_id, 'artwork_id' => ATT_DEFAULT_NULL]);
-              break;
-            case 'logo':
-              $media = find_objects('user_profile', ['user_id' => $user_id]);
-              break;
-            default:
-              break;
-          }
-        }
-
-      }
-
-      $app->page->subtemplate = $sub = '_gallery-backend-profile.html'; // $edit ? '_gallery-backend-artwork-form.html' : '_gallery-artwork-detail.html';
-      $scope->profile_template = $utpl = "_{$scope->template}";
-      print_log("type={$obj_type} id={$obj_id} title={$profile->display_name} edit={$edit} auth={$auth_edit} sub={$sub} usertpl={$utpl}".dump($scope,true), 'backend', LOG_LEVEL_TEST);
-      $scope->auth_edit_profile = in_array($profile->user_id, $artist_ids) || $scope->auth_edit_user; /** from controller_artist_profile */
-      $app->page->itemview = 'profile';
-      $app->page->listview = 'network';
-      
-      unset($scope->template);
-      
-      /**
-      if($app->page->action == "edit") {
-        die("edit profile $id");
-      } else {
-        $app->page->subtemplate = "_{$scope->template}";
-        unset($scope->template);
-      }
-      */
-
-      $data = db_getAll("select * from opening_hours where user_id='$id'");
-      $scope->timing = $data;
-      break;
-      
-    case "exhibitions":
-      $scope->section = 'exhibition';
-      $scope->obj_type = $obj_type = "media_collection";
-      $app->page->itemview = 'exhibition';
-      $app->page->listview = 'exhibitions';
-
-      $filters = ['type' => COLLECTION_TYPE_EXHIBITION];
-      if($u_level < USER_LEVEL_ADMIN) $filters['user_id'] = $app->user_id;
-      $filter_json = count($filters) ? json_encode($filters) : '';
-      $scope->list_url = "/ajax.php?oper=get-rows&obj_type=media_collection&amp;sort=id%20desc&amp;".($filter_json ? "&filters=".urlencode($filter_json) : '');
-      
-      break;
-      
-    case "exhibition":
-      $scope->section = 'exhibition';
-      $scope->obj_type = $obj_type = "media_collection";
-
-      $scope->add_media = $_GET['add_media'];
-      if(!$add) {                  
-        if(!$id) return controller_error($app, "Missing ID");
-        controller_gallery_collections($app);
-        $obj = $scope->collection;
-        $scope->auth_edit_collection = $auth_edit = $obj ? gallery_auth_media($obj_type, $obj, $u_id) : false;
-        
-        $curator = $scope->curator;
-        
-        // locations
-        $locations = [];
-        $locations[0] = "Another location..."; 
-        if($loc_id = $curator->address_formatted) {
-          $locObj = get_object('location', $loc_id);
-          //$locations[$loc_id] = "{$locObj->address_street} {$locObj->address_number} {$locObj->address_formatted}";
-          //$locations[1] = "{$loc_id}";
-        }
-
-        $locObjs = find_objects('location', ['user_id' => $curator->user_id, 'active' => 1, 'parent_type' => ['media_collection', 'event']], ['debug_query' => 0]);
-        //dump($locObjs);
-        foreach($locObjs as $locObj) {
-          $loc_id = $locObj->id;
-          //$locations[$loc_id] = "{$locObj->address_street} {$locObj->address_number} {$locObj->address_formatted}";
-          $locations[$loc_id] = "{$locObj->address_formatted}";
-        }
-                 
-        $scope->locations = $locations;
-        $scope->events = $events = find_objects('event', ['active' => 1, 'parent_type' => 'media_collection', 'parent_id' => $id]); 
-        
-        $collection = get_object('media_collection', $id);
-        $collection_id = $collection->id;
-        
-        $art = find_objects('media_collection_map', ['media_collection_id' => $collection_id, 'artwork_id' => ['>', 0]]);
-        $scope->images = $art;
-        $media = find_objects('media_collection_map', ['media_collection_id' => $collection_id, 'artwork_id' => ATT_DEFAULT_NULL]);
-      
-        $scope->related_images = $related_images =find_objects('media_collection_map', ['media_collection_id' => $collection_id, 'active' => 1]);
-        $scope->description_type = get_objects('artwork_related_type');
-        
-        $art_ids = array_find_key($art, 'artwork_id');
-        $media_ids = array_find_key($media, 'media_id');
-        $artist_ids = array_unique(array_find_key(array_merge($art, $media), 'artist_id'));
-  
-        //print_log("art: ".dump($art,true), 'gallery', LOG_LEVEL_TEST);
-        //print_log("media ".dump($media,true), 'gallery', LOG_LEVEL_TEST);
-        print_log("art id: ".implode(',', $art_ids), 'gallery', LOG_LEVEL_TEST);
-        print_log("media ".implode(',', $media_ids), 'gallery', LOG_LEVEL_TEST);
-        print_log("map: artist id: ".implode(',', $artist_ids), 'gallery', LOG_LEVEL_TEST);
-        
-        if(!$collection->artist_ids) {
-          $collection_artist_ids = find_objects('media_collection_map', ['active' => 1, 'media_collection_id' => $collection_id], ['fields' => 'distinct artist_id']);
-          if($collection_artist_ids) {          
-            $artists_json = $collection->artist_ids = json_encode($collection_artist_ids);
-            update_object('media_collection', ['artist_id' => $artist_ids[0], 'artist_ids' => $artists_json], $collection->id);
-            print_log("setting collection {$collection_id} artist_ids to {$artists_json}", 'backend', LOG_LEVEL_TEST);
-            //$collection = get_object('media_collection', $collection_id); // reload
-          }
-        }
-        $artwork_ids = $_GET['add_art'];
-        $media_ids = $_GET['add_exbart'];
-        $title_id = $_GET['exbtitle'];
-        $map_id = $_GET['add_media'];
-
-        if($artwork_ids || $media_ids || $title_id) { // cannot be both
-        //echo "Hai";exit;
-          if($artwork_ids){
-            $ids = $artwork_ids;
-            $what = 'artwork';
-          }elseif($media_ids){
-            $ids = $media_ids;
-            $what = 'media';
-          }else{
-            $ids = $title_id;
-            $what = 'media_title';
-          }
-          $ids = explode(',', $ids);
-          if(($what == 'media_title') && (count($ids)>1)) 
-            return json_error("Cannot upload more than one media");
-          $changed = '';
-          foreach($ids as $this_id) {
-            if($what == 'artwork')   $existing = $artwork_ids;
-            elseif($what == 'media') $existing = $media_ids;
-            else                     $existing = $title_id;
-            if(in_array($this_id, $existing)) continue; // already exists
-            print_log("Adding {$what} {$this_id} to collection {$collection_id}", 'gallery', LOG_LEVEL_TEST);
-            if($what == 'artwork')   $result = gallery_publish_artwork($siteObj, $this_id, $collection_id);
-            elseif($what == 'media') $result = gallery_publish_images($siteObj, $this_id, $map_id);
-            else                     $result = gallery_publish_titleimg($siteObj, $this_id, $collection_id);
-            if($error = $result->error ?: $result->errors) $errors = array_merge_smart($errors, $error);
-            if($message = $result->message ?: $result->messages) $messages = array_merge_smart($messages, $message);
-            
-            $changed = $what;
-            $mapObj = $result->data;
-            $artist_id = $mapObj->artist_id;
-            if(!in_array($artist_id, $artist_ids)) $artist_ids[] = $artist_id;
-          }
-          /** update artist list: keep existing artists NOT in the list that were explicitly added */
-          $artist_ids = find_objects('media_collection_map', ['active' => 1, 'media_collection_id' => $collection_id, 'artwork_id' => ['>', 0]], ['fields' => 'distinct artist_id']);
-          if($artist_ids) {   
-            $existing_artist_ids = json_decode($collection->artist_ids) ?: [];
-            
-            print_log("map: artist ids: ".implode(',', $artist_ids), 'gallery', LOG_LEVEL_TEST);
-            print_log("existing artist ids: ".implode(',', $existing_artist_ids), 'gallery', LOG_LEVEL_TEST);
-            
-            $artist_ids = array_unique(array_merge($existing_artist_ids, $artist_ids)); // keep existing
-  
-            print_log("combined artist ids: ".implode(',', $artist_ids), 'gallery', LOG_LEVEL_TEST);
-            
-            $artists_json = $collection->artist_ids = json_encode($artist_ids);
-            print_log("combined artist json: {$artists_json}", 'gallery', LOG_LEVEL_TEST);
-            
-            update_object('media_collection', ['artist_id' => $artist_ids[0], 'artist_ids' => $artists_json], $collection->id);
-            //=====================Update Exhibition Sequence=====vignesh 03-09-2020======================//
-            $media_collection = db_getAll("SELECT id FROM media_collection WHERE id=".$collection_id." AND subtype IN (40,50)");   
-            //dump($media_collection);exit;
-            foreach($media_collection as $val){
-              //echo "SELECT  *,min(original_year) as year FROM media_collection_map WHERE media_collection_id=".$val->id." AND original_year != '' GROUP BY media_collection_id";die;
-              $media_collection_map = db_getAll("SELECT  *,min(original_year) as year FROM media_collection_map WHERE media_collection_id=".$val->id." AND original_year != '' GROUP BY media_collection_id");
-              //dump(count($media_collection_map));exit;
-              if(count($media_collection_map) == 1)
-              {
-                foreach($media_collection_map as $mval)
-                {
-                    $year = "".$mval->year."-01-01";
-                    update_object('media_collection', ['exhibition_sequence' => $year], $mval->media_collection_id);
+    // my-vpatina (view, explore art)
+    function controller_art_viewer($app, $options = []) {
+        global $u_id;
+        $__header = $app->header; 
+        $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
+        $__header->styles[] = "/afr/css/gallery/afr_gallery.css?ver={$app->version}";
+        $siteObj = $app->site;
+
+        $scope = $app->page->scope;
+        $aif = $_GET['_aif'];
+        $scope->my_collection_id = $collection_id = gallery_find_user_collection($siteObj, $u_id, array('return' => 'id'));    
+
+        /** follow media from GET var (plugin) */
+        if(isint($aif)) {
+            if(!$collection_id) return controller_error($app, "Missing user collection");
+            $mediaObj = get_object('media', $aif);
+            if(!$mediaObj) return controller_error($app, "Artwork not found");
+            $media_name = $mediaObj->name ?: "this artwork";
+            if($mapObj = find_object('media_collection_map', array('media_id' => $aif, 'media_collection_id' => $collection_id))) {
+                $scope->warning = "You already follow $media_name";
+            } else {
+                $result = gallery_publish_image($siteObj, $aif, $collection_id);
+                if($result->success) {
+                    $scope->message = "You now follow $media_name";
+                } else {
+                    $scope->error = $result->error;
                 }
-              }
-              else
-              {
-                    $year = "1000-01-01";
-                    update_object('media_collection', ['exhibition_sequence' => $year], $collection_id);
-              }
             }
-            //=====================Update Exhibition Sequence=====vignesh 03-09-2020 End======================//
-
-          }
-                    
-          switch($changed) { // reload
-            case 'artwork':
-              $art = find_objects('media_collection_map', ['media_collection_id' => $collection_id, 'artwork_id' => ['>', 0]]);
-              break;
-            case 'media':
-              $media = find_objects('media_collection_map', ['media_collection_id' => $collection_id, 'artwork_id' => ATT_DEFAULT_NULL]);
-              break;
-            default:
-              break;
-          }
-          
+            $scope->follow_id = $aif; 
         }
-        
-        /**
-        $art_ids = array_find_key($art, 'artwork_id');
-        $media_ids = array_find_key($media, 'media_id');
-        print_log("2:art id: ".implode(',', $art_ids), 'gallery', LOG_LEVEL_TEST);
-        print_log("2:media ".implode(',', $media_ids), 'gallery', LOG_LEVEL_TEST);
-        
-        $collection->artworks = $art;
-        $collection->media = $media;
-        */
-                
-        $scope->collection = $collection;
-        
-      }
-      
-      
-      $app->page->subtemplate = $sub = '_gallery-backend-exhibition.html'; // $edit ? '_gallery-backend-artwork-form.html' : '_gallery-artwork-detail.html';
-      $app->page->itemview = 'exhibition';
-      $app->page->listview = 'exhibitions';
 
-      print_log("type={$obj_type} id={$obj_id} title={$obj->title} edit={$edit} auth={$auth_edit} sub={$sub}", 'backend', LOG_LEVEL_TEST);
-      
-      $scope->error = $errors;
-      $scope->message = $messages;
-      break;
-     
-    default:
-      return controller_error($app, "Unknown subview {$subview}");
-      break;
-  }
+        //dump($myCollectionObj);
+
+        return;
+    }  
+
+    /** new backend for vPatina */
+    function controller_gallery_backend($app, $options = []) {
+        global $u_id, $u_level;
+        $scope = $app->page->scope;
+        $errors = $messages = [];  
+        if(!$u_id) {
+            redirect_login();
+            return;
+        }
+        $scope->u_id = $u_id;
+        if($u_level < USER_LEVEL_ARTIST) return scope_error($app, "Unauthorized", '403');
+
+        $scope->user = $userObj = $app->user;
+        $siteObj = $app->site;
+        //dump($userObj);
+        $__header = $app->header; 
+        $__header->styles[] = "/afr/css/afr_sidebar.css?ver={$app->version}";
+        $__header->styles[] = "/afr/css/gallery/afr_gallery.css?ver={$app->version}";
+        $__header->styles[] = "/afr/bower/tag-it/css/jquery.tagit.css";
+        $__header->styles[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.css?v=1.11";
+        $__header->styles[] = "https://cdnjs.cloudflare.com/ajax/libs/bootstrap-timepicker/0.5.2/css/bootstrap-timepicker.min.css";
+        $__header->styles[] = "/afr/bower/bootstrap-datepicker/dist/css/bootstrap-datepicker.css";
+        $__header->styles[] = "/afr/bower/bootstrap-tags/dist/css/bootstrap-tags.css";
+        $__header->styles[] = "/afr/bower/bootstrap-toggle/css/bootstrap-toggle.min.css";
+        $__header->styles[] = "/afr/bower/bootstrap-table/dist/extensions/filter-control/bootstrap-table-filter-control.css";
+        $__header->styles[] = "/afr/css/evol-colorpicker.min.css";
+        $__header->styles[] = "/afr/css/magicsuggest-min.css";
+        $__header->styles[] = "/afr/css/lightgallery/lightgallery.css";
+
+        $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
+
+        $__header->scripts[] = "/afr/bower/geocomplete/jquery.geocomplete.min.js";
+        $__header->scripts[] = "/afr/bower/confirm-bootstrap/confirm-bootstrap.js";
+        $__header->scripts[] = "/afr/bower/bootstrap-toggle/js/bootstrap-toggle.min.js";
+
+        $__header->scripts[] = "/afr/js/afr_gmap.js";
+        $__header->scripts[] = "/afr/bower/bootstrap-confirmation2/bootstrap-confirmation.js";    
+        $__header->scripts[] = "/afr/js/event-form.js?ver={$app->version}";    
+
+        //$__header->scripts[] = "/afr/bower/jquery.are-you-sure/jquery.are-you-sure.js";
+
+        $__header->scripts[] = "/afr/js/afr_gallery_backend.js?ver={$app->version}";
+
+        $__header->scripts[] = "/afr/bower/bootstrap-tags/dist/js/bootstrap-tags.min.js";
+
+        $__header->scripts[] = "/afr/bower/tag-it/js/tag-it.min.js";
+        $__header->scripts[] = "/afr/bower/jquery-file-download/src/Scripts/jquery.fileDownload.js";
+        $__header->scripts[] = "/afr/bower/table-export/jquery.base64.js?v=1.11";
+        $__header->scripts[] = "/afr/js/jquery.base64.js"; /** Fix: https://github.com/wenzhixin/bootstrap-table/issues/189 */
+        $__header->scripts[] = "/afr/bower/table-export/tableExport.js?v=1.11";
+        $__header->scripts[] = "/afr/bower/bootstrap-table/dist/bootstrap-table.min.js?v=1.11";
+        $__header->scripts[] = "/afr/bower/bootstrap-table/dist/locale/bootstrap-table-en-US.js?v=1.11"; /** todo: support other languages, use $app->locale  */
+        $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/export/bootstrap-table-export.js?v=1.11";
+        $__header->scripts[] = "https://cdnjs.cloudflare.com/ajax/libs/bootstrap-timepicker/0.5.2/js/bootstrap-timepicker.min.js";
+        $__header->scripts[] = "/afr/bower/bootstrap-table/dist/extensions/filter-control/bootstrap-table-filter-control.min.js";
+        $__header->scripts[] = "/afr/bower/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js";
+        $__header->scripts[] = "/afr/js/evol-colorpicker.min.js";  //Colour picker
+        $__header->scripts[] = "/afr/js/sw.js";
+        $__header->scripts[] = "/afr/js/magicsuggest-min.js";
+        $__header->scripts[] = "/afr/js/lightgallery/lightgallery-all.min.js";
+        $__header->styles[] = "/afr/js/vp/vp.min.css{$cachebust}";
+  
+        if(0) { // cloudinary direct upload
+            require_once("xml/xml_cloudinary.inc");
+            $ci_config = get_config('ci', $siteObj->id);
+            if(!$ci_config) return scope_error($app, "Missing Cloudinary Configuration");
+            if(!$ci_config->preset_name) return scope_error($app, "Missing Cloudinary Preset");
+
+            $signature = cloudinary_signature($app->site);
+            $cloudinaryData = ["timestamp" => time(), "callback" => rtrim($app->site_url,'/')."/cloudinary_cors.html", "signature" => $signature, "api_key" => $ci_config->api_key];
+            $scope->cloudinary_data = $cloudinaryData;
+            $scope->cloudinary_config = $ci_config;
+
+            $__header->scripts[] =  "/afr/bower/blueimp-file-upload/js/vendor/jquery.ui.widget.js";             
+            $__header->scripts[] =  "/afr/bower/blueimp-file-upload/js/jquery.iframe-transport.js";              
+            $__header->scripts[] =  "/afr/bower/blueimp-file-upload/js/jquery.fileupload.js";                                                                   
+            $__header->scripts[] =  "/afr/bower/cloudinary-jquery-file-upload/cloudinary-jquery-file-upload.js"; 
+            $__header->scripts[] =  "script:$.cloudinary.config({\"api_key\":\"{$ci_config->api_key}\",\"cloud_name\":\"{$ci_config->cloud_name}\"});"; 
+        } else { // local server upload (to cloudinary from server)
+            jfu_dependencies($app); // load scripts + css for new file uploader
+        }
+  
+
+        // artwork
+        $artist_ids = ($u_level < USER_LEVEL_ADMIN) ? user_artist_list($app->user_id) : find_objects('user', ['user.site_id' => $app->site->id, 'roles & '.USER_ROLE_ARTIST => ['>', 0]], ['fields' => 'user.id']);
+
+        $artist_count = count($artist_ids);
+        $user_ids = array_unique(array_merge($artist_ids, [$u_id]));
+
+        $subview = $app->page->subview = $app->page->subview ?: 'artworks';
+        //$subview = $app->page->subview ?: 'artworks';
+        $partial = isset($_GET['_pv']) && $_GET['_pv'];
+
+        $app->page->subtemplate = "_gallery-backend-{$subview}.html";
+
+        if(!$partial) { /** don't need to do this in partial view */
+            $artists = [];
+            foreach($artist_ids as $artist_id) {
+                $artists[$artist_id] = user_display_name($artist_id);
+            }
+            $scope->artists = json_encode($artists);
+            $scope->user_ids = json_encode(array_keys($artists));
+        }
+  
+        $scope->obj_id = $id = $obj_id = $app->page->object_id;
+        $get_str = '';
+        $column = $_GET['col'] ?0: 1;
+        $scope->add_to = $add_to = $_GET['add_to'] ?: 0;
+        $scope->add_to_profile = $add_to_profile = $_GET['add_to_profile'] ?: 0;
+        $scope->add_to_profile1 = $add_to_profile1 = $_GET['add_to_profile1'] ?: 0;
+        $scope->add_to_website = $add_to_website = $_GET['add_to_website'] ?: 0;
+        $scope->add_to_manualexb = $add_to_manualexb = $_GET['add_to_manualexb'] ?: 0;
+
+        if($_GET['add_to_relatedart']){
+            $scope->add_to_relatedart = $add_to_relatedart = $_GET['add_to_relatedart'] ?: 0;
+            $scope->get_str = $get_str = "add_to_relatedart=$add_to_relatedart";
+        } 
+        if($_GET['add_to_artworkimg']){
+            $scope->add_to_artworkimg = $add_to_artworkimg = $_GET['add_to_artworkimg'] ?: 0;
+            $scope->get_str = $get_str = "add_to_artworkimg=$add_to_artworkimg";
+        } 
+        if($_GET['add_to_logo']){
+            $scope->add_to_logo = $add_to_logo = $_GET['add_to_logo'] ?: 0;
+            $scope->get_str = $get_str = "add_to_logo=$add_to_logo";
+        }
+        if($_GET['add_to_logo1']){
+            $scope->add_to_logo1 = $add_to_logo1 = $_GET['add_to_logo1'] ?: 0;
+            $scope->get_str = $get_str = "add_to_logo1=$add_to_logo1";
+        }
+        if($_GET['add_to_media']){
+            $scope->add_to_media = $add_to_media = $_GET['add_to_media'] ?: 0;
+            $scope->get_str = $get_str = "add_to_media=$add_to_media";
+        }
+        if($_GET['add_to_exbart']){
+            $scope->add_to_exbart = $add_to_exbart = $_GET['add_to_exbart'] ?: 0;
+            $scope->get_str = $get_str = "add_to_exbart=$add_to_exbart";
+        }
+        if($_GET['add_to_exbtitle']){
+            $scope->add_to_exbtitle = $add_to_exbtitle = $_GET['add_to_exbtitle'] ?: 0;
+            $scope->get_str = $get_str = "add_to_exbtitle=$add_to_exbtitle";
+        }
+        if($_GET['add_to_websiteimg']){
+            $scope->add_to_websiteimg = $add_to_websiteimg = $_GET['add_to_websiteimg'] ?: 0;
+            $scope->get_str = $get_str = "add_to_websiteimg=$add_to_websiteimg";
+        }
+        if($_GET['_pv'] == 'viewartistpage'){
+            $scope->getpv = $getpv = ($_GET['_pv'] == 'viewartistpage');
+            $scope->page_id = $_GET['page_id'];
+            $scope->user_id = $_GET['user_id'];
+            $scope->site_id = $_GET['site_id'];
+        }
+        if($add_to_website){
+            $scope->page_id = $_GET['page_id'];
+            $scope->user_id = $_GET['user_id'];
+            $scope->site_id = $add_to_website;
+        }
+        if($add_to_manualexb){
+            $scope->page_id = $_GET['page_id'];
+            $scope->user_id = $_GET['user_id'];
+            $scope->site_id = $add_to_manualexb;
+        }
+
+        $scope->hide_related = 1; /** don't show related images in preview */
+        $scope->artist_id = user_has_role($userObj, USER_ROLE_ARTIST) ? $userObj->id : 0;
+        $scope->curator_id = user_has_role($userObj, USER_ROLE_CURATOR) ? $userObj->id : 0;
+        $scope->backend = 1;
+
+        //dump($scope->curator_id);
+
+        $action = $app->page->action ?: '';
+
+        $addCollectionObj = $add_to ? get_object('media_collection', $add_to) : get_object('media_collection_map', ['artist_id'=>$add_to]);
+
+
+        //$obj_type = $app->page->object_type;
+        //$obj = $obj_id && $obj_type ? get_object($obj_type, $obj_id) : null;
+
+        $auth_edit = 0;
+        $edit = $action == 'edit' ? 1 : 0;
+        $add = $action == 'add' ? 1 : 0;
+
+        switch($subview) {
+            case "settings":
+                $scope->section = 'settings';
+                $app->page->subtemplate = $sub = '_gallery-backend-settings.html';
+                break;
+            case "tutorial":
+                $scope->section = 'tutorial';
+                $scope->obj_type = $obj_type = "tutorial";
+                $app->page->subtemplate = $sub = '_gallery-backend-tutorial.html';
+                $app->page->itemview = 'tutorial';
+                $app->page->listview = 'tutorial';
+
+                break;
+            case "ACsettings":
+                $scope->section = 'ACsettings';
+                $scope->obj_type = $obj_type = "ACsettings";
+                $id = $app->user_id;
+                $scope->obj_id = $id;
+              
+                if(!$add) {   
+                    if(!$id) return controller_error($app, "Missing ID");
+                    $scope->profile = $profile_data= get_user($id);
+                    controller_artist_profile($app);
+                    $user_id = $id;
+                    $artwork_ids = $_GET['add_art'];
+                    $media_ids = $_GET['add_logo'];
+  
+                    if($artwork_ids || $media_ids) { // cannot be both
+                        $ids = $artwork_ids ?: $media_ids; 
+                        $what = $artwork_ids ? 'artwork' : 'media'; 
+                        $ids = explode(',', $ids);
+                        $changed = '';
+
+                        if(($what == 'media') && (count($ids)>1)) 
+                            return json_error("Cannot upload more than one media");
+
+                        foreach($ids as $this_id) {
+                            $existing = $what == 'artwork' ? $artwork_ids : $media_ids;
+                            if(in_array($this_id, $existing)) continue; // already exists
+
+                            $result = $what == 'artwork' ? gallery_publish_artwork($siteObj, $this_id, $user_id) : gallery_publish_logo($siteObj, $this_id, $user_id);
+
+                            if($error = $result->error) return json_error($error);
+                            if($message = $result->message ?: $result->messages) $messages = array_merge_smart($messages, $message);
+
+                            $changed = $what;
+                            $mapObj = $result->data;
+                            $artist_id = $mapObj->artist_id;
+                            if(!in_array($artist_id, $artist_ids)) $artist_ids[] = $artist_id;
+                        }
+                    
+                        switch($changed) { // reload
+                            case 'artwork':
+                                $art = find_objects('media_collection_map', ['user_id' => $user_id, 'artwork_id' => ['>', 0]]);
+                            break;
+                            case 'logo':
+                                $media = find_objects('user_profile', ['user_id' => $user_id]);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }     
+
+                $data = db_getAll("select * from opening_hours where user_id='$id'");
+                $scope->timing = $data;
+                $app->page->subtemplate = $sub = '_gallery-backend-ACsettings.html';
+                $scope->auth_edit_profile = in_array($profile->user_id, $artist_ids) || $scope->auth_edit_user;
+                $app->page->itemview = 'ACsettings';
+                $app->page->listview = 'ACsettings';
+                break;
+
+                //-----------------------vignesh Implimented----------------//
+
+            case "crud":
+                $scope->section = 'crud';
+                $scope->obj_type = $obj_type = "cruds";
+                //dump($obj_type);exit;
+                if(!$add) {
+                    if(!$id) return controller_error($app, "Missing ID");
+
+                    //$get_data = db_getAll("select * from crud where id='$scope->obj_id'");
+                    $get_data = find_objects($obj_type, array('id' => $scope->obj_id));
+
+                    //$crud_datas = [];
+                    foreach($get_data as $val){
+                        $scope->id = $val->id;
+                        $scope->name = $val->name;
+                        $scope->email = $val->email;
+                        $scope->mobile = $val->mobile;
+                    }
+
+                }
+                //die("u_id={$app->user_id } Auth_artist: {$auth_artist} auth_artwork={$scope->auth_edit_artwork}".dump($artist_ids,true));
+  
+                $app->page->subtemplate = $sub = '_gallery-backend-crud-form.html';
+                $app->page->itemview = 'crud';
+                $app->page->listview = 'cruds';
+                print_log("action={$action} type={$obj_type} id={$obj_id} name={$obj->name} edit={$edit} auth={$auth_edit} sub={$sub}", 'backend', LOG_LEVEL_TEST);
+
+            break;
+
+            case "cruds":
+                $scope->section = 'crud';
+                $scope->obj_type = $obj_type = "cruds";
+                $app->page->itemview = 'crud';
+                $app->page->listview = 'crud';
+                //dump($scope);
+                $filters = ['active' => 1];
+                $filter_json = count($filters) ? json_encode($filters) : '';
+                $scope->list_url = "/ajax.php?oper=get-rows&obj_type=cruds".($filter_json ? "&filters=".urlencode($filter_json) : '');
+            break;
+
+            //---------------------------End Vignesh Implimented------------------//
+
+            //-----------------------Jemima Implimented----------------//
+
+          	case "company":
+
+    			$scope->section = 'company';
+    			$scope->obj_type = $obj_type = "company";
+
+          		if(!$add) {
+            		if(!$id) return controller_error($app, "Missing ID");
+    				//$get_data = db_getAll("select * from company where id='$scope->obj_id'");
+    				$get_data = find_objects('company', array('id' => $scope->obj_id));
+
+    				//$crud_datas = [];
+    				foreach($get_data as $val){
+    				     $scope->id = $val->id;
+    				     $scope->name = $val->name;
+    				     $scope->email = $val->email;
+    				     $scope->mobile = $val->mobile;
+    				}
+          		}
+          		//die("u_id={$app->user_id } Auth_artist: {$auth_artist} auth_artwork={$scope->auth_edit_artwork}".dump($artist_ids,true));
+          
+    			$app->page->subtemplate = $sub = '_gallery-backend-company-form.html';
+    			$app->page->itemview = 'company';
+    			$app->page->listview = 'companies';
+
+    			print_log("action={$action} type={$obj_type} id={$obj_id} name={$obj->name} edit={$edit} auth={$auth_edit} sub={$sub}", 'backend', LOG_LEVEL_TEST);
+            break;
+
+          	case "companies":
+    			$scope->section = 'company';
+    			$scope->obj_type = $obj_type = "company";
+    			$app->page->itemview = 'company';
+    			$app->page->listview = 'companies';
+    			//dump($scope);
+    			$filters = ['active' => 1];
+    			$filter_json = count($filters) ? json_encode($filters) : '';
+    			$scope->list_url = "/ajax.php?oper=get-rows&obj_type=company".($filter_json ? "&filters=".urlencode($filter_json) : '');
+          	break;
+
+            //---------------------------End Jemima Implimented------------------//
+
+            case "artwork":
+                $scope->section = 'artwork';
+                $scope->obj_type = $obj_type = "artwork";
+                $scope->artwork_media = $_GET['artwork_media'];
+
+                if(!$add) {
+                    if(!$id) return controller_error($app, "Missing ID");
+                    controller_gallery_artworks($app);
+                    $obj = $scope->artwork;
+                    $scope->auth_edit_artwork = $obj ? ($auth_artist || gallery_auth_media($obj_type, $obj, $u_id, $artist_ids)) : false;
+                    $scope->related_images = find_objects('artwork_media', ['artwork_id'=>$id], ['sort'=> 'row_order asc']);
+                    $scope->description_type = get_objects('artwork_related_type');
+
+                    $artwork_ids = $_GET['add_artwork'];
+                    $artwork_media_id = $_GET['artwork_media'];
+                    $media_ids = $_GET['add_relatedart'];
+
+                    if($artwork_ids || $media_ids) { // cannot be both
+                        $ids = $artwork_ids ?: $media_ids; 
+                        $what = $artwork_ids ? 'artwork' : 'media'; 
+                        $ids = explode(',', $ids);
+                        $changed = '';
+
+                        if(($what) && (count($ids)>1)) 
+                            return json_error("Cannot upload more than one media");
+
+                        foreach($ids as $this_id) {
+                            $existing = $what == 'artwork' ? $artwork_ids : $media_ids;
+                            if(in_array($this_id, $existing)) continue; // already exists
+
+                            $result = $what == 'artwork' ? gallery_publish_artworkimg($siteObj, $this_id, $id) : gallery_publish_relatedimg($siteObj, $this_id, $artwork_media_id) ;
+
+                            if($error = $result->error) return json_error($error);
+                            if($message = $result->message ?: $result->messages) $messages = array_merge_smart($messages, $message);
     
-  print_log("controller_gallery_backend: sub={$subview} partial={$partial}", 'app', LOG_LEVEL_TEST);
-  return;
-}
+                            $changed = $what;
+                            $mapObj = $result->data;
+                            $artist_id = $mapObj->artist_id;
+                            if(!in_array($artist_id, $artist_ids)) $artist_ids[] = $artist_id;
+                        }
+            
+                        switch($changed) { // reload
+                            case 'artwork':
+                                $art = find_objects('media_collection_map', ['user_id' => $user_id, 'artwork_id' => ['>', 0]]);
+                                break;
+                            case 'media':
+                                $media = find_objects('artwork_media', ['user_id' => $user_id]);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+                //die("u_id={$app->user_id } Auth_artist: {$auth_artist} auth_artwork={$scope->auth_edit_artwork}".dump($artist_ids,true));
+
+                $app->page->subtemplate = $sub = '_gallery-backend-artwork.html';
+                $app->page->itemview = 'artwork';
+                $app->page->listview = 'artworks';
+                print_log("action={$action} type={$obj_type} id={$obj_id} title={$obj->title} edit={$edit} auth={$auth_edit} sub={$sub}", 'backend', LOG_LEVEL_TEST);
+
+                break;
+
+            case "artworks":
+                // dump("Ashii");
+                $scope->section = 'artwork';
+                $scope->obj_type = $obj_type = "artwork";
+                $app->page->itemview = 'artwork';
+                $app->page->listview = 'artworks';
+
+                $filters = [];
+                if($add_to) $filters = ['active' => 1];
+
+                if($addCollectionObj && $addCollectionObj->artist_ids && strlen($addCollectionObj->artist_ids) > 2) {
+                $filters['artist_id'] = json_decode($addCollectionObj->artist_ids);
+                }elseif($add_to_profile){
+                    $filters['artist_id'] = json_decode($add_to_profile);
+                }elseif($add_to_profile1){
+                    $filters['artist_id'] = json_decode($add_to_profile1);
+                }else {
+                    $filters[DB_LOGICAL_OR2] = ['user_id' => $app->user_id, 'artist_id' => $artist_ids];
+                }
+                // dump(urlencode($filter_json));
+                $filter_json = count($filters) ? json_encode($filters) : '';
+                $scope->list_url = "/ajax.php?oper=get-rows&obj_type=artwork".($filter_json ? "&filters=".urlencode($filter_json) : '');
+                break;
+
+            case "vault":
+                $scope->section = 'vault';
+                $scope->obj_type = $obj_type = "media_folder";
+                $app->page->itemview = 'vault';
+                $app->page->listview = 'vaults';
+                $scope->user_profile = $user_profile = get_user($app->user_id);
+                $scope->list_media = find_objects('media_folder', ['user_id'=>$app->user_id, 'filename'=>'Uploads']);
+                print_log($scope->list_media);
+                $app->page->subtemplate = $sub = '_gallery-backend-vault.html';
+
+                $tags = get_objects('media_tags');
+                foreach($tags as $tag){
+                    $tag_arr[] = $tag->name;
+                }
+                if($edit) {      
+                if(!$id) return controller_error($app, "Missing ID");
+                    $scope->vault = $obj = get_object($obj_type, $id);
+                }
+                $scope->tags=  $tag_arr;
+                print_log("actionsadas={$action} type={$obj_type} id={$obj_id} title={$obj->title} edit={$edit} auth={$auth_edit} sub={$sub}", 'backend', LOG_LEVEL_TEST);
+
+                break;
+
+            case "vaults":
+                $scope->section = 'vault';
+                $scope->obj_type = $obj_type = "media_folder";
+                $app->page->itemview = 'vault';
+                $app->page->listview = 'vaults';
+                $scope->add_to_folder = $add_to_folder = 1;
+                $scope->folderlist = find_objects('media_folder', ['user_id' => $app->user_id, 'active' => 1], ['sort' => 'created asc']);
+                $scope->imagecount = count(find_objects('media', ['user_id' => $app->user_id, 'active' => 1]));
+                print_log("folderlist".$scope->folderlist);
+                $user = get_user($app->user_id);
+                if($user->roles == 256) $scope->limitcount = 'unlimited';
+                else $scope->limitcount = '100 image';
+
+                $scope->vault_page = 0;
+                $add_to_vault = 0;
+                $media_ids = $_GET['add_folderimg'];
+                $folder_id = $_GET['folder_id'];
+
+                if($id || $get_str){
+                    if(!$column) 
+                        $scope->vault_page = 0;
+                    else
+                        $scope->vault_page = 1;
+                        $scope->add_to_vault = $add_to_vault = 1; 
+                    }
+
+                    if($media_ids) { // cannot be both
+                    $ids = $media_ids; 
+                    $what = 'media'; 
+                    $ids = explode(',', $ids);
+                    $changed = '';
+                    foreach($ids as $this_id) {
+                        $existing = $what == $media_ids;
+                        if(in_array($this_id, $existing)) continue; // already exists
+                        $result = $what = gallery_publish_folderimg($siteObj, $this_id, $folder_id);
+                        if($error = $result->error) return json_error($error);
+                        if($message = $result->message ?: $result->messages) $messages = array_merge_smart($messages, $message);
+                      
+                        $changed = $what;
+                        $mapObj = $result->data;
+                        $artist_id = $mapObj->artist_id;
+                        if(!in_array($artist_id, $artist_ids)) $artist_ids[] = $artist_id;
+                    }                 
+                    switch($changed) { // reload
+                        case 'media':
+                            $media = find_objects('media', ['user_id' => $user_id]);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                $filters = [];
+                if($id) {
+                    $scope->folder = $folder = get_object($obj_type, $id);
+                    $title = $folder->filename ? $folder->filename : "Untitled folder";
+                    $up_link = $folder->parent_id ? 
+                      reverse_route($app, 'backend:subview:id', ['subview' => 'vaults', 'id' => $folder->parent_id]) : 
+                      reverse_route($app, 'backend:subview', ['subview' => 'vaults']);
+                    $title .= " <a class='ajax-loader' href='{$up_link}?_pv=1' data-target='#subview-container'><i class='fa fa-level-up'></i></a>";
+                    $scope->title = "<i class='fa fa-folder'></i> ".$title;
+                    if($folder->rank == 1){
+                        $filters['user_id'] = $app->user_id;
+                        $filters['folder_id'] = 0;
+                        $filters['active'] = 1;
+
+                        $filter_json = count($filters) ? json_encode($filters) : '';
+                        $scope->media_type='media';
+                        $scope->list_url = "/ajax.php?oper=get-rows&obj_type=media".($filter_json ? "&filters=".urlencode($filter_json) : '');
+                    }else{
+                        $filters['folder_id'] = $id;
+                        $filters['active'] = 1;
+                        $scope->media_type='media';
+
+                        $filter_json = count($filters) ? json_encode($filters) : '';
+                        $scope->list_url = "/ajax.php?oper=get-rows&obj_type=media&".$get_str."&".($filter_json ? "&filters=".urlencode($filter_json) : '');
+                    } 
+                }elseif($add_to_vault){
+                    $filters['user_id'] = $app->user_id;
+                    $filters['active'] = 1;
+                    $scope->media_type='media_folder';
+                    $filter_json = count($filters) ? json_encode($filters) : '';
+                    $scope->list_url = "/ajax.php?oper=get-rows&obj_type=media_folder".($filter_json ? "&filters=".urlencode($filter_json) : '');
+                }else{
+                    $filters['user_id'] = $app->user_id;
+                    $filters['active'] = 1;
+                    $scope->media_type='media_folder';
+
+                    $filter_json = count($filters) ? json_encode($filters) : '';
+                    $scope->list_url = "/ajax.php?oper=get-rows&obj_type=media_folder".($filter_json ? "&filters=".urlencode($filter_json) : '');
+                }
+
+                break;
+
+            case "plugin":
+                $scope->section = 'plugin';
+                $scope->obj_type = $obj_type = "plugin";
+                if($add) {
+                    $pt = $_GET['_pt'];
+                    $pid = $_GET['_pid'];
+                    if(!$pt) return controller_error($app, "Missing Parent Type");
+                    if(!$pid) return controller_error($app, "Missing Parent ID");
+                    $scope->parent_type = $pt;
+                    $scope->parent_id = $pid;
+                    $scope->parent_object = $pObj = get_object($pt, $pid);
+                } else {
+                    if(!$id) return controller_error($app, "Missing ID");
+                    $scope->plugin = $obj = get_object('plugin', $id);
+                    $scope->preview = plugin_javascript(['shid' => $id, 'pid' => $obj->parent_id]);
+                    $pt = $obj->parent_type;
+                    $pid = $obj->parent_id;
+
+                    $scope->auth_edit_plugin = $u_level >= USER_LEVEL_STAFF || auth_object('plugin', $obj);
+                    $auth_obj = auth_object('plugin', $obj);
+
+                    /** fetch collection info */
+                    if($pt == 'media_collection' && $pid) {
+                        $scope->collection = get_object($pt, $pid);
+                    }
+
+                    //$app->object_type = $pt;
+                    //$app->object_id = $pid;
+                    //controller_gallery_collections($app);        
+                    //$app->object_type = 'plugin';
+                    //$app->object_id = $id;
+                }
+
+                $app->page->itemview = 'plugin';
+                $app->page->listview = 'plugins';
+                    
+                $scope->images = $images = find_objects('media_collection_map', ['media_collection_id' => $pid, 'active' => 1], ['sort' => 'rank']);
+                break;
+
+            case "plugins":
+                $scope->section = 'plugin';
+                $scope->obj_type = $obj_type = "plugin";
+                $app->page->itemview = 'plugin';
+                $app->page->listview = 'plugins';
+
+                $filters = $u_level < USER_LEVEL_ADMIN ? ['user_id' => $app->user_id] : [];
+                $pt = $_GET['_pt'];
+                $pid = $_GET['_pid'];
+                if($pt && $pid) {
+                    $scope->parent_type = $pt;
+                    $scope->parent_id = $pid;
+                    $filters['parent_type'] = $pt;
+                    $filters['parent_id'] = $pid;
+                }
+
+                $filter_json = count($filters) ? json_encode($filters) : '';
+                $scope->list_url = "/ajax.php?oper=get-rows&obj_type=plugin&amp;sort=id%20desc&amp;".($filter_json ? "&filters=".urlencode($filter_json) : '');
+            break;
+
+            case "website":
+                $scope->section = 'website';
+                $scope->obj_type = $obj_type = "minisite";
+                if($_GET['page_id']){
+                    $page_id = $_GET['page_id'];
+                    $scope->page_id = $page_id;
+                }      
+                if($_GET['user_id']){
+                    $userid = $_GET['user_id'];
+                    $scope->userid = $userid;
+                }      
+                if($_GET['add_exb'])
+                    $exhibition_ids = $_GET['add_exb'];
+
+                if($_GET['add_weblogo'])
+                    $logo_id = $_GET['add_weblogo'];
+
+                if($_GET['add_manual']){
+                    $add_manual = $_GET['add_manual'];
+                }
+
+                $error = '';
+                $changed = '';
+
+                if(!$add) {      
+                    if(!$id) return controller_error($app, "Missing ID");
+                    $scope->minisite = $obj = get_object($obj_type, $id);
+
+                    //fetch artist from minisite_page
+                    $colSearch = ['user_id' => $obj->user_id, id=> $page_id, 'active' => 1];
+                    $collectionobj = find_object('minisite_page', $colSearch);
+
+                    $artists = json_decode($collectionobj->search, True);
+                    foreach($artists as $artist){
+                        $scope->viewartist[] = $viewartist[] = get_user($artist);
+                    }
+                    $artists1 = json_decode($collectionobj->search1, True);
+                    foreach($artists1 as $artist){
+                        $scope->viewartist1[] = $viewartist1[] = get_user($artist);
+                    }
+
+                    if($exhibition_ids) { // adding single exhibition
+                        $singleExb = add_single_exb($exhibition_ids, $page_id);
+                    }
+                    if($add_manual){
+                        $manualExb = add_manual_exb($add_manual, $page_id);
+                    }
+
+                    if($logo_id) { // cannot be both
+                        $ids = $logo_id; 
+                        $what = 'media'; 
+                        $ids = explode(',', $ids);
+                        $changed = '';
+
+                    if(($what == 'media') && (count($ids)>1)) 
+                        return json_error("Cannot upload more than one media");
+
+                    foreach($ids as $this_id) {
+                        $existing = $what == 'media';
+                        if(in_array($this_id, $existing)) continue; // already exists
+
+                        $result = gallery_publish_weblogo($siteObj, $this_id, $id);
+                        if($error = $result->error) return json_error($error);
+                        if($message = $result->message ?: $result->messages) $messages = array_merge_smart($messages, $message);
+
+                        $changed = $what;
+                        $mapObj = $result->data;
+                        $artist_id = $mapObj->artist_id;
+                        if(!in_array($artist_id, $artist_ids)) $artist_ids[] = $artist_id;
+                        }
+                        switch($changed) { // reload
+                            case 'media':
+                                $media = find_objects('minisite', ['user_id' => $user_id]);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
+                    $scope->auth_edit_minisite = $u_level >= USER_LEVEL_STAFF || auth_object('minisite', $obj);   
+                }      
+                $colSearch = ['id' =>$id, 'user_id' => $obj->user_id, 'active' => 1];
+                $scope->minisiteobj = $minisiteobj = find_object('minisite', $colSearch);
+                $scope->site_title = $sitetitle = $minisiteobj->name;
+                $scope->fonts = $fonts = get_objects('minisite_font');
+                $scope->menus = $menus = get_objects('minisite_menu');
+                $scope->hover = $hover = find_objects('minisite_hover', ['active'=>1], ['sort' => 'rank asc']); 
+
+                $colSearch = ['minisite_id' => $id ,'user_id' => $obj->user_id, 'active' => 1];
+                $scope->pagelist = $pagelist = find_objects('minisite_page', $colSearch, ['sort' => 'row_order asc']);
+
+                $scope->exhibition_layout_organic = $exhibition_organic = find_objects('minisite_parent_layout', ['page_type' => 30, 'page_subtype' => 1, layout_type=>10, 'active' => 1], ['sort' => 'row_order asc']);
+                $scope->exhibition_layout_landscape = $exhibition_landscape = find_objects('minisite_parent_layout', ['page_type' => 30, 'page_subtype' => 1, layout_type=>20, 'active' => 1], ['sort' => 'row_order asc']);
+                $scope->exhibition_layout_timeline = $exhibition_timeine = find_objects('minisite_parent_layout', ['page_type' => 30, 'page_subtype' => 1, layout_type=>30, 'active' => 1], ['sort' => 'row_order asc']);
+                $scope->exhibition_layout_magazine = $exhibition_magazine = find_objects('minisite_parent_layout', ['page_type' => 30, 'page_subtype' => 1, layout_type=>40, 'active' => 1], ['sort' => 'row_order asc']);
+
+                $scope->exhibition_sublayout_full = $exhibition_full = find_objects('minisite_parent_layout', ['page_type' => 30, 'page_subtype' => 2, layout_type=>10, 'active' => 1], ['sort' => 'row_order asc']);
+                $scope->exhibition_sublayout_art = $exhibition_art = find_objects('minisite_parent_layout', ['page_type' => 30, 'page_subtype' => 2, layout_type=>20, 'active' => 1], ['sort' => 'row_order asc']);
+
+                $scope->exhibition_singlelayout_full = $exhibition_full = find_objects('minisite_parent_layout', ['page_type' => 60, 'page_subtype' => 2, layout_type=>10, 'active' => 1], ['sort' => 'row_order asc']);
+                $scope->exhibition_singlelayout_art = $exhibition_art = find_objects('minisite_parent_layout', ['page_type' => 60, 'page_subtype' => 2, layout_type=>20, 'active' => 1], ['sort' => 'row_order asc']);
+
+                $scope->single_exhibition = $single_exhibition = find_object('exhibition_map', ['page_id' => $page_id, 'active' => 1, 'type'=>'single'] );
+                $scope->manual_exhibition = $manual_exhibition = find_objects('exhibition_map', ['page_id' => $page_id, 'active' => 1, 'type'=>'manual'], ['sort' => 'rank asc'] );
+
+                $scope->artist_layout = $artist_layout = find_objects('minisite_parent_layout', ['page_type' => 20, 'page_subtype' => 1, 'active'=>1], ['sort' => 'row_order asc']);
+                $scope->artist_sub_layout = $artist_sub_layout = find_objects('minisite_layout', ['type' => 20,'subtype' => 1, 'active' => 1]);
+
+                $scope->artist_subLayout_full= $artist_full = find_objects('minisite_parent_layout', ['page_type' => 20, 'page_subtype' => 2, layout_type=>10, 'active'=>1], ['sort' => 'row_order asc']);
+                $scope->artist_subLayout_cv= $artist_cv = find_objects('minisite_parent_layout', ['page_type' => 20, 'page_subtype' => 2, layout_type=>20, 'active'=>1], ['sort' => 'row_order asc']);
+                $scope->artist_subLayout_SA= $artist_SA = find_objects('minisite_parent_layout', ['page_type' => 20, 'page_subtype' => 2, layout_type=>30, 'active'=>1], ['sort' => 'row_order asc']);
+
+                $scope->contact_layout = $contact_layout = find_objects('minisite_layout', ['type' => 40, 'subtype' => 1, 'active'=>1], ['sort' => 'row_order asc']);
+                $scope->single_exb_layout = $single_exb_layout = find_objects('minisite_layout', ['type' => 60, 'subtype' => 1, 'active'=>1], ['sort' => 'row_order asc']);
+
+                $col = ['id' => $page_id, 'user_id' => $obj->user_id, 'active' => 1];
+                $scope->minisitepage = $minisitepage = find_object('minisite_page', $col);
+                $scope->minisite_page_type = $minisite_page_type = find_objects('minisite_page_type', ['active'=>1], ['sort'=>'row_order']);
+                $scope->userprofile = $userprofile = get_user($obj->user_id);
+
+                //Sorting CV details
+                $awards = json_decode($userprofile->awards);
+                $solo_shows = json_decode($userprofile->solo_shows_);
+                $group_shows = json_decode($userprofile->group_shows_);
+                $press_data = json_decode($userprofile->press_data);
+
+                uasort($awards, 'sortMonths');
+                uasort($solo_shows, 'sortMonths');
+                uasort($group_shows, 'sortMonths');
+                uasort($press_data, 'sortMonths');
+
+                $scope->awards = json_encode($awards, TRUE);
+                $scope->solo_shows = json_encode($solo_shows, TRUE);
+                $scope->group_shows = json_encode($group_shows, TRUE);
+                $scope->press_data = json_encode($press_data, TRUE);
+
+                $profileSearch = ['user_id' => $obj->user_id];
+                $scope->baseprofile = $profile = find_objects('user_profile', $profileSearch);
+
+                $time = db_getAll("select * from opening_hours where user_id='$obj->user_id'");
+                $scope->timing = $time;
+
+                $sub = $app->host_sub;
+                $app->page->itemview = 'website';
+                $app->page->listview = 'websites';
+                if($_GET['domain'] && is_url("https://{$sub}.{$obj->domain}")) {
+                    $scope->url = $url = "https://{$sub}.{$obj->domain}"; 
+                } else {
+                    $scope->url = $url = "https://{$_SERVER['SERVER_NAME']}/$obj->user_id/{$obj->url}"; 
+                }
+                $scope->title = "URL: <a href='{$url}' target='website'>{$url}</a>";
+            break;
+
+            case "websites":
+                $scope->section = 'website';
+                $scope->obj_type = $obj_type = "minisite";
+                $app->page->itemview = 'website';
+                $app->page->listview = 'websites';
+
+                $filters = $u_level < USER_LEVEL_ADMIN ? ['user_id' => $app->user_id] : [];
+                $filter_json = count($filters) ? json_encode($filters) : '';
+                $scope->list_url = "/ajax.php?oper=get-rows&obj_type=minisite&amp;sort=id%20desc&amp;".($filter_json ? "&filters=".urlencode($filter_json) : '');
+            break;
+
+            case "medium":
+                $scope->section = 'media';
+                $scope->obj_type = $obj_type = "media";
+                if($_GET['folder'])
+                $scope->folder = $_GET['folder'];
+                else{
+                    $folder = find_object('media_folder', ['user_id'=> $app->user_id, 'rank' => 1]);
+                    $scope->folder = $folder->id;
+                }
+                if(!$add) {      
+                    if(!$id) return controller_error($app, "Missing ID");
+                    $scope->media = $obj = get_object('media', $id);
+                    $scope->owner = get_user($obj->user_id);
+                    $scope->auth_edit_media = $u_level >= USER_LEVEL_STAFF || gallery_auth_media($obj_type, $obj, $obj->user_id);
+                    $tags = get_objects('media_tags');
+                    foreach($tags as $tag){
+                        $tag_arr[] = $tag->name;
+                    }
+                    $scope->tags=  $tag_arr;
+                }
+
+                $app->page->itemview = 'medium';
+                $app->page->listview = 'vaults';
+                break;
+      
+            case "media":
+                $scope->section = 'media';
+                $scope->obj_type = $obj_type = "media";
+                $app->page->itemview = 'medium';
+                $app->page->listview = 'media';
+
+                $filters = ['active' => 1];
+                //$filters[DB_LOGICAL_OR2] = ['user_id' => $app->user_id, 'artist_id' => $artist_ids]; 
+                $filters[DB_LOGICAL_OR2] = ['user_id' => $app->user_id, 'artist_id' => $artist_ids]; 
+                $filter_json = count($filters) ? json_encode($filters) : '';
+                $scope->list_url = "/ajax.php?oper=get-rows&obj_type=media".($filter_json ? "&filters=".urlencode($filter_json) : '');
+            break;
+
+            case "network":
+                $scope->section = 'network';
+                $app->page->itemview = 'profile';
+                $app->page->listview = 'network';
+                $scope->obj_type = $obj_type = "artist"; //Bala
+
+                $filters = ['active' => 1, 'user.site_id' => $app->site->id];
+                if($u_level < USER_LEVEL_ADMIN) $filters['user_id'] = $user_ids;
+                $filter_json = count($filters) ? json_encode($filters) : '';
+                $scope->list_url = "/ajax.php?oper=get-rows&obj_type=user&amp;sort=id%20desc&amp;".($filter_json ? "&filters=".urlencode($filter_json) : '');
+            break;
+            case "settings":
+                $scope->section = 'settings';
+            break;
+            case "profile":
+                $scope->section = 'network';
+                $scope->obj_type = $obj_type = "artist";
+                //controller_gallery_collections($app);
+                if(!$add) {   
+                    if(!$id) return controller_error($app, "Missing ID");
+                    if($_GET['profile_id']) $id = $scope->id = $scope->obj_id = get_object('user_profile', $id, 'user_id');
+                    $scope->profile = $profile_data= get_user($id);
+                    controller_artist_profile($app);
+                    $profile = $scope->profile;
+
+                    $user_id = $id;
+                    $scope->connectedExhibition = db_getAll("select title from media_collection where type='120' AND active='1' AND user_id= '$user_id' OR artist_id = '$user_id' OR artist_ids LIKE '%$user_id%' ");
+                    $scope->connectedArtwork = db_getAll("select title from artwork where active='1' and user_id='$user_id' or artist_id='$user_id' OR artist_ids LIKE '%$user_id%' ");
+        
+                    $ids = '';
+                    if($_GET['add_art']){
+                        $ids = $_GET['add_art'];
+                        $artwork_ids = $_GET['add_art'];
+                        $what = 'artwork';
+                    }elseif($_GET['add_folderimg']){
+                        $ids = $_GET['add_folderimg'];
+                        $media_ids = $_GET['add_media'];
+                        $what = 'media';
+                    }else{
+                        $ids = $_GET['add_logo'];
+                        $logo_id = $_GET['add_logo'];
+                        $what = 'logo';
+                    }
+
+                    if($ids) { // cannot be both
+                        $getExhibition = find_object('media_collection', ['user_id' => $user_id, 'type' => 150, 'active' =>1 ]);
+                        $exhibition =[];
+                        if(!$getExhibition->id){
+                            $exhibition['user_id'] = $user_id;
+                            $exhibition['type'] = 150;
+                            $exhibition['title'] = 'Selected Artwork';
+                            $exhibition['curator_id'] = $user_id;
+                            list($exhi_id, $errors) = add_object('media_collection', $exhibition);
+                            if($errors) json_error($errors);
+                        }
+                        $collection_id = ($getExhibition->id) ? $getExhibition->id : $exhi_id;
+
+                        $ids = explode(',', $ids);
+                        if(($what == 'logo') && (count($ids)>1)) 
+                            return json_error("Cannot upload more than one media");
+
+                        $changed = '';
+                        foreach($ids as $this_id) {
+                            if($what == 'artwork')    $existing = $artwork_ids;
+                            elseif($what == 'media')  $existing = $media_ids;
+                            else                      $existing = $logo_id;
+
+                            if(in_array($this_id, $existing)) continue; // already exists
+                            if($what == 'artwork')
+                                $result =  gallery_publish_artwork($siteObj, $this_id, $collection_id, $user_id);
+                            elseif($what == 'media')
+                                $result = gallery_publish_folderimgart($siteObj, $this_id, $user_id);
+                            else
+                                $result = gallery_publish_logo($siteObj, $this_id, $user_id);
+
+                            if($error = $result->error) return json_error($error);
+                            if($message = $result->message ?: $result->messages) $messages = array_merge_smart($messages, $message);
+                        
+                            $changed = $what;
+                            $mapObj = $result->data;
+                            $artist_id = $mapObj->artist_id;
+                            if(!in_array($artist_id, $artist_ids)) $artist_ids[] = $artist_id;
+                        }
+                                
+                        switch($changed) { // reload
+                            case 'artwork':
+                                $art = find_objects('media_collection_map', ['user_id' => $user_id, 'artwork_id' => ['>', 0]]);
+                                break;
+                            case 'media':
+                                $media = find_objects('media_collection_map', ['user_id' => $user_id, 'artwork_id' => ATT_DEFAULT_NULL]);
+                                break;
+                            case 'logo':
+                                $media = find_objects('user_profile', ['user_id' => $user_id]);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
+                }
+
+                $app->page->subtemplate = $sub = '_gallery-backend-profile.html'; // $edit ? '_gallery-backend-artwork-form.html' : '_gallery-artwork-detail.html';
+                $scope->profile_template = $utpl = "_{$scope->template}";
+                print_log("type={$obj_type} id={$obj_id} title={$profile->display_name} edit={$edit} auth={$auth_edit} sub={$sub} usertpl={$utpl}".dump($scope,true), 'backend', LOG_LEVEL_TEST);
+                $scope->auth_edit_profile = in_array($profile->user_id, $artist_ids) || $scope->auth_edit_user; /** from controller_artist_profile */
+                $app->page->itemview = 'profile';
+                $app->page->listview = 'network';
+
+                unset($scope->template);
+
+                /**
+                if($app->page->action == "edit") {
+                die("edit profile $id");
+                } else {
+                $app->page->subtemplate = "_{$scope->template}";
+                unset($scope->template);
+                }
+                */
+
+                $data = db_getAll("select * from opening_hours where user_id='$id'");
+                $scope->timing = $data;
+                break;
+      
+            case "exhibitions":
+                $scope->section = 'exhibition';
+                $scope->obj_type = $obj_type = "media_collection";
+                $app->page->itemview = 'exhibition';
+                $app->page->listview = 'exhibitions';
+
+                $filters = ['type' => COLLECTION_TYPE_EXHIBITION];
+                if($u_level < USER_LEVEL_ADMIN) $filters['user_id'] = $app->user_id;
+                dump($filters);
+                $filter_json = count($filters) ? json_encode($filters) : '';
+                $scope->list_url = "/ajax.php?oper=get-rows&obj_type=media_collection&amp;sort=id%20desc&amp;".($filter_json ? "&filters=".urlencode($filter_json) : '');
+
+            break;
+  
+            case "exhibition":
+                $scope->section = 'exhibition';
+                $scope->obj_type = $obj_type = "media_collection";
+
+                $scope->add_media = $_GET['add_media'];
+                if(!$add) {                  
+                    if(!$id) return controller_error($app, "Missing ID");
+                    controller_gallery_collections($app);
+                    $obj = $scope->collection;
+                    $scope->auth_edit_collection = $auth_edit = $obj ? gallery_auth_media($obj_type, $obj, $u_id) : false;
+
+                    $curator = $scope->curator;
+        
+                    // locations
+                    $locations = [];
+                    $locations[0] = "Another location..."; 
+                    if($loc_id = $curator->address_formatted) {
+                        $locObj = get_object('location', $loc_id);
+                        //$locations[$loc_id] = "{$locObj->address_street} {$locObj->address_number} {$locObj->address_formatted}";
+                        //$locations[1] = "{$loc_id}";
+                    }
+
+                    $locObjs = find_objects('location', ['user_id' => $curator->user_id, 'active' => 1, 'parent_type' => ['media_collection', 'event']], ['debug_query' => 0]);
+                    //dump($locObjs);
+                    foreach($locObjs as $locObj) {
+                        $loc_id = $locObj->id;
+                        //$locations[$loc_id] = "{$locObj->address_street} {$locObj->address_number} {$locObj->address_formatted}";
+                        $locations[$loc_id] = "{$locObj->address_formatted}";
+                    }
+                 
+                    $scope->locations = $locations;
+                    $scope->events = $events = find_objects('event', ['active' => 1, 'parent_type' => 'media_collection', 'parent_id' => $id]); 
+
+                    $collection = get_object('media_collection', $id);
+                    $collection_id = $collection->id;
+
+                    $art = find_objects('media_collection_map', ['media_collection_id' => $collection_id, 'artwork_id' => ['>', 0]]);
+                    $scope->images = $art;
+                    $media = find_objects('media_collection_map', ['media_collection_id' => $collection_id, 'artwork_id' => ATT_DEFAULT_NULL]);
+
+                    $scope->related_images = $related_images =find_objects('media_collection_map', ['media_collection_id' => $collection_id, 'active' => 1]);
+                    $scope->description_type = get_objects('artwork_related_type');
+
+                    $art_ids = array_find_key($art, 'artwork_id');
+                    $media_ids = array_find_key($media, 'media_id');
+                    $artist_ids = array_unique(array_find_key(array_merge($art, $media), 'artist_id'));
+
+                    //print_log("art: ".dump($art,true), 'gallery', LOG_LEVEL_TEST);
+                    //print_log("media ".dump($media,true), 'gallery', LOG_LEVEL_TEST);
+                    print_log("art id: ".implode(',', $art_ids), 'gallery', LOG_LEVEL_TEST);
+                    print_log("media ".implode(',', $media_ids), 'gallery', LOG_LEVEL_TEST);
+                    print_log("map: artist id: ".implode(',', $artist_ids), 'gallery', LOG_LEVEL_TEST);
+
+                    if(!$collection->artist_ids) {
+                        $collection_artist_ids = find_objects('media_collection_map', ['active' => 1, 'media_collection_id' => $collection_id], ['fields' => 'distinct artist_id']);
+                        if($collection_artist_ids) {          
+                            $artists_json = $collection->artist_ids = json_encode($collection_artist_ids);
+                            update_object('media_collection', ['artist_id' => $artist_ids[0], 'artist_ids' => $artists_json], $collection->id);
+                            print_log("setting collection {$collection_id} artist_ids to {$artists_json}", 'backend', LOG_LEVEL_TEST);
+                            //$collection = get_object('media_collection', $collection_id); // reload
+                        }
+                    }
+                    $artwork_ids = $_GET['add_art'];
+                    $media_ids = $_GET['add_exbart'];
+                    $title_id = $_GET['exbtitle'];
+                    $map_id = $_GET['add_media'];
+
+                    if($artwork_ids || $media_ids || $title_id) { // cannot be both
+                        //echo "Hai";exit;
+                        if($artwork_ids){
+                            $ids = $artwork_ids;
+                            $what = 'artwork';
+                        }elseif($media_ids){
+                            $ids = $media_ids;
+                            $what = 'media';
+                        }else{
+                            $ids = $title_id;
+                            $what = 'media_title';
+                        }
+                        $ids = explode(',', $ids);
+                        if(($what == 'media_title') && (count($ids)>1)) 
+                            return json_error("Cannot upload more than one media");
+                        $changed = '';
+                        foreach($ids as $this_id) {
+                            if($what == 'artwork')   $existing = $artwork_ids;
+                            elseif($what == 'media') $existing = $media_ids;
+                            else                     $existing = $title_id;
+                            if(in_array($this_id, $existing)) continue; // already exists
+                            print_log("Adding {$what} {$this_id} to collection {$collection_id}", 'gallery', LOG_LEVEL_TEST);
+                            if($what == 'artwork')   $result = gallery_publish_artwork($siteObj, $this_id, $collection_id);
+                            elseif($what == 'media') $result = gallery_publish_images($siteObj, $this_id, $map_id);
+                            else                     $result = gallery_publish_titleimg($siteObj, $this_id, $collection_id);
+                            if($error = $result->error ?: $result->errors) $errors = array_merge_smart($errors, $error);
+                            if($message = $result->message ?: $result->messages) $messages = array_merge_smart($messages, $message);
+            
+                            $changed = $what;
+                            $mapObj = $result->data;
+                            $artist_id = $mapObj->artist_id;
+                            if(!in_array($artist_id, $artist_ids)) $artist_ids[] = $artist_id;
+                        }
+                        /** update artist list: keep existing artists NOT in the list that were explicitly added */
+                        $artist_ids = find_objects('media_collection_map', ['active' => 1, 'media_collection_id' => $collection_id, 'artwork_id' => ['>', 0]], ['fields' => 'distinct artist_id']);
+                        if($artist_ids) {   
+                            $existing_artist_ids = json_decode($collection->artist_ids) ?: [];
+                            
+                            print_log("map: artist ids: ".implode(',', $artist_ids), 'gallery', LOG_LEVEL_TEST);
+                            print_log("existing artist ids: ".implode(',', $existing_artist_ids), 'gallery', LOG_LEVEL_TEST);
+                            
+                            $artist_ids = array_unique(array_merge($existing_artist_ids, $artist_ids)); // keep existing
+                  
+                            print_log("combined artist ids: ".implode(',', $artist_ids), 'gallery', LOG_LEVEL_TEST);
+                            
+                            $artists_json = $collection->artist_ids = json_encode($artist_ids);
+                            print_log("combined artist json: {$artists_json}", 'gallery', LOG_LEVEL_TEST);
+                            
+                            update_object('media_collection', ['artist_id' => $artist_ids[0], 'artist_ids' => $artists_json], $collection->id);
+                            //=====================Update Exhibition Sequence=====vignesh 03-09-2020======================//
+                            $media_collection = db_getAll("SELECT id FROM media_collection WHERE id=".$collection_id." AND subtype IN (40,50)");   
+                            //dump($media_collection);exit;
+                            foreach($media_collection as $val){
+                                //echo "SELECT  *,min(original_year) as year FROM media_collection_map WHERE media_collection_id=".$val->id." AND original_year != '' GROUP BY media_collection_id";die;
+                                $media_collection_map = db_getAll("SELECT  *,min(original_year) as year FROM media_collection_map WHERE media_collection_id=".$val->id." AND original_year != '' GROUP BY media_collection_id");
+                                //dump(count($media_collection_map));exit;
+                                if(count($media_collection_map) == 1)
+                                {
+                                    foreach($media_collection_map as $mval)
+                                    {
+                                        $year = "".$mval->year."-01-01";
+                                        update_object('media_collection', ['exhibition_sequence' => $year], $mval->media_collection_id);
+                                    }
+                                }
+                                else
+                                {
+                                    $year = "1000-01-01";
+                                    update_object('media_collection', ['exhibition_sequence' => $year], $collection_id);
+                                }
+                            }
+                            //=====Update Exhibition Sequence==vignesh 03-09-2020 End======//
+
+                        }
+                    
+                        switch($changed) { // reload
+                            case 'artwork':
+                            $art = find_objects('media_collection_map', ['media_collection_id' => $collection_id, 'artwork_id' => ['>', 0]]);
+                            break;
+                            case 'media':
+                                $media = find_objects('media_collection_map', ['media_collection_id' => $collection_id, 'artwork_id' => ATT_DEFAULT_NULL]);
+                            break;
+                            default:
+                            break;
+                        }
+          
+                    }
+        
+                    /**
+                    $art_ids = array_find_key($art, 'artwork_id');
+                    $media_ids = array_find_key($media, 'media_id');
+                    print_log("2:art id: ".implode(',', $art_ids), 'gallery', LOG_LEVEL_TEST);
+                    print_log("2:media ".implode(',', $media_ids), 'gallery', LOG_LEVEL_TEST);
+
+                    $collection->artworks = $art;
+                    $collection->media = $media;
+                    */
+                            
+                    $scope->collection = $collection;
+
+                }
+      
+      
+                $app->page->subtemplate = $sub = '_gallery-backend-exhibition.html'; // $edit ? '_gallery-backend-artwork-form.html' : '_gallery-artwork-detail.html';
+                $app->page->itemview = 'exhibition';
+                $app->page->listview = 'exhibitions';
+
+                print_log("type={$obj_type} id={$obj_id} title={$obj->title} edit={$edit} auth={$auth_edit} sub={$sub}", 'backend', LOG_LEVEL_TEST);
+
+                $scope->error = $errors;
+                $scope->message = $messages;
+            break;
+
+            default:
+                return controller_error($app, "Unknown subview {$subview}");
+                break;
+        }
+    
+        print_log("controller_gallery_backend: sub={$subview} partial={$partial}", 'app', LOG_LEVEL_TEST);
+        return;
+    }
 
  
 // my-vault (CMS)           
-function controller_art_explorer($app, $options = []) {
-  global $u_id;
-  $__header = $app->header; 
-  $ver = $app->version;
-  $siteObj = $app->site;
-  $scope = $app->page->scope;
-  
-  $__header->styles[] = "/afr/css/gallery/afr_gallery.css?ver={$app->version}";
-  $__header->styles[] = '/afr/css/gallery/afr_gmenu.css';
-  $__header->styles[] = '/afr/bower/dynatree/dist/skin/ui.dynatree.css';
+    function controller_art_explorer($app, $options = []) {
+        global $u_id;
+        $__header = $app->header; 
+        $ver = $app->version;
+        $siteObj = $app->site;
+        $scope = $app->page->scope;
 
-  $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
-  if($app->language != 'en') $__header->base_scripts[] = '/afr/bower/jquery-validate/localization/messages_'.$app->language.'.js';
-  $__header->base_scripts[] = "/afr/js/afr_cms.js?v=$ver";
-  $__header->base_scripts[] = "/afr/js/afr_cms_dynatree.js?v=$ver";
-  $__header->base_scripts[] = '/afr/bower/dynatree/dist/jquery.dynatree.min.js';
-  $__header->scripts[] = '/afr/bower/jquery-zclip/jquery.zclip.js';
-  $__header->scripts[] = '/afr/bower/jquery-validate/dist/jquery.validate.min.js';
+        $__header->styles[] = "/afr/css/gallery/afr_gallery.css?ver={$app->version}";
+        $__header->styles[] = '/afr/css/gallery/afr_gmenu.css';
+        $__header->styles[] = '/afr/bower/dynatree/dist/skin/ui.dynatree.css';
+
+        $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
+        if($app->language != 'en') $__header->base_scripts[] = '/afr/bower/jquery-validate/localization/messages_'.$app->language.'.js';
+        $__header->base_scripts[] = "/afr/js/afr_cms.js?v=$ver";
+        $__header->base_scripts[] = "/afr/js/afr_cms_dynatree.js?v=$ver";
+        $__header->base_scripts[] = '/afr/bower/dynatree/dist/jquery.dynatree.min.js';
+        $__header->scripts[] = '/afr/bower/jquery-zclip/jquery.zclip.js';
+        $__header->scripts[] = '/afr/bower/jquery-validate/dist/jquery.validate.min.js';
 
 
-  jfu_dependencies($app); // load scripts + css for new file uploader
+        jfu_dependencies($app); // load scripts + css for new file uploader
 
-  
-  $scope = $app->page->scope;
 
-  $scope->create_button = gallery_create_button($siteObj, $u_id);  
-  $scope->vault = 1;  
-  //$scope->explorer = site_page_edit_gallery($app, $options);
-  return;
-}
+        $scope = $app->page->scope;
 
-function controller_gallery_media($app, $options = []) {
-  //die("controller_gallery_item id={$app->object_id}");
-  $scope = $app->page->scope;
-  $scope->obj_type = 'media';
-  $app->page->template = 'gallery-media.html';
-  die("Not implemented...");
-
-  //controller_gallery_artworks($app, $options);
-  return;
-}
-
-function controller_gallery_item($app, $options = []) {
-  //die("controller_gallery_item id={$app->object_id}");
-  global $u_id;
-  
-  $__header = $app->header; 
-  $__header->styles[] = "/afr/css/gallery/afr_gallery.css?ver={$app->version}";
-  $__header->styles[] = "/afr/js/vp/vp.min.css{$cachebust}";
-
-  $__header->scripts[] = "/afr/js/vp/vp.js{$cachebust}";
-  $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
-  $siteObj = $app->site;
-  
-  $scope = $app->page->scope;
-  $scope->user_id = $u_id;
-  $scope = $app->page->scope;
-  $scope->obj_type = $obj_type ='media_collection_map';
-  $obj_id = $scope->obj_id = $scope->obj_id ?: $app->object_id;
-
-  $scope->media_collection = $media =get_object($obj_type, $obj_id);
-  $scope->collection = $collection =get_object('media_collection', $media->media_collection_id);
-  $scope->collection_id = $collection->id;
-  if($scope->curator_id = $curator_id = $collection->user_id) 
-  $scope->curator = get_user($collection->user_id);
-  $scope->artist = $artist = get_user($collection->artist_id);
-
-  $scope->other_exhibitions = find_objects('media_collection_map', 
-        array('media_collection_id' => $media->media_collection_id, 'active' => 1), array('start' => $start, 'limit' => $limit));
-  $app->page->template = 'gallery-item.html';
-  //controller_gallery_artworks($app, $options);
-  return;
-}
-
-function controller_gallery_artworks($app, $options = []) {
-  global $u_id;
-  
-  $__header = $app->header; 
-  $__header->styles[] = "/afr/css/gallery/afr_gallery.css?ver={$app->version}";
-  $__header->styles[] = "/afr/js/vp/vp.min.css{$cachebust}";
-
-  $__header->scripts[] = "/afr/js/vp/vp.js{$cachebust}";
-  $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
-  $siteObj = $app->site;
-  
-  $scope = $app->page->scope;
-  $scope->user_id = $u_id;
-  $obj_id = $scope->obj_id = $scope->obj_id ?: $app->object_id;
-  $scope->exh_id = $exh_id = $app->params['exh_id'];
-  $obj_type = $scope->obj_type = $scope->obj_type ?: "artwork"; // $app->object_type;
-  
-  $parent_obj_type = $scope->parent_obj_type;
-  $parent_obj_id = $scope->parent_obj_id;
-  $path = explode('/',$app->page->path);
-  if($path[1] == 'selectedart') $scope->selectedartpage = 1;
-
-  $tpl = $app->page->template;
-  //die("tpl=$tpl");
-  print_log("controller_gallery_artworks: $obj_type/$obj_id parent: $parent_obj_type/$parent_obj_id", 'gallery', LOG_LEVEL_TEST);
-  
-  
-  // When coming from plug-in, we don't have map id. Find it
-  if($obj_type == 'media' && $obj_id && $parent_obj_type == 'media_collection' && $parent_obj_id) {
-    if($mapObj = find_object('media_collection_map', ['media_collection_id' => $parent_obj_id, 'media_id' => $obj_id])) {
-      print_log("controller_gallery_artworks: found map:".dump($mapObj, true), 'gallery', LOG_LEVEL_TEST);
-      $obj_id = $scope->obj_id = $mapObj->id;
-      $obj_type = $scope->obj_type = 'media_collection_map';      
+        $scope->create_button = gallery_create_button($siteObj, $u_id);  
+        $scope->vault = 1;  
+        //$scope->explorer = site_page_edit_gallery($app, $options);
+        return;
     }
-  }
-  
-  $scope->my_collection_id = $scope->user_collection_id = $user_collection_id = $u_id ? gallery_find_user_collection($siteObj, $u_id, array('return' => 'id')) : 0;
-  $scope->follow_type = "media";
 
-    
-  if($obj_id) {
-    $obj = get_object($obj_type, $obj_id);
-    $scope->mail_controller = 'gallery_artworks';
-    $scope->mail_template = 'mail/mail-artwork.html';
-    
-    $scope->obj_id = $obj_id;
-    $exh_id = $scope->exh_id;
-    //$scope->exh_id = $scope->obj_id = $collection_ids = $obj_id;
-    
-    /** find artwork in collection */
-    $artworks = find_objects('media_collection_map', array('media_collection_id' => $exh_id, 'active' => 1), array('sort' => 'rank'));
+    function controller_gallery_media($app, $options = []) {
+        //die("controller_gallery_item id={$app->object_id}");
+        $scope = $app->page->scope;
+        $scope->obj_type = 'media';
+        $app->page->template = 'gallery-media.html';
+        die("Not implemented...");
 
-    //echo "SELECT * from  media_collection_map LEFT JOIN artwork on media_collection_map.artwork_id = artwork.id where media_collection_map.media_collection_id=$collection_id and media_collection_map.active = 1";
-    //$sql = db_getAll("SELECT * from  media_collection_map LEFT JOIN artwork on media_collection_map.artwork_id = artwork.id where media_collection_map.media_collection_id=$collection_id and media_collection_map.active = 1");
-    //print_r($sql);
-    //print_r($artworks);
-    //print_r(count($artworks));
-    foreach($artworks as $art){
-      $a = (array)$art;
-      $ids = $art->media_id;
-      $data = find_object('media', array('id' => $ids));
-      $art_id = $data->parent_id;
-      $find = find_object('artwork', array('id' => $art_id));
-      if($find) $b = (array)$find;
-      else $b = (array)$data;
-      $merge[] = array_merge($a, $b);
+        //controller_gallery_artworks($app, $options);
+        return;
     }
-    //print_r($merge);
-    $scope->artwork_data = $merge;
-    $scope->artworks = $artworks;
-    //print_r($artwork);
 
-    if(!in_array($obj_type, ['media_collection_map', 'artwork'])) return scope_error($app, "Illegal type $obj_type", '404');
-    
-    $collection_id = $curator_id = $mapObj = $collectionObj = null;
-    //print_r($collection_id);
-    
-    /** map - gives us collection to work with */
-    if($obj_type == 'media_collection_map') {
-      $mapObj = get_object('media_collection_map', $obj_id);
-      $obj_id = $artwork_id = $mapObj->artwork_id;
-      if($collection_id = $mapObj->media_collection_id) $collectionObj = get_object('media_collection', $collection_id);
-      
-      $curator_id = $mapObj->curator_id;
-      if($artwork_id) {
-        $obj_type = 'artwork';
-        $related = gallery_item_related($siteObj, $mapObj);
-      } else {
-        return; /** no more processing needed */
-      }
-      //if(!$artwork_id) return scope_error($app, "Missing Artwork ID in map", '404');
-    } else {
-      $related = gallery_artwork_related($siteObj, $obj);
+    function controller_gallery_item($app, $options = []) {
+        //die("controller_gallery_item id={$app->object_id}");
+        global $u_id;
+
+        $__header = $app->header; 
+        $__header->styles[] = "/afr/css/gallery/afr_gallery.css?ver={$app->version}";
+        $__header->styles[] = "/afr/js/vp/vp.min.css{$cachebust}";
+
+        $__header->scripts[] = "/afr/js/vp/vp.js{$cachebust}";
+        $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
+        $siteObj = $app->site;
+
+        $scope = $app->page->scope;
+        $scope->user_id = $u_id;
+        $scope = $app->page->scope;
+        $scope->obj_type = $obj_type ='media_collection_map';
+        $obj_id = $scope->obj_id = $scope->obj_id ?: $app->object_id;
+
+        $scope->media_collection = $media =get_object($obj_type, $obj_id);
+        $scope->collection = $collection =get_object('media_collection', $media->media_collection_id);
+        $scope->collection_id = $collection->id;
+        if($scope->curator_id = $curator_id = $collection->user_id) 
+        $scope->curator = get_user($collection->user_id);
+        $scope->artist = $artist = get_user($collection->artist_id);
+
+        $scope->other_exhibitions = find_objects('media_collection_map', 
+            array('media_collection_id' => $media->media_collection_id, 'active' => 1), array('start' => $start, 'limit' => $limit));
+        $app->page->template = 'gallery-item.html';
+        //controller_gallery_artworks($app, $options);
+        return;
     }
-    
-    /** must be artwork */
-    $artwork_id = $obj_id;
-    
-    $scope->artwork = $artworkObj = get_object('artwork', $artwork_id);
-    //print_r($artworkObj);
-    $scope->artist_id = $artist_id = $artworkObj->artist_id;
-    $scope->media_id = $media_id = $scope->artwork->title_image = $artworkObj->title_image; 
 
-    
-    foreach($related as $k => $v) $scope->$k = $v;
-    if(!$collectionObj) $collectionObj = $related->exhibition;
-    if(!$curator_id) $curator_id = $related->curator_id;
-    
-    $start = 0;
-    $limit = 40;
-    if($curator_id) {
-      $curator_exhibitions = find_objects('media_collection', 
-          array('user_id' => $curator_id, 'type' => MEDIA_COLLECTION_TYPE_EXHIBITION, 'active' => 1, 'subtype' => [10,20,30,40] ), 
-          array('start' => $start, 'limit' => $limit));
-      
-      $cur_arr = [];
-      foreach($curator_exhibitions as $curator_exhibition){
-        $artists = json_decode($curator_exhibition->artist_ids, True);
-        $get_date = $get_type = [];
-          $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $curator_exhibition->id, 'active'=>1]);
-          foreach($get_artworks as $artwork){
-              $get_date[] = $artwork->original_year;
-              $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
-              $get_type[] = get_artwork_type($find_art->type);
-          }
-          $mini =  min(array_filter($get_date));
-          $max = max(array_filter($get_date));
-          if(count($artists) >1){
-            if(in_array($curator_id, $artists) && ($curator_id != $artists)){
-              $cur_arr[] = $curator_exhibition;
-              if($curator_exhibition->subtype == 40){
-                $selection_type = implode(', ' , array_unique(array_filter($get_type)));
-                if($mini == $max)
-                  $selection_range = "Selection (".$mini.")";
-                elseif($mini < $max)
-                  $selection_range =  "Selection (".$mini."-".$max.")";
-                else
-                $selection_range =  "Selection";
-                $curator_exhibition->selection_range = $selection_range;
-                $curator_exhibition->selection_type = $selection_type;
-              }
+    function controller_gallery_artworks($app, $options = []) {
+        global $u_id;
+
+        $__header = $app->header; 
+        $__header->styles[] = "/afr/css/gallery/afr_gallery.css?ver={$app->version}";
+        $__header->styles[] = "/afr/js/vp/vp.min.css{$cachebust}";
+
+        $__header->scripts[] = "/afr/js/vp/vp.js{$cachebust}";
+        $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
+        $siteObj = $app->site;
+
+        $scope = $app->page->scope;
+        $scope->user_id = $u_id;
+        $obj_id = $scope->obj_id = $scope->obj_id ?: $app->object_id;
+        $scope->exh_id = $exh_id = $app->params['exh_id'];
+        $obj_type = $scope->obj_type = $scope->obj_type ?: "artwork"; // $app->object_type;
+
+        $parent_obj_type = $scope->parent_obj_type;
+        $parent_obj_id = $scope->parent_obj_id;
+        $path = explode('/',$app->page->path);
+        if($path[1] == 'selectedart') $scope->selectedartpage = 1;
+
+        $tpl = $app->page->template;
+        //die("tpl=$tpl");
+        print_log("controller_gallery_artworks: $obj_type/$obj_id parent: $parent_obj_type/$parent_obj_id", 'gallery', LOG_LEVEL_TEST);
+
+
+        // When coming from plug-in, we don't have map id. Find it
+        if($obj_type == 'media' && $obj_id && $parent_obj_type == 'media_collection' && $parent_obj_id) {
+            if($mapObj = find_object('media_collection_map', ['media_collection_id' => $parent_obj_id, 'media_id' => $obj_id])) {
+                print_log("controller_gallery_artworks: found map:".dump($mapObj, true), 'gallery', LOG_LEVEL_TEST);
+                $obj_id = $scope->obj_id = $mapObj->id;
+                $obj_type = $scope->obj_type = 'media_collection_map';      
             }
-          }else{
-            if($artists[0] != $curator_id){
-              $cur_arr[] = $curator_exhibition;
-              if($curator_exhibition->subtype == 40){
-                $selection_type = implode(', ' , array_unique(array_filter($get_type)));
-                if($mini == $max)
-                  $selection_range = "Selection (".$mini.")";
-                elseif($mini < $max)
-                  $selection_range =  "Selection (".$mini."-".$max.")";
-                else
-                $selection_range =  "Selection";
-                $curator_exhibition->selection_range = $selection_range;
-                $curator_exhibition->selection_type = $selection_type;
-              }
+        }
+      
+        $scope->my_collection_id = $scope->user_collection_id = $user_collection_id = $u_id ? gallery_find_user_collection($siteObj, $u_id, array('return' => 'id')) : 0;
+        $scope->follow_type = "media";
+
+        
+        if($obj_id) {
+            $obj = get_object($obj_type, $obj_id);
+            $scope->mail_controller = 'gallery_artworks';
+            $scope->mail_template = 'mail/mail-artwork.html';
+
+            $scope->obj_id = $obj_id;
+            $exh_id = $scope->exh_id;
+            //$scope->exh_id = $scope->obj_id = $collection_ids = $obj_id;
+
+            /** find artwork in collection */
+            $artworks = find_objects('media_collection_map', array('media_collection_id' => $exh_id, 'active' => 1), array('sort' => 'rank'));
+
+            //echo "SELECT * from  media_collection_map LEFT JOIN artwork on media_collection_map.artwork_id = artwork.id where media_collection_map.media_collection_id=$collection_id and media_collection_map.active = 1";
+            //$sql = db_getAll("SELECT * from  media_collection_map LEFT JOIN artwork on media_collection_map.artwork_id = artwork.id where media_collection_map.media_collection_id=$collection_id and media_collection_map.active = 1");
+            //print_r($sql);
+            //print_r($artworks);
+            //print_r(count($artworks));
+            // dump($artworks);
+            foreach($artworks as $art){
+                $a = (array)$art;
+                $ids = $art->media_id;
+                $data = find_object('media', array('id' => $ids));
+                $art_id = $data->parent_id;
+                $find = find_object('artwork', array('id' => $art_id));
+                if($find) $b = (array)$find;
+                else $b = (array)$data;
+                $merge[] = array_merge($a, $b);
             }
-          }
-        }
-      
-      $scope->curator_exhibitions = $cur_arr;
-      //echo "4";
+            //print_r($merge);
+            $scope->artwork_data = $merge;
+            $scope->artworks = $artworks;
+            //print_r($artwork);
 
-      $curator_profile = get_user($curator_id);
-      $scope->curator_id = $curator_profile->id;
-      $scope->curator_name = $curator_profile->display_name;
-      $scope->curator_photo = $curator_profile->photo;
-      $scope->curator_address_formatted = $curator_profile->address_formatted;
-      $scope->curator_social = $curator_profile->social;
-      //dump($curator_profile);
-      $curator_arts = gallery_unique_artworks(array_find_key($curator_exhibitions, 'id'), ['start' => $start, 'limit' => $limit]);
+            if(!in_array($obj_type, ['media_collection_map', 'artwork'])) return scope_error($app, "Illegal type $obj_type", '404');
 
-      $curator_artworks = [];
-      foreach($curator_arts as $curator_art){
-        if($curator_art->curator_id == $curator_id){
-          $curator_artworks[] = $curator_art;
-        }
-      }
-      $scope->curator_artworks= $curator_artworks;
-    }
+                $collection_id = $curator_id = $mapObj = $collectionObj = null;
+            //print_r($collection_id);
 
-    
-    if($artist_id) {
-      $scope->artist_name = $artist_name = user_display_name($artist_id);
-      $scope->artist_projects = $artist_projects = find_objects('media_collection', 
-        array('user_id' => $artist_id, 'type' => MEDIA_COLLECTION_TYPE_PROJECT), 
-        array('active' => 1, 'active' => 1, 'start' => $start, 'limit' => $limit));
-
-      if($project_ids = array_find_key($artist_projects, 'id')) {
-        //$scope->artist_artworks = gallery_unique_artworks($project_ids, ['start' => $start, 'limit' => $limit]);          
-        //$scope->artist_artworks = $artist_artworks = find_objects('media_collection_map', array('media_collection_id' => $project_ids, 'active' => 1));
-      }
-      
-      $artist_exhibitions_ids = find_objects('media_collection_map', 
-        array('artist_id' => $artist_id, 'collection_type' => MEDIA_COLLECTION_TYPE_EXHIBITION, 'active' => 1), 
-        array('fields' => 'distinct media_collection_id', 'active' => 1), array('start' => $start, 'limit' => $limit));
+            /** map - gives us collection to work with */
+            if($obj_type == 'media_collection_map') {
+                $mapObj = get_object('media_collection_map', $obj_id);
+                $obj_id = $artwork_id = $mapObj->artwork_id;
+                if($collection_id = $mapObj->media_collection_id) $collectionObj = get_object('media_collection', $collection_id);
+              
+                $curator_id = $mapObj->curator_id;
+                if($artwork_id) {
+                    $obj_type = 'artwork';
+                    $related = gallery_item_related($siteObj, $mapObj);
+                } else {
+                    return; /** no more processing needed */
+                }
+              //if(!$artwork_id) return scope_error($app, "Missing Artwork ID in map", '404');
+            }else {
+                $related = gallery_artwork_related($siteObj, $obj);
+            }
         
-      $scope->artist_exhibition = find_objects('media_collection', 
-        array('id' => $artist_exhibitions_ids, 'active' => 1), array('start' => $start, 'limit' => $limit));
-      $get_exh = get_object('media_collection', $exh_id);
-      $scope->other_exh_name = $other_exh_name = $get_exh;
-      $scope->other_exhibitions = find_objects('media_collection_map', 
-        array('media_collection_id' => $exh_id, 'active' => 1), array('start' => $start, 'limit' => $limit));
-      $scope->artist_artwork = gallery_selected_artworks($artist_id, ['start' => $start, 'limit' => $limit]);
-      
-
-      $scope->related_art = $related_arts = find_objects('artwork_media', array('artwork_id' => $obj_id, 'user_id' => $artist_id), array('start' => $start, 'limit' => $limit));
-      $related_media = [];
-      foreach($related_arts as $related_art){
-        $related_media[] = find_object('media', ['id'=> $related_art->media]);
-      }
-      //$scope->related_art = $related_media;
-      //dump($exh_id);
-    }
-    
-    if($collectionObj) {
-      if($collectionObj && $collectionObj->active && in_array($collectionObj->type, [COLLECTION_TYPE_EXHIBITION,COLLECTION_TYPE_PROJECT])) {
+            /** must be artwork */
+            $artwork_id = $obj_id;
         
-        if($loc_id = $collectionObj->location_id) {
-          $locObj = get_object('location', $loc_id);
-          $scope->exhibition->location = $locObj;
+            $scope->artwork = $artworkObj = get_object('artwork', $artwork_id);
+            //print_r($artworkObj);
+            $scope->artist_id = $artist_id = $artworkObj->artist_id;
+            $scope->media_id = $media_id = $scope->artwork->title_image = $artworkObj->title_image; 
+
+        
+            foreach($related as $k => $v) $scope->$k = $v;
+            if(!$collectionObj) $collectionObj = $related->exhibition;
+            if(!$curator_id) $curator_id = $related->curator_id;
+        
+            $start = 0;
+            $limit = 40;
+            if($curator_id) {
+                $curator_exhibitions = find_objects('media_collection', 
+                    array('user_id' => $curator_id, 'type' => MEDIA_COLLECTION_TYPE_EXHIBITION, 'active' => 1, 'subtype' => [10,20,30,40] ), 
+                    array('start' => $start, 'limit' => $limit));
+          
+                $cur_arr = [];
+                foreach($curator_exhibitions as $curator_exhibition){
+                    $artists = json_decode($curator_exhibition->artist_ids, True);
+                    $get_date = $get_type = [];
+                    $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $curator_exhibition->id, 'active'=>1]);
+                    foreach($get_artworks as $artwork){
+                        $get_date[] = $artwork->original_year;
+                        $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
+                        $get_type[] = get_artwork_type($find_art->type);
+                    }
+                    $mini =  min(array_filter($get_date));
+                    $max = max(array_filter($get_date));
+                    if(count($artists) >1){
+                        if(in_array($curator_id, $artists) && ($curator_id != $artists)){
+                            $cur_arr[] = $curator_exhibition;
+                            if($curator_exhibition->subtype == 40){
+                                $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                                if($mini == $max)
+                                    $selection_range = "Selection (".$mini.")";
+                                elseif($mini < $max)
+                                    $selection_range =  "Selection (".$mini."-".$max.")";
+                                else
+                                    $selection_range =  "Selection";
+                                $curator_exhibition->selection_range = $selection_range;
+                                $curator_exhibition->selection_type = $selection_type;
+                            }
+                        }
+                    }else{
+                        if($artists[0] != $curator_id){
+                            $cur_arr[] = $curator_exhibition;
+                            if($curator_exhibition->subtype == 40){
+                                $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                                if($mini == $max)
+                                    $selection_range = "Selection (".$mini.")";
+                                elseif($mini < $max)
+                                    $selection_range =  "Selection (".$mini."-".$max.")";
+                                else
+                                    $selection_range =  "Selection";
+                                $curator_exhibition->selection_range = $selection_range;
+                                $curator_exhibition->selection_type = $selection_type;
+                            }
+                        }
+                    }
+                }
+          
+                $scope->curator_exhibitions = $cur_arr;
+                //echo "4";
+
+                $curator_profile = get_user($curator_id);
+                $scope->curator_id = $curator_profile->id;
+                $scope->curator_name = $curator_profile->display_name;
+                $scope->curator_photo = $curator_profile->photo;
+                $scope->curator_address_formatted = $curator_profile->address_formatted;
+                $scope->curator_social = $curator_profile->social;
+                //dump($curator_profile);
+                $curator_arts = gallery_unique_artworks(array_find_key($curator_exhibitions, 'id'), ['start' => $start, 'limit' => $limit]);
+
+                $curator_artworks = [];
+                foreach($curator_arts as $curator_art){
+                    if($curator_art->curator_id == $curator_id){
+                        $curator_artworks[] = $curator_art;
+                    }
+                }
+                $scope->curator_artworks= $curator_artworks;
+            }
+
+        
+            if($artist_id) {
+                $scope->artist_name = $artist_name = user_display_name($artist_id);
+                $scope->artist_projects = $artist_projects = find_objects('media_collection', 
+                array('user_id' => $artist_id, 'type' => MEDIA_COLLECTION_TYPE_PROJECT), 
+                array('active' => 1, 'active' => 1, 'start' => $start, 'limit' => $limit));
+
+                if($project_ids = array_find_key($artist_projects, 'id')) {
+                    //$scope->artist_artworks = gallery_unique_artworks($project_ids, ['start' => $start, 'limit' => $limit]);          
+                    //$scope->artist_artworks = $artist_artworks = find_objects('media_collection_map', array('media_collection_id' => $project_ids, 'active' => 1));
+                }
+          
+                $artist_exhibitions_ids = find_objects('media_collection_map', 
+                array('artist_id' => $artist_id, 'collection_type' => MEDIA_COLLECTION_TYPE_EXHIBITION, 'active' => 1), 
+                array('fields' => 'distinct media_collection_id', 'active' => 1), array('start' => $start, 'limit' => $limit));
+
+                $scope->artist_exhibition = find_objects('media_collection', 
+                array('id' => $artist_exhibitions_ids, 'active' => 1), array('start' => $start, 'limit' => $limit));
+                $get_exh = get_object('media_collection', $exh_id);
+                $scope->other_exh_name = $other_exh_name = $get_exh;
+                $scope->other_exhibitions = find_objects('media_collection_map', 
+                array('media_collection_id' => $exh_id, 'active' => 1), array('start' => $start, 'limit' => $limit));
+                $scope->artist_artwork = gallery_selected_artworks($artist_id, ['start' => $start, 'limit' => $limit]);
+
+
+                $scope->related_art = $related_arts = find_objects('artwork_media', array('artwork_id' => $obj_id, 'user_id' => $artist_id), array('start' => $start, 'limit' => $limit));
+                $related_media = [];
+                foreach($related_arts as $related_art){
+                    $related_media[] = find_object('media', ['id'=> $related_art->media]);
+                }
+                //$scope->related_art = $related_media;
+                //dump($exh_id);
+            }
+        
+            if($collectionObj) {
+                if($collectionObj && $collectionObj->active && in_array($collectionObj->type, [COLLECTION_TYPE_EXHIBITION,COLLECTION_TYPE_PROJECT])) {
+                
+                    if($loc_id = $collectionObj->location_id) {
+                        $locObj = get_object('location', $loc_id);
+                        $scope->exhibition->location = $locObj;
+                    }
+
+                    if($event_id = $collectionObj->event_id) {
+                        $eventObj = get_object('event', $event_id);
+                        $scope->exhibition->event = $eventObj;
+                    }
+                }
+                $scope->collection = $collectionObj; /** why are we using collection and exhibition for scope? */
+            }
+
+            //$artwork = $scope->artwork;
+            //dump($artworkObj);
+            $title = $artworkObj->title ?: "Untitled";
+            $title .= " by $artist_name";
+            $description = implode('. ', array_filter(array($artworkObj->original_technique, $artworkObj->short_description, $artworkObj->comment)));
+            $scope->follow_id = $artworkObj->media_id;
+
+            if($u_id && isset($_GET['follow']) && $user_collection_id && $media_id) { /** follow this artwork */
+                $follow = $_GET['follow'] ? 1 : 0;
+                if($mapObj = find_object('media_collection_map', array('media_id' => $media_id, 'media_collection_id' => $user_collection_id))) {
+                    if(!$follow) delete_object('media_collection_map', $mapObj->id);
+                /** do nothing, already following */
+                } else {
+                    if($follow) $result = gallery_publish_image($siteObj, $media_id, $user_collection_id);
+                }    
+            }
+        
+            $img_src = $scope->main_image = print_media($artworkObj->title_image, array('source_only' => true, 'full' => true));
+
+            /** Add facebook Open Graph tags */
+            $__header->meta[] = array('property' => 'og:type', 'content' => 'article');
+            $__header->meta[] = array('property' => 'og:image', 'content' => add_https($img_src));
+            $__header->meta[] = array('property' => 'og:url', 'content' => $scope->url ?: this_url());
+            $__header->meta[] = array('property' => 'og:title', 'content' => $title);
+            $__header->meta[] = array('property' => 'og:description', 'content' =>  strip_tags($description));    
+            //$__header->meta[] = array('property' => 'article:author', 'content' =>  "Some Dude");    
+            $__header->meta[] = array('property' => 'article:author', 'content' =>  "https://www.facebook.com/vpatinabv");    
+
+            $__header->link[] = array('property' => 'image_src', 'content' =>  add_https($img_src));
+            
+            $app->page->author = $artist_name;    
+            $app->page->description = strip_tags($description);   
+            $app->page->title = $title;    
+            
+            /** check if this artwork is in user's collection */
+            $scope->collected = $scope->my_collection_id = 0;
+            $media_id = $scope->artworkObj->media_id;    
+            if($u_id && $media_id) {
+                $scope->collected = $collected = find_object('media_collection_map', array('media_collection_id' => $user_collection_id, 'active' => 1, 'media_id' => $media_id), array('fields' => 'id')) ? 1 : 0;
+            }
+        
+            $scope->artist = $artistObj = $artist_id ? get_user($artist_id) : null;
+        } elseif($objects = $scope->objects) { /** from ajax.php?oper=gallery-get-collection */
+            $scope->items = $items = $scope->objects;
+            /** all collected images */
+            $scope->user_collection = $user_collection_id ? find_objects('media_collection_map', array('media_collection_id' => $user_collection_id, 'active' => 1), array('fields' => 'distinct (media_id)', 'sort' => 'id DESC')) : array();      
+        
+        } else { 
+            /** browse artworks: todo */
         }
-    
-        if($event_id = $collectionObj->event_id) {
-          $eventObj = get_object('event', $event_id);
-          $scope->exhibition->event = $eventObj;
-        }
-      }
-      $scope->collection = $collectionObj; /** why are we using collection and exhibition for scope? */
+        // dump($scope);
+        return;
     }
-    
-    //$artwork = $scope->artwork;
-    //dump($artworkObj);
-    $title = $artworkObj->title ?: "Untitled";
-    $title .= " by $artist_name";
-    $description = implode('. ', array_filter(array($artworkObj->original_technique, $artworkObj->short_description, $artworkObj->comment)));
-    $scope->follow_id = $artworkObj->media_id;
-
-    if($u_id && isset($_GET['follow']) && $user_collection_id && $media_id) { /** follow this artwork */
-      $follow = $_GET['follow'] ? 1 : 0;
-      if($mapObj = find_object('media_collection_map', array('media_id' => $media_id, 'media_collection_id' => $user_collection_id))) {
-        if(!$follow) delete_object('media_collection_map', $mapObj->id);
-        /** do nothing, already following */
-      } else {
-        if($follow) $result = gallery_publish_image($siteObj, $media_id, $user_collection_id);
-      }    
-    }
-    
-    $img_src = $scope->main_image = print_media($artworkObj->title_image, array('source_only' => true, 'full' => true));
-
-    /** Add facebook Open Graph tags */
-    $__header->meta[] = array('property' => 'og:type', 'content' => 'article');
-    $__header->meta[] = array('property' => 'og:image', 'content' => add_https($img_src));
-    $__header->meta[] = array('property' => 'og:url', 'content' => $scope->url ?: this_url());
-    $__header->meta[] = array('property' => 'og:title', 'content' => $title);
-    $__header->meta[] = array('property' => 'og:description', 'content' =>  strip_tags($description));    
-    //$__header->meta[] = array('property' => 'article:author', 'content' =>  "Some Dude");    
-    $__header->meta[] = array('property' => 'article:author', 'content' =>  "https://www.facebook.com/vpatinabv");    
-
-    $__header->link[] = array('property' => 'image_src', 'content' =>  add_https($img_src));
-    
-    $app->page->author = $artist_name;    
-    $app->page->description = strip_tags($description);   
-    $app->page->title = $title;    
-    
-    /** check if this artwork is in user's collection */
-    $scope->collected = $scope->my_collection_id = 0;
-    $media_id = $scope->artworkObj->media_id;    
-    if($u_id && $media_id) {
-      $scope->collected = $collected = find_object('media_collection_map', array('media_collection_id' => $user_collection_id, 'active' => 1, 'media_id' => $media_id), array('fields' => 'id')) ? 1 : 0;
-    }
-    
-    $scope->artist = $artistObj = $artist_id ? get_user($artist_id) : null;
-  } elseif($objects = $scope->objects) { /** from ajax.php?oper=gallery-get-collection */
-    $scope->items = $items = $scope->objects;
-    /** all collected images */
-    $scope->user_collection = $user_collection_id ? find_objects('media_collection_map', array('media_collection_id' => $user_collection_id, 'active' => 1), array('fields' => 'distinct (media_id)', 'sort' => 'id DESC')) : array();      
-    
-  } else { /** browse artworks: todo */
-  }
-
-  
-  return;
-}
                                
-function controller_plugin($app, $options = []) {
-  global $u_id;
-  $__header = $app->header; 
-  $__header->styles[] = "/afr/css/gallery/afr_gallery.css?ver={$app->version}";
-  $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
-
-  
-  $scope = $app->page->scope;
-  $obj_id = $media_id = $scope->obj_id ?: $app->object_id;
-  $obj_type = $scope->obj_type ?: "plugin";
-  if($obj_type != 'plugin') return controller_error($app, "Missing ID or Illegal type $obj_type");
-
-  if($obj_id) {
-    $obj = $plugin =$scope->plugin = get_object($obj_type, $obj_id);
-    if(!$obj) return controller_error($app, "Could not find $obj_type $obj_id");
-  }
-
-  if($obj) {
-    $parent_type = $plugin->parent_type;
-    $parent_id = $plugin->parent_id;
-  } else {
-    $parent_type = pick_first($_GET['pt'], $scope->parent_type, $options['parent_type']);
-    $parent_id = pick_first($_GET['pid'], $scope->parent_id, $options['parent_id']);
-  }
-  
-  if($parent_type && $parent_id) {
-    $scope->parent_object = $parent_object = get_object($parent_type, $parent_id);
-    if(!$parent_object) return controller_error($app, "Could not find $parent_type $parent_id");
-
-    $scope->parent_type = $parent_type;
-    $scope->parent_id = $parent_id;
-    
-    $scope->plugins = $plugins = find_objects('plugin', array('parent_id' => $parent_id, 'parent_type' => $parent_type));
-    $scope->plugin_count = count($plugins);
-
-    
-    if($parent_type == 'media_collection') {
-      $scope->collection = $parent_object;
-      $scope->preview = plugin_javascript(['shid' => $plugin->id]);
-      $scope->preview_html = sharing_output(['shid' => $plugin->id]);
-
-      $scope->images = $images = find_objects('media_collection_map', ['media_collection_id' => $parent_id, 'active' => 1], ['sort' => 'rank']);
-    }
-  }
-  
-  return;
-  
-}
+    function controller_plugin($app, $options = []) {
+        global $u_id;
+        $__header = $app->header; 
+        $__header->styles[] = "/afr/css/gallery/afr_gallery.css?ver={$app->version}";
+        $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
 
 
-function controller_gallery_folder($app, $options = []) {
-  global $u_id;
-  $__header = $app->header; 
-  $__header->styles[] = "/afr/css/gallery/afr_gallery.css?ver={$app->version}";
-  $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
-  
-  $scope = $app->page->scope;
-  $obj_id = $media_id = $scope->obj_id ?: $app->object_id;
-  $obj_type = $scope->obj_type ?: "gallery";
+        $scope = $app->page->scope;
+        $obj_id = $media_id = $scope->obj_id ?: $app->object_id;
+        $obj_type = $scope->obj_type ?: "plugin";
+        if($obj_type != 'plugin') return controller_error($app, "Missing ID or Illegal type $obj_type");
 
-  if(!$obj_id || $obj_type != 'gallery') return scope_error($app, "Missing ID or  Illegal type $obj_type", '404');
-
-  $obj = get_object($obj_type, $obj_id); 
-  if(!$obj) {
-    $scope->error = "Could not find $obj_type $obj_id";
-    $scope->template = "404";
-  }
-  $auth_edit = $scope->auth_edit = gallery_auth_media($obj_type, $obj, $u_id); 
-  
-  $scope->artist_id = $artist_id = $obj->user_id;
-  $scope->artist_name = $artist_name = user_display_name($artist_id);
-  $scope->artist = $artistObj = $artist_id ? get_user($artist_id) : null;
-  $scope->obj_id = $scope->folder_id = $obj_id;
-  $scope->folder = $obj;
-  $scope->artworks = find_objects('media', array('parent_type' => $obj_type, 'parent_id' => $obj_id, 'active' => 1));
-  
-  return;
-}
-
-function controller_gallery_collections($app, $options = []) {
-  //$uri_path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-  //$uri_segments = explode('/', $uri_path);
-  //dump($uri_segments);
-  global $u_id;
-  $__header = $app->header; 
-  $__header->styles[] = "/afr/css/gallery/afr_gallery.css?ver={$app->version}";
-  $__header->styles[] = "/afr/js/vp/vp.min.css{$cachebust}";
-
-  $__header->scripts[] = "/afr/js/vp/vp.js{$cachebust}";
-  $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
-  $siteObj = $app->site;
-  
-
-  //die("tpl={$app->page->template}");
-  
-  $scope = $app->page->scope;
-  $scope->items = $scope->objects; 
-
-  // unset($scope->objects);
-  $obj_id = $media_id = $scope->obj_id = $scope->obj_id ?: $app->object_id;
-  $obj_type = $scope->obj_type = $scope->obj_type ?: $app->object_type;
-  
-  $start = 0;
-  $limit = 40;
-  print_log("sot: {$scope->obj_type} tos {$app->object_type} => {$obj_type}", 'gallery', LOG_LEVEL_TEST);
-  $scope->my_collection_id = $scope->user_collection_id = $user_collection_id = $u_id ? gallery_find_user_collection($siteObj, $u_id, array('return' => 'id')) : 0;
-  $scope->follow_type = $obj_type;
-  if($obj_id) {
-    $scope->follow_id = $obj_id;
-    $scope->user_collection = $user_collection_id ? find_objects('media_collection_map', array('media_collection_id' => $user_collection_id, 'active' => 1), array('fields' => 'distinct (media_id)')) : array();
-    $scope->collection_id = $scope->obj_id = $collection_id = $obj_id;
-    $scope->collection = $collectionObj = get_object('media_collection', $obj_id);
-    $scope->mail_template = 'mail/mail-collection.html';
-    $scope->mail_controller = 'gallery_collections';
-    //print_r($scope);
-    /** find artwork in collection */
-    $artworks = find_objects('media_collection_map', array('media_collection_id' => $collection_id, 'active' => 1), array('sort' => 'rank'));
-
-    //print_r($artworks);
-    //echo "SELECT * from  media_collection_map LEFT JOIN artwork on media_collection_map.artwork_id = artwork.id where media_collection_map.media_collection_id=$collection_id and media_collection_map.active = 1";
-    //$sql = db_getAll("SELECT * from  media_collection_map LEFT JOIN artwork on media_collection_map.artwork_id = artwork.id where media_collection_map.media_collection_id=$collection_id and media_collection_map.active = 1");
-    //print_r($sql);
-    //print_r($artworks);
-    //print_r($artworks);
-    foreach($artworks as $art){
-      $a = (array)$art;
-      $ids = $art->media_id;
-      $data = find_object('media', array('id' => $ids));
-      $art_id = $data->parent_id;
-      $find = find_object('artwork', array('id' => $art_id));
-      if($find) $b = (array)$find;
-      else $b = (array)$data;
-      $merge[] = array_merge($a, $b);
-    }
-    //print_r($merge);
-    $scope->artwork = $merge;
-    $scope->artworks = $artworks;
-
-    if($collectionObj->type == MEDIA_COLLECTION_TYPE_EXHIBITION) {
-      if($scope->curator_id = $curator_id = $collectionObj->user_id) 
-        $scope->curator = get_user($collectionObj->user_id);
-      //print_r($scope->curator);
-      $curator_exhibitions = find_objects('media_collection', 
-          array('id' => array('!=', $collection_id), 'user_id' => $curator_id, 'type' => MEDIA_COLLECTION_TYPE_EXHIBITION, 'active' => 1),
-          array('start' => $start, 'limit' => $limit));
-      $cur_arr = [];
-      foreach($curator_exhibitions as $curator_exhibition){
-        $artists = json_decode($curator_exhibition->artist_ids, True);
-        $get_date = $get_type = [];
-          $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $curator_exhibition->id, 'active'=>1]);
-          foreach($get_artworks as $artwork){
-              $get_date[] = $artwork->original_year;
-              $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
-              $get_type[] = get_artwork_type($find_art->type);
-          }
-          $mini =  min(array_filter($get_date));
-          $max = max(array_filter($get_date));
-        if(count($artists) >1){
-          if(in_array($curator_id, $artists) && ($curator_id != $artists) ){
-            $cur_arr[] = $curator_exhibition;
-            if($curator_exhibition->subtype == 40){
-                $selection_type = implode(', ' , array_unique(array_filter($get_type)));
-                if($mini == $max)
-                  $selection_range = "Selection (".$mini.")";
-                elseif($mini < $max)
-                  $selection_range =  "Selection (".$mini."-".$max.")";
-                else
-                $selection_range =  "Selection";
-                $curator_exhibition->selection_range = $selection_range;
-                $curator_exhibition->selection_type = $selection_type;
-              }
-          }
-        }else{
-          if($artists[0] != $curator_id){
-            $cur_arr[] = $curator_exhibition;
-            if($curator_exhibition->subtype == 40){
-                $selection_type = implode(', ' , array_unique(array_filter($get_type)));
-                if($mini == $max)
-                  $selection_range = "Selection (".$mini.")";
-                elseif($mini < $max)
-                  $selection_range =  "Selection (".$mini."-".$max.")";
-                else
-                $selection_range =  "Selection";
-                $curator_exhibition->selection_range = $selection_range;
-                $curator_exhibition->selection_type = $selection_type;
-              }
-          }
+        if($obj_id) {
+            $obj = $plugin =$scope->plugin = get_object($obj_type, $obj_id);
+            if(!$obj) return controller_error($app, "Could not find $obj_type $obj_id");
         }
-      }
-      $scope->curator_exhibitions = $cur_arr;
-      //dump($get_type);
-      //echo "1";
-      $curator_profile = get_user($curator_id);
-      $scope->curator_id = $curator_profile->id;
-      $scope->curator_name = $curator_profile->display_name;
-      $scope->curator_photo = $curator_profile->photo;
-      $scope->curator_address_formatted = $curator_profile->address_formatted;
-      $scope->curator_social = $curator_profile->social;
-      //dump($curator_profile);
-      $curator_arts = gallery_unique_artworks(array_find_key($curator_exhibitions, 'id'),['start' => $start, 'limit' => $limit]);
-      $curator_artworks = [];
-      foreach($curator_arts as $curator_art){
-        if($curator_art->curator_id == $curator_id){
-          $curator_artworks[] = $curator_art;
+
+        if($obj) {
+            $parent_type = $plugin->parent_type;
+            $parent_id = $plugin->parent_id;
+        } else {
+            $parent_type = pick_first($_GET['pt'], $scope->parent_type, $options['parent_type']);
+            $parent_id = pick_first($_GET['pid'], $scope->parent_id, $options['parent_id']);
         }
-      }
-      $scope->curator_artworks= $curator_artworks;
-    }
 
-    $scope->url = site_full_url($siteObj).page_link(PAGE_GALLERY, 'media_collection', $collectionObj->type).slugify($collectionObj->title)."-".$obj_id;  
-    
-    $curator_id = $collectionObj->user_id;
-    
-    //$mid = isset($_GET['mid']) ? $_GET['mid'] : 0;
-    //dump($mid);
-    $mid = $collectionObj->title_image;
-    if($mid) {
-      $artwork = get_object('media', $mid);
-      $author_name = user_display_name($artwork->artist_id);
-      //dump($collectionObj->title);
-      $title = $collectionObj->title ?: "Untitled Artwork";
-      $title .= " by $author_name";
-      $description = implode('. ', array_filter(array($artwork->original_technique, $artwork->short_description, $artwork->comment)));
+        if($parent_type && $parent_id) {
+            $scope->parent_object = $parent_object = get_object($parent_type, $parent_id);
+            if(!$parent_object) return controller_error($app, "Could not find $parent_type $parent_id");
 
-    } else {
-      $author_name = user_display_name($curator_id);
-      $title = $collectionObj->title ?: "Untitled Exhibition";
-      $title .= " by $author_name";
-      $description = $collectionObj->description;
-    }
+            $scope->parent_type = $parent_type;
+            $scope->parent_id = $parent_id;
 
-    if($loc_id = $collectionObj->location_id) {
-      $locObj = get_object('location', $loc_id);
-      $scope->collection->location = $locObj;
-    }
-
-    if($event_id = $collectionObj->event_id) {
-      $eventObj = get_object('event', $event_id);
-      $scope->collection->event = $eventObj;
-    }
-    
-    $img_src = $mid ? print_media($mid, array('source_only' => true, 'full' => true)) : 
-
-    /** Add facebook Open Graph tags */
-    $__header->meta[] = array('property' => 'og:type', 'content' => 'article123');
-    $__header->meta[] = array('property' => 'og:image', 'content' => add_https($img_src));
-    $__header->meta[] = array('property' => 'og:url', 'content' => $scope->url ?: this_url());
-    $__header->meta[] = array('property' => 'og:title', 'content' => $title);
-    $__header->meta[] = array('property' => 'og:description', 'content' =>  strip_tags($description));    
-    //$__header->meta[] = array('property' => 'article:author', 'content' =>  "Some Dude");    
-    $__header->meta[] = array('property' => 'article:author', 'content' =>  "https://www.facebook.com/vpatinabv");    
-  
-    $__header->link[] = array('property' => 'image_src', 'content' =>  add_https($img_src));    
-    
-    $app->page->author = $author_name;    
-    
-    $app->page->description = strip_tags($description);
-    $app->page->title = $title;    
-    
-  } else { /** find collections */
-    if($items = $scope->items) { // my-vpatina
-      //$myCollectionObj = gallery_find_user_collection($siteObj, $u_id);
-      //$scope->my_collection_id = $collection_id = $myCollectionObj->id;
-      //$scope->items = $scope->objects ?: gallery_collection_images($siteObj, $collection_id, array('return' => 'object'));
-      //$scope->error = "got here id=$obj_id count=".count($items);
-    } else { // my-vault
-      $collection_type = $scope->type ?: MEDIA_COLLECTION_TYPE_EXHIBITION;
-      if(!$collection_type) {
-        $scope->error = "Missing collection type";
-        $scope->template = "404";
-        return;    
-      }
-      //echo "vignesh";
-      $curator_profile = get_user($_GET['user_id']);
-      $scope->curator_id = $curator_profile->id;
-      $scope->curator_name = $curator_profile->display_name;
-      $scope->curator_photo = $curator_profile->photo;
-      $scope->curator_address_formatted = $curator_profile->address_formatted;
-      $scope->curator_social = $curator_profile->social;
-      //dump($curator_profile);
-      $uri_path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-      $uri_segments = explode('/', $uri_path);
-      if($uri_segments[2] == 'selection')
-      {
-        $sel = array('subtype' => 40, 'type' => $collection_type, 'active' => 1);
-        //$user_id = pick_first($scope->artist_id, $scope->user_id, $u_id);    
-        $sel['user_id'] = $_GET['user_id'];
-
-     // $artsss = db_getAll("select * from artwork where status='40' and user_id = '".$_GET['user_id']."' and active='1' order by primary_year desc");
-    //foreach($artsss as $art){
-       // $scope->selection = $selections = find_objects('media_collection', $sel);
-        //echo "select a.id,a.title_image,a.image,a.start_date,a.end_date,a.location_id,a.address_formatted,a.event_id,a.artist_id,a.subtype,a.artists,a.artist_ids,a.title_image_json,b.status,b.primary_year,b.technique from media_collection as a join artwork b on a.subtype = b.status join artwork as b2 on a.subtype = b2.status and a.user_id = b.user_id where a.subtype = '40' and  a.type = '$collection_type' and a.user_id = '$use_id' and a.active='1' and b.active='1' group by a.title";
-        //$scope->selection = $selections = db_getAll("select a.id,a.title_image,a.image,a.start_date,a.end_date,a.location_id,a.address_formatted,a.event_id,a.artist_id,a.subtype,a.artists,a.artist_ids,a.title_image_json,b.status,b.primary_year,b.technique from media_collection as a join artwork b on a.subtype = b.status join artwork as b2 on a.subtype = b2.status and a.user_id = b.user_id where a.subtype = '40' and  a.type = '$collection_type' and a.user_id = '$use_id' and a.active='1' and b.active='1' order by  group by a.title");
-        //dump($selections);
-
-      $r = find_objects('media_collection', $sel);
-
-      $re = [];
-      foreach ($r as $k)
-      {
-          $id[] = $k->id;
-      }
-        $dat = implode(",", $id);
-      
-     $selections = db_getAll("select *,a.id ,a.user_id, a.type, a.title, a.title_image, a.description, a.image, a.json, a.address_formatted, a.artist_id, a.artist_ids, a.title_image_json, b.original_year, min(b.original_year) as minorg from media_collection as a join media_collection_map as b on a.id = b.media_collection_id where media_collection_id in (".$dat.") and a.active = '1' group by b.media_collection_id order by minorg desc");
-
-    //echo"select *,a.id ,a.user_id, a.type, a.title, a.title_image, a.description, a.image, a.json, a.address_formatted, a.artist_id, a.artist_ids, a.title_image_json, b.original_year, min(b.original_year) as minorg from media_collection as a join media_collection_map as b on a.id = b.media_collection_id where media_collection_id in (".$dat.") and a.active = '1' group by b.media_collection_id order by minorg desc";
-    //dump($chk);
-
-     // $get_test = find_objects('media_collection_map', ['media_collection_id' => $id, 'active'=>1]);    
-         
-          //dump($selections);
-        $orderingvalue = 0;
-    foreach($selections as $selectionordering)
-      {
-
-        $artists = json_decode($selectionordering->artist_ids, True);
-        $get_date = $get_type = [];
-        $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $selectionordering->id, 'active'=>1]); 
-        foreach($get_artworks as $artwork){
-            $get_date[] = $artwork->original_year;
-            $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
-            $get_type[] = get_artwork_type($find_art->type);
-        }
-    
-        $selections[$orderingvalue]->ordering =  min(array_filter($get_date));
-        $orderingvalue++;
-      }
-    
-    //$rek = array();
-    /*rsort($selections);
-    foreach($selections as $key => $val)
-    {
-      $rek[$val->ordering] = $val;
-    }
-    dump($rek);exit;*/
-
-    usort($selections, 'my_sort_function');
-    $scope->selection = $selections;
-    $selection = $selections;
-//    dump($selections);
+            $scope->plugins = $plugins = find_objects('plugin', array('parent_id' => $parent_id, 'parent_type' => $parent_type));
+            $scope->plugin_count = count($plugins);
 
 
+            if($parent_type == 'media_collection') {
+                $scope->collection = $parent_object;
+                $scope->preview = plugin_javascript(['shid' => $plugin->id]);
+                $scope->preview_html = sharing_output(['shid' => $plugin->id]);
 
-  foreach($selections as $key => $selection){
-    //dump($selections);
-
-      $tst = find_objects('media_collection_map', ['media_collection_id' => $selection->id, 'active'=>1]);
-      $get_test = [];
-      foreach($tst as $t)
-          {
-              $get_test[] = $t->original_year;
-          }
-          $mini_test =  min(array_filter($get_test));
-          $max_test = max(array_filter($get_test));
-          //dump($mini_test);
-
-        $artists = json_decode($selection->artist_ids, True);
-        $get_date = $get_type = [];
-        $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $selection->id, 'active'=>1]);
-    //foreach($chk as $v){     
-          foreach($get_artworks as $artwork){
-              $get_date[] = $artwork->original_year;
-              $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
-              $get_type[] = get_artwork_type($find_art->type);
-          }
-          //dump($get_date);
-          $mini =  min(array_filter($get_date));
-          $max = max(array_filter($get_date));
-
-          //dump($mini);
-
-            if($selection->subtype == 40){
-                $selection_type = implode(', ' , array_unique(array_filter($get_type)));
-                if($mini == $max)
-                  $selection_range = "Selection (".$mini.")";
-                elseif($mini < $max)
-                  $selection_range =  "Selection (".$mini."-".$max.")";
-                else
-                $selection_range =  "Selection";
-                $selection->selection_range = $selection_range;
-                $selection->selection_type = $selection_type;
+                $scope->images = $images = find_objects('media_collection_map', ['media_collection_id' => $parent_id, 'active' => 1], ['sort' => 'rank']);
             }
-          }
-       // }
-      }
-      else if($uri_segments[2] == 'event') 
-      {
-        $eve = array('subtype' => 30, 'type' => $collection_type, 'active' => 1);
-        //$user_id = pick_first($scope->artist_id, $scope->user_id, $u_id);    
-        $eve['user_id'] = $_GET['user_id'];;
-        $scope->event = $events = find_objects('media_collection', $eve,
-            ['sort' => 'start_date desc']);
-        foreach($events as $event){
-        $artists = json_decode($event->artist_ids, True);
-        $get_date = $get_type = [];
-          $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $event->id, 'active'=>1]);
-          foreach($get_artworks as $artwork){
-              $get_date[] = $artwork->original_year;
-              $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
-              $get_type[] = get_artwork_type($find_art->type);
-          }
-          $mini =  min(array_filter($get_date));
-          $max = max(array_filter($get_date));
-            if($event->subtype == 40){
-                $selection_type = implode(', ' , array_unique(array_filter($get_type)));
-                if($mini == $max)
-                  $selection_range = "Selection (".$mini.")";
-                elseif($mini < $max)
-                  $selection_range =  "Selection (".$mini."-".$max.")";
-                else
-                $selection_range =  "Selection";
-                $event->selection_range = $selection_range;
-                $event->selection_type = $selection_type;
-          }
         }
-      }
-      else if($uri_segments[2] == 'gallery')
-      {
-        $gal = array('subtype' => 10, 'type' => $collection_type, 'active' => 1);
-        //$user_id = pick_first($scope->artist_id, $scope->user_id, $u_id);    
-        $gal['user_id'] = $_GET['user_id'];
-        $scope->gallery = $gallerys = find_objects('media_collection', $gal,
-            ['sort' => 'start_date desc']);
-        foreach($gallerys as $gallery){
-        $artists = json_decode($gallery->artist_ids, True);
-        $get_date = $get_type = [];
-          $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $gallery->id, 'active'=>1]);
-          foreach($get_artworks as $artwork){
-              $get_date[] = $artwork->original_year;
-              $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
-              $get_type[] = get_artwork_type($find_art->type);
-          }
-          $mini =  min(array_filter($get_date));
-          $max = max(array_filter($get_date));
-            if($gallery->subtype == 40){
-                $selection_type = implode(', ' , array_unique(array_filter($get_type)));
-                if($mini == $max)
-                  $selection_range = "Selection (".$mini.")";
-                elseif($mini < $max)
-                  $selection_range =  "Selection (".$mini."-".$max.")";
-                else
-                $selection_range =  "Selection";
-                $gallery->selection_range = $selection_range;
-                $gallery->selection_type = $selection_type;
-          }
-        }
-      }
-      else if($uri_segments[2] == 'artfair')
-      {
-        $art = array('subtype' => 20, 'type' => $collection_type, 'active' => 1);
-        //$user_id = pick_first($scope->artist_id, $scope->user_id, $u_id);    
-        $art['user_id'] = $_GET['user_id'];
-        $scope->artfair = $artfairs = find_objects('media_collection', $art ,
-            ['sort' => 'start_date desc']);
-        foreach($artfairs as $artfair){
-        $artists = json_decode($artfair->artist_ids, True);
-        $get_date = $get_type = [];
-          $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $artfair->id, 'active'=>1]);
-          foreach($get_artworks as $artwork){
-              $get_date[] = $artwork->original_year;
-              $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
-              $get_type[] = get_artwork_type($find_art->type);
-          }
-          $mini =  min(array_filter($get_date));
-          $max = max(array_filter($get_date));
-            if($artfair->subtype == 40){
-                $selection_type = implode(', ' , array_unique(array_filter($get_type)));
-                if($mini == $max)
-                  $selection_range = "Selection (".$mini.")";
-                elseif($mini < $max)
-                  $selection_range =  "Selection (".$mini."-".$max.")";
-                else
-                $selection_range =  "Selection";
-                $artfair->selection_range = $selection_range;
-                $artfair->selection_type = $selection_type;
-          }
-        }
-      }
-      else
-      {
-        $search = array('type' => $collection_type, 'active' => 1);
-        $user_id = pick_first($scope->artist_id, $scope->user_id, $u_id);    
-        $search['user_id'] = $user_id;
-        $scope->items = $items = find_objects('media_collection', $search);
-        foreach($scope->items as $items){
-        $artists = json_decode($items->artist_ids, True);
-        $get_date = $get_type = [];
-          $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $items->id, 'active'=>1]);
-          foreach($get_artworks as $artwork){
-              $get_date[] = $artwork->original_year;
-              $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
-              $get_type[] = get_artwork_type($find_art->type);
-          }
-          $mini =  min(array_filter($get_date));
-          $max = max(array_filter($get_date));
-            if($items->subtype == 40){
-                $selection_type = implode(', ' , array_unique(array_filter($get_type)));
-                if($mini == $max)
-                  $selection_range = "Selection (".$mini.")";
-                elseif($mini < $max)
-                  $selection_range =  "Selection (".$mini."-".$max.")";
-                else
-                $selection_range =  "Selection";
-                $items->selection_range = $selection_range;
-                $items->selection_type = $selection_type;
-          }
-        }
-      }
-
-      $scope->vault = 1;
+        return;
     }
-    
-  }
 
-  $scope->auth_edit = $auth_edit = $obj_type && $obj_id ? gallery_auth_media($obj_type, $obj_id, $u_id) : false; 
- //  update location set location_bounds ='[["36.6504","-6.1641"],["36.6684","-6.1461"]]' where id=8746;
-  if($auth_edit && $obj_type == 'media_collection') {
-    if($sharing_id = $scope->sharing_id) { // edit single
-      $scope->sharing = get_object('sharing', $sharing_id);
-      if($scope->preview) {
-        $scope->sharing_preview = sharing_output(array('shid' => $sharing_id), array('preview' => 1));
-      }
-    } else { // add
-      $scope->sharing = $sharing =  find_objects('sharing', array('parent_id' => $obj_id, 'parent_type' => $obj_type));
-      $scope->sharing_count = count($sharing);
+
+    function controller_gallery_folder($app, $options = []) {
+        global $u_id;
+        $__header = $app->header; 
+        $__header->styles[] = "/afr/css/gallery/afr_gallery.css?ver={$app->version}";
+        $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
+
+        $scope = $app->page->scope;
+        $obj_id = $media_id = $scope->obj_id ?: $app->object_id;
+        $obj_type = $scope->obj_type ?: "gallery";
+
+        if(!$obj_id || $obj_type != 'gallery') return scope_error($app, "Missing ID or  Illegal type $obj_type", '404');
+
+        $obj = get_object($obj_type, $obj_id); 
+        if(!$obj) {
+            $scope->error = "Could not find $obj_type $obj_id";
+            $scope->template = "404";
+        }
+        $auth_edit = $scope->auth_edit = gallery_auth_media($obj_type, $obj, $u_id); 
+
+        $scope->artist_id = $artist_id = $obj->user_id;
+        $scope->artist_name = $artist_name = user_display_name($artist_id);
+        $scope->artist = $artistObj = $artist_id ? get_user($artist_id) : null;
+        $scope->obj_id = $scope->folder_id = $obj_id;
+        $scope->folder = $obj;
+        $scope->artworks = find_objects('media', array('parent_type' => $obj_type, 'parent_id' => $obj_id, 'active' => 1));
+
+        return;
     }
-  }
-  
-  print_log("eot: {$scope->obj_type}", 'gallery', LOG_LEVEL_TEST);
-  
-  // unset($scope->objects);
-  return;
-}
 
-function controller_test($app, $options = []) {
-  $scope = $app->page->scope;
-  $scope->debug = 'some debug message';  
-  $scope->error = 'some random error';  
-  $scope->message = ['message1', 'message2'];  
-  //$scope->redirect = 'http://www.google.com';
-  //$scope->template = 'test2';
-  return;
-}
+    function controller_gallery_collections($app, $options = []) {
+        //$uri_path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        //$uri_segments = explode('/', $uri_path);
+        //dump($uri_segments);
+        global $u_id;
+        $__header = $app->header; 
+        $__header->styles[] = "/afr/css/gallery/afr_gallery.css?ver={$app->version}";
+        $__header->styles[] = "/afr/js/vp/vp.min.css{$cachebust}";
 
-/** End vPatina + Art controllers */
+        $__header->scripts[] = "/afr/js/vp/vp.js{$cachebust}";
+        $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
+        $siteObj = $app->site;
+
+
+        //die("tpl={$app->page->template}");
+
+        $scope = $app->page->scope;
+        $scope->items = $scope->objects; 
+
+        // unset($scope->objects);
+        $obj_id = $media_id = $scope->obj_id = $scope->obj_id ?: $app->object_id;
+        $obj_type = $scope->obj_type = $scope->obj_type ?: $app->object_type;
+
+        $start = 0;
+        $limit = 40;
+        print_log("sot: {$scope->obj_type} tos {$app->object_type} => {$obj_type}", 'gallery', LOG_LEVEL_TEST);
+        $scope->my_collection_id = $scope->user_collection_id = $user_collection_id = $u_id ? gallery_find_user_collection($siteObj, $u_id, array('return' => 'id')) : 0;
+        $scope->follow_type = $obj_type;
+        if($obj_id) {
+            $scope->follow_id = $obj_id;
+            $scope->user_collection = $user_collection_id ? find_objects('media_collection_map', array('media_collection_id' => $user_collection_id, 'active' => 1), array('fields' => 'distinct (media_id)')) : array();
+            $scope->collection_id = $scope->obj_id = $collection_id = $obj_id;
+            $scope->collection = $collectionObj = get_object('media_collection', $obj_id);
+            $scope->mail_template = 'mail/mail-collection.html';
+            $scope->mail_controller = 'gallery_collections';
+            //print_r($scope);
+            /** find artwork in collection */
+            $artworks = find_objects('media_collection_map', array('media_collection_id' => $collection_id, 'active' => 1), array('sort' => 'rank'));
+
+            //print_r($artworks);
+            //echo "SELECT * from  media_collection_map LEFT JOIN artwork on media_collection_map.artwork_id = artwork.id where media_collection_map.media_collection_id=$collection_id and media_collection_map.active = 1";
+            //$sql = db_getAll("SELECT * from  media_collection_map LEFT JOIN artwork on media_collection_map.artwork_id = artwork.id where media_collection_map.media_collection_id=$collection_id and media_collection_map.active = 1");
+            //print_r($sql);
+            //print_r($artworks);
+            //print_r($artworks);
+            foreach($artworks as $art){
+                $a = (array)$art;
+                $ids = $art->media_id;
+                $data = find_object('media', array('id' => $ids));
+                $art_id = $data->parent_id;
+                $find = find_object('artwork', array('id' => $art_id));
+                if($find) $b = (array)$find;
+                else $b = (array)$data;
+                $merge[] = array_merge($a, $b);
+            }
+            //print_r($merge);
+            $scope->artwork = $merge;
+            $scope->artworks = $artworks;
+
+            if($collectionObj->type == MEDIA_COLLECTION_TYPE_EXHIBITION) {
+                if($scope->curator_id = $curator_id = $collectionObj->user_id) 
+                    $scope->curator = get_user($collectionObj->user_id);
+                    //print_r($scope->curator);
+                    $curator_exhibitions = find_objects('media_collection', 
+                            array('id' => array('!=', $collection_id), 'user_id' => $curator_id, 'type' => MEDIA_COLLECTION_TYPE_EXHIBITION, 'active' => 1),
+                            array('start' => $start, 'limit' => $limit));
+                    $cur_arr = [];
+                    foreach($curator_exhibitions as $curator_exhibition){
+                        $artists = json_decode($curator_exhibition->artist_ids, True);
+                        $get_date = $get_type = [];
+                        $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $curator_exhibition->id, 'active'=>1]);
+                        foreach($get_artworks as $artwork){
+                            $get_date[] = $artwork->original_year;
+                            $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
+                            $get_type[] = get_artwork_type($find_art->type);
+                        }
+                        $mini =  min(array_filter($get_date));
+                        $max = max(array_filter($get_date));
+                        if(count($artists) >1){
+                            if(in_array($curator_id, $artists) && ($curator_id != $artists)){
+                                $cur_arr[] = $curator_exhibition;
+                                if($curator_exhibition->subtype == 40){
+                                    $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                                    if($mini == $max)
+                                        $selection_range = "Selection (".$mini.")";
+                                    elseif($mini < $max)
+                                        $selection_range =  "Selection (".$mini."-".$max.")";
+                                    else
+                                        $selection_range =  "Selection";
+                                    $curator_exhibition->selection_range = $selection_range;
+                                    $curator_exhibition->selection_type = $selection_type;
+                                }
+                            }
+                        }else{
+                            if($artists[0] != $curator_id){
+                                $cur_arr[] = $curator_exhibition;
+                                if($curator_exhibition->subtype == 40){
+                                    $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                                    if($mini == $max)
+                                        $selection_range = "Selection (".$mini.")";
+                                    elseif($mini < $max)
+                                        $selection_range =  "Selection (".$mini."-".$max.")";
+                                    else
+                                        $selection_range =  "Selection";
+                                    $curator_exhibition->selection_range = $selection_range;
+                                    $curator_exhibition->selection_type = $selection_type;
+                                }
+                            }
+                        }
+                    }
+                    $scope->curator_exhibitions = $cur_arr;
+                    //dump($get_type);
+                    //echo "1";
+                    $curator_profile = get_user($curator_id);
+                    // dump($curator_profile);
+
+                    $scope->curator_id = $curator_profile->id;
+                    $scope->curator_name = $curator_profile->display_name;
+                    $scope->curator_photo = $curator_profile->photo;
+                    $scope->curator_address_formatted = $curator_profile->address_formatted;
+                    $scope->curator_social = $curator_profile->social;
+                    //dump($curator_profile);
+                    $curator_arts = gallery_unique_artworks(array_find_key($curator_exhibitions, 'id'),['start' => $start, 'limit' => $limit]);
+                    $curator_artworks = [];
+                    foreach($curator_arts as $curator_art){
+                        if($curator_art->curator_id == $curator_id){
+                            $curator_artworks[] = $curator_art;
+                        }
+                    }
+                    $scope->curator_artworks= $curator_artworks;
+                }
+
+                $scope->url = site_full_url($siteObj).page_link(PAGE_GALLERY, 'media_collection', $collectionObj->type).slugify($collectionObj->title)."-".$obj_id;  
+
+                $curator_id = $collectionObj->user_id;
+
+                //$mid = isset($_GET['mid']) ? $_GET['mid'] : 0;
+                //dump($mid);
+                $mid = $collectionObj->title_image;
+                if($mid) {
+                    $artwork = get_object('media', $mid);
+                    $author_name = user_display_name($artwork->artist_id);
+                    //dump($collectionObj->title);
+                    $title = $collectionObj->title ?: "Untitled Artwork";
+                    $title .= " by $author_name";
+                    $description = implode('. ', array_filter(array($artwork->original_technique, $artwork->short_description, $artwork->comment)));
+
+                }else{
+                    $author_name = user_display_name($curator_id);
+                    $title = $collectionObj->title ?: "Untitled Exhibition";
+                    $title .= " by $author_name";
+                    $description = $collectionObj->description;
+                }
+
+                if($loc_id = $collectionObj->location_id) {
+                    $locObj = get_object('location', $loc_id);
+                    $scope->collection->location = $locObj;
+                }
+
+                if($event_id = $collectionObj->event_id) {
+                    $eventObj = get_object('event', $event_id);
+                    $scope->collection->event = $eventObj;
+                }
+            
+                $img_src = $mid ? print_media($mid, array('source_only' => true, 'full' => true)) : 
+
+                /** Add facebook Open Graph tags */
+                $__header->meta[] = array('property' => 'og:type', 'content' => 'article123');
+                $__header->meta[] = array('property' => 'og:image', 'content' => add_https($img_src));
+                $__header->meta[] = array('property' => 'og:url', 'content' => $scope->url ?: this_url());
+                $__header->meta[] = array('property' => 'og:title', 'content' => $title);
+                $__header->meta[] = array('property' => 'og:description', 'content' =>  strip_tags($description));    
+                //$__header->meta[] = array('property' => 'article:author', 'content' =>  "Some Dude");    
+                $__header->meta[] = array('property' => 'article:author', 'content' =>  "https://www.facebook.com/vpatinabv");    
+
+                $__header->link[] = array('property' => 'image_src', 'content' =>  add_https($img_src));    
+
+                $app->page->author = $author_name;    
+
+                $app->page->description = strip_tags($description);
+                $app->page->title = $title;    
+            
+            }else{ /** find collections */
+                if($items = $scope->items) { // my-vpatina
+                    //$myCollectionObj = gallery_find_user_collection($siteObj, $u_id);
+                    //$scope->my_collection_id = $collection_id = $myCollectionObj->id;
+                    //$scope->items = $scope->objects ?: gallery_collection_images($siteObj, $collection_id, array('return' => 'object'));
+                    //$scope->error = "got here id=$obj_id count=".count($items);
+                }else{ // my-vault
+                    $collection_type = $scope->type ?: MEDIA_COLLECTION_TYPE_EXHIBITION;
+                    if(!$collection_type) {
+                        $scope->error = "Missing collection type";
+                        $scope->template = "404";
+                        return;    
+                    }
+                    //echo "vignesh";
+                    $curator_profile = get_user($_GET['user_id']);
+                    $scope->curator_id = $curator_profile->id;
+                    $scope->curator_name = $curator_profile->display_name;
+                    $scope->curator_photo = $curator_profile->photo;
+                    $scope->curator_address_formatted = $curator_profile->address_formatted;
+                    $scope->curator_social = $curator_profile->social;
+                    //dump($curator_profile);
+                    $uri_path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+                    $uri_segments = explode('/', $uri_path);
+                    if($uri_segments[2] == 'selection'){
+                        $sel = array('subtype' => 40, 'type' => $collection_type, 'active' => 1);
+                        //$user_id = pick_first($scope->artist_id, $scope->user_id, $u_id);    
+                        $sel['user_id'] = $_GET['user_id'];
+
+                         // $artsss = db_getAll("select * from artwork where status='40' and user_id = '".$_GET['user_id']."' and active='1' order by primary_year desc");
+                        //foreach($artsss as $art){
+                           // $scope->selection = $selections = find_objects('media_collection', $sel);
+                            //echo "select a.id,a.title_image,a.image,a.start_date,a.end_date,a.location_id,a.address_formatted,a.event_id,a.artist_id,a.subtype,a.artists,a.artist_ids,a.title_image_json,b.status,b.primary_year,b.technique from media_collection as a join artwork b on a.subtype = b.status join artwork as b2 on a.subtype = b2.status and a.user_id = b.user_id where a.subtype = '40' and  a.type = '$collection_type' and a.user_id = '$use_id' and a.active='1' and b.active='1' group by a.title";
+                            //$scope->selection = $selections = db_getAll("select a.id,a.title_image,a.image,a.start_date,a.end_date,a.location_id,a.address_formatted,a.event_id,a.artist_id,a.subtype,a.artists,a.artist_ids,a.title_image_json,b.status,b.primary_year,b.technique from media_collection as a join artwork b on a.subtype = b.status join artwork as b2 on a.subtype = b2.status and a.user_id = b.user_id where a.subtype = '40' and  a.type = '$collection_type' and a.user_id = '$use_id' and a.active='1' and b.active='1' order by  group by a.title");
+                            //dump($selections);
+
+                        $r = find_objects('media_collection', $sel);
+
+                        $re = [];
+                        foreach ($r as $k)
+                            $id[] = $k->id;
+                        $dat = implode(",", $id);
+              
+                        $selections = db_getAll("select *,a.id ,a.user_id, a.type, a.title, a.title_image, a.description, a.image, a.json, a.address_formatted, a.artist_id, a.artist_ids, a.title_image_json, b.original_year, min(b.original_year) as minorg from media_collection as a join media_collection_map as b on a.id = b.media_collection_id where media_collection_id in (".$dat.") and a.active = '1' group by b.media_collection_id order by minorg desc");
+
+                        //echo"select *,a.id ,a.user_id, a.type, a.title, a.title_image, a.description, a.image, a.json, a.address_formatted, a.artist_id, a.artist_ids, a.title_image_json, b.original_year, min(b.original_year) as minorg from media_collection as a join media_collection_map as b on a.id = b.media_collection_id where media_collection_id in (".$dat.") and a.active = '1' group by b.media_collection_id order by minorg desc";
+                        //dump($chk);
+
+                         // $get_test = find_objects('media_collection_map', ['media_collection_id' => $id, 'active'=>1]);    
+                 
+                        //dump($selections);
+                        $orderingvalue = 0;
+                        foreach($selections as $selectionordering){
+
+                            $artists = json_decode($selectionordering->artist_ids, True);
+                            $get_date = $get_type = [];
+                            $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $selectionordering->id, 'active'=>1]); 
+                            foreach($get_artworks as $artwork){
+                                $get_date[] = $artwork->original_year;
+                                $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
+                                $get_type[] = get_artwork_type($find_art->type);
+                            }
+            
+                            $selections[$orderingvalue]->ordering =  min(array_filter($get_date));
+                            $orderingvalue++;
+                        }
+            
+                        //$rek = array();
+                        /*rsort($selections);
+                        foreach($selections as $key => $val)
+                        {
+                          $rek[$val->ordering] = $val;
+                        }
+                        dump($rek);exit;*/
+
+                        usort($selections, 'my_sort_function');
+                        $scope->selection = $selections;
+                        $selection = $selections;
+                        //    dump($selections);
+                        foreach($selections as $key => $selection){
+                            //dump($selections);
+
+                            $tst = find_objects('media_collection_map', ['media_collection_id' => $selection->id, 'active'=>1]);
+                            $get_test = [];
+                            foreach($tst as $t)
+                                $get_test[] = $t->original_year;
+                            $mini_test =  min(array_filter($get_test));
+                            $max_test = max(array_filter($get_test));
+                            //dump($mini_test);
+
+                            $artists = json_decode($selection->artist_ids, True);
+                            $get_date = $get_type = [];
+                            $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $selection->id, 'active'=>1]);
+                            //foreach($chk as $v){     
+                            foreach($get_artworks as $artwork){
+                                $get_date[] = $artwork->original_year;
+                                $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
+                                $get_type[] = get_artwork_type($find_art->type);
+                            }
+                            //dump($get_date);
+                            $mini =  min(array_filter($get_date));
+                            $max = max(array_filter($get_date));
+
+                            //dump($mini);
+                            if($selection->subtype == 40){
+                                $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                                if($mini == $max)
+                                    $selection_range = "Selection (".$mini.")";
+                                elseif($mini < $max)
+                                    $selection_range =  "Selection (".$mini."-".$max.")";
+                                else
+                                    $selection_range =  "Selection";
+                                $selection->selection_range = $selection_range;
+                                $selection->selection_type = $selection_type;
+                            }
+                        }
+                    // }
+                    }
+                    else if($uri_segments[2] == 'event'){
+                        $eve = array('subtype' => 30, 'type' => $collection_type, 'active' => 1);
+                        //$user_id = pick_first($scope->artist_id, $scope->user_id, $u_id);    
+                        $eve['user_id'] = $_GET['user_id'];;
+                        $scope->event = $events = find_objects('media_collection', $eve,
+                            ['sort' => 'start_date desc']);
+                        foreach($events as $event){
+                            $artists = json_decode($event->artist_ids, True);
+                            $get_date = $get_type = [];
+                            $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $event->id, 'active'=>1]);
+                            foreach($get_artworks as $artwork){
+                                $get_date[] = $artwork->original_year;
+                                $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
+                                $get_type[] = get_artwork_type($find_art->type);
+                            }
+                            $mini =  min(array_filter($get_date));
+                            $max = max(array_filter($get_date));
+                            if($event->subtype == 40){
+                                $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                                if($mini == $max)
+                                    $selection_range = "Selection (".$mini.")";
+                                elseif($mini < $max)
+                                    $selection_range =  "Selection (".$mini."-".$max.")";
+                                else
+                                    $selection_range =  "Selection";
+                                $event->selection_range = $selection_range;
+                                $event->selection_type = $selection_type;
+                            }
+                        }
+                        // dump('Ashii1');
+                    }
+                    else if($uri_segments[2] == 'gallery'){
+                        $gal = array('subtype' => 10, 'type' => $collection_type, 'active' => 1);
+                        //$user_id = pick_first($scope->artist_id, $scope->user_id, $u_id);    
+                        $gal['user_id'] = $_GET['user_id'];
+                        $scope->gallery = $gallerys = find_objects('media_collection', $gal,
+                            ['sort' => 'start_date desc']);
+                        foreach($gallerys as $gallery){
+                            $artists = json_decode($gallery->artist_ids, True);
+                            $get_date = $get_type = [];
+                            $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $gallery->id, 'active'=>1]);
+                            foreach($get_artworks as $artwork){
+                                $get_date[] = $artwork->original_year;
+                                $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
+                                $get_type[] = get_artwork_type($find_art->type);
+                            }
+                            $mini =  min(array_filter($get_date));
+                            $max = max(array_filter($get_date));
+                            if($gallery->subtype == 40){
+                                $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                                if($mini == $max)
+                                    $selection_range = "Selection (".$mini.")";
+                                elseif($mini < $max)
+                                    $selection_range =  "Selection (".$mini."-".$max.")";
+                                else
+                                    $selection_range =  "Selection";
+                                $gallery->selection_range = $selection_range;
+                                $gallery->selection_type = $selection_type;
+                            }
+                        }
+                        $output = array("data","plum");
+
+                        // dump('Ashii12');
+
+                    }
+                    else if($uri_segments[2] == 'artfair'){
+                        $app->page->subtemplate = $sub = '_gallery-showroom-item.html'; // $edit ? '_gallery-backend-artwork-form.html' : '_gallery-artwork-detail.html';
+
+                        $art = array('subtype' => 20, 'type' => $collection_type, 'active' => 1);
+                        //$user_id = pick_first($scope->artist_id, $scope->user_id, $u_id);    
+                        $art['user_id'] = $_GET['user_id'];
+                        $scope->artfair = $artfairs = find_objects('media_collection', $art ,
+                            ['sort' => 'start_date desc']);
+                        foreach($artfairs as $artfair){
+                            $artists = json_decode($artfair->artist_ids, True);
+                            $get_date = $get_type = [];
+                            $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $artfair->id, 'active'=>1]);
+                            foreach($get_artworks as $artwork){
+                                $get_date[] = $artwork->original_year;
+                                $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
+                                $get_type[] = get_artwork_type($find_art->type);
+                            }
+                            $mini =  min(array_filter($get_date));
+                            $max = max(array_filter($get_date));
+                            if($artfair->subtype == 40){
+                                $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                                if($mini == $max)
+                                    $selection_range = "Selection (".$mini.")";
+                                elseif($mini < $max)
+                                    $selection_range =  "Selection (".$mini."-".$max.")";
+                                else
+                                    $selection_range =  "Selection";
+                                $artfair->selection_range = $selection_range;
+                                $artfair->selection_type = $selection_type;
+                            }
+                        }
+                        // dump('Ashii123');
+                        // dump("sad".$collection);
+
+                        // dump($scope);
+
+                        // return '<span class="frame-square">'+
+                        //             '<img class="__vp-plugin-image center-cropped" src="'+{$scope->artfair->id+'"  alt="">'  ;
+                                
+                        // echo(json_encode($scope,JSON_PRETTY_PRINT));exit;
+
+
+                    }
+                    else{
+                        $search = array('type' => $collection_type, 'active' => 1);
+                        $user_id = pick_first($scope->artist_id, $scope->user_id, $u_id);    
+                        $search['user_id'] = $user_id;
+                        $scope->items = $items = find_objects('media_collection', $search);
+                        foreach($scope->items as $items){
+                            $artists = json_decode($items->artist_ids, True);
+                            $get_date = $get_type = [];
+                            $get_artworks = find_objects('media_collection_map', ['media_collection_id' => $items->id, 'active'=>1]);
+                            foreach($get_artworks as $artwork){
+                                $get_date[] = $artwork->original_year;
+                                $find_art = find_object('artwork', ['id' =>$artwork->artwork_id, 'active' =>1]);
+                                $get_type[] = get_artwork_type($find_art->type);
+                            }
+                            $mini =  min(array_filter($get_date));
+                            $max = max(array_filter($get_date));
+                            if($items->subtype == 40){
+                                $selection_type = implode(', ' , array_unique(array_filter($get_type)));
+                                if($mini == $max)
+                                    $selection_range = "Selection (".$mini.")";
+                                elseif($mini < $max)
+                                    $selection_range =  "Selection (".$mini."-".$max.")";
+                                else
+                                    $selection_range =  "Selection";
+                                $items->selection_range = $selection_range;
+                                $items->selection_type = $selection_type;
+                            }
+                        }
+                        // dump('Ashii1234');
+
+                    }
+                    $scope->vault = 1;
+                }
+            }
+            $scope->auth_edit = $auth_edit = $obj_type && $obj_id ? gallery_auth_media($obj_type, $obj_id, $u_id) : false; 
+            //  update location set location_bounds ='[["36.6504","-6.1641"],["36.6684","-6.1461"]]' where id=8746;
+            if($auth_edit && $obj_type == 'media_collection') {
+                if($sharing_id = $scope->sharing_id) { // edit single
+                    $scope->sharing = get_object('sharing', $sharing_id);
+                    if($scope->preview) {
+                        $scope->sharing_preview = sharing_output(array('shid' => $sharing_id), array('preview' => 1));
+                    }
+                } else { // add
+                    $scope->sharing = $sharing =  find_objects('sharing', array('parent_id' => $obj_id, 'parent_type' => $obj_type));
+                    $scope->sharing_count = count($sharing);
+                }
+            }
+            print_log("eot: {$scope->obj_type}", 'gallery', LOG_LEVEL_TEST);
+            $scope->user_detail=get_user($_GET['user_id']);
+            // dump($scope);
+                        // dump('Ashii12345');
+
+            // unset($scope->objects);
+            return;
+    }
+
+    function controller_test($app, $options = []) {
+        $scope = $app->page->scope;
+        $scope->debug = 'some debug message';  
+        $scope->error = 'some random error';  
+        $scope->message = ['message1', 'message2'];  
+        //$scope->redirect = 'http://www.google.com';
+        //$scope->template = 'test2';
+        return;
+    }
+
+    /** End vPatina + Art controllers */

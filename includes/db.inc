@@ -1020,32 +1020,41 @@ function agent_xml_login($login, $password) {
 
 // takes an ID list (comma separated), sets rank in that order
 function rank_update_list($obj_type, $list, $rank_field='rank') {
-  $table = get_object_table($obj_type);
-  $query = "set @row_num=0";
-  db_query($query);
-  $query = "update $table set $rank_field = (SELECT @row_num := @row_num + 1)  WHERE id in ($list) order by FIELD(id,$list)";
-  print_log($query, 'rank', LOG_LEVEL_DEBUG);
-  db_query($query);
-  
-  // hacky side effect - also update parent object
-  $ids = explode(',', $list);
-  if($obj_type == 'media' && count($ids) > 1) {
-    $id = $ids[0];
-    if($mediaObj = get_object('media', $id)) {
-      $pid = $mediaObj->parent_id;
-      $pt = $mediaObj->parent_type;
-      $pf = $mediaObj->parent_field;
-      if($pid && $pt && $pf) {
-        update_object($pt, array($pf => $list), $pid);
-        $parentObj = get_object($pt, $pid);
-        if(isset($parentObj->media_json)) {
-          if($mediaJson = media2json($pt, $parentObj)) update_object($pt, ['media_json' => $mediaJson], $pid);
-        }
+    $table = get_object_table($obj_type);
+    $query = "set @row_num=0";
+    db_query($query);
+    $query = "update $table set $rank_field = (SELECT @row_num := @row_num + 1)  WHERE id in ($list) order by FIELD(id,$list)";
+    print_log($query, 'rank', LOG_LEVEL_DEBUG);
+    db_query($query);
+
+    // hacky side effect - also update parent object
+    $ids = explode(',', $list);
+    // dump($ids);
+    // dump($obj_type);
+    foreach ($ids as $key => $obj_id) {
+        $obj_data[rank]=$key+1;
+        if($obj_type == 'media') 
+            $mediaObj = get_object('media', $obj_id);
+        elseif($obj_type == 'media_collection_map') 
+            $mediaObj = get_object('media_collection_map', $obj_id);
+
+        list($obj_id, $errors) = update_object($obj_type, $obj_data, $obj_id);
+
+        // $pid = $mediaObj->parent_id;
+        // $pt = $mediaObj->parent_type;
+        // $pf = $mediaObj->parent_field;
+        // if($pid && $pt && $pf) {
+        //     update_object($pt, array($pf => $list), $pid);
+        //     dump($pt);
+
+        //     $parentObj = get_object($pt, $pid);
+        //     if(isset($parentObj->media_json)) {
+        //         if($mediaJson = media2json($pt, $parentObj)) update_object($pt, ['media_json' => $mediaJson], $pid);
+        //     }
         
-      }
+        // }
     }
-  }
-  
+    
 }
 
 

@@ -804,6 +804,7 @@ $(document).on("focusout", ".edit_exhibition", function() {
 
 
 $(document).on("click", ".edit_exb_start_date", function() { 
+    console.log('edit_exb_start_date');
   var id = $(this).data('id');
   var k = "#edit_exb_start_date" + id;
    var startdate = $(k).text();
@@ -817,6 +818,8 @@ $(document).on("click", ".edit_exb_start_date", function() {
 });
 
 $(document).on("focusout", ".edit_exb_start_date", function() { 
+    console.log('edit_exb_start_dateeee');
+
   $(this).prop('contenteditable', true);
   var obj_type= "media_collection";
   var id = $(this).data('id');
@@ -839,6 +842,8 @@ $(document).on("focusout", ".edit_exb_start_date", function() {
 }); 
 
 $(document).on("click", ".edit_exb_end_date", function() { 
+    console.log('edit_exb_end_date');
+
   //var startdate = $(this).text();
   //alert(startdate);
   var id = $(this).data('id');
@@ -854,6 +859,8 @@ $(document).on("click", ".edit_exb_end_date", function() {
 });
 
 $(document).on("focusout", ".edit_exb_end_date", function() { 
+    console.log('edit_exb_end_dateeee');
+
   $(this).prop('contenteditable', true);
   var obj_type= "media_collection";
   var id = $(this).data('id');

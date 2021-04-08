@@ -5400,6 +5400,7 @@ function default_selectedArt($id, $obj_type ,$data){ //Selected Art
 }
 
 function default_about($id, $obj_type ,$data){ //About
+  dump(1111);
   $page = 'About';
   $slug = url_safe("/".$page."/", true);
   $data['type'] = 50; 
@@ -5414,7 +5415,7 @@ function default_about($id, $obj_type ,$data){ //About
   if(!$data)  json_error("No datas found for default About page");
   list($page_id, $errors) = add_object($obj_type, $data);
   if($errors) json_error($errors);
-  return $page_id;
+  return 1;
 }
 
 function default_cv($id, $obj_type ,$data){ //CV

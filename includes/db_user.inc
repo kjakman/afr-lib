@@ -47,7 +47,6 @@ function user_register($username, $password, $profileData=[], $params=[]) {
 
   $errors = [];
   $result = $phpauth->register($username, $password, $password, $params);
-    
   if(isset($result['error']) && !strlen(trim($result['message']))) $result['message'] = "Please use at least one UPPERCASE letter, one lowercase letter, and one number in the password";
   if($error = $result['error']) return array(0, $result['message']); //array(0, $error);
   
@@ -57,7 +56,7 @@ function user_register($username, $password, $profileData=[], $params=[]) {
   print_log("New user:".dump($result,true), 'user', LOG_LEVEL_TEST);
 
   print_log("New profile".dump($profileData,true), 'user', LOG_LEVEL_TEST);
-
+ 
   list($profile_id, $errors) = add_object('user_profile', $profileData);
   if($errors) return array(0, $errors); /** Failed to add user profile - but user was added - not good */ 
   
@@ -76,7 +75,7 @@ function user_register($username, $password, $profileData=[], $params=[]) {
   if(!$user_level) $user_level = $params['user_level'];
   if(!$roles) $roles = $params['roles'];
   if(!$auto_password) $auto_password = 0;
-    
+  
   print_log("Edit user:".dump($userData,true), 'user', LOG_LEVEL_TEST);  
   
   // Pradeepa hack

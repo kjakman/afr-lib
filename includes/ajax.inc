@@ -488,87 +488,91 @@
       break;
 
     case 'save-profile':
-       extract($obj_data);
-       //dump($obj_data);
-       $id = $obj_data[obj_id];
-       $user_id = $obj_data[user_id];
-       $contact = $obj_data[contact];
-       $obj_type = 'user_profile';
+        extract($obj_data);
+        // dump($obj_data);
+        $id = $obj_data[obj_id];
+        $user_id = $obj_data[user_id];
+        $contact = $obj_data[contact];
+        $obj_type = 'user_profile';
 
-       $obj_data[date_of_birth] = date("Y-m-d", strtotime($obj_data[date_of_birth]));
-       
-       if($obj_data[date_of_birth]){
-        $today = today();     
-        $dateOfBirth = date("Y-m-d", strtotime($obj_data[date_of_birth]));      
-        $diff = date_diff(date_create($dateOfBirth), date_create($today));
-        $age = $diff->format("%y");
-        if ($age < 18) json_error("Age should be greater than 18");
-       }
+        $obj_data[date_of_birth] = date("Y-m-d", strtotime($obj_data[date_of_birth]));
+        // $obj_data[languages]= str_replace("[","",str_replace("]","",$obj_data[language]));
+        // dump($obj_data);
 
-       if($obj_data[opening_time]){
-        $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-        $opening_time = $obj_data[opening_time];
-        $closing_time = $obj_data[closing_time];
-        $holiday = $obj_data[holiday];
-        $time = [];
-        for($i=0; $i<=6; $i++){
-          $day = $days[$i];
-          $opening_times = $start = $opening_time[$day];
-          $closing_times = $end = $closing_time[$day];
-          if($holiday[$day] == '1' ){
-            $opening_times = '0:00';
-            $closing_times = '0:00';
-          }
-           
-          if( (strlen($start) != 5) ||  (strlen($end) != 5)){
-            $start = str_pad($start, 5, "0", STR_PAD_LEFT);
-            $end = str_pad($end, 5, "0", STR_PAD_LEFT);
-          }
-          if($start >= $end){
-            if(($start != '00:00') && ($end != '00:00')) json_error($day."- End time must be after start time");
-          } 
-          $time[$day] = $opening_times.'-'.$closing_times;        
+        // dump(array_unique($obj_data[language]));
+
+        if($obj_data[date_of_birth]){
+            $today = today();     
+            $dateOfBirth = date("Y-m-d", strtotime($obj_data[date_of_birth]));      
+            $diff = date_diff(date_create($dateOfBirth), date_create($today));
+            $age = $diff->format("%y");
+            if ($age < 18) json_error("Age should be greater than 18");
         }
-        $obj_data['working_hours'] = json_encode($time);
-       }
 
-       $datas = [];
-       $count = count($contact['title']);
-       if($contact){
-         for( $i=0; $i<$count; $i++){
-          if($contact['title'][$i] != ''){
-           $datas[$i]['title'] = $contact['title'][$i];
-           $datas[$i]['email'] = $contact['email'][$i];
-           $datas[$i]['phone'] = $contact['phone'][$i];
-          }
-         }
-       }
+        if($obj_data[opening_time]){
+            $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            $opening_time = $obj_data[opening_time];
+            $closing_time = $obj_data[closing_time];
+            $holiday = $obj_data[holiday];
+            $time = [];
+            for($i=0; $i<=6; $i++){
+                $day = $days[$i];
+                $opening_times = $start = $opening_time[$day];
+                $closing_times = $end = $closing_time[$day];
+                if($holiday[$day] == '1' ){
+                    $opening_times = '0:00';
+                    $closing_times = '0:00';
+                }
+
+                if( (strlen($start) != 5) ||  (strlen($end) != 5)){
+                    $start = str_pad($start, 5, "0", STR_PAD_LEFT);
+                    $end = str_pad($end, 5, "0", STR_PAD_LEFT);
+                }
+                if($start >= $end){
+                    if(($start != '00:00') && ($end != '00:00')) json_error($day."- End time must be after start time");
+                    } 
+                    $time[$day] = $opening_times.'-'.$closing_times;        
+                }
+                $obj_data['working_hours'] = json_encode($time);
+            }
+
+            $datas = [];
+            $count = count($contact['title']);
+            if($contact){
+                for( $i=0; $i<$count; $i++){
+                    if($contact['title'][$i] != ''){
+                        $datas[$i]['title'] = $contact['title'][$i];
+                        $datas[$i]['email'] = $contact['email'][$i];
+                        $datas[$i]['phone'] = $contact['phone'][$i];
+                    }
+                }
+            }
        
-       if($obj_data[contact]) $obj_data[contact] = json_encode($datas,True);
-       if($obj_data[social])  $obj_data[social] = json_encode($obj_data[social]);
-       $artist_name = $obj_data[display_name];
+            if($obj_data[contact]) $obj_data[contact] = json_encode($datas,True);
+            if($obj_data[social])  $obj_data[social] = json_encode($obj_data[social]);
+            $artist_name = $obj_data[display_name];
         
-       if($id) {
-         list($id, $errors) = update_object($obj_type, $obj_data, $id);       
-       } else {
-         list($id, $errors) = add_object($obj_type, $obj_data);
-       }
+            if($id) {
+                list($id, $errors) = update_object($obj_type, $obj_data, $id);       
+            } else {
+                list($id, $errors) = add_object($obj_type, $obj_data);
+            }
 
-       if($errors) json_error($errors);
-       else {
-        if($artist_name) $artist_update = update_artist_name($user_id, $artist_name);
-       }
+            if($errors) json_error($errors);
+            else {
+                if($artist_name) $artist_update = update_artist_name($user_id, $artist_name);
+            }
 
-       $obj = get_object($obj_type, $id);
-       $obj->next_tab = $obj_data['next_tab'];
+            $obj = get_object($obj_type, $id);
+            $obj->next_tab = $obj_data['next_tab'];
        
-       $result->success = 1;
-       $result->data = $obj;
-       $result->message = "OK. Saved profile";
+            $result->success = 1;
+            $result->data = $obj;
+            $result->message = "OK. Saved profile";
 
-       echo(json_encode($result));
-       exit;      
-       break;
+            echo(json_encode($result));
+            exit;      
+    break;
 
        
       case 'save-details':
@@ -2531,97 +2535,180 @@
 
     /** more secure version of 'list' below, with implicit filters and security checks, used by bootstrap-table */
     case 'get-rows':
-      extract($obj_data);
-      $allowed_types = ['invoice', 'inv_lineitem', 'payment', 'withdrawal', 'user', 'shortstay', 'dictionary', 'reservation', 
-                        'artwork', 'gallery', 'media_collection', 'media', 'media_folder' ,'plugin', 'minisite', 'uhuru_registration', 'uhuru_trial_lesson', 'cruds','company'];
-      if(!in_array($obj_type, $allowed_types)) json_error("Listing $obj_type not supported");
-      $options = array();
-      foreach(array('offset', 'limit', 'sort', 'order', 'fields') as $fld) $options[$fld] = $obj_data[$fld];
+        extract($obj_data);
+        $allowed_types = [
+            'artwork',
+            'dictionary',
+            'gallery',
+            'invoice',
+            'inv_lineitem',
+            'media',
+            'media_collection',
+            'media_folder',
+            'minisite',
+            'payment',
+            'plugin',
+            'reservation', 
+            'shortstay',
+            'uhuru_registration',
+            'uhuru_trial_lesson',
+            'user',
+            'withdrawal',
+            // 'cruds',
+            // 'company'
+        ];
+        if(!in_array($obj_type, $allowed_types)) json_error("Listing $obj_type not supported");
+        $options = array();
+        foreach(array('offset', 'limit', 'sort', 'order', 'fields') as $fld) $options[$fld] = $obj_data[$fld];
       
-      $search = array();
-      // $fields = database_fields($obj_type);
-      global $u_id, $u_level;
+        $search = array();
+        // $fields = database_fields($obj_type);
+        global $u_id, $u_level;
       
-      $tbl = get_object_table($obj_type);
+        $tbl = get_object_table($obj_type);
       
-      if(in_array('client_id', $class_fields)) $search["{$tbl}.client_id"] = $_SESSION['client_id'];;
-      if($u_level < USER_LEVEL_ADMIN && in_array('host_id', $class_fields)) $search["{$tbl}.host_id"] = user_host_list($userObj);
-  
-        
-      $val = trim($obj_data['search']);
-      $filter_data = trim($obj_data['filter']);
-      
-      $scope->searchvalue = $val;
-      $_SESSION['searchvalue']=$val; 
+        if(in_array('client_id', $class_fields)) $search["{$tbl}.client_id"] = $_SESSION['client_id'];;
+        if($u_level < USER_LEVEL_ADMIN && in_array('host_id', $class_fields)) $search["{$tbl}.host_id"] = user_host_list($userObj);
 
-      $search_options = $options;
-      if($_GET['filters']) $search_options['filters'] = $_GET['filters'];
-      if($obj_data['id']) $search_options['id'] = $obj_data['id'];
-      
-      $vals = explode(' ', $val);
-      $objs = [];
-      
-      if(count($vals) > 1) {
-        $search_options['associative'] = 1; /** return assoc. array */
-        $assocArrays = [];
-        foreach($vals as $v) { 
 
-          if(!$filter_data)         
-            $assocArrays[] = object_site_search($obj_type, $search, $v, $search_options);
-          else
-            $assocArrays[] = object_site_filter($obj_type, $search, $v, $search_options, $filter_data);
+        $val = trim($obj_data['search']);
+        $filter_data = trim($obj_data['filter']);
+
+        $scope->searchvalue = $val;
+        $_SESSION['searchvalue']=$val; 
+
+        $search_options = $options;
+        if($_GET['filters']) $search_options['filters'] = $_GET['filters'];
+        if($obj_data['id']) $search_options['id'] = $obj_data['id'];
+
+        $vals = explode(' ', $val);
+
+        //$response->total = intVal(count_objects($obj_type, $search));
+
+        // get count and totals
+        $terms = array();
+        $terms[] = "count(*) as total_count";
+        $attributes = get_object_attributes($obj_type, false);
+        foreach($attributes as $field => $attr) {
+            $flags = $attr[ATT_FLAGS];
+            if($flags & AF_TOTAL) {
+                $terms[] = "sum($field) as $field";
+            }
         }
-        
+        $totalRows = find_objects($obj_type, $search, array('fields' => $terms));
+        $totalRow = $totalRows[0];
+        $response->total = $totalRow->total_count + $extra_count;
+        // unset($totalRow->total_count);
+
+        $sums = array();
+        foreach($totalRow as $k => $v) {
+            $sums[$k] = $v;
+        }
         $objs = [];
-        $result = call_user_func_array('array_intersect_key', $assocArrays);
-        foreach($result as $id => $obj) $objs[] = $obj;
-      } else {   
-        if(!$filter_data){
-          $objs = object_site_search($obj_type, $search, $val, $search_options);
-          if(count($objs)>1){
-            $extra_count = $objs[1];
-            $objs = $objs[0];
-          }
-        }else{
-          $objs = object_site_filter($obj_type, $search, $val, $search_options, $filter_data);
+      
+        if(count($vals) > 1) {
+            $search_options['associative'] = 1; /** return assoc. array */
+            $assocArrays = [];
+            foreach($vals as $v) { 
+                if(!$filter_data)         
+                    $assocArrays[] = object_site_search($obj_type, $search, $v, $search_options);
+                else
+                    $assocArrays[] = object_site_filter($obj_type, $search, $v, $search_options, $filter_data);
+            }
+        
+            $objs = [];
+            $result = call_user_func_array('array_intersect_key', $assocArrays);
+            foreach($result as $id => $obj) $objs[] = $obj;
+        }else {   
+            if(!$filter_data){
+                 $limit=$search_options['limit'];
+                $objss = object_site_search($obj_type, $search, $val, $search_options);
+                $search_options['limit']=$response->total;
+                $objsss = object_site_search($obj_type, $search, $val, $search_options);
+                // output headers so that the file is downloaded rather than displayed
+                header('Content-type: text/csv');
+                header('Content-Disposition: attachment; filename="demo.csv"');
+                 
+                // do not cache the file
+                header('Pragma: no-cache');
+                header('Expires: 0');
+                 
+                // create a file pointer connected to the output stream
+                $file = fopen('/web/sites/afr-lib/include/test.csv', 'w');
+                 
+                // send the column headers
+                fputcsv($file, array('S.No', 'Title', 'Sequence', 'Type', 'Start Date'));
+                 
+                // Sample data. This can be fetched from mysql too
+                $data = array(
+                array('Data 11', 'Data 12', 'Data 13', 'Data 14', 'Data 15'),
+                array('Data 21', 'Data 22', 'Data 23', 'Data 24', 'Data 25'),
+                array('Data 31', 'Data 32', 'Data 33', 'Data 34', 'Data 35'),
+                array('Data 41', 'Data 42', 'Data 43', 'Data 44', 'Data 45'),
+                array('Data 51', 'Data 52', 'Data 53', 'Data 54', 'Data 55')
+                );
+                 
+                // output each row of the data
+                foreach ($objsss[0] as $row)
+                {
+                fputcsv($file, $row);
+                }
+                 
+                // exit();
+                if(count($objss)>1){
+                    $extra_count = $objss[1];
+                    $objs = $objss[0];
+                }
+            }else{
+                $objs = object_site_filter($obj_type, $search, $val, $search_options, $filter_data);
+            }
         }
-      }
 
-      if($mode = $obj_data['mode']) {  //TODO need to update the softdelete column using the ids  
-       delete_objects($obj_type,$id); // need to update the softdelete db_object.inc file
-       unset($id);
-      }
-      
-      if($obj_data['return'] == 'rows') { // return array, not object (required when using javascript URL instead of data-url, for some reason */
-        echo(json_encode($objs));exit;
-      }
-      //$response->total = intVal(count_objects($obj_type, $search));
-  
-      // get count and totals
-      $terms = array();
-      $terms[] = "count(*) as total_count";
-      $attributes = get_object_attributes($obj_type, false);
-      foreach($attributes as $field => $attr) {
-        $flags = $attr[ATT_FLAGS];
-        if($flags & AF_TOTAL) {
-          $terms[] = "sum($field) as $field";
+        if($mode = $obj_data['mode']) {  //TODO need to update the softdelete column using the ids  
+            delete_objects($obj_type,$id); // need to update the softdelete db_object.inc file
+            unset($id);
         }
-      }
-      $totalRows = find_objects($obj_type, $search, array('fields' => $terms));
-      $totalRow = $totalRows[0];
-      $response->total = $totalRow->total_count + $extra_count;
-      unset($totalRow->total_count);
       
-      $sums = array();
-      foreach($totalRow as $k => $v) {
-        $sums[$k] = $v;
-      }
-      if(count($sums)) $response->totals = $sums;
+        if($obj_data['return'] == 'rows') { // return array, not object (required when using javascript URL instead of data-url, for some reason */
+            echo(json_encode($objss));exit;
+        }
+     
+        if(count($sums)) $response->totals = $sums;
+        // $search_options['limit']=$response->total;
+        // $objsss = object_site_search($obj_type, $search, $val, $search_options);
+        $response->search_options = $search_options;
+        // $response->objss = count($objsss[0]);
+        // $response->objsss = $objsss;
+        $total_rows=count($objsss[0]);
+        
+        $terms = array();
+        $terms[] = "count(*) as total_count";
+        $attributes = get_object_attributes($obj_type, false);
+        foreach($attributes as $field => $attr) {
+            $flags = $attr[ATT_FLAGS];
+            if($flags & AF_TOTAL) {
+                $terms[] = "sum($field) as $field";
+            }
+        }
+        $totalRows = find_objects($obj_type, $search, array('fields' => $terms));
+        $totalRow = $totalRows[0];
+        $response->total = $totalRow->total_count + $extra_count;
+        unset($totalRow->total_count);
+      
+        $sums = array();
+        foreach($totalRow as $k => $v) {
+            $sums[$k] = $v;
+        }
+        if(count($sums)) $response->totals = $sums;
 
-      $response->rows = $objs;
-      echo(json_encode($response, JSON_PRETTY_PRINT));exit;
+        // $response->rows = $objs;
+        $response->total = ceil(($total_rows+1)/$limit)*$limit;
+
+        $response->rows = $objs;
+        echo(json_encode($response, JSON_PRETTY_PRINT));exit;
       
-      break;
+    break;
+      
 
     case 'get-vault':
       extract($obj_data);
@@ -4475,6 +4562,25 @@
         $authData['user_level'] = $userObj->user_level;
         $authData['display_name'] = $userObj->display_name ?: "{$userObj->first_name} {$userObj->last_name}";
       }
+
+      /** Media Folder Starts -if user has no default Uploads folder. by Jemima on 05-02-2021 */
+
+        $obj_data[type] = "folder";
+        $obj_data[user_id] = $user_id;
+        $obj_data[filename] = "Uploads";
+        $obj_data[rank] = 1;
+        $obj_data[tags] = $obj_data[tags] ? json_encode($obj_data[tags]) : '';
+        $obj_type='media_folder';
+        $get_duplicate = find_objects('media_folder', ['user_id'=>$user_id, 'filename'=>'Uploads']);
+        if(empty($get_duplicate)){
+            list($id, $errors) = add_object($obj_type, $obj_data);
+            $obj = get_object($obj_type, $id);
+            if($obj){
+                $obj->path = "/user/".$user_id."/vault/".$id;
+                list($id1, $errors) = update_object($obj_type, $obj, $id);
+            }
+        }
+    // Media Folder Ends .
       
       list($log_id, $log_errors) = add_object('auth_log', $authData);
 
@@ -6296,17 +6402,21 @@
 
     // takes an object type + a comma separated list of IDS. Sets rank of object in order of id list
     case 'rank_update':
-      $list = $_GET['id_list'];
-      $obj_type = $_GET['obj_type'];
-      if($obj_type && $list) {
-        $response->success = 1;
-        rank_update_list($obj_type, $list);
-        print_log("rank_update {$obj_type} list={$list}", 'media', LOG_LEVEL_TEST);
-      } else {
-        $response->success = 0;
-      }
-      echo(json_encode($response));exit();
-      break;
+        $list = $_GET['id_list'];
+        dump($list);
+        $obj_type = $_GET['obj_type'];
+        if($obj_type && $list) {
+            dump($list);
+            dump($obj_type);
+            $response->success = 1;
+            rank_update_list($obj_type, $list);
+            print_log("rank_update {$obj_type} list={$list}", 'media', LOG_LEVEL_TEST);
+        } else {
+            $response->success = 0;
+        }
+        dump($list);
+        echo(json_encode($response));exit();
+    break;
 
     case 'rank_up':
       $search = $_POST['search'] ?: array();
@@ -6474,148 +6584,159 @@
     */
     
     case 'jq-get-media':
-      if(!$u_id) {
-        $result['success'] = false;
-        $result['files'][0]->error = "Login is required to upload files";
-        $result['reason'] = $error;
-        header("Content-Type: text/plain");
-        echo json_encode($result);exit;
-      }
-      extract($obj_data);
-      $files = [];
-      if($parent_type == 'media_collection_map' && $parent_field == 'map') { // special case
+        if(!$u_id) {
+            $result['success'] = false;
+            $result['files'][0]->error = "Login is required to upload files";
+            $result['reason'] = $error;
+            header("Content-Type: text/plain");
+            echo json_encode($result);exit;
+        }
+        extract($obj_data);
+        $files = [];
+        if($parent_type == 'media_collection_map' && $parent_field == 'map') { 
+        // special case
         //die("gh");
-        $search = ['active' => 1, 'id' => $parent_id];
-        $mapObjs = find_objects('media_collection_map', $search, ['sort' => 'rank']);
-        $files = [];
-        $edit_url = "edit-url";
-        foreach($mapObjs as $mapObj) { // expensive
-          if($mapObj->media_id){
-            $mediaObj = get_object('media', $mapObj->media_id);
-            $mediaObj->media_id = $mapObj->media_id;
-            $mediaObj->map_id = $mediaObj->obj_id = $mapObj->id;
-            $mediaObj->obj_type = 'media_collection_map';
-            $mediaObj->delete_url = "/ajax.php?oper=del_custom&obj_type=media_collection_map&id=".$mapObj->id;
-            //if($mapObj->artwork_id) {
-            //  $file->title = get_object('artwork', $mapObjs->artwork_id, 'title');            
-            //}
-            $mediaObjs[] = $mediaObj; 
-          }
-          
-        }
-      } elseif($parent_type == 'user' && $parent_field == 'map_profile'){
-        $getMedia = find_object('media_collection', ['user_id' => $parent_id, 'active'=>1, 'type'=>150]);
-        $mapObjs = db_getAll("select * from media_collection_map where media_collection_id= '$getMedia->id' OR media_collection_id= '1' AND active= '1' AND user_id= '$parent_id' ");
-        $edit_url = "edit-url";
-        $files = [];
-        foreach($mapObjs as $mapObj) { // expensive
-          $mediaObj = get_object('media', $mapObj->media_id);
-          $mediaObj->media_id = $mapObj->media_id;
-          $mediaObj->map_id = $mediaObj->obj_id = $mapObj->id;
-          $mediaObj->obj_type = 'media_collection_map';
-          $mediaObj->delete_url = "/ajax.php?oper=del&obj_type=media_collection_map&id=".$mapObj->id;
-          $mediaObjs[] = $mediaObj;
-        }
-      }elseif($parent_type == 'exhibition_map' && $parent_field == 'map'){
-        $get_media = find_object('exhibition_map', ['page_id' => $parent_id, 'active'=>1, 'type'=>'single']);
-        $edit_url = "edit-url";
-        $files = [];
-          $mediaObj = get_object('media', $mapObj->title_image);
-          $mediaObj->media_id = $mapObj->title_image;
-          $mediaObj->map_id = $mediaObj->obj_id = $mapObj->id;
-          $mediaObj->obj_type = 'exhibition_map';
-          $mediaObj->delete_url = "/ajax.php?oper=del&obj_type=exhibition_map&id=".$mapObj->id;
-          $mediaObjs[] = $mediaObj;  
+            $search = ['active' => 1, 'id' => $parent_id];
+            $mapObjs = find_objects('media_collection_map', $search, ['sort' => 'rank']);
+            $files = [];
+            $edit_url = "edit-url";
+            foreach($mapObjs as $mapObj) { // expensive
+                if($mapObj->media_id){
+                    $mediaObj = get_object('media', $mapObj->media_id);
+                    $mediaObj->media_id = $mapObj->media_id;
+                    $mediaObj->map_id = $mediaObj->obj_id = $mapObj->id;
+                    $mediaObj->obj_type = 'media_collection_map';
+                    $mediaObj->delete_url = "/ajax.php?oper=del_custom&obj_type=media_collection_map&id=".$mapObj->id;
+                    //if($mapObj->artwork_id) {
+                    //  $file->title = get_object('artwork', $mapObjs->artwork_id, 'title');            
+                    //}
+                    $mediaObjs[] = $mediaObj; 
+                }
+            }
+        }elseif($parent_type == 'user' && $parent_field == 'map_profile'){
 
-      }elseif($parent_type == 'user_profile' && $parent_field == 'photo'){
-        $get_user = get_object('user_profile', $parent_id);
-        if($get_user->photo){
-          $mapObj =get_object('media', $get_user->photo);
-          $files = [];
-          $mediaObj = get_object('media', $mapObj->id);
-          $mediaObj->media_id = $mapObj->id;
-          $mediaObj->map_id = $mediaObj->obj_id = $get_user->id;
-          $mediaObj->obj_type = 'user_profile';
-          $mediaObj->delete_url = "/ajax.php?oper=del_custom&obj_type=user_profile&id=".$parent_id;  
-          $mediaObjs[] = $mediaObj; 
+            $getMedia = find_object('media_collection', ['user_id' => $parent_id, 'active'=>1, 'type'=>150]);
+            $mapObjs = db_getAll("select * from media_collection_map where media_collection_id= '$getMedia->id' OR media_collection_id= '1' AND active= '1' AND user_id= '$parent_id' ORDER by rank");
+            $edit_url = "edit-url";
+            // dump($getMedia);
+            $files = [];
+            // dump(1);
+
+            foreach($mapObjs as $mapObj) { // expensive
+                // dump($mapObj->id);
+
+                $mediaObj = get_object('media', $mapObj->media_id);
+                $mediaObj->media_id = $mapObj->media_id;
+                $mediaObj->map_id = $mediaObj->obj_id = $mapObj->id;
+                $mediaObj->obj_type = 'media_collection_map';
+                $mediaObj->delete_url = "/ajax.php?oper=del&obj_type=media_collection_map&id=".$mapObj->id;
+                $mediaObjs[] = $mediaObj;
+                // dump($mapObj->id);
+
+            }
+        }elseif($parent_type == 'exhibition_map' && $parent_field == 'map'){
+            $get_media = find_object('exhibition_map', ['page_id' => $parent_id, 'active'=>1, 'type'=>'single']);
+            $edit_url = "edit-url";
+            $files = [];
+            $mediaObj = get_object('media', $mapObj->title_image);
+            $mediaObj->media_id = $mapObj->title_image;
+            $mediaObj->map_id = $mediaObj->obj_id = $mapObj->id;
+            $mediaObj->obj_type = 'exhibition_map';
+            $mediaObj->delete_url = "/ajax.php?oper=del&obj_type=exhibition_map&id=".$mapObj->id;
+            $mediaObjs[] = $mediaObj;  
+
+        }elseif($parent_type == 'user_profile' && $parent_field == 'photo'){
+            $get_user = get_object('user_profile', $parent_id);
+            if($get_user->photo){
+                $mapObj =get_object('media', $get_user->photo);
+                $files = [];
+                $mediaObj = get_object('media', $mapObj->id);
+                $mediaObj->media_id = $mapObj->id;
+                $mediaObj->map_id = $mediaObj->obj_id = $get_user->id;
+                $mediaObj->obj_type = 'user_profile';
+                $mediaObj->delete_url = "/ajax.php?oper=del_custom&obj_type=user_profile&id=".$parent_id;  
+                $mediaObjs[] = $mediaObj; 
+            }
+        }elseif($parent_type == 'artwork' && $parent_field == 'title_image'){
+            $artwork = get_object('artwork', $parent_id);
+            if($artwork->title_image){
+                $mapObj = get_object('media', $artwork->title_image);
+                $files = [];
+                $mediaObj = get_object('media', $mapObj->id);
+                $mediaObj->media_id = $mapObj->id;
+                $mediaObj->map_id = $mediaObj->obj_id = $artwork->id;
+                $mediaObj->obj_type = 'artwork';
+                $mediaObj->delete_url = "/ajax.php?oper=del_custom&obj_type=artwork&id=".$parent_id;  
+                $mediaObjs[] = $mediaObj; 
+            }
+        }elseif($parent_type == 'artwork_media' && $parent_field == 'media'){
+            $artwork = get_object('artwork_media', $parent_id);
+            if($artwork->media){
+                $mapObj = get_object('media', $artwork->media);
+                $files = [];
+                $mediaObj = get_object('media', $mapObj->id);
+                $mediaObj->media_id = $mapObj->id;
+                $mediaObj->map_id = $mediaObj->obj_id = $artwork->id;
+                $mediaObj->obj_type = 'artwork_media';
+                $mediaObj->delete_url = "/ajax.php?oper=del_custom&obj_type=artwork_media&id=".$parent_id;  
+                $mediaObjs[] = $mediaObj; 
+            }
+        }elseif($parent_type == 'minisite' && $parent_field == 'logo'){
+            $minisite = get_object('minisite', $parent_id);
+            if($minisite->logo){
+                $mapObj = get_object('media', $minisite->logo);
+                $files = [];
+                $mediaObj = get_object('media', $mapObj->id);
+                $mediaObj->media_id = $mapObj->id;
+                $mediaObj->map_id = $mediaObj->obj_id = $minisite->id;
+                $mediaObj->obj_type = 'minisite';
+                $mediaObj->delete_url = "/ajax.php?oper=del_custom&obj_type=minisite&id=".$parent_id;  
+                $mediaObjs[] = $mediaObj; 
+            }
+        }elseif($parent_type == 'media_collection' && $parent_field == 'title_image'){
+            $collection = get_object('media_collection', $parent_id);
+            if($collection->title_image){
+                $mapObj = get_object('media', $collection->title_image);
+                $files = [];
+                $mediaObj = get_object('media', $mapObj->id);
+                $mediaObj->media_id = $mapObj->id;
+                $mediaObj->map_id = $mediaObj->obj_id = $collection->id;
+                $mediaObj->obj_type = 'media_collection';
+                $mediaObj->delete_url = "/ajax.php?oper=del_custom&obj_type=media_collection&id=".$parent_id;  
+                $mediaObjs[] = $mediaObj; 
+            }
+        }elseif($inline) {
+            $media = get_object($parent_type, $parent_id, $parent_field);
+            $mediaObjs = isJson($media) ? json_decode($media) : explode(',', $media);       
+        }else {
+            $mediaSearch = array('active' => 1, 'parent_type' => $parent_type, 'parent_id' => $parent_id, 'parent_field' => $parent_field);
+            $mediaObjs = find_objects('media', $mediaSearch);
         }
-      }elseif($parent_type == 'artwork' && $parent_field == 'title_image'){
-        $artwork = get_object('artwork', $parent_id);
-        if($artwork->title_image){
-          $mapObj = get_object('media', $artwork->title_image);
-          $files = [];
-          $mediaObj = get_object('media', $mapObj->id);
-          $mediaObj->media_id = $mapObj->id;
-          $mediaObj->map_id = $mediaObj->obj_id = $artwork->id;
-          $mediaObj->obj_type = 'artwork';
-          $mediaObj->delete_url = "/ajax.php?oper=del_custom&obj_type=artwork&id=".$parent_id;  
-          $mediaObjs[] = $mediaObj; 
-        }
-      }elseif($parent_type == 'artwork_media' && $parent_field == 'media'){
-        $artwork = get_object('artwork_media', $parent_id);
-        if($artwork->media){
-          $mapObj = get_object('media', $artwork->media);
-          $files = [];
-          $mediaObj = get_object('media', $mapObj->id);
-          $mediaObj->media_id = $mapObj->id;
-          $mediaObj->map_id = $mediaObj->obj_id = $artwork->id;
-          $mediaObj->obj_type = 'artwork_media';
-          $mediaObj->delete_url = "/ajax.php?oper=del_custom&obj_type=artwork_media&id=".$parent_id;  
-          $mediaObjs[] = $mediaObj; 
-        }
-      }elseif($parent_type == 'minisite' && $parent_field == 'logo'){
-        $minisite = get_object('minisite', $parent_id);
-        if($minisite->logo){
-          $mapObj = get_object('media', $minisite->logo);
-          $files = [];
-          $mediaObj = get_object('media', $mapObj->id);
-          $mediaObj->media_id = $mapObj->id;
-          $mediaObj->map_id = $mediaObj->obj_id = $minisite->id;
-          $mediaObj->obj_type = 'minisite';
-          $mediaObj->delete_url = "/ajax.php?oper=del_custom&obj_type=minisite&id=".$parent_id;  
-          $mediaObjs[] = $mediaObj; 
-        }
-      }elseif($parent_type == 'media_collection' && $parent_field == 'title_image'){
-        $collection = get_object('media_collection', $parent_id);
-        if($collection->title_image){
-          $mapObj = get_object('media', $collection->title_image);
-          $files = [];
-          $mediaObj = get_object('media', $mapObj->id);
-          $mediaObj->media_id = $mapObj->id;
-          $mediaObj->map_id = $mediaObj->obj_id = $collection->id;
-          $mediaObj->obj_type = 'media_collection';
-          $mediaObj->delete_url = "/ajax.php?oper=del_custom&obj_type=media_collection&id=".$parent_id;  
-          $mediaObjs[] = $mediaObj; 
-        }
-      } elseif($inline) {
-        $media = get_object($parent_type, $parent_id, $parent_field);
-        $mediaObjs = isJson($media) ? json_decode($media) : explode(',', $media);       
-      } else {
-        $mediaSearch = array('active' => 1, 'parent_type' => $parent_type, 'parent_id' => $parent_id, 'parent_field' => $parent_field);
-        $mediaObjs = find_objects('media', $mediaSearch);
-      }
-      $fileAr = array();
-      foreach($mediaObjs as $mediaObj) {
-        $url = print_media($mediaObj, array('size' => 'medium', 'source_only' => true));
-        $thumb_size = $mediaObj->resize === 1 ? 'thumb' : ''; 
-        $thumb_url = print_media($mediaObj, array('size' => $thumb_size, 'source_only' => true));
-        $fileEl = array('url' => $url, 'name' => $mediaObj->user_filename, 'size' => $mediaObj->file_size);
-        $fileEl['deleteUrl'] = $mediaObj->delete_url ?: "/ajax.php?oper=del&obj_type=media&id=".$mediaObj->id;
-        $fileEl['deleteType'] = 'DELETE';
-        if($fileEl['editUrl'] = ($edit_url ? "$edit_url&id=".$mediaObj->id : '')) {
-          $fileEl['editTarget'] = $edit_target;
-        }
+        $fileAr = array();
+        foreach($mediaObjs as $mediaObj) {
+            // dump($mapObj->id);
+
+            $url = print_media($mediaObj, array('size' => 'medium', 'source_only' => true));
+            $thumb_size = $mediaObj->resize === 1 ? 'thumb' : ''; 
+            $thumb_url = print_media($mediaObj, array('size' => $thumb_size, 'source_only' => true));
+            $fileEl = array('url' => $url, 'name' => $mediaObj->user_filename, 'size' => $mediaObj->file_size);
+            $fileEl['deleteUrl'] = $mediaObj->delete_url ?: "/ajax.php?oper=del&obj_type=media&id=".$mediaObj->id;
+            $fileEl['deleteType'] = 'DELETE';
+            if($fileEl['editUrl'] = ($edit_url ? "$edit_url&id=".$mediaObj->id : '')) {
+                $fileEl['editTarget'] = $edit_target;
+            }
         
-        if($thumb_url) $fileEl['thumbnailUrl'] = $thumb_url;
-        $fileEl['title'] = $mediaObj->name ?: $fileEl['name'];
-        $fileEl['type'] = $mediaObj->type;
-        $fileEl['obj_type'] = $mediaObj->obj_type ?: 'media';
-        $fileEl['obj_id'] = $mediaObj->obj_id ?: $mediaObj->id;
-        $fileAr[] = (object) $fileEl;
-      }
-      $json->files = $fileAr;
-      echo(json_encode($json));exit;
-      break;
+            if($thumb_url) $fileEl['thumbnailUrl'] = $thumb_url;
+            $fileEl['title'] = $mediaObj->name ?: $fileEl['name'];
+            $fileEl['type'] = $mediaObj->type;
+            $fileEl['obj_type'] = $mediaObj->obj_type ?: 'media';
+            $fileEl['obj_id'] = $mediaObj->obj_id ?: $mediaObj->id;
+            $fileAr[] = (object) $fileEl;
+        }
+        $json->files = $fileAr;
+            // dump($json->files);
+        echo(json_encode($json));exit;
+    break;
       
     case 'jq-file-upload': // latest file upload using jquery-file-upload
       header("Content-Type: text/plain");

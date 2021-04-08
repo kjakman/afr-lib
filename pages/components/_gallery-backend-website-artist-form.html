@@ -1,0 +1,258 @@
+
+      {$artists = $scope.viewartist}
+      {$artwork = $scope.artwork}
+      {$artist_id = $artwork.artist_id|default:$scope.artist_id}
+
+      {$minisitepage = $scope.minisitepage}
+      {$obj_id = $scope.page_id}
+
+      {{"include": "_gallery-backend-website-subtab.html"}}
+
+      <form class="ajax-submit" data-handler="save-minisite-page"> 
+        <input hidden="1" name="minisite_id" type="hidden" value="{$minisite.id|default:$id}">
+        <input hidden="1" name="obj_id" type="hidden" value="{$obj_id}">
+        <input hidden="1" name="user_id" type="hidden" value="{$minisite.user_id}">
+        <input hidden="1" name="obj_type" type="hidden" value="minisite_page">  
+
+        <div class="form-group">
+          <div class="row mt20">
+            <div class="form-group col-sm-8">
+              <label for="menu-title" class="control-label">Menu Title</label>
+              <input type="text" class="form-control" maxlength="15" name="menu_title" value="{$minisitepage.menu_title}">
+            </div>
+            <div class="form-group col-sm-8">
+              <label for="page-title">Page Title<span class="optional">(Optional)</span></label>
+              <input type="text" class="form-control" maxlength="60" name="page_title" value="{$minisitepage.page_title}">
+            </div>
+            <div class="form-group col-sm-8">
+              <input type="submit" class="btn btn-success ajax-submit" value="Save" >
+            </div>
+          </div>  
+        </div>
+      </form>
+        
+      <!-- Primary artist -->
+        {$artist_ids_json = $artwork.artist_ids}
+        {$artist_ids = $artist_ids_json|@json_decode}
+        {if (!$artist_ids)}  
+         {$artist_ids = [$artist_id]}
+        {/if}
+
+      <form class="ajax-submit" data-handler="save-minisite-artist" data-success_handler="gbe_website_handler"> 
+        <input hidden="1" name="page_id" type="hidden" value="{$page_id}">
+        <input hidden="1" name="user_id" type="hidden" value="{$minisite.user_id}">
+        <input hidden="1" name="obj_type" type="hidden" value="minisite_page">
+        <input hidden="1" name="next_tab" type="hidden" value="page"> 
+        <div class="row">
+          <label style="padding-left: 20px;">Primary Artist<span class="optional">(Optional)</span></label>
+          <input type="hidden" readonly class="form-control" name="artist_ids" id="artist_ids" value="{$artist_ids_json}"><br>
+          <div class="form-group col-xs-6">
+            <ul id="artistTags" >
+            {foreach from=$artist_ids item=$artist_id}
+              <li>{$artist_id|display_name}|{$artist_id}</li>
+            {/foreach}  
+            </ul>
+          </div>
+          <input type="submit" class="btn btn-success ajax-submit" value="Add Artist to Primary List" id= 'show_web'>
+        </div>            
+      </form>
+      <div class="row">
+        <div class="form-group col-xs-10">
+          {$rows = []}
+          {$rows[] = ["Name", "Created", "Age", "City", "Country","Action"]}
+          {foreach from=$artists item=artist key=val}
+            {$rows[] = [$artist.display_name, $artist.created, $artist.age, $artist.city, $artist.country, "<a href='/backend/profile/{$artist.id}/edit?_pv=viewartistpage&site_id={$minisite.id|default:$id}&page_id={$page_id}&user_id={$minisite.user_id}' class='ajax-loader' data-target='#subview-container'><button  class='btn btn-xs btn-success'> <i class='glyphicon glyphicon-pencil'></i></button></a>
+            <button id='soft_delete' class='btn btn-xs btn-danger delete' data-value='{$artist.id}' data-primary='1' data-page = '{$page_id}'> <i class='glyphicon glyphicon-trash'></i></button>"]}                   
+          {/foreach}  
+          <label>List Of Primary Artists</label>
+          {$rows|table:["class" => "table table-bordered"]}                                        
+        </div>
+      </div> 
+
+      <!-- Secondary artists -->
+        {$artists1 = $scope.viewartist1}
+        {$artwork1 = $scope.artwork}
+        {$artist_id1 = $artwork1.artist_id}
+
+        {$artist_ids_json1 = $artwork1.artist_ids}
+        {$artist_ids1 = $artist_ids_json1|@json_decode}
+        {if (!$artist_ids1)}  
+         {$artist_ids1 = [$artist_id1]}
+        {/if}
+      <div style="padding-left: 20px; font-size: 16px;">
+        <span >If you need to, you can add secondary list of artists below (for example artists you represented in the past, or artists you have projects with) - this is an option(NOT REQUIRED)</span>
+      </div>
+      
+      <form class="ajax-submit" data-handler="save-minisite-page"> 
+        <input hidden="1" name="minisite_id" type="hidden" value="{$minisite.id|default:$id}">
+        <input hidden="1" name="obj_id" type="hidden" value="{$obj_id}">
+        <input hidden="1" name="user_id" type="hidden" value="{$minisite.user_id}">
+        <input hidden="1" name="obj_type" type="hidden" value="minisite_page">  
+
+        <div class="row mt20">
+          <div class="form-group col-sm-8">
+            <label for="menu-title">Title: List of Secondary Artists</label>
+            <input type="text" class="form-control" maxlength="60" name="secondary_title" value="{$minisitepage.secondary_title}">
+          </div>
+          <div class="form-group col-sm-8">
+            <input type="submit" class="btn btn-success ajax-submit" value="Add Title" >
+          </div>
+        </div>  
+      </form>
+
+      <form class="ajax-submit" data-handler="save-minisite-artist" data-success_handler="gbe_website_handler"> 
+        <input hidden="1" name="page_id" type="hidden" value="{$page_id}">
+        <input hidden="1" name="user_id" type="hidden" value="{$minisite.user_id}">
+        <input hidden="1" name="obj_type" type="hidden" value="minisite_page">
+        <input hidden="1" name="next_tab" type="hidden" value="page"> 
+        <div class="row mt20">
+          <label style="padding-left: 20px;">Secondary Artist<span class="optional">(Optional)</span></label>
+          <input type="hidden" readonly class="form-control" name="artist_ids1" id="artist_ids1" value="{$artist_ids_json1}"><br>
+          <div class="form-group col-xs-6">
+            <ul id="artistTags1" >
+            {foreach from=$artist_ids1 item=$artist_id1}
+              <li>{$artist_id1|display_name}|{$artist_id1}</li>
+            {/foreach}  
+            </ul>
+          </div>
+          <input type="submit" class="btn btn-success ajax-submit" value="Add Artist to Secondary List" id= 'show_web1'>
+        </div>            
+      </form>
+      <div class="row">
+        <div class="form-group col-xs-10">
+          {$rows = []}
+          {$rows[] = ["Name", "Created", "Age", "City", "Country","Action"]}
+          {foreach from=$artists1 item=artist key=val}
+            {$rows[] = [$artist.display_name, $artist.created, $artist.age, $artist.city, $artist.country, "<a href='/backend/profile/{$artist.id}/edit?_pv=viewartistpage&site_id={$minisite.id|default:$id}&page_id={$page_id}&user_id={$minisite.user_id}' class='ajax-loader' data-target='#subview-container'><button  class='btn btn-xs btn-success'> <i class='glyphicon glyphicon-pencil'></i></button></a>
+            <button id='soft_delete' class='btn btn-xs btn-danger delete' data-value='{$artist.id}' data-page = '{$page_id}' data-primary='0'> <i class='glyphicon glyphicon-trash'></i></button>"]}                   
+          {/foreach}                                            
+          <label>List Of Secondary Artists</label>
+          {$rows|table:["class" => "table table-bordered"]}                                        
+        </div>
+      </div> 
+
+      
+<script>
+  $(function() {
+    console.log( "ready!" );
+    if($("#artistTags").length) gbe_artists_tagit();
+     gbe_artists_tagit1();    
+  });
+
+  $(document).on("click",'#soft_delete',function() {
+    $(this).closest("tr").remove();
+  });
+
+  $('#show_web').click(function() {
+     setTimeout(function() { 
+      $("#gbe_artist_link").trigger('click');
+    }, 1000);
+  });
+
+  $('#show_web1').click(function() {
+     setTimeout(function() { 
+      $("#gbe_artist_link").trigger('click');
+    }, 1000);
+  });
+
+  function gbe_artists_tagit1() {
+    console.log("gbe_artists_tagit1");
+    $("#artistTags1").tagit({
+      allowSpaces: true,
+      placeholderText: "Type artist name",
+      allowDuplicates: false,
+      //singleField: true,
+      //singleFieldNode: $("#artist_ids"),
+      autocomplete: { 
+        delay: 0, 
+        minLength: 2,
+        source: function( request, response ) {
+        $.ajax({
+          url: "/ajax.php",
+          dataType: "json",
+          data: {
+            oper: "find-artists",
+            limit: 12,
+            val: request.term
+          },
+          success: function( result ) {
+            if(result.success) {
+              console.log("OK, data:", result);
+              response( $.map( result.data, function( item ) {
+                var name = (item.display_name ? item.display_name : (item.first_name + ' ' + item.last_name));
+                return {
+                  label: name, // + ", " + item.city,
+                  value: name + '|' + item.user_id
+                  //value: (item.display_name ? item.display_name : (item.first_name + ' ' + item.last_name)) 
+                }
+              }));
+            } else {
+              alert("error:" + result.error);
+            }
+          }
+        });
+      },
+      minLength: 2,            
+    },
+    //preprocessTag: function(val) {
+    //  // do something special
+    //  var $tag = $(ui.tag);
+    //  var $span = $tag.find('span');
+    //  var $text = $span.html();
+    //  var ar = $text.split('|');
+    //  $span.html(ar[0]);
+    //  $tag.data('id', ar[1]);
+    //  console.log("Added tag id='" + ar[1] + "' name=" + ar[0]);
+    //},
+    beforeTagAdded: function(event, ui) {
+      var $tag = $(ui.tag);
+      var $span = $tag.find('span');
+      var text = $span.html();
+      var ar = text.split('|');
+      var name = ar[0];
+      var id = parseInt(ar[1]);
+      console.log('adding tag text=' + text);
+      
+      //if(id && ar.length < 2) return true; // not from form
+      
+      if(!id) {
+        var infix_list = ["de van der","uijt te de","van van de","voor in 't","de die le","onder den","onder het","uit te de","van de l’","voor in t","boven d’","onder 't","onder de","over den","over het","uijt den","uijt ten","van de l","voor den","aan den","aan der","aan het","auf dem","auf den","auf der","auf ter","aus dem","aus den","aus der","bij den","bij het","boven d","onder t","over 't","over de","uijt 't","uijt de","uit den","uit het","uit ten","van den","van der","van gen","van het","van ter","von dem","von den","von der","voor 't","voor de","vor der","aan 't","aan de","aus 'm","bij 't","bij de","de die","de las","die le","in den","in der","in het","op den","op der","op gen","op het","op ten","over t","uit 't","uit de","van 't","van de","van la","von 't","aan t","am de","aus m","bij t","dalla","de l’","de la","de le","degli","della","in 't","in de","onder","op 't","op de","uit t","unter","van t","von t","dal’","de l","deca","in t","op t","over","thoe","thor","uijt","voor","aan","auf","aus","ben","bij","bin","dal","das","dei","del","den","der","des","don","dos","het","las","les","los","ten","ter","tho","toe","tot","uit","van","ver","vom","von","vor","zum","zur","'s","'t","af","al","am","d’","da","de","di","do","du","el","im","in","l’","la","le","lo","of","op","s’","te","to","zu","a","d","i","l","s","t"];
+        var len = infix_list.length;
+        var infix;              
+        for (var i = 0; i < len; i++) {
+          infix = infix_list[i];
+          if(name.indexOf(" " + infix + " ") > -1) {
+            $("#af_infix").val(infix.toLowerCase());
+            name = name.replace(" " + infix, '');
+            break;
+          }
+        }
+        var names = name.split(' ');
+        var last = names.pop();              
+        $("#af_last_name").val(last);
+        $("#af_first_name").val(names.join(' '));              
+        $("#newArtist").trigger('click');
+        return false;
+      }
+      
+      $span.html(name);
+      $tag.data('id', id);
+      console.log("Added tag id='" + id + "' name=" + name);
+      var ids = $("#artist_ids1").val() ? $.parseJSON($("#artist_ids1").val()) : [];
+      if($.inArray(id, ids) == -1) ids.push(id);
+      $("#artist_ids1").val(JSON.stringify(ids));
+    },
+    beforeTagRemoved: function(event, ui) {
+      var $tag = $(ui.tag);
+      // do something special
+      var id = parseInt($tag.data('id'));
+      console.log("Removed id=" + id);
+      var ids = $("#artist_ids1").val() ? $.parseJSON($("#artist_ids1").val()) : [];
+      var index = ids.indexOf(id);
+      if (index > -1) ids.splice(index, 1);
+      $("#artist_ids1").val(JSON.stringify(ids));
+    }  
+    });
+  }
+</script>
+      

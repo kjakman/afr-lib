@@ -1,0 +1,946 @@
+{$list_view = 1}
+{{"extend": "_gallery-backend-base.html"}}
+{$page_id = $scope.page_id}
+{$user_id = $scope.user_id}
+{$folders = $scope.folderlist}
+
+{block name="table"}
+  <div id="toolbar" class="">
+    {if ((0 && !$scope.add_to) || (0 && !$scope.add_to_profile))}
+    <a class="btn btn-primary" href="/backend/artworks/add">
+      <i class="fa fa-plus"></i> Add
+    </a>
+    {/if}
+    {if (0 && !$scope.add_to_website)}
+    <a class="btn btn-primary" href="/backend/exhibitions/add">
+      <i class="fa fa-plus"></i> Add
+    </a>
+    {/if}
+    {if ((0 && !$scope.add_to_folder) || (0 && !$scope.add_to_logo))}
+    <a class="btn btn-primary" href="/backend/vaults/add">
+      <i class="fa fa-plus"></i> Add
+    </a>
+    {/if}
+    <button id="remove" class="btn btn-danger collapse">
+      <i class="glyphicon glyphicon-remove"></i> Delete
+    </button>
+    <div class="dropdown inline-block">
+      <button id="selection" class="btn btn-success dropdown-toggle collapse" type="button" data-toggle="dropdown">
+        Selected (<span id="sel_count">0</span>) <i class="fa fa-caret-down"></i>
+      </button>
+      <ul class="dropdown-menu">
+        {if ($add_to)}
+          <li><a href="#" id="sel_add" data-target_id="{$add_to}">Add to exhibition</a></li>
+        {elseif ($add_to_profile)}
+          <li><a href="#" id="sel_add_profile" data-target_id="{$add_to_profile}">Add to profile</a></li>
+        {elseif ($add_to_profile1)}
+          <li><a href="#" id="sel_add_profile1" data-target_id="{$add_to_profile1}">Add to profile</a></li>
+        {elseif ($add_to_website)}
+          <li><a href="#" id="sel_add_website" data-page = "{$page_id}" data-user = "{$user_id}" data-target_id="{$add_to_website}">Add to Page</a></li>
+        {elseif ($add_to_manualexb)}
+          <li><a href="#" id="sel_add_manualexb" data-page = "{$page_id}" data-user = "{$user_id}" data-target_id="{$add_to_manualexb}">Add to Page</a></li>
+        {elseif ($add_to_logo)}
+          <li><a href="#" id="sel_add_logo" data-target_id="{$add_to_logo}">Add to Profile</a></li>
+        {elseif ($add_to_logo1)}
+          <li><a href="#" id="sel_add_logo1" data-target_id="{$add_to_logo1}">Add to Profile</a></li>
+        {elseif ($add_to_artworkimg)}
+          <li><a href="#" id="sel_add_artwork" data-target_id="{$add_to_artworkimg}">Add to Artwork</a></li>
+        {elseif ($add_to_relatedart)}
+          <li><a href="#" id="sel_add_relatedart" data-target_id="{$add_to_relatedart}">Add to Artwork</a></li>
+        {elseif ($add_to_websiteimg)}
+          <li><a href="#" id="sel_add_websiteimg" data-target_id="{$add_to_websiteimg}">Add to website</a></li>
+        {elseif ($add_to_exbart)}
+          <li><a href="#" id="sel_add_exbart" data-target_id="{$add_to_exbart}">Add to exhibition</a></li>
+        {elseif ($add_to_exbtitle)}
+          <li><a href="#" id="sel_add_exbtitle" data-target_id="{$add_to_exbtitle}">Add to exhibition</a></li>
+        {elseif (($add_to_folder) && ($folders))}
+          {foreach from=$folders item=folder}
+            <li><a href="#" id="sel_add_folder" data-page = "{$page_id}" data-user = "{$user_id}" data-target_id="{$folder.id}">Add to {$folder.filename}</a></li>
+          {/foreach}
+        {else}
+          <li><a href="#" id="sel_add" data-target_id="{$add_to}">Add to ...</a></li>
+        {/if}
+        <li><a href="#" id="sel_show">Show</a></li>
+        <li><a href="#" id="sel_clear">Clear</a></li>
+        <!-- <li><a href="#" id="sel_del">Delete</a></li> -->
+        <li><a href="#" id="sel_del" data-toggle="modal" data-target="#del_modals">Delete</a></li> 
+      </ul>            
+    </div>
+  </div> 
+  
+  <table class="table" id="table"
+     data-toggle="table" 
+     data-url="{$scope.list_url}" 
+     data-cache="false" 
+     data-pagination="true"
+     data-striped="true"
+     data-side-pagination="server"             
+     data-page-list="[5, 10, 20, 50, 100, 200, ALL]"
+     data-page-size="10"
+
+     data-search="true"
+     data-toolbar="#toolbar"     
+     data-show-refresh="true"
+     data-show-toggle="true"
+     
+     data-show-columns="true"
+     data-show-export="true"
+     data-detail-view="false"
+     data-detail-formatter="detailFormatter"
+     data-show-pagination-switch="true"
+     data-filter-control="true" 
+  >
+     
+    <thead>     
+      <tr class="input-daterange">
+      {block name="fields"}{/block}       
+      </tr>
+    </thead>
+
+  </table>
+  
+  <script>
+  
+  function bstIDFormatter(value, row, index) {
+    if(!value) return '';
+    var print_val = value;
+    var base_link = '{$base_link}';
+    var link_class = pv ? 'ajax-loader' : '';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    return '<a href="{$base_link}/'+ value + '?_pv='+ pv +'" class="' + link_class + '" data-target="#subview-container">' + print_val + '</a>';
+  }
+
+  function bstUrlFormatter(value, row, index) {
+    if(!value) return '';
+    var print_val = value;
+   // var base_link = '{$base_link}';
+   // var link_class = 'ajax-loader';
+
+    var base_link = row.obj_type == 'media' ? '/backend/medium' : '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+   // return '<a href="' + base_link + '/' + row.id + '/edit?_pv=' + pv + '" data-target="#subview-container" id="url" name="url" data-value='+row.id+'>' + print_val + '</a>';
+    return '<a style="color:#ed8323;" href="' + base_link + '/' + row.id + '/edit?_pv=' + pv + '" class="text-danger ' + link_class + '" data-target="#subview-container">' + print_val + '</a>';
+    //return '<span type="hidden" class="url" name="url" data-col="url" data-value='+row.id+' >'+value+'</span>';
+  }
+
+  function bstDomainFormatter(value, row, index) {
+    if(!value) return '';
+    var print_val = value;
+    var base_link = '{$base_link}';
+    var link_class = 'ajax-loader';
+    return '<a href="{$base_link}/'+ row.id + '?_pv=1&domain=1" class="' + link_class + '" data-target="#subview-container">' + print_val + '</a>';
+  }
+
+  function bstwebDomainFormatter(value, row, index) {
+    if(!value) return '';
+    
+    var base_link = '{$base_link}';
+    var link_class = 'ajax-loader';
+    if(value == 1) print_val = "ON";
+    else print_val = "OFF";
+    return print_val;
+  }
+
+  function bstMediaFormatter(value, row, index) {
+    if(!value) return '';
+    var thumb = row.path + 'tiny/' + row.src;
+    var print_val = "<img class='table-thumb' src='" + thumb + "'/>";
+    return '<a href="{$base_link}/'+ value + '?_pv=1" class="ajax-loader" data-target="#subview-container">' + print_val + '</a>';
+  }
+
+  function bstVaultIDFormatter(value, row, index) {
+    if(!value) return '';
+    var print_val = value;
+    var base_link = row.obj_type == 'media' ? '/backend/medium' : '{$base_link}';
+    return '<a href="' + base_link + '/' + value + '?_pv=1" class="ajax-loader" data-target="#subview-container">' + print_val + '</a>';
+  }
+
+  function bstTitleArtistFormatter(value, row, index) {
+    var print_val = value ? value : "[Untitled]";
+    var base_link = row.obj_type == 'media' ? '/backend/medium' : '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    // console.log("base_link = " + base_link + " pv=" + pv);
+    //return '<a href="' + base_link + '/' + row.id + '?_pv=' + pv + '" class="' + link_class + '" data-target="#subview-container">' + print_val + '</a>';
+    return '<span><span type="hidden" class="edit" name="edit" data-col="title" data-value='+row.id+' >'+value+'</span></span>';
+  }
+
+  function bstTitleFormatter(value, row, index) {
+    var print_val = value ? value : "[Untitled]";
+    var base_link = row.obj_type == 'media' ? '/backend/medium' : '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    // console.log("base_link = " + base_link + " pv=" + pv);
+    //return '<a href="' + base_link + '/' + row.id + '?_pv=' + pv + '" class="' + link_class + '" data-target="#subview-container">' + print_val + '</a>';
+    return '<span><span type="hidden" class="edit_exhibition" name="edit_exhibition" data-col="title" data-value='+row.id+' >'+value+'</span></span>';
+  
+  }
+
+  function bstVaultTitleFormatter(value, row, index) {
+    if((row.type == 'folder') && ('{$get_str}')){
+      var print_val = value ? '<a href="/backend/vaults/'+ row.id + '?_pv=1&{$get_str} " class="ajax-loader" data-target="#subview-container">' +value+ '</a>' : "[Untitled]";
+    }
+    else if(row.type == 'folder')
+      var print_val = value ? '<a href="/backend/vaults/'+ row.id + '?_pv=1" class="ajax-loader" data-target="#subview-container">' +value+ '</a>' : "[Untitled]";
+    else
+      var print_val = value ? value : "[Untitled]";
+    var base_link = row.obj_type == 'media' ? '/backend/medium' : '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    // console.log("base_link = " + base_link + " pv=" + pv);
+    return  print_val;
+    //return '<span><span type="hidden" class="edit_exhibition" name="edit_exhibition" data-col="title" data-value='+row.id+' >'+value+'</span></span>';
+  }
+
+  function bstVaultTagsFormatter(value, row, index) {
+    var print_val = value ? JSON.parse(value) : "";
+    var base_link = row.obj_type == 'media' ? '/backend/vaults' : '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    // console.log("base_link = " + base_link + " pv=" + pv);
+    
+    return  print_val;
+    //return '<span><span type="hidden" class="edit_exhibition" name="edit_exhibition" data-col="title" data-value='+row.id+' >'+value+'</span></span>';
+  }
+
+  function bstTitleNetworkFormatter(value, row, index) {
+    var print_val = value ? value : "[Untitled]";
+    var base_link = row.obj_type == 'media' ? '/backend/medium' : '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    // console.log("base_link = " + base_link + " pv=" + pv);
+    return '<a href="' + base_link + '/' + row.id + '?_pv=' + pv + '" class="' + link_class + '" data-target="#subview-container">' + print_val + '</a>';
+    //return '<span type="hidden" class="edit_exhibition" name="edit_exhibition" data-col="title" data-value='+row.id+' >'+value+'</span>';
+  
+  }
+
+  function bstPriceFormatter(value, row, index) {
+    var print_val = value ? value : "[Untitled]";
+    var base_link = row.obj_type == 'media' ? '/backend/medium' : '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    // console.log("base_link = " + base_link + " pv=" + pv);
+   return '<span><span type="hidden" class="edit" name="edit" data-col="price" data-value='+row.id+' >'+value+'</span></span>';
+  }
+
+  function bstYearFormatter(value, row, index) {
+    var print_val = value ? value : "[Untitled]";
+    var base_link = row.obj_type == 'media' ? '/backend/medium' : '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    // console.log("base_link = " + base_link + " pv=" + pv);
+   return '<span><span type="hidden" class="edit" name="edit" data-col="primary_year" data-value='+row.id+' >'+value+'</span></span>';
+  }
+
+  function bstHeightFormatter(value, row, index) {
+    var print_val = value ? value : "[Untitled]";
+    var base_link = row.obj_type == 'media' ? '/backend/medium' : '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    // console.log("base_link = " + base_link + " pv=" + pv);
+    if(row.type == '50'){
+      var value = 'N/A';
+      return '<span><span type="hidden" class="edit" name="edit" data-col="height" data-value='+row.id+' style="cursor: default;" >'+value+'</span></span>';
+    }else{
+      return '<span><span type="hidden" class="edit" name="edit" data-col="height" data-value='+row.id+' >'+value+'</span></span>';
+    }
+   
+  }
+
+  function bstWidthFormatter(value, row, index) {
+    var print_val = value ? value : "[Untitled]";
+    var base_link = row.obj_type == 'media' ? '/backend/medium' : '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    // console.log("base_link = " + base_link + " pv=" + pv);
+    if(row.type == '50'){
+      var value = 'N/A';
+      return '<span><span type="hidden" class="edit" name="edit" data-col="width" data-value='+row.id+' style="cursor: default;" >'+value+'</span></span>';
+    }else{
+      return '<span><span type="hidden" class="edit" name="edit" data-col="width" data-value='+row.id+' >'+value+'</span></span>';
+    }
+    
+  }
+
+  function bstTechniqueFormatter(value, row, index) {
+    var print_val = value ? value : "[Untitled]";
+    var base_link = row.obj_type == 'media' ? '/backend/medium' : '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    // console.log("base_link = " + base_link + " pv=" + pv);
+   return '<span type="hidden" class="edit" name="edit" data-col="technique" data-value='+row.id+' >'+value+'</span>';
+  }
+
+  function bstDateFormatter(value, row, index) {
+  if(!row.created) return '';
+  return '<span class="create" name="create" data-col="create" data-value='+row.id+' style="cursor: default;" >'+sql2human_short(row.created)+'</span>';
+  }
+
+  /*function exhibitionSequence(value, row, index) {
+  if(!row.created) return '';
+  return '<span class="create" name="create" data-col="create" data-value='+row.id+' style="cursor: default;" >'+sql2human_short(row.exhibition_sequence)+'</span>';
+  }*/
+
+function bstArtistFormatter(value, row, index) {
+  if(!value) return '';
+  return '<span class="artist" name="artist" data-col="artist" data-value='+row.id+' style="cursor: default;" >'+g_artists[value]+'</span>';
+}
+
+function bstPriceOptionFormatter(value, row, index) { 
+  var print_val = value ? value : "[Untitled]";
+  var base_link = row.obj_type == 'media' ? '/backend/medium' : '{$base_link}';
+  var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+  var link_class = pv ? 'ajax-loader' : '';
+  // console.log("base_link = " + base_link + " pv=" + pv);
+    if(value==0){
+      return '<select id= "select'+row.id+'" class="select'+row.id+' form-control" onchange="check_price('+row.id+');"><option>Select</option><option id= "option" value="1">Show price</option><option  id= "option" value="0" selected>Hide price</option><option  id= "option" value="-1">Price on enquiry</option></select>';
+    }else if(value==1){
+      return '<select id= "select'+row.id+'" class="select'+row.id+' form-control" onchange="check_price('+row.id+');"><option>Select</option><option id= "option" value="1" selected>Show price</option><option  id= "option" value="0">Hide price</option><option  id= "option" value="-1">Price on enquiry</option></select>';
+    }else{
+      return '<select id= "select'+row.id+'" class="select'+row.id+' form-control" onchange="check_price('+row.id+');"><option>Select</option><option id= "option" value="1">Show price</option><option  id= "option" value="0">Hide price</option><option  id= "option" value="-1" >Price on enquiry</option></select>';
+    } 
+     
+}  
+
+
+    function check_price(id){
+      //var value1 = $(this).val();
+      //value1 = value1.replace('shows','');
+     // var value1 = $(this).parent().prop('id');
+      var value = $('#select'+id).val();
+      //alert(value1);
+      var obj_type= "artwork";
+      var col = $('#phide').data('col');
+      $('.select'+id).show(value);
+      $.ajax({ url: "/ajax.php?obj_type=" + obj_type,
+        type: "POST",
+        data: {
+          type : "artwork",
+          col: 'price_option',
+          data : value,
+          id : id,
+          oper : "edit",
+        },
+        success:function(response_data_json) {
+          //alert(data);
+          /*var value2='Hide Price';
+          $('#shows'+value1).hide();
+          if(value==0)       value2="Hide Price";
+          if(value==1)       value2="Show Price";
+          if(value==-1)       value2="Price on enquiry";
+          $('.phide'+value1).text(value2);
+          $('.phide'+value1).show();*/
+        }
+      });    
+    }
+
+  //moved from afr_gallery_backend.js (added feature- change cursor pointer)
+
+function bstArtworkTypeFormatter(value, row, index) {
+  switch(parseInt(row.type)) {
+    case 10: return '<span style="cursor: default">Photography</span>';
+    case 11: return '<span style="cursor: default">Print</span>';
+    case 20: return '<span style="cursor: default">Painting</span>';
+    case 21: return '<span style="cursor: default">Drawing</span>';
+    case 22: return '<span style="cursor: default">Mixed Media on paper/canvas</span>';
+    case 30: return '<span style="cursor: default">Sculpture</span>';
+    case 40: return '<span style="cursor: default">Cast (Bronze, etc)</span>';
+    case 50: return '<span style="cursor: default">Film & Video</span>';
+    case 60: return '<span style="cursor: default">Installation</span>';
+    case 70: return '<span style="cursor: default">Performance</span>';
+    case 99: return '<span style="cursor: default">Other</span>';
+    default: return '';
+  }      
+}
+
+function bstPublishedFormatter(value, row, index) { 
+
+    var print_val = value ? value : "[Untitled]";
+    var base_link = row.obj_type == 'media' ? '/backend/medium' : '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    //console.log("base_link = " + base_link + " pv=" + pv);
+    //alert("base_link = " + base_link + " pv=" + pv);
+    if(value==0){
+      return '<select id= "select1'+row.id+'" class="select1'+row.id+' form-control" onchange="check_published('+row.id+')"><option>Select</option><option id= "option" value="0" selected>OFF</option><option  id= "option" value="1">ON</option></select>';
+    }else if(value==1){
+      return '<select id= "select1'+row.id+'" class="select1'+row.id+' form-control" onchange="check_published('+row.id+')"><option>Select</option><option id= "option" value="0">OFF</option><option  id= "option" value="1" selected>ON</option></select>';
+    }else{
+      return '<select id= "select1'+row.id+'" class="select1'+row.id+' form-control" onchange="check_published('+row.id+')"><option>Select</option><option id= "option" value="0">OFF</option><option  id= "option" value="1">ON</option></select>';
+    }  
+}
+
+
+function check_published(id) { 
+
+      var obj_data = $(this).text();
+      var value1 = id;
+      var value = $('#select1'+id).val();
+      var obj_type= "media_collection";
+      $('.select1'+value1).show(value);
+      $.ajax({ url: "/ajax.php?obj_type=" + obj_type,
+        type: "POST",
+        data: {
+          type : "media_collection",
+          id : value1,
+          col: "active",
+          data : value,
+          oper : "edit",
+        },
+        success:function(response_data_json) {
+
+       }
+   });                
+}
+
+function bstArtworkStatusFormatter(value, row, index) { 
+
+    var print_val = value ? value : "[Untitled]";
+    var base_link = row.obj_type == 'media' ? '/backend/medium' : '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    // console.log("base_link = " + base_link + " pv=" + pv);
+
+    if(value==10){
+      return '<select id= "select1'+row.id+'" class="select1'+row.id+' form-control" onchange="check_status('+row.id+');"><option>Select</option><option id= "option" value="10" selected>Available</option><option  id= "option" value="20">Reserved</option><option  id= "option" value="30">Sold</option><option  id= "option" value="40">Inactive</option><option  id= "option" value="50">On loan, etc.</option></select>';
+    }else if(value==20){
+      return '<select id= "select1'+row.id+'" class="select1'+row.id+' form-control" onchange="check_status('+row.id+');"><option>Select</option><option id= "option" value="10">Available</option><option  id= "option" value="20" selected>Reserved</option><option  id= "option" value="30">Sold</option><option  id= "option" value="40">Inactive</option><option  id= "option" value="50">On loan, etc.</option></select>';
+    }else if(value==30){
+      return '<select id= "select1'+row.id+'" class="select1'+row.id+' form-control" onchange="check_status('+row.id+');"><option>Select</option><option id= "option" value="10">Available</option><option  id= "option" value="20">Reserved</option><option  id= "option" value="30" selected>Sold</option><option  id= "option" value="40">Inactive</option><option  id= "option" value="50">On loan, etc.</option></select>';
+    }else if(value==40){
+      return '<select id= "select1'+row.id+'" class="select1'+row.id+' form-control" onchange="check_status('+row.id+');"><option>Select</option><option id= "option" value="10">Available</option><option  id= "option" value="20">Reserved</option><option  id= "option" value="30">Sold</option><option  id= "option" value="40" selected>Inactive</option><option  id= "option" value="50">On loan, etc.</option></select>';
+    }else if(value==50){
+      return '<select id= "select1'+row.id+'" class="select1'+row.id+' form-control" onchange="check_status('+row.id+');"><option>Select</option><option id= "option" value="10">Available</option><option  id= "option" value="20">Reserved</option><option  id= "option" value="30">Sold</option><option  id= "option" value="40">Inactive</option><option  id= "option" value="50" selected>On loan, etc.</option></select>';
+    }else{
+      return '<select id= "select1'+row.id+'" class="select1'+row.id+' form-control" onchange="check_status('+row.id+');"><option>Select</option><option id= "option" value="10">Available</option><option  id= "option" value="20">Reserved</option><option  id= "option" value="30">Sold</option><option  id= "option" value="40">Inactive</option><option  id= "option" value="50">On loan, etc.</option></select>';
+    }  
+} 
+
+//====================Status================Vignesh 10-08-2020 =====================================================//
+function check_status(id) { 
+  var id = id;
+  var obj_type= "artwork";
+  var obj_data = $(this).text();
+  var col = 'status';
+
+      var value1 = id;
+      //value1 = value1.replace('cstatus','');
+      var value = $('#select1'+id).val();
+      var obj_type= "artwork";
+      var col = $('#status').data('col');
+      $('.select1'+value1).show(value);
+      $.ajax({ url: "/ajax.php?obj_type=" + obj_type,
+        type: "POST",
+        data: {
+          type : "artwork",
+          col: "status",
+          data : value,
+          id : value1,
+          oper : "edit",
+        },
+        success:function(response_data_json) {
+          /*var value2='Available';
+           $('#cstatus'+value1).hide();
+           if(value==10)       value2="Available";
+           if(value==20)       value2="Reserved";
+           if(value==30)       value2="Sold";
+           if(value==40)       value2="Inactive";
+           if(value==50)       value2="On loan, etc.";
+          $('.status'+value1).text(value2);
+          $('.status'+value1).show();*/
+        }   
+    });           
+}
+//==================================================End Status =============10-08-2020===========================//
+
+  function bstActionFormatter(value, row, index) {
+    var base_link = row.obj_type == 'media' ? '/backend/medium' : '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    // console.log("base_link = " + base_link + " pv=" + pv);
+    var view_button = '<a href="' + base_link + '/' + row.id + '?_pv=' + pv + '" class=" ' + link_class + ' btn btn-sm btn-warning text-white" data-target="#subview-container">View</i></a>';
+    var edit_button = '<a href="' + base_link + '/' + row.id + '/edit?_pv=' + pv + '" class="btn btn-sm btn-success text-white ' + link_class + '" data-target="#subview-container">Edit</a>';
+    return view_button + ' ' + edit_button;
+  }
+// For network page
+  function bstActionFormatter1(value, row, index) {
+    var base_link = row.obj_type == 'media' ? '/backend/medium' : '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    // console.log("base_link = " + base_link + " pv=" + pv);
+    var view_button = '<a href="' + base_link + '/' + row.id + '?_pv=' + pv + '" class="btn btn-sm btn-info text-white ' + link_class + '" data-target="#subview-container">Share</a>';
+    var edit_button = '<a href="' + base_link + '/' + row.id + '/edit?_pv=' + pv + '" class="btn btn-sm btn-success text-white ' + link_class + '" data-target="#subview-container">Edit</a>';
+    return view_button + ' ' + edit_button;
+  }
+  // For Website Builder Edit Option
+  function bstActionWebsitebuilderFormatter(value, row, index) {
+    var base_link = row.obj_type == 'media' ? '/backend/medium' : '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    // console.log("base_link = " + base_link + " pv=" + pv);
+   // var view_button = '<a href="' + base_link + '/' + row.id + '?_pv=' + pv + '" class=" ' + link_class + '" data-target="#subview-container"><i class="fa fa-share-alt" style="color:#2B60DE"></i></a>';
+    var edit_button = '<a href="' + base_link + '/' + row.id + '/edit?_pv=' + pv + '" class="btn btn-sm btn-success text-white ' + link_class + '" data-target="#subview-container">Edit</a>';
+    return edit_button;
+  }
+//For artwork page with clone icon
+  function bstCloneActionFormatter(value, row, index) {
+    var base_link = row.obj_type == 'media' ? '/backend/medium' : '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    var buttons = bstActionFormatter(value, row, index);
+    /*var plugin_button = '<a href="/backend/plugins?_pt=media_collection&amp;_pid=' + row.id + '&amp;_pv=' + pv + '" class=" ' + link_class + '" data-target="#subview-container"><i class="fa fa-link"></i></a>'; */
+
+    var pop_btn = '<a id="'+row.id + '" class="btn btn-sm btn-info text-white clone_modal_icon" data-toggle="modal" data-target="#clone_modals">Clone</a>';
+    //var share_btn = '<a href="https://www.facebook.com/sharer/sharer.php?u=http://new.vpatina.dci.in/item/lets-sail-for-over-there-and-see-what-we-come-across?_aid=20361" id="'+row.id + '" class="share" ><i class="glyphicon glyphicon-share"></i></a>';
+
+    return '<span>'+ buttons + ' ' + pop_btn + '</span>'; 
+  }
+
+  //For Websitebuilder page with clone icon
+  function bstWebsitebuilderCloneActionFormatter(value, row, index) {
+    var base_link = row.obj_type == 'media' ? '/backend/medium' : '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    var buttons = bstActionWebsitebuilderFormatter(value, row, index);
+    /*var plugin_button = '<a href="/backend/plugins?_pt=media_collection&amp;_pid=' + row.id + '&amp;_pv=' + pv + '" class=" ' + link_class + '" data-target="#subview-container"><i class="fa fa-link"></i></a>'; */
+
+    //var pop_btn = '<a id="'+row.id + '" class="clone_modal_icon" data-toggle="modal" data-target="#clone_modals"><i class="fa fa-clone"></i></a>';
+    //var share_btn = '<a href="https://www.facebook.com/sharer/sharer.php?u=http://new.vpatina.dci.in/item/lets-sail-for-over-there-and-see-what-we-come-across?_aid=20361" id="'+row.id + '" class="share" ><i class="glyphicon glyphicon-share"></i></a>';
+
+    return buttons; 
+  }
+
+//For exhibition page without clone icon
+  function bstCollectionActionFormatter(value, row, index) {
+    var base_link = row.obj_type == 'media' ? '/backend/medium' : '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    var buttons = bstActionFormatter(value, row, index);
+    var share_btn = '<a href="' + base_link + '/' + row.id + '/edit/publish?_pv=' + pv + '" class="btn btn-sm btn-info text-white ' + link_class + '" data-target="#subview-container">Share</a>';
+
+    return '<span>'+ buttons + ' ' + share_btn + '</span>'; 
+
+    /*
+      Temporarily hidden
+      var plugin_button = '<a href="/backend/plugins?_pt=media_collection&amp;_pid=' + row.id + '&amp;_pv=' + pv + '" class=" ' + link_class + '" data-target="#subview-container"><i class="fa fa-link"></i></a>';
+      return buttons + ' ' + plugin_button;  
+    */ 
+  }
+
+//For Artist table without clone and plugin icon
+  function bstArtistActionFormatter(value, row, index) {
+    var base_link = row.obj_type == 'media' ? '/backend/medium' : '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    var buttons = bstActionFormatter1(value, row, index);
+    //var plugin_button = '<a href="/backend/plugins?_pt=media_collection&amp;_pid=' + row.id + '&amp;_pv=' + pv + '" class=" ' + link_class + '" data-target="#subview-container"><i class="fa fa-link"></i></a>'; 
+
+    return buttons;  
+  }
+
+  function bstVaultActionFormatter(value, row, index) {
+    //console.log("test "+row.type);
+    var base_link = row.type == 'folder' ? '/backend/vault' : '/backend/medium';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    // console.log("base_link = " + base_link + " pv=" + pv);
+    var edit_button = row.type == 'folder' ? '<a href="' + base_link + '/' + row.id + '/edit?_pv=' + pv + '" class="btn btn-sm btn-success text-white ' + link_class + '" data-target="#subview-container">Edit</a>' : '<a href="' + base_link + '/' + row.id + '/edit?_pv=' + pv + '&folder='+ row.folder_id + '" class="btn btn-sm btn-success text-white ' + link_class + '" data-target="#subview-container">Edit</a>';
+    if('{$get_str}')
+      var view_button = '<a href="/backend/vaults/'+ row.id + '?_pv=1&{$get_str}" class="btn btn-sm btn-warning text-white ajax-loader" data-target="#subview-container" >View</a>';
+    else
+      var view_button = '<a href="/backend/vaults/'+ row.id + '?_pv=1" class="btn btn-sm btn-warning text-white ajax-loader" data-target="#subview-container" >View</a>';
+    if(row.type == 'folder')
+      return  view_button+' '+edit_button;
+    else
+      return  edit_button;
+  }
+  
+  function bstVaultTypeFormatter(value, row, index) {
+    if(row.obj_type == 'media') {
+      return row.type;
+    } else {
+      return row.type;
+      //return 'Folder'; 
+    }
+  }
+  
+  function bstVaultImageFormatter(value, row, index) {
+    if(!value) return '';
+
+    if(row.type == 'image') {
+      value = row.id;
+      var thumb = row.path + 'tiny/' + row.src;
+      var print_val = "<img class='table-thumb' src='" + thumb + "'/>";
+      //return '<a href="/backend/media/'+ value + '?_pv=1" class="ajax-loader" data-target="#subview-container">' + print_val + '</a>';
+      return print_val;
+    } else {
+      var print_val = '<i class="fa fa-folder"></i>';
+      return '<a href="/backend/vaults/'+ row.id + '?_pv=1" class="ajax-loader" data-target="#subview-container">' + print_val + '</a>';    
+    }
+  }
+
+  function bstTitleImageFormatter(value, row, index) {
+    return bstMediaJsonFormatter(value, row, index, 'title_image');
+  }
+
+  function bstMediaJsonFormatter(value, row, index, field) {
+    //=======================================vignesh 06-08-2020================================//
+    var base_link = '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    var dimag = "<img class='table-thumb' src='/img/artwork/default.jpg'/>";
+    if(!value) return '<a href="{$base_link}/'+ row.id + '/edit/image?_pv=' + pv +'&ref=/ajax.php?oper=get-rows&obj_type=artwork'+
+    '" class="' +link_class + '" data-target="#subview-container">'+dimag+'</a>';
+    //=======================================End vignesh 06-08-2020================================//
+    var json_field = field + '_json';
+    var json = row[json_field];
+    //console.log("field=" + field + " json=" + json_field + " json=" + json);
+    
+    if(!json) return bstIDFormatter(value, row, index);
+    var obj = jQuery.parseJSON(json);
+    
+    if(!obj || !obj.length) return bstIDFormatter(value, row, index);
+    var first = obj[0];
+    //console.log("first = ", first);
+    
+    var filename = first.filename;
+    //console.log("filename = " + filename);
+    if(!filename) return bstIDFormatter(value, row, index);
+
+    var base_link = '{$base_link}';
+    //var filter_link= urlencode($filter_json);
+    //console.log("filter_link = " + filter_link);
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    // console.log("base_link = " + base_link + " pv=" + pv);
+    
+    var thumb = filename.replace('/square', '/tiny');
+    var print_val = "<img class='table-thumb' src='" + thumb + "'/>";
+    return '<a href="{$base_link}/'+ row.id + '/edit/image?_pv=' + pv +'&ref=/ajax.php?oper=get-rows&obj_type=artwork'+
+    '" class="' +link_class + '" data-target="#subview-container">' + print_val + '</a>';
+    // return '<a id="image_modal'+row.id + '" class="image_modal" data-toggle="modal" data-target="#image_modal">'+print_val+'</a>';
+  }
+
+  function bstTitleImageFormatter1(value, row, index) {
+    return bstMediaJsonFormatter1(value, row, index, 'title_image');
+  }
+
+  function bstMediaJsonFormatter1(value, row, index, field) {
+    //=======================================vignesh 06-08-2020================================//
+    var base_link = '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    var dimag = "<img class='table-thumb' src='/img/exhibition/default.jpg'/>";
+    if(!value) return '<a href="{$base_link}/'+ row.id + '/edit/title?_pv=' + pv +
+    '" class="' +link_class + '" data-target="#subview-container">'+dimag+'</a>';
+    //=======================================End vignesh 06-08-2020================================//
+    var json_field = field + '_json';
+    var json = row[json_field];
+    if(!json) return bstIDFormatter1(value, row, index);
+    var obj = jQuery.parseJSON(json);
+    console.log("obj = ", obj);
+    //console.log("obj.length = ", obj.filename);
+
+    if(!obj || !obj.length) return bstIDFormatter1(value, row, index);
+    var first = obj[0];
+    var filename = first.filename;
+    //alert(filename);
+    //console.log(filename);
+    if(!filename) return bstIDFormatter1(value, row, index);
+
+
+    var base_link = '{$base_link}';
+    //var filter_link= urlencode($filter_json);
+    //console.log("filter_link = " + filter_link);
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+
+    var thumb = filename.replace('/square', '/tiny');
+    //alert(thumb);
+    var print_val = "<img class='table-thumb' src='" + thumb + "'/>";
+
+    return '<a href="{$base_link}/'+ row.id + '/edit/title?_pv=' + pv +
+    '" class="' +link_class + '" data-target="#subview-container">'+print_val+'</a>';
+  }
+
+  function bstIDFormatter1(value, row, index) {
+    //if(!value) return '';
+    var print_val = value;
+    var base_link = '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    
+    return '<a href="{$base_link}/'+ row.id + '/edit/title?_pv='+ pv +'" class="' + link_class + '" data-target="#subview-container">' + print_val + '</a>';
+  }
+
+  function bstUserPhotoFormatter(value, row, index) {
+    return bstMediaJsonFormatter2(value, row, index, 'photo');
+  }
+  
+  function bstMediaJsonFormatter2(value, row, index, field) {
+    //=======================================vignesh 06-08-2020================================//
+    var base_link = '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    var dimag = "<img class='table-thumb' src='/img/artist/default.jpg'/>";
+    if(!value) return '<a href="{$base_link}/'+ row.id + '/edit/about?_pv=' + pv +
+    '" class="' +link_class + '" data-target="#subview-container">'+dimag+'</a>';
+    //=======================================End vignesh 06-08-2020================================//
+    var json_field = field + '_json';
+    var json = row[json_field];
+    
+    if(!json) return bstIDFormatter2(value, row, index);
+    var obj = jQuery.parseJSON(json);
+    
+    if(!obj || !obj.length) return bstIDFormatter2(value, row, index);
+    var first = obj[0];
+    // console.log("first = ", first);
+    
+    var filename = first.filename;
+    //console.log("filename = " + filename);
+    if(!filename) return bstIDFormatter2(value, row, index);
+
+    var base_link = '{$base_link}';
+    //var filter_link= urlencode($filter_json);
+    //console.log("filter_link = " + filter_link);
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    // console.log("base_link = " + base_link + " pv=" + pv);
+
+    var thumb = filename.replace('/square', '/tiny');
+    var print_val = "<img class='table-thumb' src='" + thumb + "'/>";
+
+    return '<a href="{$base_link}/'+ row.id + '/edit/about?_pv=' + pv +
+    '" class="' +link_class + '" data-target="#subview-container">'+print_val+'</a>';
+  }
+    
+  function bstIDFormatter2(value, row, index) {
+    if(!value) return '';
+    var print_val = value;
+    var base_link = '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    
+    return '<a href="{$base_link}/'+ row.id + '/edit/about?_pv='+ pv +'" class="' + link_class + '" data-target="#subview-container">' + print_val + '</a>';
+  }
+
+  function bstMediaContextFormatter(value, row, index) {
+    //console.log("stringfy "+JSON.stringify(row, null, 4));
+    if(!value) return '';
+    var parent_type = row.parent_type;
+    var parent_id = row.parent_id;
+    if(!parent_id) return value;
+    switch(parent_type) {
+      case 'artwork':
+        return '<a href="/backend/artwork/'+ row.parent_id + '?_pv=1" class="ajax-loader" data-target="#subview-container">' + 'Artwork' + '</a>';
+      break;
+      case 'media_collection':
+        return '<a href="/backend/exhibition/'+ row.parent_id + '?_pv=1" class="ajax-loader" data-target="#subview-container">' + 'Exhibition' + '</a>';
+      break;
+      case 'user_profile':
+        return '<a href="/backend/profile/'+ row.parent_id + '?_pv=1&amp;profile_id=1" class="ajax-loader" data-target="#subview-container">' + 'Profile' + '</a>';
+      break;
+      case 'gallery':
+        return '<a href="/backend/vault/'+ row.parent_id + '?_pv=1&amp" class="ajax-loader" data-target="#subview-container">' + 'Vault' + '</a>';
+      break;
+      case 'media':
+        return '<a href="/backend/vault/'+ row.parent_id + '?_pv=1&amp" class="ajax-loader" data-target="#subview-container">' + 'Media Upload' + '</a>';
+      break;
+      default:
+        return value;
+        break;
+    }
+  }
+
+// --------------- For Company page for Sample Testing Vignesh Implemented---------------------//
+    function bstCompanyEditFormatter(value, row, index) {
+        var base_link = row.obj_type == 'company' ? '/backend/medium' : '{$base_link}';
+        var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+        var link_class = pv ? 'ajax-loader' : '';
+        // console.log("base_link = " + base_link + " pv=" + pv);
+        //var view_button = '<a href="' + base_link + '/' + row.id + '?_pv=' + pv + '" class="btn btn-sm btn-info text-white ' + link_class + '" data-target="#subview-container">Share</a>';
+        var edit_button = '<a href="' + base_link + '/' + row.id + '/edit?_pv=' + pv + '" class="btn btn-sm btn-success text-white ' + link_class + '" data-target="#subview-container">Edit</a>';
+        return edit_button;
+    }
+
+    function bstCompanyNameFormatter(value, row, index) {
+        var print_val = value ? value : "[Untitled]";
+        var base_link = row.obj_type == 'company' ? '/backend/medium' : '{$base_link}';
+        var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+        var link_class = pv ? 'ajax-loader' : '';
+        // console.log("base_link = " + base_link + " pv=" + pv);
+        //return '<a href="' + base_link + '/' + row.id + '?_pv=' + pv + '" class="' + link_class + '" data-target="#subview-container">' + print_val + '</a>';
+        return '<span><span type="hidden" class="name" name="name" data-col="name" data-value='+row.id+' >'+row.name+'</span></span>';
+    }
+    function bstCompanyEmailFormatter(value, row, index) {
+        var print_val = value ? value : "[Untitled]";
+        var base_link = row.obj_type == 'company' ? '/backend/medium' : '{$base_link}';
+        var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+        var link_class = pv ? 'ajax-loader' : '';
+        // console.log("base_link = " + base_link + " pv=" + pv);
+        //return '<a href="' + base_link + '/' + row.id + '?_pv=' + pv + '" class="' + link_class + '" data-target="#subview-container">' + print_val + '</a>';
+        return '<span><span type="hidden" class="email" name="name" data-col="email" data-value='+row.id+' >'+row.email+'</span></span>';
+    }
+    function bstCompanyMobileFormatter(value, row, index) {
+        var print_val = value ? value : "[Untitled]";
+        var base_link = row.obj_type == 'company' ? '/backend/medium' : '{$base_link}';
+        var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+        var link_class = pv ? 'ajax-loader' : '';
+        // console.log("base_link = " + base_link + " pv=" + pv);
+        //return '<a href="' + base_link + '/' + row.id + '?_pv=' + pv + '" class="' + link_class + '" data-target="#subview-container">' + print_val + '</a>';
+        return '<span><span type="hidden" class="mobile" name="mobile" data-col="name" data-value='+row.id+' >'+row.mobile+'</span></span>';
+    }
+
+  //------------------------------ End Vignesh Implemented----------------------------------------//
+
+  // --------------- For Crud page for Sample Testing Vignesh Implemented---------------------// 
+  function bstCrudEditFormatter(value, row, index) {
+    var base_link = row.obj_type == 'cruds' ? '/backend/medium' : '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    // console.log("base_link = " + base_link + " pv=" + pv);
+    //var view_button = '<a href="' + base_link + '/' + row.id + '?_pv=' + pv + '" class="btn btn-sm btn-info text-white ' + link_class + '" data-target="#subview-container">Share</a>';
+    var edit_button = '<a href="' + base_link + '/' + row.id + '/edit?_pv=' + pv + '" class="btn btn-sm btn-success text-white ' + link_class + '" data-target="#subview-container">Edit</a>';
+    return edit_button;
+  }
+
+  function bstNameFormatter(value, row, index) {
+    var print_val = value ? value : "[Untitled]";
+    var base_link = row.obj_type == 'cruds' ? '/backend/medium' : '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    // console.log("base_link = " + base_link + " pv=" + pv);
+    //return '<a href="' + base_link + '/' + row.id + '?_pv=' + pv + '" class="' + link_class + '" data-target="#subview-container">' + print_val + '</a>';
+    return '<span><span type="hidden" class="name" name="name" data-col="name" data-value='+row.id+' >'+row.name+'</span></span>';
+  }
+  function bstEmailFormatter(value, row, index) {
+    var print_val = value ? value : "[Untitled]";
+    var base_link = row.obj_type == 'cruds' ? '/backend/medium' : '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    // console.log("base_link = " + base_link + " pv=" + pv);
+    //return '<a href="' + base_link + '/' + row.id + '?_pv=' + pv + '" class="' + link_class + '" data-target="#subview-container">' + print_val + '</a>';
+    return '<span><span type="hidden" class="email" name="name" data-col="email" data-value='+row.id+' >'+row.email+'</span></span>';
+  }
+  function bstMobileFormatter(value, row, index) {
+    var print_val = value ? value : "[Untitled]";
+    var base_link = row.obj_type == 'cruds' ? '/backend/medium' : '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    // console.log("base_link = " + base_link + " pv=" + pv);
+    //return '<a href="' + base_link + '/' + row.id + '?_pv=' + pv + '" class="' + link_class + '" data-target="#subview-container">' + print_val + '</a>';
+    return '<span><span type="hidden" class="mobile" name="mobile" data-col="name" data-value='+row.id+' >'+row.mobile+'</span></span>';
+  }
+
+  //------------------------------ End Vignesh Implemented----------------------------------------//
+
+  var obj_type = '{$scope.obj_type}';
+  if(obj_type == 'artwork')
+    var add_what = 'add_art';
+  else if(obj_type == 'media_collection')
+    var add_what = 'add_exb';
+  else if(obj_type == 'media_folder')
+    var add_what = 'add_folderimg';
+  else if(obj_type == 'media_folder')
+    var add_what = 'add_folderimg';
+  else if(obj_type == 'minisite')
+    var add_what = 'add_manualexb';
+  else
+    var add_what = 'add_logo';
+  //var add_what = (obj_type == 'artwork' || obj_type == 'media_collection')? 'add_art' : 'add_media';
+  // console.log("Add = " + add_what + " sub=" + obj_type);
+  
+  if({$add_to}) {
+    // console.log("Add-to, reseting selection");
+    g_selections = []; // reset if we're adding
+  }
+
+  var selections = [];
+
+
+// Search bar id value
+
+/*$(window).load(function() {
+  $('.form-control').attr('id', 'searchbar');
+  console.log("window.load() in _gallery-backend-list-base.html");
+});*/
+
+/*$(document).ready(function() {
+  $('.form-control').attr('id', 'searchbar');
+  console.log("document.ready() in _gallery-backend-list-base.html");  
+
+  var $table = $('#table');
+  
+  $table.bootstrapTable().on('load-success.bs.table', function(e, data) {
+    $('.form-control').attr('id', 'searchbar');
+    console.log("table.bootstrapTable.on('load-success.bs.table') in _gallery-backend-list-base.html");  
+  });
+  
+  $('load-success.bs.table').load(function() {
+    $('.form-control').attr('id', 'searchbar');
+    console.log("load-success.bs.table.load('') in _gallery-backend-list-base.html");  
+  });
+
+});*/
+
+    
+</script>
+
+<div class="modal modal-admin fade" id="del_modals" data-backdrop="static" data-keyboard="false" 
+     tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" >
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+     
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <b class="overlay-title" style="font-size: 25px;">Are you sure you want to permanently delete this?</b>
+      </div>
+       
+      <form name="delete-form" class="cal-form ajax-submit" data-reload_link="#gbe_artworks_link">
+        <div class="modal-body" style="font-size: 20px;">
+        <p>This action cannot be undone</p>
+        </div>
+       <div class="modal-footer">
+          <button type="button" id="sel_del_success" class="btn btn-danger" data-dismiss="modal">Delete</button>
+          <button type="button" class="btn btn-success" data-dismiss="modal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal modal-admin fade" id="clone_modals" data-backdrop="static" data-keyboard="false" 
+     tabindex="-1" role="dialog" aria-labelledby="myCloneLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+     
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <b class="overlay-title" style="font-size: 25px;">Make a Duplicate of this Art Record with a new name?</b>
+      </div>
+       
+      <form name="clone-form" class="cal-form ajax-submit" id="clone_dialog_form"  data-handler="clone-artwork" data-reload_link="#gbe_artworks_link">
+        <div class="modal-body">
+          <!-- <p>This action cannot be undone</p> -->
+          
+          <div class="form-group">
+            <label for="clone-title">Title of New Art Record</label>
+            <input type="text" class="form-control" name="title" value="" id="clone-title">
+          </div>
+          
+          <input type="hidden" class="form-control" name="obj_id" value="">
+          <input type="hidden" class="form-control" name="obj_type" value="artwork">
+          <button type="submit" class="btn btn-success" id="formSubmit">Duplicate</button>
+          <!-- <input type="submit" class="btn btn-success" value="Duplicate"> -->
+          <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+        </div>        
+      </form>
+      <div class="modal-footer">
+      </div>
+    </div>
+  </div>
+</div>
+
+{/block}

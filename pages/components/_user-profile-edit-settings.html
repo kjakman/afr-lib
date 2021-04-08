@@ -139,7 +139,7 @@
               </div>
             </div> 
                                    
-            <input type="submit" class="btn btn-success" value="Save">            
+            <input type="submit"  class="btn btn-success" value="Save">            
           </form>
              
                 {*
@@ -172,6 +172,47 @@
                 </div>
                 
                 *}
-                
+<script type="text/javascript">
+    $(document).ready(function(){
 
+        var arr = new Array();
 
+        var existing_languages=$("#languages").val().split(",");
+        for (i = 0; i < existing_languages.length; i++) {
+            if(arr.indexOf(existing_languages[i]) === -1 )
+                arr.push(existing_languages[i]);
+        }
+        // console.log(a.split(","));
+        $(document).on('click', '.tags-suggestion', function () {
+            
+            // $('.languagess').value=arr;
+            // $('[name=languagess]').val(arr); 
+            var language=$(this).text();
+            if(arr.indexOf(language) === -1 )
+                arr.push(language);
+
+            $("#languages").val(arr);
+            console.log($("#languages").val());
+        });
+        $(document).on('click', '.remove', function () {
+            var remove_arr = new Array();
+            var language=$(this).parent().parent().children("span").text();
+            remove_arr.push(language);
+            arr=arr.filter(x => remove_arr.indexOf(x) === -1);
+            $("#languages").val(arr);
+
+            console.log($("#languages").val());
+
+        });
+    });
+
+</script>
+
+<!-- Latest compiled and minified CSS -->
+<!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"> -->
+
+<!-- jQuery library -->
+<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> -->
+
+<!-- Latest compiled JavaScript -->
+<!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script> -->
