@@ -234,16 +234,16 @@
                                 $when = $subviews ?: 'all';
                                 switch($when) {
                                     case 'past':
-						              $search['end_date'] = ['<', $today];
-						              break;
-						            case 'current':
-						              $search['start_date'] = ['<=', $today];
-						              $search['end_date'] = ['>=', $today];      
-						              break;
-						            case 'future':
-						              $search['start_date'] = ['>', $today];
-						              break;
-						           
+                                      $search['end_date'] = ['<', $today];
+                                      break;
+                                    case 'current':
+                                      $search['start_date'] = ['<=', $today];
+                                      $search['end_date'] = ['>=', $today];      
+                                      break;
+                                    case 'future':
+                                      $search['start_date'] = ['>', $today];
+                                      break;
+                                   
                                     case 'currentandfuture':
                                         // dump('currentashiiiicurrentandfuture'.$today);
 
@@ -306,23 +306,23 @@
                                     $past_count = $past_count+1;
                                 }
                                 elseif(($exhibitionObj->exhibition_sequence < $today) && ($exhibitionObj->end_date > $today)) {
- 									$current = "current";
-					              	$data_exist[current] = 1 ;
-					              	$current_count = $current_count+1;
-				            	}
-                            	elseif($exhibitionObj->exhibition_sequence < $today) {
+                                    $current = "current";
+                                    $data_exist[current] = 1 ;
+                                    $current_count = $current_count+1;
+                                }
+                                elseif($exhibitionObj->exhibition_sequence < $today) {
                                     $data_exist["selection"] = 1;
                                     $current = "selection";
                                     $selection_count = $selection_count+1; 
                                 }elseif($exhibitionObj->start_date > $today) {
-					              	$current = "future";
-					              	$data_exist[future] = 1;
-					              	$future_count = $future_count +1;
-					            }else {
-					              	$current = "current";
-					              	$data_exist[current] = 1 ;
-					              	$current_count = $current_count+1;
-					            }
+                                    $current = "future";
+                                    $data_exist[future] = 1;
+                                    $future_count = $future_count +1;
+                                }else {
+                                    $current = "current";
+                                    $data_exist[current] = 1 ;
+                                    $current_count = $current_count+1;
+                                }
                             } else {
                                 continue; /** skip exhibitions w/o dates */
                             }
@@ -525,6 +525,8 @@
                         $page_slug = ($parts[0] != '') ? "/".$parts[0]."/" :  "/".$get_tpl['get_slug']."/"; 
 
                         $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'active' => 1, 'slug' => $page_slug, 'minisite_id'=>$minisite_id]);
+                        $scope->url=json_decode($scope->minisite_pageObj->data)[0];
+
                     }
                     if($page == 'mailchimpTest'){
                         $scope->subview = $subview = $parts[2];
@@ -4971,43 +4973,43 @@
 
             //-----------------------Jemima Implimented----------------//
 
-          	case "company":
+            case "company":
 
-    			$scope->section = 'company';
-    			$scope->obj_type = $obj_type = "company";
+                $scope->section = 'company';
+                $scope->obj_type = $obj_type = "company";
 
-          		if(!$add) {
-            		if(!$id) return controller_error($app, "Missing ID");
-    				//$get_data = db_getAll("select * from company where id='$scope->obj_id'");
-    				$get_data = find_objects('company', array('id' => $scope->obj_id));
+                if(!$add) {
+                    if(!$id) return controller_error($app, "Missing ID");
+                    //$get_data = db_getAll("select * from company where id='$scope->obj_id'");
+                    $get_data = find_objects('company', array('id' => $scope->obj_id));
 
-    				//$crud_datas = [];
-    				foreach($get_data as $val){
-    				     $scope->id = $val->id;
-    				     $scope->name = $val->name;
-    				     $scope->email = $val->email;
-    				     $scope->mobile = $val->mobile;
-    				}
-          		}
-          		//die("u_id={$app->user_id } Auth_artist: {$auth_artist} auth_artwork={$scope->auth_edit_artwork}".dump($artist_ids,true));
+                    //$crud_datas = [];
+                    foreach($get_data as $val){
+                         $scope->id = $val->id;
+                         $scope->name = $val->name;
+                         $scope->email = $val->email;
+                         $scope->mobile = $val->mobile;
+                    }
+                }
+                //die("u_id={$app->user_id } Auth_artist: {$auth_artist} auth_artwork={$scope->auth_edit_artwork}".dump($artist_ids,true));
           
-    			$app->page->subtemplate = $sub = '_gallery-backend-company-form.html';
-    			$app->page->itemview = 'company';
-    			$app->page->listview = 'companies';
+                $app->page->subtemplate = $sub = '_gallery-backend-company-form.html';
+                $app->page->itemview = 'company';
+                $app->page->listview = 'companies';
 
-    			print_log("action={$action} type={$obj_type} id={$obj_id} name={$obj->name} edit={$edit} auth={$auth_edit} sub={$sub}", 'backend', LOG_LEVEL_TEST);
+                print_log("action={$action} type={$obj_type} id={$obj_id} name={$obj->name} edit={$edit} auth={$auth_edit} sub={$sub}", 'backend', LOG_LEVEL_TEST);
             break;
 
-          	case "companies":
-    			$scope->section = 'company';
-    			$scope->obj_type = $obj_type = "company";
-    			$app->page->itemview = 'company';
-    			$app->page->listview = 'companies';
-    			//dump($scope);
-    			$filters = ['active' => 1];
-    			$filter_json = count($filters) ? json_encode($filters) : '';
-    			$scope->list_url = "/ajax.php?oper=get-rows&obj_type=company".($filter_json ? "&filters=".urlencode($filter_json) : '');
-          	break;
+            case "companies":
+                $scope->section = 'company';
+                $scope->obj_type = $obj_type = "company";
+                $app->page->itemview = 'company';
+                $app->page->listview = 'companies';
+                //dump($scope);
+                $filters = ['active' => 1];
+                $filter_json = count($filters) ? json_encode($filters) : '';
+                $scope->list_url = "/ajax.php?oper=get-rows&obj_type=company".($filter_json ? "&filters=".urlencode($filter_json) : '');
+            break;
 
             //---------------------------End Jemima Implimented------------------//
 

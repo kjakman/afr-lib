@@ -1391,7 +1391,7 @@ jQuery.log = function(message){
  */
  
 this.imagePreview = function(){ 
-  console.log('imagePreview starts');
+	console.log('imagePreview starts');
   /* CONFIG */
     
     yOffset = 500;
@@ -1424,7 +1424,7 @@ this.imagePreview = function(){
   //    .css("bottom",(e.pageY - yOffset) + "px")
   //    .css("left",(e.pageX + xOffset) + "px");
   // });      
-  console.log('imagePreview ends');
+	console.log('imagePreview ends');
 
 };
 
@@ -2083,57 +2083,51 @@ function fill_form(form_id, data) {
 
 // return a random letter + timestamp to use as a "random" element ID
 function random_id() {
-    var randLetter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
-    return randLetter + Date.now();
+  var randLetter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+  return randLetter + Date.now();
 }
 
 /** used to load URL from back-end. Show spinner. Used by invoice export */
-$( document ).ready(function(){
-    $(document).on("click", ".ajax-loader", function(e) {
-        $.ajaxSetup ({
-            cache: false
-        });
-        console.log('ajax-loader');
-        var $target = $(this);
-        var url = $target.data('url') || $target.attr('href') || '';
-        if($target.data('breakout')) {
-            url = replace_query_var(url, '_pv', 0)
-            console.log("breakout - use hard redirect to url=" + url);
-            window.location.href = url; // don't use soft load
-            return;
-        }
-        if(g_form_dirty) {
-            e.preventDefault();
-            console.log("ajax-loader: form dirty a href=" + url);
-            if(!confirm_modal($target)) return;
-        }
-      
-        var target = $target.data('target');
-        var org_text = $target.html();
-        var load_text = $target.data('load_text') || org_text;
-        var $target_div = $(target);
-        var spinner = '<i class="fa fa-spinner fa-spin"></i> ';
-        console.log('url=' + url + ' target=' + target + " len=" + $target_div.length);
-        if(url && target && $target_div.length) {
-            $target.removeClass("hidden").html(spinner + load_text).show("fast");
-            $target_div.load(url, function() {
-                $target.html(org_text); 
-                ready_script();      
-            });
-        }
-        return false;
+$(document).on("click", ".ajax-loader", function(e) {
+  console.log('ajax-loader');
+  var $target = $(this);
+  var url = $target.data('url') || $target.attr('href') || '';
+  if($target.data('breakout')) {
+    url = replace_query_var(url, '_pv', 0)
+    console.log("breakout - use hard redirect to url=" + url);
+    window.location.href = url; // don't use soft load
+    return;
+  }
+  if(g_form_dirty) {
+    e.preventDefault();
+    console.log("ajax-loader: form dirty a href=" + url);
+    if(!confirm_modal($target)) return;
+  }
+  
+  var target = $target.data('target');
+  var org_text = $target.html();
+  var load_text = $target.data('load_text') || org_text;
+  var $target_div = $(target);
+  var spinner = '<i class="fa fa-spinner fa-spin"></i> ';
+  console.log('url=' + url + ' target=' + target + " len=" + $target_div.length);
+  if(url && target && $target_div.length) {
+    $target.removeClass("hidden").html(spinner + load_text).show("fast");
+    $target_div.load(url, function() {
+      $target.html(org_text); 
+      ready_script();      
     });
+  }
+  return false;
 });
-    
 
 /** disable empty fields to clean URL for GET requests */
 $(document).on("submit", ".clean-submit", function() {
-    var $form = $(this);
-    console.log("Cleaning form method=" + $form.attr('method').toLowerCase());
-    if($form.attr('method').toLowerCase() == "get") {
-        form_disable_blank($form);
-    }
-    return true;  
+  var $form = $(this);
+  console.log("Cleaning form method=" + $form.attr('method').toLowerCase());
+  if($form.attr('method').toLowerCase() == "get") {
+    form_disable_blank($form);
+  }
+  return true;  
 });
 
 function form_disable_blank($form) {

@@ -754,11 +754,11 @@
         if(!$obj_id){
           if(!$duplicate){
             list($id, $errors) = add_object($obj_type, $obj_data);
-            print_log("save-minisite: added: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
+            print_log("save-minisite: added: {$obj_type} id: {$obj_id} ".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
             if($id){
               $data = add_default_page($id, $obj_data);
             } 
-          }else{
+          }else{                
             $errors = "Unfortunately '".$obj_data['url']."' is already taken by another user, Please try again to choose a unique vpatina URL (hint, you can use numbers as well as letters)";
           }
         }

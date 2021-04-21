@@ -5400,7 +5400,6 @@ function default_selectedArt($id, $obj_type ,$data){ //Selected Art
 }
 
 function default_about($id, $obj_type ,$data){ //About
-  dump(1111);
   $page = 'About';
   $slug = url_safe("/".$page."/", true);
   $data['type'] = 50; 
