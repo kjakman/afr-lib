@@ -3484,7 +3484,6 @@
     }
 
     function controller_artist_profile($app, $options = []) {
-        dump('Ashiii');
         
         //echo "addf";
         global $u_id;
@@ -5607,7 +5606,7 @@
 
                 $filters = ['type' => COLLECTION_TYPE_EXHIBITION];
                 if($u_level < USER_LEVEL_ADMIN) $filters['user_id'] = $app->user_id;
-                dump($filters);
+                // dump($filters);
                 $filter_json = count($filters) ? json_encode($filters) : '';
                 $scope->list_url = "/ajax.php?oper=get-rows&obj_type=media_collection&amp;sort=id%20desc&amp;".($filter_json ? "&filters=".urlencode($filter_json) : '');
 
