@@ -7475,339 +7475,339 @@ function jfu_file_list($target) {
 
 // new uploader, using Blueimp jquery-fileupload
 function init_fileuploader($target, loadData, extra_options) {
-  console.log("afr.js: init_fileuploader");
 
-  if(typeof extra_options === 'undefined') var extra_options = {}; // overrides
-  if(typeof loadData === 'undefined') loadData = true;
- 
-  var ui = $target.data('ui') || 'basic';
-  var options = $target.data('options') || {};
-  options = $.extend(options, extra_options);
-  
-  var view = $target.data('download_template') || $target.data('view') || options.view || "list"; // grid (compact) or list
-  if(!(view == "grid" || view == "list")) view = "list";
-  
-  var mediaData = $target.data('media_data') || {};
-  console.log("afr.js: init_fileuploader1");
-  
-  $target.data('initialized', 1);
-  $target.data("upload-count", 0); // number of files in the upload queue
-  $target.data("download-count", 0); // number of files in the download table (filled in later by jfu_load)
-  $target.data("send-count", 0); // number of files being sent
-  $target.data('view', view);
-  
-  jfu_buttons($target, ui); // append buttons
-  if(tip = $target.data('tip')) {
-    jfu_tip($target, tip); // tooltip
-  }
-  
-  var disabled = $target.hasClass('disabled') ? true : false;
-  var div_id = $target.prop('id');
-  //  alert("id=" + div_id);
-  console.log("afr.js: init_fileuploader2");
+    console.log('Ashiiiiiiiiiidc'+$target.data('download_count'));
 
-  // defaults
-  var extensions = options.allowed_extensions || ['jpeg', 'jpg', 'gif', 'png'];
-  var endpoint = options.endpoint || '/ajax.php?oper=upload';
-  var allow_multiple = options.allow_multiple || false;
-  var title = options.title || 'Click or Drop';
-  var sizeLimit = options.maximum_file_size || 10 * 1024 * 1024; // 10M default
+    console.log("afr.js: init_fileuploader");
 
-  var resize = options.resize || {};
-  var handler_options = $target.data('handler_options') || {};
-  var handler = handler_options.handler || $target.data('handler') || '';
-  var target_field = options.target_field || '';
+    if(typeof extra_options === 'undefined') var extra_options = {}; // overrides
+    if(typeof loadData === 'undefined') loadData = true;
+
+    var ui = $target.data('ui') || 'basic';
+    var options = $target.data('options') || {};
+    options = $.extend(options, extra_options);
+
+    var view = $target.data('download_template') || $target.data('view') || options.view || "list"; // grid (compact) or list
+    if(!(view == "grid" || view == "list")) view = "list";
+
+    var mediaData = $target.data('media_data') || {};
+    console.log("afr.js: init_fileuploader1");
+  
+    $target.data('initialized', 1);
+    $target.data("upload-count", 0); // number of files in the upload queue
+    $target.data("download-count", 0); // number of files in the download table (filled in later by jfu_load)
+    $target.data("send-count", 0); // number of files being sent
+    $target.data('view', view);
+  
+    jfu_buttons($target, ui); // append buttons
+    if(tip = $target.data('tip')) {
+        jfu_tip($target, tip); // tooltip
+    }
+  
+    var disabled = $target.hasClass('disabled') ? true : false;
+    var div_id = $target.prop('id');
+    //  alert("id=" + div_id);
+    console.log("afr.js: init_fileuploader2");
+
+    // defaults
+    var extensions = options.allowed_extensions || ['jpeg', 'jpg', 'gif', 'png'];
+    var endpoint = options.endpoint || '/ajax.php?oper=upload';
+    var allow_multiple = options.allow_multiple || false;
+    var title = options.title || 'Click or Drop';
+    var sizeLimit = options.maximum_file_size || 10 * 1024 * 1024; // 10M default
+
+    var resize = options.resize || {};
+    var handler_options = $target.data('handler_options') || {};
+    var handler = handler_options.handler || $target.data('handler') || '';
+    var target_field = options.target_field || '';
   
 
-  //console.log("init_uploader for " + div_id + " handler=" + handler + " view=" + view + " extra options="); // + " data=" + dump(mediaData) + " options=" + dump(options));
-  //console.log(extra_options);
-  //console.log(options);
-  //console.log("extension=");//console.log(extensions);
-  //console.log("media data=");//console.log(mediaData);
-  delete options.media_data;
+    //console.log("init_uploader for " + div_id + " handler=" + handler + " view=" + view + " extra options="); // + " data=" + dump(mediaData) + " options=" + dump(options));
+    //console.log(extra_options);
+    //console.log(options);
+    //console.log("extension=");//console.log(extensions);
+    //console.log("media data=");//console.log(mediaData);
+    delete options.media_data;
   
-  //if(!mediaData.parent_id) {
-  //  var parent_id = $target.data('parent_id');
-  //  //console.log("No parent ID, looking at element, found:" + parent_id);
-  //  mediaData.parent_id = parent_id;
-  //}
-  console.log("afr.js: init_fileuploader3");
+    //if(!mediaData.parent_id) {
+    //  var parent_id = $target.data('parent_id');
+    //  //console.log("No parent ID, looking at element, found:" + parent_id);
+    //  mediaData.parent_id = parent_id;
+    //}
+    console.log("afr.js: init_fileuploader3");
 
-  var endpoint = '/ajax.php?oper=jq-file-upload';
-  var params = {
-      options: JSON.stringify(options),
-      mediaData: JSON.stringify(mediaData)
+    var endpoint = '/ajax.php?oper=jq-file-upload';
+    var params = {
+        options: JSON.stringify(options),
+        mediaData: JSON.stringify(mediaData)
     };
            
-  if(params) endpoint += '&' + obj2qs(params); // this shouln't be needed as params below should handle this. Doesn't work for some reason      
+    if(params) endpoint += '&' + obj2qs(params); // this shouln't be needed as params below should handle this. Doesn't work for some reason      
 
-  //console.log("Our options:");
-  //console.log(options);
+    //console.log("Our options:");
+    //console.log(options);
 
-  var uploader_options = jq_uploader_options(options);
+    var uploader_options = jq_uploader_options(options);
+
+    console.log("Endpoint options:", options);
+    console.log("Uploader options:", uploader_options);
+    //console.log(uploader_options);
+
+    /** todo: turn off local_resize, set imageMaxWidth/Height in options */
+    var localResize = /Android(?!.*Chrome)|Opera/.test(window.navigator && navigator.userAgent);
+    var crop = false;
+    console.log("afr.js: init_fileuploader4");
   
-  console.log("Endpoint options:", options);
-  console.log("Uploader options:", uploader_options);
-  //console.log(uploader_options);
-  
-  /** todo: turn off local_resize, set imageMaxWidth/Height in options */
-  var localResize = /Android(?!.*Chrome)|Opera/.test(window.navigator && navigator.userAgent);
-  var crop = false;
-  console.log("afr.js: init_fileuploader4");
-  
-  console.log("local resize=" + localResize);
+    console.log("local resize=" + localResize);
     
-  $target.fileupload({
-    // Uncomment the following to send cross-domain cookies:
-    //xhrFields: {withCredentials: true},
-    url: endpoint,
-    options: uploader_options,
-    acceptFileTypes: uploader_options.acceptFileTypes,
-    maxFileSize: uploader_options.maxFileSize,
-    minFileSize: uploader_options.minFileSize,
-    maxNumberOfFiles: uploader_options.maxNumberOfFiles,
-    downloadTemplateId: "template-download-" + view,    
-    disableImageResize: localResize,
+    $target.fileupload({
+        // Uncomment the following to send cross-domain cookies:
+        //xhrFields: {withCredentials: true},
+        url: endpoint,
+        options: uploader_options,
+        acceptFileTypes: uploader_options.acceptFileTypes,
+        maxFileSize: uploader_options.maxFileSize,
+        minFileSize: uploader_options.minFileSize,
+        maxNumberOfFiles: uploader_options.maxNumberOfFiles,
+        downloadTemplateId: "template-download-" + view,    
+        disableImageResize: localResize,
 
-    imageMaxWidth: 1920,
-    imageMaxHeight: 1920,
-    imageCrop: crop, // Force cropped images
-    
-    dropZone: $(this),
-    autoUpload: false
-   }).on('fileuploadchange', function (e, data) {
-     if(is_object(data)) {
-       var valid_count = 0;
-       var $files = $target.find("TABLE TBODY.files TR");
-       //console.log('fileuploadchange rows=' + $files.length);
-       var er = data.files.error;
-       $.each(data.files, function (index, file) {
-         if(!file.error) valid_count++;
-       });
-     } else {
-       var org = data;
-       data = {};
-       data.files = [];
-       data.files.error = data;
-     }
-     //console.log('len=' + data.files.length + ' valid files=' + valid_count + " gler=" + er + " fer=" + data.files[0].error + " 2nd=" + (data.files.length > 1 ? data.files[1].error : ' none'));
-  console.log("afr.js: init_fileuploader ends");
-     
+        imageMaxWidth: 1920,
+        imageMaxHeight: 1920,
+        imageCrop: crop, // Force cropped images
+
+        dropZone: $(this),
+        autoUpload: false
+    }).on('fileuploadchange', function (e, data) {
+        if(is_object(data)) {
+            var valid_count = 0;
+            var $files = $target.find("TABLE TBODY.files TR");
+            //console.log('fileuploadchange rows=' + $files.length);
+            var er = data.files.error;
+            $.each(data.files, function (index, file) {
+             if(!file.error) valid_count++;
+            });
+        } else {
+            var org = data;
+            data = {};
+            data.files = [];
+            data.files.error = data;
+        }
+        //console.log('len=' + data.files.length + ' valid files=' + valid_count + " gler=" + er + " fer=" + data.files[0].error + " 2nd=" + (data.files.length > 1 ? data.files[1].error : ' none'));
+        console.log("afr.js: init_fileuploader ends");
    });
 
-   $(document).on('click', "INPUT.check-all, INPUT[type='checkbox'][name='delete']", function() {
-     var $target = $(this).closest('.jquery-fileupload');
-     console.log("delete click, wait target=" + $target.attr('id'));
-     setTimeout(function(){console.log("run");jfu_del_update($target); }, 30);     
-   });
+    $(document).on('click', "INPUT.check-all, INPUT[type='checkbox'][name='delete']", function() {
+        var $target = $(this).closest('.jquery-fileupload');
+        console.log("delete click, wait target=" + $target.attr('id'));
+        setTimeout(function(){console.log("run");jfu_del_update($target); }, 30);     
+    });
    
    
-   $target.on('fileuploaddestroyed', function(e, data) { 
-     //console.log("fileuploadcompleted: data=");
-     //console.log(data);
+    $target.on('fileuploaddestroyed', function(e, data) { 
+        //console.log("fileuploadcompleted: data=");
+        //console.log(data);
 
-     //$target.data("download-count", $target.data("download-count") - 1);
-     jfu_ui_update($target);
-     
-     var up_count = $target.data("upload-count") || 0;
-     var down_count = $target.data("download-count") || 0;
-       
-     //console.log("fileuploaddestroyed: up=" + up_count + " down=" + down_count);
+        //$target.data("download-count", $target.data("download-count") - 1);
+        jfu_ui_update($target);
 
-   });      
+        var up_count = $target.data("upload-count") || 0;
+        var down_count = $target.data("download-count") || 0;
+
+        //console.log("fileuploaddestroyed: up=" + up_count + " down=" + down_count);
+    });      
        
-  $target.on('fileuploadprocessdone', function (e, data) {
+    $target.on('fileuploadprocessdone', function (e, data) {
       
-      console.log("fileuploadprocessdone:");
-      //console.log(data.exif.getAll()); 
-  });
+        console.log("fileuploadprocessdone:");
+        //console.log(data.exif.getAll()); 
+    });
 
-   $target.on('fileuploadcompleted', function(e, data) {
-     var result = data ? data.result : {};
-     var success = result.success;
-     var error = result.error;
-     console.log("fileuploadcompleted: success=" + success + " error=" + error);
-     //if(error) console.log("fileuploadcompleted: error=" + error);
-     var file = data.files ? data.files[0] : null;
-     console.log("fileuploadcompleted v2: data=",data);
-     //console.log(file);
+    $target.on('fileuploadcompleted', function(e, data) {
+        var result = data ? data.result : {};
+        var success = result.success;
+        var error = result.error;
+        console.log("fileuploadcompleted: success=" + success + " error=" + error);
+        //if(error) console.log("fileuploadcompleted: error=" + error);
+        var file = data.files ? data.files[0] : null;
+        console.log("fileuploadcompleted v2: data=",data);
+        //console.log(file);
 
-     if(error) {
-       var $messages = form_messages(div_id); // get message div
-       console.log("msg len=" + $messages.length);
-       $messages.append(bootstrap_error_message(error)).parent().show(); // append       
-     } else if(file) { // file successfully uploaded 
-       var file_error = file.error;
-       
-       if(!file_error) $target.data("send-count", Math.min($target.data("send-count") - 1, 0));
+        if(error) {
+            var $messages = form_messages(div_id); // get message div
+            console.log("msg len=" + $messages.length);
+            $messages.append(bootstrap_error_message(error)).parent().show(); // append       
+        } else if(file) { // file successfully uploaded 
+            var file_error = file.error;
 
-       //if(!error) jfu_ui_update($target);
+            if(!file_error) $target.data("send-count", Math.min($target.data("send-count") - 1, 0));
 
-       var upload_count = $target.data("upload-count");
-       var send_count = $target.data("send-count");
+            //if(!error) jfu_ui_update($target);
 
-       //console.log("fileuploadcompleted with file: error=" + error + " send count=" + send_count + " upload count=" + upload_count);
-       if(upload_count >= 0) {
-         //console.log("calling load");
-         jfu_load($target); // calls sortable, adds edit buttons
-       }
-       
-     }
+            var upload_count = $target.data("upload-count");
+            var send_count = $target.data("send-count");
+
+            //console.log("fileuploadcompleted with file: error=" + error + " send count=" + send_count + " upload count=" + upload_count);
+            if(upload_count >= 0) {
+                //console.log("calling load");
+                jfu_load($target); // calls sortable, adds edit buttons
+            }
+        }
      
-     var up_count = $target.data("upload-count") || 0;
-     var down_count = $target.data("download-count") || 0;
-     var handler_options = $target.data('handler_options') || {};
-     var handler = handler_options.handler || $target.data('handler') || '';
-       
-     console.log("\n\n---\n\nfileuploadcompleted: up=" + up_count + " down=" + down_count + " handler=" + handler + " data=", data);
-     var uploaded_files = jfu_file_list($target);
-     if(uploaded_files.length && handler && !error) {
-       data = {"files": uploaded_files}            
-       console.log("fileuploadcompleted calling " + handler + " with ", data);
-       success_handler(handler_options, data);
-     }
+        var up_count = $target.data("upload-count") || 0;
+        var down_count = $target.data("download-count") || 0;
+        var handler_options = $target.data('handler_options') || {};
+        var handler = handler_options.handler || $target.data('handler') || '';
+        console.log('Assshiiiiii');
 
-   });      
+        console.log("\n\n---\n\nfileuploadcompleted: up=" + up_count + " down=" + down_count + " handler=" + handler + " data=", data);
+        var uploaded_files = jfu_file_list($target);
+        if(uploaded_files.length && handler && !error) {
+            data = {"files": uploaded_files}            
+            console.log("fileuploadcompleted calling " + handler + " with ", data);
+            success_handler(handler_options, data);
+        }
 
-   $target.on('fileuploadstart', function(e, data) { 
-     console.log("fileuploadstart");
-     console.log(data);
-   });      
+    });      
 
-   $target.on('fileuploadsend', function(e, data) { 
+    $target.on('fileuploadstart', function(e, data) { 
+        console.log("fileuploadstart");
+        console.log(data);
+    });      
+
+    $target.on('fileuploadsend', function(e, data) { 
+
+        $target.data("send-count", $target.data("send-count") + 1);
+        jfu_ui_update($target);
+
+        //console.log("fileuploadsend");
+        //console.log(data); 
+    });      
+
+    $target.on('fileuploadadd', function(e, data) { 
      
-     $target.data("send-count", $target.data("send-count") + 1);
-     jfu_ui_update($target);
-     
-     //console.log("fileuploadsend");
-     //console.log(data); 
-   });      
+        //console.log("fileuploadadd data=", data);
 
-   $target.on('fileuploadadd', function(e, data) { 
-     
-     //console.log("fileuploadadd data=", data);
+        // Note: for this to work delete the line "delete file.error" in jquery.fileupload-validate.js;
+        //data.files[0].error = "Foobar error";
+        //data.files.error = true;
+        //data.messages = [error];
 
-     // Note: for this to work delete the line "delete file.error" in jquery.fileupload-validate.js;
-     //data.files[0].error = "Foobar error";
-     //data.files.error = true;
-     //data.messages = [error];
- 
-     var file = data.files[0];
-     //console.log("fileuploadadd file=");
-     //console.log(file);
-     var type = file ? file.type : '';
-     if(type.indexOf('image') == 0) {
-       file_get_dimensions(file, options, function(file, options) {
+        var file = data.files[0];
+        //console.log("fileuploadadd file=");
+        //console.log(file);
+        var type = file ? file.type : '';
+        if(type.indexOf('image') == 0) {
+            file_get_dimensions(file, options, function(file, options) {
           
-         //console.log("Done with aysnc dimension check dim=" + file.width + "/" + file.height);
-         //console.log("Options=");
-         //console.log(options);
-         //console.log(file);
-         file = file_check_dimensions(file, options);
-         data.files[data.index] = file;
-         //console.log("calling check_file: error= " + file.error + " file=");
-         //console.log(file);
-       
-         var error = file.error; 
-         if(error) data.files.error = true;
-         //console.log("fileuploadadd: Adding file: error =" + error);
-         
-         //console.log(file);        
-         data.process().done(function () {
-           //console.log("Done processing"); 
-           //data.submit();
-         });
-       });
-     }
-      //validation.done(function(e, data) {
-     //    //console.log("validation done");
+                //console.log("Done with aysnc dimension check dim=" + file.width + "/" + file.height);
+                //console.log("Options=");
+                //console.log(options);
+                //console.log(file);
+                file = file_check_dimensions(file, options);
+                data.files[data.index] = file;
+                //console.log("calling check_file: error= " + file.error + " file=");
+                //console.log(file);
+
+                var error = file.error; 
+                if(error) data.files.error = true;
+                //console.log("fileuploadadd: Adding file: error =" + error);
+
+                //console.log(file);        
+                data.process().done(function () {
+                    //console.log("Done processing"); 
+                    //data.submit();
+                });
+            });
+        }
+        //validation.done(function(e, data) {
+        //    //console.log("validation done");
      //});      
-   });      
+    });      
   
-   $target.on('fileuploadfail', function(e, data) {
-     console.log("fileuploadfail: Fail to add file: data=", data);
-     if(is_object(data) && data.files) {
-       var file = data.files[0];
-       var error = file.error;
-     } else {
-       var error = data;
-     }
-   });      
+    $target.on('fileuploadfail', function(e, data) {
+        console.log("fileuploadfail: Fail to add file: data=", data);
+        if(is_object(data) && data.files) {
+            var file = data.files[0];
+            var error = file.error;
+        } else {
+            var error = data;
+        }
+    });      
 
-   $target.on('fileuploadfailed', function(e, data) {
-     //var file = data.files[0];
-     //var error = file.error;
-     //console.log(data);     
-     //if(1) { // removed from upload queue or download table ?
-     //  //if(!error) $target.data("upload-count", $target.data("upload-count") - 1);
-     //  var count = $target.data("upload-count") || 0;
-     //} else {
-     //  //if(!error) $target.data("download-count", $target.data("download-count") - 1);
-     //  var count = $target.data("download-count") || 0;
-     //}
-     //console.log("fileuploadfailed: Failed to add file: error=" + error + " count=" + count);
-     jfu_ui_update($target);
+    $target.on('fileuploadfailed', function(e, data) {
+        //var file = data.files[0];
+        //var error = file.error;
+        //console.log(data);     
+        //if(1) { // removed from upload queue or download table ?
+        //  //if(!error) $target.data("upload-count", $target.data("upload-count") - 1);
+        //  var count = $target.data("upload-count") || 0;
+        //} else {
+        //  //if(!error) $target.data("download-count", $target.data("download-count") - 1);
+        //  var count = $target.data("download-count") || 0;
+        //}
+        //console.log("fileuploadfailed: Failed to add file: error=" + error + " count=" + count);
+        jfu_ui_update($target);
      
-   });      
+    });      
    
-   $target.on('fileuploadadded', function(e, data) { // only called after successful add with no errors
-     var upload_count = jfu_upload_count($target);
-     
-     //var upload_count = $target.data("upload-count") || 0;
-     
-     var file = data.files[0];
-     //var mediaData = $target.data('media_data') || {};     
-     //file = file_get_exif(file, mediaData);
-     
-     var error = file.error;
-     //console.log(data);
-     //console.log("fileuploadadded: Added file: count =" + upload_count + " data=", data);
-     jfu_ui_update($target);
-     
-   });      
-   
-   if(handler) {
-     $target.on('fileuploaddestroyed', function(e, data) {       
-       console.log("upload destroyed");
+    $target.on('fileuploadadded', function(e, data) { // only called after successful add with no errors
+        var upload_count = jfu_upload_count($target);
 
-       var uploaded_files = jfu_file_list($target);
-       if(uploaded_files.length && handler) {
-         data = {"files": uploaded_files}            
-         console.log("fileuploaddestroyed calling " + handler + " with ", data);
-         success_handler(handler_options, data);
-       }
+        //var upload_count = $target.data("upload-count") || 0;
+
+        var file = data.files[0];
+        //var mediaData = $target.data('media_data') || {};     
+        //file = file_get_exif(file, mediaData);
+
+        var error = file.error;
+        //console.log(data);
+        //console.log("fileuploadadded: Added file: count =" + upload_count + " data=", data);
+        jfu_ui_update($target);
+     
+    });      
+   
+    if(handler) {
+        $target.on('fileuploaddestroyed', function(e, data) {       
+            console.log("upload destroyed");
+
+            var uploaded_files = jfu_file_list($target);
+            if(uploaded_files.length && handler) {
+                data = {"files": uploaded_files}            
+                console.log("fileuploaddestroyed calling " + handler + " with ", data);
+                success_handler(handler_options, data);
+            }
        
-       //success_handler(handler_options, data);
-     });
-   }
+            //success_handler(handler_options, data);
+        });
+    }
 
-  //console.log($target.fileupload());
+    //console.log($target.fileupload());
   
-  // Enable iframe cross-domain access via redirect option:
-  $target.fileupload(
-    'option',
-    'redirect',
-    window.location.href.replace(
-      /\/[^\/]*$/,
-      '/cors/result.html?%s'
-    )
-  );   
+    // Enable iframe cross-domain access via redirect option:
+    $target.fileupload(
+        'option',
+        'redirect',
+        window.location.href.replace(
+            /\/[^\/]*$/,
+            '/cors/result.html?%s'
+        )
+    );   
   
-  // Load existing files:
-  $target.addClass('fileupload-processing');
-  if(loadData) {
-    //console.log("jquery_file_uploader: loading data as loadData=" + loadData);
-    jfu_load($target, mediaData, false);
-  }
-
+    // Load existing files:
+    $target.addClass('fileupload-processing');
+    if(loadData) {
+        //console.log("jquery_file_uploader: loading data as loadData=" + loadData);
+        jfu_load($target, mediaData, false);
+    }
 }                                   
 
 function jfu_download_count($target) {
-  $file_cont = $target.parent().find('.file-table tbody');
-  $files = $file_cont.find('.template-download');
-  //console.log("File table download file count=" + $files.length);
-  var download_count = $files.length;     
-  return download_count;
+    $file_cont = $target.parent().find('.file-table tbody');
+    $files = $file_cont.find('.template-download');
+    //console.log("File table download file count=" + $files.length);
+    var download_count = $files.length;     
+    return download_count;
 }
 
 // Not sure why, but this button stopeed working
@@ -7835,140 +7835,142 @@ function jfu_delete_all() {
 }
 
 function jfu_del_update($target, del) {
-  var $cb = $("INPUT[type='checkbox'][name='delete']");
-  var $checked = $("INPUT[type='checkbox'][name='delete']:checked");
-  var checked_count = $checked.length;
-  console.log("CB len= " + $cb.length + " Checked len=" + checked_count + " target=" + $target.attr('id'));
-  var $delete_button = $target.find('BUTTON.delete-all');
-  if(checked_count > 0) { // if more than one, make sortable and show Delete-all button on top
-    $delete_button.removeClass("hidden").show();
-    if(del) {
-      console.log("Deleting " + checked_count);
-      $.each($checked, function() {
-        var $cb = $(this);
-        var ajax_url = $(this).data('url');
-        if(ajax_url) {
-          console.log("Deleting URL=" + ajax_url);
-          $.ajax({ url: ajax_url}).done(function() {
-            var $el = $cb.closest("LI");              
-            console.log("Done. Removing LI len=" + $el.length);
-            $el.remove()
-          });
+    var $cb = $("INPUT[type='checkbox'][name='delete']");
+    var $checked = $("INPUT[type='checkbox'][name='delete']:checked");
+    var checked_count = $checked.length;
+    console.log("CB len= " + $cb.length + " Checked len=" + checked_count + " target=" + $target.attr('id'));
+    var $delete_button = $target.find('BUTTON.delete-all');
+    if(checked_count > 0) { // if more than one, make sortable and show Delete-all button on top
+        $delete_button.removeClass("hidden").show();
+        if(del) {
+            console.log("Deleting " + checked_count);
+            $.each($checked, function() {
+                var $cb = $(this);
+                var ajax_url = $(this).data('url');
+                if(ajax_url) {
+                    console.log("Deleting URL=" + ajax_url);
+                    $.ajax({ url: ajax_url}).done(function() {
+                        var $el = $cb.closest("LI");              
+                        console.log("Done. Removing LI len=" + $el.length);
+                        $target.data('download-count',$target.data('download-count')-$el.length);
+                        upload_validation($target);
+                        $el.remove()
+                    });
+                }
+            });
         }
-      });
+    } else {
+        $delete_button.addClass("hidden").hide();      
     }
-  } else {
-    $delete_button.addClass("hidden").hide();      
-  }
+    // console.log("deleteeeeeeeeeeeeeee"+$target.data('download-count'));
+    // upload_validation($target);
 }
 
 // show hide UI buttons depending on settings (ui) and file count (upload/download)
 function jfu_ui_update($target) {
-  var ui = $target.data("ui");
-  var mediaData = $target.data('media_data') || {}
-  
-  var upload_count = jfu_upload_count($target);
-  var download_count = jfu_download_count($target);
-  var send_count = $target.data('send-count');
+    var ui = $target.data("ui");
+    var mediaData = $target.data('media_data') || {}
 
-  $target.data("upload-count", upload_count || 0);
-  $target.data("download-count", download_count || 0);
-  
-  $('[data-toggle="confirmation"]').confirmation({
-    //'singleton':true      
-  });
-  
-  if(ui != "full") return; 
-  
-  var $upload_button = $target.find('BUTTON.upload-all');
-  var $cancel_button = $target.find('BUTTON.cancel-all');
-  var $check_all = $target.find('INPUT.check-all');
-  var $view_buttons = $target.find('.jfu-switch-view');
+    var upload_count = jfu_upload_count($target);
+    var download_count = jfu_download_count($target);
+    var send_count = $target.data('send-count');
 
-  $file_cont = $target.parent().find('.file-table tbody');
-  $checkboxes = $file_cont.find('INPUT.toggle');
+    $target.data("upload-count", upload_count || 0);
+    $target.data("download-count", download_count || 0);
 
-  if(send_count > 1) {
-    $cancel_button.removeClass("hidden").show();      
-  } else {
-    $cancel_button.addClass("hidden").hide();      
-  }             
+    $('[data-toggle="confirmation"]').confirmation({
+        //'singleton':true      
+    });
   
-  var show_view_buttons = false;
+    if(ui != "full") return; 
 
-  
+    var $upload_button = $target.find('BUTTON.upload-all');
+    var $cancel_button = $target.find('BUTTON.cancel-all');
+    var $check_all = $target.find('INPUT.check-all');
+    var $view_buttons = $target.find('.jfu-switch-view');
 
-  
-  if(download_count > 1) { // if more than one, make sortable and show Delete-all button on top
-    $check_all.removeClass("hidden").show();      
-    $checkboxes.removeClass("hidden").show();
-    show_view_buttons = true;
-  } else {
-    //console.log("hiding delete button");
-    // $delete_button.addClass("hidden").hide();      
-    $check_all.addClass("hidden").hide();      
-    $checkboxes.addClass("hidden").hide();      
-  }
+    $file_cont = $target.parent().find('.file-table tbody');
+    $checkboxes = $file_cont.find('INPUT.toggle');
 
-  if(upload_count) show_view_buttons = false;
-  
-  if(upload_count > 1) { // if more than one, show upload-all button on top
-    $upload_button.removeClass("hidden").show();      
-  } else {
-    $upload_button.addClass("hidden").hide();      
-  }
-  
-  if(show_view_buttons) {
-    var view = $target.data("view");
-    $view_buttons.removeClass("hidden").show();
-    if(view) $(".jfu-switch-view.jfu-view-" + view).removeClass("btn-default").addClass("btn-positive");
-    
-  } else {
-    $view_buttons.addClass("hidden").hide();      
-  }
+    if(send_count > 1) {
+        $cancel_button.removeClass("hidden").show();      
+    } else {
+        $cancel_button.addClass("hidden").hide();      
+    }             
 
-  var view = $target.data("view") || 'list';
+    var show_view_buttons = false;
   
-  var download_count = $target.data("download-count");
-  if(download_count > 1) {
-    var sortable_options = {'handle': '.handle'};
-    var handler_options = $target.data('handler_options') || {};
-    var handler = handler_options.handler || $target.data('handler') || '';
-    sortable_options.handler = handler;                         
-    sortable_options.handler_options = handler_options;
-    var $parent = $target.parent();
-    if(view == 'list') {
-      sortable_options.helper = fixHelper; // needed so table row won't shrink
-      $file_cont = $parent.find('.file-table tbody');
-    } else { // grid view
-      //sortable_options.helper = fixHelper;
-      $file_cont = $parent.find('.file-table UL.file-container');
+    if(download_count > 1) { // if more than one, make sortable and show Delete-all button on top
+        $check_all.removeClass("hidden").show();      
+        $checkboxes.removeClass("hidden").show();
+        show_view_buttons = true;
+    } else {
+        //console.log("hiding delete button");
+        // $delete_button.addClass("hidden").hide();      
+        $check_all.addClass("hidden").hide();      
+        $checkboxes.addClass("hidden").hide();      
     }
+
+    if(upload_count) show_view_buttons = false;
+
+    if(upload_count > 1) { // if more than one, show upload-all button on top
+        $upload_button.removeClass("hidden").show();      
+    } else {
+        $upload_button.addClass("hidden").hide();      
+    }
+  
+    if(show_view_buttons) {
+        var view = $target.data("view");
+        $view_buttons.removeClass("hidden").show();
+        if(view) $(".jfu-switch-view.jfu-view-" + view).removeClass("btn-default").addClass("btn-positive");
+    } else {
+        $view_buttons.addClass("hidden").hide();      
+    }
+
+    var view = $target.data("view") || 'list';
+
+    var download_count = $target.data("download-count");
+    if(download_count > 1) {
+        var sortable_options = {'handle': '.handle'};
+        var handler_options = $target.data('handler_options') || {};
+        var handler = handler_options.handler || $target.data('handler') || '';
+        sortable_options.handler = handler;                         
+        sortable_options.handler_options = handler_options;
+        var $parent = $target.parent();
+        if(view == 'list') {
+            sortable_options.helper = fixHelper; // needed so table row won't shrink
+            $file_cont = $parent.find('.file-table tbody');
+        } else { // grid view
+            //sortable_options.helper = fixHelper;
+            $file_cont = $parent.find('.file-table UL.file-container');
+        }
         
-    if(mediaData.inline) {
-      sortable_options.inline = 1;
-      sortable_options.obj_type = mediaData.parent_type;
-      sortable_options.obj_id = mediaData.parent_id;
-      sortable_options.obj_field = mediaData.parent_field;
-    }
+        if(mediaData.inline) {
+            sortable_options.inline = 1;
+            sortable_options.obj_type = mediaData.parent_type;
+            sortable_options.obj_id = mediaData.parent_id;
+            sortable_options.obj_field = mediaData.parent_field;
+        }
 
-    if(upload_count > 0) {
-      //$("html, body").animate({ scrollTop: $(document).height() }, "fast");
-      if(0) { // swap upload/download template
-        $(".template-upload").insertBefore("#template-download-row");
-      } else { // scroll to download template
-        $('html, body').animate({
-            scrollTop: $("#template-download-row").offset().top + $("#template-download-row").height() 
-        }, 100);                                                                                                
-        console.log("Scrolling to download row len=" + $("#template-download-row").length + " upload_count=" + upload_count + "top=" + $("#template-download-row").offset().top + " height=" + $("#template-download-row").height());
-      }        
-    }
-    
-    console.log("Target:" + $target.attr('id') + " parent=" + $parent.attr('class') + " dl count=" + download_count + " file_cont=" + $file_cont.length);
-    //console.log("Media Data:", mediaData);
-    //console.log("Sortable options:", sortable_options);
-    sortable_object_list($file_cont, sortable_options);
-  }                 
+        if(upload_count > 0) {
+            //$("html, body").animate({ scrollTop: $(document).height() }, "fast");
+            if(0) { // swap upload/download template
+                $(".template-upload").insertBefore("#template-download-row");
+            } else { // scroll to download template
+                $('html, body').animate({
+                    scrollTop: $("#template-download-row").offset().top + $("#template-download-row").height() 
+                }, 100);                                                                                                
+                console.log("Scrolling to download row len=" + $("#template-download-row").length + " upload_count=" + upload_count + "top=" + $("#template-download-row").offset().top + " height=" + $("#template-download-row").height());
+            }        
+        }
+        console.log("Assshiiiiiiiiiiiii"+download_count);
+        upload_validation($target);
+        console.log("Target:" + $target.attr('id') + " parent=" + $parent.attr('class') 
+          + " dl count=" + download_count + " file_cont=" + $file_cont.length);
+        //console.log("Media Data:", mediaData);
+        //console.log("Sortable options:", sortable_options);
+        sortable_object_list($file_cont, sortable_options);
+    }                 
 }
 
 // makes a list sortable
@@ -8093,61 +8095,81 @@ function sortable_object_list($target, options) {
 }
 
 function jfu_load($target, mediaData, call_handler) {
-  if(typeof mediaData === 'undefined') var mediaData = $target.data('media_data') || {};
-  if(typeof call_handler === 'undefined') var call_handler = true;
+    console.log("jfu_loadAsshhhiiiiiiiiiii");
+    if(typeof mediaData === 'undefined') var mediaData = $target.data('media_data') || {};
+    if(typeof call_handler === 'undefined') var call_handler = true;
                        
-  var pid = mediaData.parent_id;
-  var pt = mediaData.parent_type;
-  var pf = mediaData.parent_field;
-  var inline = mediaData.inline ? 1 : 0;
-  
-  var options = $target.data("options") || {};
-  var edit_url = options.edit_url;
-  var edit_target = options.edit_target;
-  var url = '/ajax.php?oper=jq-get-media&parent_type=' + pt + '&parent_id=' + pid + '&parent_field=' + pf + '&inline=' + inline;
-  if(edit_url) url = url + "&edit_url=" + encodeURIComponent(edit_url);
-  if(edit_target) url = url + "&edit_target=" + encodeURIComponent(edit_target);
-  
-  //console.log("Load existing files from " + url + " target id=" + $target.attr("id"));
-  $.ajax({
-    // Uncomment the following to send cross-domain cookies:
-    //xhrFields: {withCredentials: true},
-    url: url,
-    dataType: 'json',
-    context: $target[0]
-  }).always(function () {
-    $(this).removeClass('fileupload-processing');
-  }).done(function (result) {
-    $("table tbody.files").empty();
-    //console.log("result=", result);
-    //console.log("this=", this);
-    
-    $(this).fileupload('option', 'done')
-      .call(this, $.Event('done'), {result: result});
-    
-    $file_cont = $target.parent().find('.file-table tbody');
-    $files = $file_cont.find('TR.template-download');
-    //console.log("File table file count=" + $files.length);
-
-    $target.data("download-count", $files.length);
-    jfu_ui_update($target)
+    var pid = mediaData.parent_id;
+    var pt = mediaData.parent_type;
+    var pf = mediaData.parent_field;
+    var inline = mediaData.inline ? 1 : 0;
 
     var options = $target.data("options") || {};
-
-    var handler_options = $target.data('handler_options') || {};
-    var handler = handler_options.handler || $target.data('handler') || '';
-    //console.log("jfu_load handler=" + handler + " handler options=");
-    //console.log(handler_options);
+    var edit_url = options.edit_url;
+    var edit_target = options.edit_target;
+    var url = '/ajax.php?oper=jq-get-media&parent_type=' + pt + '&parent_id=' + pid + '&parent_field=' + pf + '&inline=' + inline;
+    if(edit_url) url = url + "&edit_url=" + encodeURIComponent(edit_url);
+    if(edit_target) url = url + "&edit_target=" + encodeURIComponent(edit_target);
+  
+    //console.log("Load existing files from " + url + " target id=" + $target.attr("id"));
+    $.ajax({
+        // Uncomment the following to send cross-domain cookies:
+        //xhrFields: {withCredentials: true},
+        url: url,
+        dataType: 'json',
+        context: $target[0]
+    }).always(function () {
+        $(this).removeClass('fileupload-processing');
+    }).done(function (result) {
+        $("table tbody.files").empty();
+        //console.log("result=", result);
+        //console.log("this=", this);
     
-    if(handler && call_handler) { // handler is stored in handler_options.handler      
-      //console.log("jfu_load: Calling handler: " + handler);
-      result.files = $files;
-      success_handler(handler_options, result);
-      //success_handler(handler_options, false); /** does this break vpatina ? */
+        $(this).fileupload('option', 'done')
+            .call(this, $.Event('done'), {result: result});
+    
+        $file_cont = $target.parent().find('.file-table tbody');
+        $files = $file_cont.find('TR.template-download');
+        //console.log("File table file count=" + $files.length);
+
+        $target.data("download-count", $files.length);
+        jfu_ui_update($target)
+        console.log("jfu_loadAsshhhiiiiiiiiiii"+$files.length);
+        upload_validation($target);
+
+        var options = $target.data("options") || {};
+
+        var handler_options = $target.data('handler_options') || {};
+        var handler = handler_options.handler || $target.data('handler') || '';
+        //console.log("jfu_load handler=" + handler + " handler options=");
+        //console.log(handler_options);
+    
+        if(handler && call_handler) { // handler is stored in handler_options.handler      
+            //console.log("jfu_load: Calling handler: " + handler);
+            result.files = $files;
+            success_handler(handler_options, result);
+            //success_handler(handler_options, false); /** does this break vpatina ? */
+        }
+    })
+}
+
+function upload_validation($target){
+
+    var dc=$target.data("download-count");
+    console.log('funcAshiiiiiiiiiii'+dc);
+
+    if(dc>=12){
+        console.log('funcAshiiiiiiiiiiiffffffffffff'+dc);
+
+        document.getElementById("file_input").style.display = "none";
+        document.getElementById("validation_error").style.display = "block";
+    }else{
+        console.log('funcAshiiiiiiiiiiielseee'+dc);
+
+        document.getElementById("file_input").style.display = "block";
+        document.getElementById("validation_error").style.display = "none";
+
     }
-
-  })
-
 }
 
 function jfu_tip($uploader, tip) {
@@ -8167,95 +8189,101 @@ function jfu_tip($uploader, tip) {
 }
 
 function jfu_buttons($uploader, ui) {
-  var version = $uploader.data("version") || 'bootstrap';
-  //var button_class = ui == 'full' ? '' : 'hidden ';
-  var options = $uploader.data("options") || {};
+    var download_count = jfu_download_count($uploader);
+    console.log('ASHIIIIIIIII'+download_count);
+    console.log($uploader.data("download-count"));
+    console.log('ASHIIIIIIIIIssssss');
 
-  //console.log("jfu_buttons options=", options);
-  // buttons to switch view; only if multiple files are allowed and template not set
-  var view_buttons = options.allow_multiple && !$uploader.data("download_template") ? 
-  '<button type="button" class="jfu-switch-view jfu-view-grid margin-right margin-bottom btn btn-default" data-template="grid" title="Grid view"><i class="black fa fa-th" aria-hidden="true"></i></button>' +
-  '<button type="button" class="jfu-switch-view jfu-view-list margin-right margin-bottom btn btn-default" data-template="list" title="List view"><i class="black fa fa-list" aria-hidden="true"></i></button>' : '';
-  
-  var output = '';
-  if(version == 'bootstrap')  { // bootstrap version
-    var button_bar = '\
-    <div class="row fileupload-buttonbar">\
-      <div class="col-lg-7">\
-        <span class="btn btn-success fileinput-button">\
-          <i class="glyphicon glyphicon-plus"></i>\
-          <span>Upload</span>\
-          <input class="file-input" type="file" name="files[]" multiple>\
-        </span>\
-        <button type="submit" class="hidden upload-all btn btn-primary start">\
-          <i class="glyphicon glyphicon-upload"></i>\
-          <span>Start upload</span>\
-        </button>\
-        <button type="reset" class="hidden cancel-all btn btn-warning cancel">\
-          <i class="glyphicon glyphicon-ban-circle"></i>\
-          <span>Cancel upload</span>\
-        </button>\
-        <button type="button" class="hidden delete-all btn btn-danger delete" data-toggle="confirmation" title="Sure?" data-on-confirm="jfu_delete_all">\
-          <i class="glyphicon glyphicon-trash"></i>\
-          <span>Delete</span>\
-        </button>\
-        <input type="checkbox" class="check-all hidden toggle">\
-        <span class="fileupload-process"></span>\
-      </div>\
-      <div class="col-lg-5 fileupload-progress fade">\
-        <div class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100">\
-          <div class="progress-bar progress-bar-success" style="width:0%;"></div>\
-        </div>\
-        <div class="progress-extended">&nbsp;</div>\
-      </div>\
-    </div>';
-    
-    var file_table = view_buttons + '\
-    <table role="presentation" class="file-table table table-striped"><tbody class="files"></tbody></table>';
-    
-    output = file_table + button_bar;
-    
-  } else { // jquery version
-    output = '\
-    <div class="fileupload-buttonbar">\
-        <div class="fileupload-buttons">\
-            tip\
-            <span class="fileinput-button">\
-                <span>Upload</span>\
-                <input type="file" name="files[]" multiple>\
-            </span>\
-            <button type="submit" class="hidden upload-all start">Start upload</button>\
-            <button type="reset" class="hidden cancel-all cancel">Cancel upload</button>\
-            <button type="button" class="hidden delete-all delete">Delete</button>\
-            <input type="checkbox" class="hidden toggle">\
-            <span class="fileupload-process"></span>\
-        </div>\
-        <div class="fileupload-progress fade" style="display:none">\
-            <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>\
-            <div class="progress-extended">&nbsp;</div>\
-        </div>\
-    </div>' + view_buttons + '\
-    <table role="presentation"><tbody class="files"></tbody></table>\
-';
-  }
-//' + view_buttons + '\
+    var version = $uploader.data("version") || 'bootstrap';
+    //var button_class = ui == 'full' ? '' : 'hidden ';
+    var options = $uploader.data("options") || {};
 
-  //console.log("Adding Buttonbar to id=" + $uploader.attr("id") + " class=" + $uploader.attr("class") + " len=" + $uploader.length);
+    //console.log("jfu_buttons options=", options);
+    // buttons to switch view; only if multiple files are allowed and template not set
+    var view_buttons = options.allow_multiple && !$uploader.data("download_template") ? 
+    '<button type="button" class="jfu-switch-view jfu-view-grid margin-right margin-bottom btn btn-default" data-template="grid" title="Grid view"><i class="black fa fa-th" aria-hidden="true"></i></button>' +
+    '<button type="button" class="jfu-switch-view jfu-view-list margin-right margin-bottom btn btn-default" data-template="list" title="List view"><i class="black fa fa-list" aria-hidden="true"></i></button>' : '';
   
-  $(output).appendTo($uploader);
-  var gallery = '\
-  <!-- The blueimp Gallery widget -->\
-  <div id="blueimp-gallery" class="blueimp-gallery blueimp-gallery-controls" data-filter=":even">\
-      <div class="slides"></div>\
-      <h3 class="title"></h3>\
-      <a class="prev">‹</a>\
-      <a class="next">›</a>\
-      <a class="close">×</a>\
-      <a class="play-pause"></a>\
-      <ol class="indicator"></ol>\
-  </div>\
-  ';
-  $uploader.after(gallery);
+    var output = '';
+    if(version == 'bootstrap')  { // bootstrap version
+        var button_bar = '\
+        <div class="row fileupload-buttonbar">\
+            <div class="col-lg-7">\
+                <span id="validation_error" style="display:none;color:red">To enable the upload button, Please upgrade your plan or delete the existing images.</span>\
+                <span class="btn btn-success fileinput-button">\
+                    <i class="glyphicon glyphicon-plus"></i>\
+                    <span>Upload</span>\
+                    <input class="file-input" id="file_input" style="display:none" type="file" name="files[]" multiple>\
+                </span>\
+                <button type="submit" class="hidden upload-all btn btn-primary start">\
+                    <i class="glyphicon glyphicon-upload"></i>\
+                    <span>Start upload</span>\
+                </button>\
+                <button type="reset" class="hidden cancel-all btn btn-warning cancel">\
+                    <i class="glyphicon glyphicon-ban-circle"></i>\
+                    <span>Cancel upload</span>\
+                </button>\
+                <button type="button" class="hidden delete-all btn btn-danger delete" data-toggle="confirmation" title="Sure?" data-on-confirm="jfu_delete_all">\
+                    <i class="glyphicon glyphicon-trash"></i>\
+                    <span>Delete</span>\
+                </button>\
+                <input type="checkbox" class="check-all hidden toggle">\
+                <span class="fileupload-process"></span>\
+                </div>\
+                <div class="col-lg-5 fileupload-progress fade">\
+                    <div class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100">\
+                    <div class="progress-bar progress-bar-success" style="width:0%;"></div>\
+                </div>\
+                <div class="progress-extended">&nbsp;</div>\
+            </div>\
+        </div>';
+    
+        var file_table = view_buttons + '\
+        <table role="presentation" class="file-table table table-striped"><tbody class="files"></tbody></table>';
+    
+        output = file_table + button_bar;
+    
+    } else { // jquery version
+        output = '\
+            <div class="fileupload-buttonbar">\
+                <div class="fileupload-buttons">\
+                tip\
+                    <span class="fileinput-button">\
+                        <span>Upload</span>\
+                        <input type="file" name="files[]" multiple>\
+                    </span>\
+                    <button type="submit" class="hidden upload-all start">Start upload</button>\
+                    <button type="reset" class="hidden cancel-all cancel">Cancel upload</button>\
+                    <button type="button" class="hidden delete-all delete">Delete</button>\
+                    <input type="checkbox" class="hidden toggle">\
+                    <span class="fileupload-process"></span>\
+                </div>\
+                <div class="fileupload-progress fade" style="display:none">\
+                    <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>\
+                    <div class="progress-extended">&nbsp;</div>\
+                </div>\
+            </div>' + view_buttons + '\
+            <table role="presentation"><tbody class="files"></tbody></table>\
+        ';
+    }
+    //' + view_buttons + '\
+
+    //console.log("Adding Buttonbar to id=" + $uploader.attr("id") + " class=" + $uploader.attr("class") + " len=" + $uploader.length);
+  
+    $(output).appendTo($uploader);
+    var gallery = '\
+        <!-- The blueimp Gallery widget -->\
+        <div id="blueimp-gallery" class="blueimp-gallery blueimp-gallery-controls" data-filter=":even">\
+            <div class="slides"></div>\
+            <h3 class="title"></h3>\
+            <a class="prev">‹</a>\
+            <a class="next">›</a>\
+            <a class="close">×</a>\
+            <a class="play-pause"></a>\
+            <ol class="indicator"></ol>\
+        </div>\
+    ';
+    $uploader.after(gallery);
 }
 
 function file_check_dimensions(file, options) {

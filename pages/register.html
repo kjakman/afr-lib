@@ -27,7 +27,8 @@
                       {/if}
                       
                       {{"include": "_user-register-form.html"}}          
-                      <a href="{$smarty.const.PAGE_LOGIN|link}{$query_string}">Already registered?</a>                      <div class='gap gap-small'></div>                      
+                      <a href="{$smarty.const.PAGE_LOGIN|link}{$query_string}">Already registered? </a>    
+                      <input class="btn" style="background-color:#3eb0f7; font-weight: bold; color:white" type="submit" value="Log In" onclick="location.href='/login/?ref=%2Fbackend';"/>            <div class='gap gap-small'></div>                      
                       <div class='gap gap-small'></div>                      
                     {/if}
                   </div>

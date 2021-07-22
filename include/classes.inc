@@ -1,390 +1,386 @@
 <?php
 
-// begin class definitions  
-$__CLASSES = array(                                
+    // begin class definitions  
+    $__CLASSES = array(                                
 
-//   CLASS                          USER_LEVEL  GROUP TABLE KEY FLAGS DESCRIPTOR SORT  PARENT_CLASS PARENT_FIELD
-//                                    0           1     2    3     4      5       6        7            8
+        //   CLASS                          USER_LEVEL  GROUP TABLE KEY FLAGS DESCRIPTOR SORT  PARENT_CLASS PARENT_FIELD
+        //                                    0           1     2    3     4      5       6        7            8
 
-// security - used by php auth
-    'phpauth_config' =>                array(USER_LEVEL_SYSTEM, 'external', 'config', 'id', 0, 'setting', '', ''),
-    'phpauth_attempts' =>              array(USER_LEVEL_SYSTEM, 'external', 'attempts', 'id', 0, 'ip', '', ''),
-    'phpauth_requests' =>              array(USER_LEVEL_SYSTEM, 'external', 'requests', 'id', 0, 'rkey', '', ''),
-    'phpauth_sessions' =>              array(USER_LEVEL_SYSTEM, 'external', 'sessions', 'id', 0, 'ip', '', ''),
+        // security - used by php auth
+            'phpauth_config' =>                array(USER_LEVEL_SYSTEM, 'external', 'config', 'id', 0, 'setting', '', ''),
+            'phpauth_attempts' =>              array(USER_LEVEL_SYSTEM, 'external', 'attempts', 'id', 0, 'ip', '', ''),
+            'phpauth_requests' =>              array(USER_LEVEL_SYSTEM, 'external', 'requests', 'id', 0, 'rkey', '', ''),
+            'phpauth_sessions' =>              array(USER_LEVEL_SYSTEM, 'external', 'sessions', 'id', 0, 'ip', '', ''),
 
-// object model
-    'class' =>                array(USER_LEVEL_SYSTEM, 'object_model', '', 'type', NF_CACHE, 'name', '', ''),
-    'class_group' =>          array(USER_LEVEL_SYSTEM, 'object_model', '', 'name', NF_CACHE, 'name', '', ''),
-    'attribute' =>            array(USER_LEVEL_SYSTEM, 'object_model', '', 'id', NF_CACHE,   'name', 'id', ''),
-    'attribute_type' =>       array(USER_LEVEL_SYSTEM, 'object_model', '', 'name', NF_CACHE_ASSOC,   'name', '', ''),
-    'object_description' =>   array(USER_LEVEL_STAFF, 'object_model', '', '', 0, '', '', ''),
-    //'default_class' =>        array(USER_LEVEL_SYSTEM, 'object_model', '', '', 0, '', '', ''),
-    'default_attributes' =>   array(USER_LEVEL_SYSTEM, 'object_model', '', '', 0, '', '', ''),
+        // object model
+            'class' =>                array(USER_LEVEL_SYSTEM, 'object_model', '', 'type', NF_CACHE, 'name', '', ''),
+            'class_group' =>          array(USER_LEVEL_SYSTEM, 'object_model', '', 'name', NF_CACHE, 'name', '', ''),
+            'attribute' =>            array(USER_LEVEL_SYSTEM, 'object_model', '', 'id', NF_CACHE,   'name', 'id', ''),
+            'attribute_type' =>       array(USER_LEVEL_SYSTEM, 'object_model', '', 'name', NF_CACHE_ASSOC,   'name', '', ''),
+            'object_description' =>   array(USER_LEVEL_STAFF, 'object_model', '', '', 0, '', '', ''),
+            //'default_class' =>        array(USER_LEVEL_SYSTEM, 'object_model', '', '', 0, '', '', ''),
+            'default_attributes' =>   array(USER_LEVEL_SYSTEM, 'object_model', '', '', 0, '', '', ''),
 
-// system
-    'dictionary' =>           array(USER_LEVEL_SYSTEM, 'system', '', '', 0, 'term language', '', ''), /** special caching */
-    'security' =>             array(USER_LEVEL_SYSTEM, 'system', '', '', 0, '', '', ''),
-    'changelog' =>            array(USER_LEVEL_SYSTEM, 'system', '', '', NF_NO_ACTIONS, '', '', ''),
-    'mail_campaign' =>        array(USER_LEVEL_SYSTEM, 'system', '', '', NF_NO_ACTIONS, '', '', ''),      
-    'mail_queue' =>           array(USER_LEVEL_SYSTEM, 'system', '', '', NF_NO_ACTIONS, '', '', ''),      
-    'mail_log' =>             array(USER_LEVEL_SYSTEM, 'system', '', '', NF_NO_ACTIONS, '', '', ''),      
-    'sms_queue' =>            array(USER_LEVEL_SYSTEM, 'system', '', '', NF_NO_ACTIONS, '', '', ''),
-    'exchange_rate' =>        array(USER_LEVEL_SYSTEM, 'system', '', '', 0, '', '', ''),
-    'language' =>             array(USER_LEVEL_SYSTEM, 'system', '', 'code', NF_CACHE_ASSOC, '', '', ''),
-    'currency' =>             array(USER_LEVEL_SYSTEM, 'system', '', 'code', NF_CACHE_ASSOC, 'code', 'code', ''),
-    'countries' =>            array(USER_LEVEL_SYSTEM, 'system', '', '', NF_CACHE, '', 'name', ''),
-    'weekday' =>              array(USER_LEVEL_SYSTEM, 'system', '', '', NF_CACHE_ASSOC, '', 'name', ''),
-    'gender' =>               array(USER_LEVEL_SYSTEM, 'system', '', '', NF_CACHE_ASSOC, '', 'name', ''),
-    'access_token' =>         array(USER_LEVEL_SYSTEM, 'system', '', '', 0, '', '', ''),
-    'mime_type' =>            array(USER_LEVEL_SYSTEM, 'system', '', 'extension', 0, '', 'mime', ''),
-    'description_type' =>     array(USER_LEVEL_SYSTEM, 'system', '', '', NF_CACHE_ASSOC, '', '', ''),
-    'address' =>              array(USER_LEVEL_SYSTEM, 'system', '', '', NF_NO_DELETE|NF_NO_LIST, 'first_name,last_name,address1,city', '', ''),
-    'address_type' =>         array(USER_LEVEL_SYSTEM, 'system', '', '', NF_CACHE_ASSOC, '', '', ''),
-    'phone_type' =>           array(USER_LEVEL_SYSTEM, 'system', '', '', NF_CACHE_ASSOC, '', '', ''),
-    'source' =>               array(USER_LEVEL_SYSTEM, 'system', '', '', 0, '', '', ''),
-    'client' =>               array(USER_LEVEL_SYSTEM, 'system', '', '', 0, '', '', ''),
-    'legal_entity' =>         array(USER_LEVEL_SYSTEM, 'system', '', '', 0, '', '', ''),
-    'media' =>                array(USER_LEVEL_USER,   'system', '', '', NF_NO_LIST, '', '', ''),
-    'db_sequence' =>          array(USER_LEVEL_SYSTEM, 'system', '', 'seq_name', 0, 'seq_name', 'seq_name', ''),
-    'profile_media_map' =>    array(USER_LEVEL_USER,   'system', '', '', NF_NO_LIST, '', '', ''),
+        // system
+            'dictionary' =>           array(USER_LEVEL_SYSTEM, 'system', '', '', 0, 'term language', '', ''), /** special caching */
+            'security' =>             array(USER_LEVEL_SYSTEM, 'system', '', '', 0, '', '', ''),
+            'changelog' =>            array(USER_LEVEL_SYSTEM, 'system', '', '', NF_NO_ACTIONS, '', '', ''),
+            'mail_campaign' =>        array(USER_LEVEL_SYSTEM, 'system', '', '', NF_NO_ACTIONS, '', '', ''),      
+            'mail_queue' =>           array(USER_LEVEL_SYSTEM, 'system', '', '', NF_NO_ACTIONS, '', '', ''),      
+            'mail_log' =>             array(USER_LEVEL_SYSTEM, 'system', '', '', NF_NO_ACTIONS, '', '', ''),      
+            'sms_queue' =>            array(USER_LEVEL_SYSTEM, 'system', '', '', NF_NO_ACTIONS, '', '', ''),
+            'exchange_rate' =>        array(USER_LEVEL_SYSTEM, 'system', '', '', 0, '', '', ''),
+            'language' =>             array(USER_LEVEL_SYSTEM, 'system', '', 'code', NF_CACHE_ASSOC, '', '', ''),
+            'currency' =>             array(USER_LEVEL_SYSTEM, 'system', '', 'code', NF_CACHE_ASSOC, 'code', 'code', ''),
+            'countries' =>            array(USER_LEVEL_SYSTEM, 'system', '', '', NF_CACHE, '', 'name', ''),
+            'weekday' =>              array(USER_LEVEL_SYSTEM, 'system', '', '', NF_CACHE_ASSOC, '', 'name', ''),
+            'gender' =>               array(USER_LEVEL_SYSTEM, 'system', '', '', NF_CACHE_ASSOC, '', 'name', ''),
+            'access_token' =>         array(USER_LEVEL_SYSTEM, 'system', '', '', 0, '', '', ''),
+            'mime_type' =>            array(USER_LEVEL_SYSTEM, 'system', '', 'extension', 0, '', 'mime', ''),
+            'description_type' =>     array(USER_LEVEL_SYSTEM, 'system', '', '', NF_CACHE_ASSOC, '', '', ''),
+            'address' =>              array(USER_LEVEL_SYSTEM, 'system', '', '', NF_NO_DELETE|NF_NO_LIST, 'first_name,last_name,address1,city', '', ''),
+            'address_type' =>         array(USER_LEVEL_SYSTEM, 'system', '', '', NF_CACHE_ASSOC, '', '', ''),
+            'phone_type' =>           array(USER_LEVEL_SYSTEM, 'system', '', '', NF_CACHE_ASSOC, '', '', ''),
+            'source' =>               array(USER_LEVEL_SYSTEM, 'system', '', '', 0, '', '', ''),
+            'client' =>               array(USER_LEVEL_SYSTEM, 'system', '', '', 0, '', '', ''),
+            'legal_entity' =>         array(USER_LEVEL_SYSTEM, 'system', '', '', 0, '', '', ''),
+            'media' =>                array(USER_LEVEL_USER,   'system', '', '', NF_NO_LIST, '', '', ''),
+            'db_sequence' =>          array(USER_LEVEL_SYSTEM, 'system', '', 'seq_name', 0, 'seq_name', 'seq_name', ''),
+            'profile_media_map' =>    array(USER_LEVEL_USER,   'system', '', '', NF_NO_LIST, '', '', ''),
 
-// site
-    /** get rid of the next 2 - use config file */
-    'site' =>                 array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE_OFF|NF_COMPACT_LIST, 'name', '', ''),
-    'site_content' =>         array(USER_LEVEL_STAFF,  'site', '', '', 0, 'title', '', ''),
-    
-    
-    /** get rid of the next 4 - CMS no longer in use */
-    'site_page' =>            array(USER_LEVEL_STAFF,  'site', '', '', 0, '', 'parent_id, rank, id', ''),
-    'page_content' =>         array(USER_LEVEL_STAFF,  'site', '', '', NF_NO_ADD, 'title', '', ''),
-    'page_element' =>         array(USER_LEVEL_STAFF,  'site', '', '', 0, '', 'rank', ''),
-    'page_type' =>            array(USER_LEVEL_SYSTEM, 'site', '', '', NF_CACHE, '', 'id', ''),
+        // site
+            /** get rid of the next 2 - use config file */
+            'site' =>                 array(USER_LEVEL_ADMIN, 'site', '', '', NF_CACHE_OFF|NF_COMPACT_LIST, 'name', '', ''),
+            'site_content' =>         array(USER_LEVEL_STAFF,  'site', '', '', 0, 'title', '', ''),
+            
+            
+            /** get rid of the next 4 - CMS no longer in use */
+            'site_page' =>            array(USER_LEVEL_STAFF,  'site', '', '', 0, '', 'parent_id, rank, id', ''),
+            'page_content' =>         array(USER_LEVEL_STAFF,  'site', '', '', NF_NO_ADD, 'title', '', ''),
+            'page_element' =>         array(USER_LEVEL_STAFF,  'site', '', '', 0, '', 'rank', ''),
+            'page_type' =>            array(USER_LEVEL_SYSTEM, 'site', '', '', NF_CACHE, '', 'id', ''),
 
-    'message' =>              array(USER_LEVEL_STAFF,  'site', '', '', 0, '', '', ''),
-    'google_application' =>   array(USER_LEVEL_USER,   'site', '', '', 0, '', '', ''),
-    'font' =>                 array(USER_LEVEL_SYSTEM, 'site', '', '', 0, '', '', ''),
+            'message' =>              array(USER_LEVEL_STAFF,  'site', '', '', 0, '', '', ''),
+            'google_application' =>   array(USER_LEVEL_USER,   'site', '', '', 0, '', '', ''),
+            'font' =>                 array(USER_LEVEL_SYSTEM, 'site', '', '', 0, '', '', ''),
 
-    'sharing' =>              array(USER_LEVEL_STAFF,  'social', '', '', 0, 'title', '', ''),
-    'share_log' =>            array(USER_LEVEL_STAFF,  'social', '', '', 0, 'title', '', ''),
+            'sharing' =>              array(USER_LEVEL_STAFF,  'social', '', '', 0, 'title', '', ''),
+            'share_log' =>            array(USER_LEVEL_STAFF,  'social', '', '', 0, 'title', '', ''),
 
-    'news' =>                 array(USER_LEVEL_STAFF,  'content', '', '', 0, 'title', '', ''),
-    'article' =>              array(USER_LEVEL_USER,   'content', '', '', 0, 'title', 'created desc', ''),
-    'comment' =>              array(USER_LEVEL_USER,   'content', '', '', 0, 'title', 'created desc', ''),
-    'newsletter' =>           array(USER_LEVEL_USER,   'content', '', '', 0, 'email_address', 'created desc', ''),
-    'article_type' =>         array(USER_LEVEL_USER,   'content', '', '', NF_CACHE_ASSOC, '', '', ''),
-    'minisite' =>             array(USER_LEVEL_ADMIN,  'site', '', '', 0, 'name', '', ''),
-    'minisite_page_type' =>   array(USER_LEVEL_ADMIN,  'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'name', '', ''),
-    'minisite_page' =>        array(USER_LEVEL_ADMIN,  'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'page_name', '', ''),
+            'news' =>                 array(USER_LEVEL_STAFF,  'content', '', '', 0, 'title', '', ''),
+            'article' =>              array(USER_LEVEL_USER,   'content', '', '', 0, 'title', 'created desc', ''),
+            'comment' =>              array(USER_LEVEL_USER,   'content', '', '', 0, 'title', 'created desc', ''),
+            'newsletter' =>           array(USER_LEVEL_USER,   'content', '', '', 0, 'email_address', 'created desc', ''),
+            'article_type' =>         array(USER_LEVEL_USER,   'content', '', '', NF_CACHE_ASSOC, '', '', ''),
+            'minisite' =>             array(USER_LEVEL_ADMIN,  'site', '', '', 0, 'name', '', ''),
+            'minisite_page_type' =>   array(USER_LEVEL_ADMIN,  'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'name', '', ''),
+            'minisite_page' =>        array(USER_LEVEL_ADMIN,  'site', '', '', NF_CACHE|NF_COMPACT_LIST, 'page_name', '', ''),
                                                                              
 
-// user                            
+        // user                            
 
-    'user' =>                 array(USER_LEVEL_SYSTEM, 'user', 'user', '', NF_NO_DELETE, 'username', '', ''),
-    'user_level' =>           array(USER_LEVEL_SYSTEM, 'user', '', 'user_level', NF_CACHE_ASSOC, 'user_type', '', ''),
-    'user_role' =>            array(USER_LEVEL_SYSTEM, 'user', '', '', NF_CACHE_ASSOC|NF_NO_ACTIONS, '', '', ''),
-    'user_map' =>             array(USER_LEVEL_SYSTEM, 'user', '', '', 0, '', '', ''),
-    'auth_log' =>             array(USER_LEVEL_SYSTEM, 'user', '', '', NF_NO_DELETE, 'display_name', '', ''),
-    'user_profile' =>         array(USER_LEVEL_STAFF,  'user', '', '', 0, 'display_name', '', ''),
-    'opening_hours' =>        array(USER_LEVEL_STAFF,  'user', '', '', 0, '', '', ''),
-    'provider_profile' =>     array(USER_LEVEL_STAFF,  'user', '', '', 0, 'display_name', '', ''),
-    // 'password_reset' =>       array(USER_LEVEL_SYSTEM, 'user', '', '', NF_NO_ACTIONS, '', '', ''),
-    'wishlist' =>             array(USER_LEVEL_SYSTEM, 'user', '', '', 0, '', '', ''),
-
+            'user' =>                 array(USER_LEVEL_SYSTEM, 'user', 'user', '', NF_NO_DELETE, 'username', '', ''),
+            'user_level' =>           array(USER_LEVEL_SYSTEM, 'user', '', 'user_level', NF_CACHE_ASSOC, 'user_type', '', ''),
+            'user_role' =>            array(USER_LEVEL_SYSTEM, 'user', '', '', NF_CACHE_ASSOC|NF_NO_ACTIONS, '', '', ''),
+            'user_map' =>             array(USER_LEVEL_SYSTEM, 'user', '', '', 0, '', '', ''),
+            'auth_log' =>             array(USER_LEVEL_SYSTEM, 'user', '', '', NF_NO_DELETE, 'display_name', '', ''),
+            'user_profile' =>         array(USER_LEVEL_STAFF,  'user', '', '', 0, 'display_name', '', ''),
+            'opening_hours' =>        array(USER_LEVEL_STAFF,  'user', '', '', 0, '', '', ''),
+            'provider_profile' =>     array(USER_LEVEL_STAFF,  'user', '', '', 0, 'display_name', '', ''),
+            // 'password_reset' =>       array(USER_LEVEL_SYSTEM, 'user', '', '', NF_NO_ACTIONS, '', '', ''),
+            'wishlist' =>             array(USER_LEVEL_SYSTEM, 'user', '', '', 0, '', '', ''),
+            'subscribed_users' =>array(USER_LEVEL_SYSTEM, 'user', '', '', 0,'', '', ''),
+            'subscription_plans' =>array(USER_LEVEL_SYSTEM, 'user', '', '', 0,'', '', ''),
+            'subscription_plan_features' =>array(USER_LEVEL_SYSTEM, 'user', '', '', 0,'', '', ''),
     
-    'org' =>                  array(USER_LEVEL_STAFF,  'user', '', '', 0, 'name', 'name', ''),
-    'contact' =>              array(USER_LEVEL_SYSTEM, 'user', '', '', 0, 'first_name,last_name,organization', '', ''),
+            'org' =>                  array(USER_LEVEL_STAFF,  'user', '', '', 0, 'name', 'name', ''),
+            'contact' =>              array(USER_LEVEL_SYSTEM, 'user', '', '', 0, 'first_name,last_name,organization', '', ''),
 
-    'contact_status' =>       array(USER_LEVEL_SYSTEM, 'user', '', '', NF_CACHE_ASSOC, '', '', ''),
+            'contact_status' =>       array(USER_LEVEL_SYSTEM, 'user', '', '', NF_CACHE_ASSOC, '', '', ''),
 
-    'provider' =>             array(USER_LEVEL_SYSTEM, 'user', '', '', 0, '', '', ''),
-    'provider_key' =>         array(USER_LEVEL_SYSTEM, 'user', '', '', 0, '', '', ''),
+            'provider' =>             array(USER_LEVEL_SYSTEM, 'user', '', '', 0, '', '', ''),
+            'provider_key' =>         array(USER_LEVEL_SYSTEM, 'user', '', '', 0, '', '', ''),
     
-// res
-    'reservation' =>          array(USER_LEVEL_ADMIN, 'enquiry', '', 'res_id', NF_LOG|NF_COMPACT_LIST, '', '', ''),
-    'special_offer' =>        array(USER_LEVEL_ADMIN,  'enquiry', '', '', NF_LOG|NF_COMPACT_LIST, '', '', ''),
-    'res_status' =>           array(USER_LEVEL_SYSTEM, 'enquiry', '', '', NF_CACHE_ASSOC, '', '', ''),
-    'res_type' =>             array(USER_LEVEL_SYSTEM, 'enquiry', '', '', NF_CACHE_ASSOC, '', '', ''),
-    'rate_class' =>           array(USER_LEVEL_SYSTEM, 'enquiry', '', '', NF_CACHE_ASSOC, '', '', ''),
-    'enq_status' =>           array(USER_LEVEL_SYSTEM, 'enquiry', '', '', 0, '', '', ''),
-    'res_exception' =>        array(USER_LEVEL_SYSTEM, 'enquiry', '', '', 0, '', 'rank', ''),
+        // res
+            'reservation' =>          array(USER_LEVEL_ADMIN, 'enquiry', '', 'res_id', NF_LOG|NF_COMPACT_LIST, '', '', ''),
+            'special_offer' =>        array(USER_LEVEL_ADMIN,  'enquiry', '', '', NF_LOG|NF_COMPACT_LIST, '', '', ''),
+            'res_status' =>           array(USER_LEVEL_SYSTEM, 'enquiry', '', '', NF_CACHE_ASSOC, '', '', ''),
+            'res_type' =>             array(USER_LEVEL_SYSTEM, 'enquiry', '', '', NF_CACHE_ASSOC, '', '', ''),
+            'rate_class' =>           array(USER_LEVEL_SYSTEM, 'enquiry', '', '', NF_CACHE_ASSOC, '', '', ''),
+            'enq_status' =>           array(USER_LEVEL_SYSTEM, 'enquiry', '', '', 0, '', '', ''),
+            'res_exception' =>        array(USER_LEVEL_SYSTEM, 'enquiry', '', '', 0, '', 'rank', ''),
 
-    'price_breakdown'      => array(USER_LEVEL_USER,   'enquiry', '', '', 0, '', '', ''),
-    'price_breakdown_row'  => array(USER_LEVEL_USER,   'enquiry', '', '', 0, '', 'date', ''),
-    'calendar_import' =>      array(USER_LEVEL_SYSTEM, 'system', '', '', 0, '', '', ''),
+            'price_breakdown'      => array(USER_LEVEL_USER,   'enquiry', '', '', 0, '', '', ''),
+            'price_breakdown_row'  => array(USER_LEVEL_USER,   'enquiry', '', '', 0, '', 'date', ''),
+            'calendar_import' =>      array(USER_LEVEL_SYSTEM, 'system', '', '', 0, '', '', ''),
 
-// property
-    'agent' =>                array(USER_LEVEL_ADMIN,  'user', '', '', 0, 'name', 'name', ''),
+        // property
+            'agent' =>                array(USER_LEVEL_ADMIN,  'user', '', '', 0, 'name', 'name', ''),
 
-// review
-    'review' =>              array(USER_LEVEL_ADMIN,  'review', '', '', 0, '', 'id', ''),
-    'review_item' =>         array(USER_LEVEL_ADMIN,  'review', '', '', 0, '', 'id', ''),
-    'review_score' =>        array(USER_LEVEL_ADMIN,  'review', '', '', 0, '', 'id', ''),
-    'chat' =>                 array(USER_LEVEL_SYSTEM, 'enquiry', '', '', NF_NO_ACTIONS, '', 'created DESC', ''),
-    'feedback' =>             array(USER_LEVEL_SYSTEM, 'enquiry', '', '', 0, '', '', ''),
-    'feedback_purpose' =>     array(USER_LEVEL_SYSTEM, 'enquiry', '', '', 0, 'name', 'id', ''),
-    'feedback_profile' =>     array(USER_LEVEL_SYSTEM, 'enquiry', '', '', 0, 'name', 'id', ''),
+        // review
+            'review' =>              array(USER_LEVEL_ADMIN,  'review', '', '', 0, '', 'id', ''),
+            'review_item' =>         array(USER_LEVEL_ADMIN,  'review', '', '', 0, '', 'id', ''),
+            'review_score' =>        array(USER_LEVEL_ADMIN,  'review', '', '', 0, '', 'id', ''),
+            'chat' =>                 array(USER_LEVEL_SYSTEM, 'enquiry', '', '', NF_NO_ACTIONS, '', 'created DESC', ''),
+            'feedback' =>             array(USER_LEVEL_SYSTEM, 'enquiry', '', '', 0, '', '', ''),
+            'feedback_purpose' =>     array(USER_LEVEL_SYSTEM, 'enquiry', '', '', 0, 'name', 'id', ''),
+            'feedback_profile' =>     array(USER_LEVEL_SYSTEM, 'enquiry', '', '', 0, 'name', 'id', ''),
                                     
-// event
-    'event' =>                array(USER_LEVEL_OWNER,  'event', '',      '', NF_LOG, '', '', ''),
-    'event_type' =>           array(USER_LEVEL_SYSTEM, 'event', '', '', NF_CACHE_ASSOC, '', '', ''),
-    'event_status' =>         array(USER_LEVEL_SYSTEM, 'event', '', '', NF_CACHE_ASSOC, '', '', ''),
+        // event
+            'event' =>                array(USER_LEVEL_OWNER,  'event', '',      '', NF_LOG, '', '', ''),
+            'event_type' =>           array(USER_LEVEL_SYSTEM, 'event', '', '', NF_CACHE_ASSOC, '', '', ''),
+            'event_status' =>         array(USER_LEVEL_SYSTEM, 'event', '', '', NF_CACHE_ASSOC, '', '', ''),
     
-// product            
-    'product' =>              array(USER_LEVEL_STAFF,  'product', '', '', 0, 'name', 'name', ''),
-    'product_category' =>     array(USER_LEVEL_SYSTEM, 'product', '', '', 0, '', '', ''),    
-    'product_option' =>       array(USER_LEVEL_STAFF,  'product', '', '', 0, '', '', ''),    
-    'product_variant' =>      array(USER_LEVEL_STAFF,  'product', '', '', 0, '', '', ''),    
-    'product_unit' =>         array(USER_LEVEL_SYSTEM, 'product', '', 'code', 0, '', 'code', ''),    
-    'supplier' =>             array(USER_LEVEL_STAFF,  'product', '', '', 0, 'address.organization', 'address.organization', ''),
-    'product_supplier_map' => array(USER_LEVEL_STAFF,  'product', '', '', 0, 'product_id', 'product_id', ''),
-//    'cart'                 => array(USER_LEVEL_USER,   'product', '', '', 0, '', '', ''),
-//    'cart_row'             => array(USER_LEVEL_USER,   'product', '', '', 0, '', '', ''),
+        // product            
+            'product' =>              array(USER_LEVEL_STAFF,  'product', '', '', 0, 'name', 'name', ''),
+            'product_category' =>     array(USER_LEVEL_SYSTEM, 'product', '', '', 0, '', '', ''),    
+            'product_option' =>       array(USER_LEVEL_STAFF,  'product', '', '', 0, '', '', ''),    
+            'product_variant' =>      array(USER_LEVEL_STAFF,  'product', '', '', 0, '', '', ''),    
+            'product_unit' =>         array(USER_LEVEL_SYSTEM, 'product', '', 'code', 0, '', 'code', ''),    
+            'supplier' =>             array(USER_LEVEL_STAFF,  'product', '', '', 0, 'address.organization', 'address.organization', ''),
+            'product_supplier_map' => array(USER_LEVEL_STAFF,  'product', '', '', 0, 'product_id', 'product_id', ''),
+        //    'cart'                 => array(USER_LEVEL_USER,   'product', '', '', 0, '', '', ''),
+        //    'cart_row'             => array(USER_LEVEL_USER,   'product', '', '', 0, '', '', ''),
     
-// accounting
-    'invoice' =>              array(USER_LEVEL_OWNER,  'accounting', '', '', NF_LOG|NF_COMPACT_LIST, '', '', ''),
-    'inv_status' =>           array(USER_LEVEL_SYSTEM, 'accounting', '', '', NF_CACHE_ASSOC, '', '', ''),
-    'inv_type' =>             array(USER_LEVEL_SYSTEM, 'accounting', '', '', NF_CACHE_ASSOC, '', '', ''),
-    'inv_lineitem' =>         array(USER_LEVEL_SYSTEM, 'accounting', '', '', NF_LOG|NF_NO_LIST, '', 'type', ''),
-    'lineitem_type' =>        array(USER_LEVEL_SYSTEM, 'accounting', '', '', NF_CACHE_ASSOC, 'name', '', ''),
-    'payment' =>              array(USER_LEVEL_ADMIN,  'accounting', '', '', NF_LOG|NF_NO_ADD|NF_NO_DELETE, '', '', ''),
-    'payment_type' =>         array(USER_LEVEL_SYSTEM, 'accounting', '', '', NF_CACHE_ASSOC, '', '', ''),
-    'payment_source' =>       array(USER_LEVEL_SYSTEM, 'accounting', '', '', NF_CACHE_ASSOC, '', '', ''),
-    'payment_status' =>       array(USER_LEVEL_SYSTEM, 'accounting', '', '', NF_CACHE_ASSOC, '', '', ''),
-    'withdrawal' =>           array(USER_LEVEL_SYSTEM,    'accounting', '', '', NF_LOG|NF_NO_ADD|NF_NO_EDIT|NF_NO_DELETE, '', '', ''),
-    'charge' =>               array(USER_LEVEL_SYSTEM,    'accounting', '', '', NF_LOG|NF_NO_ADD|NF_NO_EDIT|NF_NO_DELETE, '', '', ''),
-    'gateway' =>              array(USER_LEVEL_SYSTEM,    'accounting', '', '', 0, 'name', '', ''),
-    'transaction' =>          array(USER_LEVEL_SYSTEM,    'accounting', '', 'tx_id', NF_LOG|NF_NO_ACTIONS, '', '', ''),
-    'tx_status' =>            array(USER_LEVEL_SYSTEM,    'accounting', '', '', NF_CACHE_ASSOC, '', '', ''),
-    'cc' =>                   array(USER_LEVEL_SYSTEM,    'accounting', '', '', NF_NO_LIST, '', '', ''),
-    'cc_type' =>              array(USER_LEVEL_SYSTEM,    'accounting', '', '', NF_CACHE_ASSOC, '', '', ''),
-    'tax_category' =>         array(USER_LEVEL_SYSTEM, 'accounting', '', 'code', NF_CACHE_ASSOC, '', '', ''),
-    'billing_period' =>       array(USER_LEVEL_SYSTEM, 'accounting', '', '', NF_CACHE_ASSOC, '', '', ''),
+        // accounting
+            'invoice' =>              array(USER_LEVEL_OWNER,  'accounting', '', '', NF_LOG|NF_COMPACT_LIST, '', '', ''),
+            'inv_status' =>           array(USER_LEVEL_SYSTEM, 'accounting', '', '', NF_CACHE_ASSOC, '', '', ''),
+            'inv_type' =>             array(USER_LEVEL_SYSTEM, 'accounting', '', '', NF_CACHE_ASSOC, '', '', ''),
+            'inv_lineitem' =>         array(USER_LEVEL_SYSTEM, 'accounting', '', '', NF_LOG|NF_NO_LIST, '', 'type', ''),
+            'lineitem_type' =>        array(USER_LEVEL_SYSTEM, 'accounting', '', '', NF_CACHE_ASSOC, 'name', '', ''),
+            'payment' =>              array(USER_LEVEL_ADMIN,  'accounting', '', '', NF_LOG|NF_NO_ADD|NF_NO_DELETE, '', '', ''),
+            'payment_type' =>         array(USER_LEVEL_SYSTEM, 'accounting', '', '', NF_CACHE_ASSOC, '', '', ''),
+            'payment_source' =>       array(USER_LEVEL_SYSTEM, 'accounting', '', '', NF_CACHE_ASSOC, '', '', ''),
+            'payment_status' =>       array(USER_LEVEL_SYSTEM, 'accounting', '', '', NF_CACHE_ASSOC, '', '', ''),
+            'withdrawal' =>           array(USER_LEVEL_SYSTEM,    'accounting', '', '', NF_LOG|NF_NO_ADD|NF_NO_EDIT|NF_NO_DELETE, '', '', ''),
+            'charge' =>               array(USER_LEVEL_SYSTEM,    'accounting', '', '', NF_LOG|NF_NO_ADD|NF_NO_EDIT|NF_NO_DELETE, '', '', ''),
+            'gateway' =>              array(USER_LEVEL_SYSTEM,    'accounting', '', '', 0, 'name', '', ''),
+            'transaction' =>          array(USER_LEVEL_SYSTEM,    'accounting', '', 'tx_id', NF_LOG|NF_NO_ACTIONS, '', '', ''),
+            'tx_status' =>            array(USER_LEVEL_SYSTEM,    'accounting', '', '', NF_CACHE_ASSOC, '', '', ''),
+            'cc' =>                   array(USER_LEVEL_SYSTEM,    'accounting', '', '', NF_NO_LIST, '', '', ''),
+            'cc_type' =>              array(USER_LEVEL_SYSTEM,    'accounting', '', '', NF_CACHE_ASSOC, '', '', ''),
+            'tax_category' =>         array(USER_LEVEL_SYSTEM, 'accounting', '', 'code', NF_CACHE_ASSOC, '', '', ''),
+            'billing_period' =>       array(USER_LEVEL_SYSTEM, 'accounting', '', '', NF_CACHE_ASSOC, '', '', ''),
                                                                               
 
-// location
-    'country' =>              array(USER_LEVEL_SYSTEM, 'location', 'msCountry', '', NF_CACHE, '', '', ''),
-    'geo_city' =>             array(USER_LEVEL_SYSTEM, 'location', 'geo_city', '', 0, 'name', 'name', ''),
+        // location
+            'country' =>              array(USER_LEVEL_SYSTEM, 'location', 'msCountry', '', NF_CACHE, '', '', ''),
+            'geo_city' =>             array(USER_LEVEL_SYSTEM, 'location', 'geo_city', '', 0, 'name', 'name', ''),
 
-    'landmark' =>             array(USER_LEVEL_STAFF,  'location', 'landmark'        , 'id', 0, '', '', ''),
-    'landmark_type' =>        array(USER_LEVEL_STAFF,  'location', 'landmark_type'   , 'id', NF_CACHE_ASSOC, '', '', ''),
-    'location' =>             array(USER_LEVEL_SYSTEM, 'location', 'location'        , 'id', 0, '', '', ''),
-    'airport' =>              array(USER_LEVEL_SYSTEM, 'location', 'airport'         , 'id', 0, '', '', ''),
+            'landmark' =>             array(USER_LEVEL_STAFF,  'location', 'landmark'        , 'id', 0, '', '', ''),
+            'landmark_type' =>        array(USER_LEVEL_STAFF,  'location', 'landmark_type'   , 'id', NF_CACHE_ASSOC, '', '', ''),
+            'location' =>             array(USER_LEVEL_SYSTEM, 'location', 'location'        , 'id', 0, '', '', ''),
+            'airport' =>              array(USER_LEVEL_SYSTEM, 'location', 'airport'         , 'id', 0, '', '', ''),
 
-    'landmark_type' =>        array(USER_LEVEL_STAFF,  'location', 'landmark'        , 'id', NF_CACHE_ASSOC, '', '', ''),
+            'landmark_type' =>        array(USER_LEVEL_STAFF,  'location', 'landmark'        , 'id', NF_CACHE_ASSOC, '', '', ''),
 
 
-);
+    );
 // end class definitions
 
+
 // begin class attributes
+    $__CLASS_ATTRIBUTES = array(                                
 
-$__CLASS_ATTRIBUTES = array(                                
+        //   CLASS ATTRIBUTES                       0                  1       2       3            4          5
+        //   db field name                       Screen name          type   default flags  relation/options filters
+    "cc" => 
+  
+        array(
+            'id'=>                        array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT),
+            'guest_id'=>                  array('Guest Id',          'link', ATT_DEFAULT_NULL, AF_HIDE_ADD|AF_READONLY|AF_SEARCHABLE, 'user'),
+            'user_id'=>                   array('User Id',           'link', ATT_DEFAULT_USER_ID, AF_HIDE_ADD|AF_READONLY|AF_SEARCHABLE, 'user'),
+            'site_id'=>                   array('Site',              'link',   ATT_DEFAULT_SITE_ID, AF_HIDE_LIST|AF_LOG, 'site'),
+            'cc_type'=>                   array('Credit Card Type',  'many2one', 0, 1, 'cc_type'),
+            'cc_number'=>                 array('Credit Card Number', 'cc',     0, AF_OBLIGATORY|AF_READONLY_EDIT, 20),
+            'cc_crypt'=>                  array('CC crypt',           'cc',  0, AF_READONLY_EDIT|AF_ENCRYPT, 40),
+            'cc_cardholder'=>             array('Cardholder full name','str',    '', 1, 50),
+            // 'cc_exp_month'=>              array('Exp. Month',         'intSelect', 0, AF_OBLIGATORY, array(1,12,1)),
+            // 'cc_exp_year'=>               array('Exp. Year',          'intSelect', 0, AF_OBLIGATORY, array(2009,2020,1)),
+  
+            'cc_exp_month'=>              array('Exp. Month',        'str',    '', 1, 2),
+            'cc_exp_year'=>               array('Exp. Year',         'str',    '', 1, 4),
+            'cc_cvv2'=>                   array('Security Code',     'str',    '', 0, 4),
+            'last_charge' =>              array('Last charged',      'datetime',  ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY),
 
-//   CLASS ATTRIBUTES                       0                  1       2       3            4          5
-//   db field name                       Screen name          type   default flags  relation/options filters
+            'charge'=>                    array('Charge log',        'one2many', 0, AF_HIDE_LIST|AF_READONLY, 'charge', 'cc_id'),
+            'payments'=>                  array('Payments',          'one2many', 0, AF_HIDE_LIST|AF_CASCADE_DELETE, 'payment', 'cc_id'),
+            'remember'=>                  array('Store card?',        'bool', 0, AF_READONLY),
 
-  
-  "cc" => 
-  
-  array(
-     'id'=>                        array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT),
-     'guest_id'=>                  array('Guest Id',          'link', ATT_DEFAULT_NULL, AF_HIDE_ADD|AF_READONLY|AF_SEARCHABLE, 'user'),
-     'user_id'=>                   array('User Id',           'link', ATT_DEFAULT_USER_ID, AF_HIDE_ADD|AF_READONLY|AF_SEARCHABLE, 'user'),
-     'site_id'=>                   array('Site',              'link',   ATT_DEFAULT_SITE_ID, AF_HIDE_LIST|AF_LOG, 'site'),
-     'cc_type'=>                   array('Credit Card Type',  'many2one', 0, 1, 'cc_type'),
-     'cc_number'=>                 array('Credit Card Number', 'cc',     0, AF_OBLIGATORY|AF_READONLY_EDIT, 20),
-     'cc_crypt'=>                  array('CC crypt',           'cc',  0, AF_READONLY_EDIT|AF_ENCRYPT, 40),
-     'cc_cardholder'=>             array('Cardholder full name','str',    '', 1, 50),
-  //         'cc_exp_month'=>              array('Exp. Month',         'intSelect', 0, AF_OBLIGATORY, array(1,12,1)),
-  //         'cc_exp_year'=>               array('Exp. Year',          'intSelect', 0, AF_OBLIGATORY, array(2009,2020,1)),
-  
-     'cc_exp_month'=>              array('Exp. Month',        'str',    '', 1, 2),
-     'cc_exp_year'=>               array('Exp. Year',         'str',    '', 1, 4),
-     'cc_cvv2'=>                   array('Security Code',     'str',    '', 0, 4),
-     'last_charge' =>              array('Last charged',      'datetime',  ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY),
-  
-     'charge'=>                    array('Charge log',        'one2many', 0, AF_HIDE_LIST|AF_READONLY, 'charge', 'cc_id'),
-     'payments'=>                  array('Payments',          'one2many', 0, AF_HIDE_LIST|AF_CASCADE_DELETE, 'payment', 'cc_id'),
-     'remember'=>                  array('Store card?',        'bool', 0, AF_READONLY),
-  
-     'default_card' =>             array('Primary card?',      'bool',     0, AF_HIDE_LIST|AF_READONLY),
+            'default_card' =>             array('Primary card?',      'bool',     0, AF_HIDE_LIST|AF_READONLY),
      
-  ),
+        ),
   
-  /** new feedback */
-  "review" => 
+    /** new feedback */
+    "review" => 
   
-  array(
-
+        array(
     
-     'id'=>                        array('ID',                'id',          0, AF_HIDE_LIST|AF_PRIMARY|AF_AUTOINCREMENT),
-     'created'=>                   array('Review Date',       'datetime',    ATT_DEFAULT_NOW, 0, 20),
-     'active' =>                   array('Active?',           'bool',        1, AF_HIDE_LIST|AF_READONLY),
-     'client_id'=>                 array('Client',    			  'link',        ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
-     'site_id'=>                   array('Site',              'link',        ATT_DEFAULT_SITE_ID, AF_OBLIGATORY|AF_HIDE_LIST, 'site'),
-     'user_id'=>                   array('User',              'link',        ATT_DEFAULT_USER_ID, AF_HIDE_ADD, 'user'),
-     'host_id'=>                   array('Host',              'link',        0, AF_HIDE_ADD|AF_READONLY, 'user'),
-     'guest_id'=>                  array('Guest',             'link',        0, AF_HIDE_ADD|AF_READONLY, 'user'),
+            'id'=>                        array('ID',                'id',          0, AF_HIDE_LIST|AF_PRIMARY|AF_AUTOINCREMENT),
+            'created'=>                   array('Review Date',       'datetime',    ATT_DEFAULT_NOW, 0, 20),
+            'active' =>                   array('Active?',           'bool',        1, AF_HIDE_LIST|AF_READONLY),
+            'client_id'=>                 array('Client',                 'link',        ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
+            'site_id'=>                   array('Site',              'link',        ATT_DEFAULT_SITE_ID, AF_OBLIGATORY|AF_HIDE_LIST, 'site'),
+            'user_id'=>                   array('User',              'link',        ATT_DEFAULT_USER_ID, AF_HIDE_ADD, 'user'),
+            'host_id'=>                   array('Host',              'link',        0, AF_HIDE_ADD|AF_READONLY, 'user'),
+            'guest_id'=>                  array('Guest',             'link',        0, AF_HIDE_ADD|AF_READONLY, 'user'),
 
-     'source_id' =>                array('Source',             'link',        0, AF_HIDE_ADD|AF_READONLY, 'source'),
-     'fid' =>                      array('Foreign ID',         'str',        0, AF_HIDE_ADD|AF_READONLY, 20),
-     'source_url' =>               array('Source URL',         'url',         0, AF_HIDE_ADD|AF_READONLY),
-     
-     'parent_type'=>               array('Parent Type',       'parent_type', 0, AF_OBLIGATORY|AF_READONLY|AF_HIDE_ADD),
-     'parent_id'=>                 array('Parent Id',         'parent_id',   0, AF_OBLIGATORY|AF_READONLY|AF_HIDE_ADD, 11),
+            'source_id' =>                array('Source',             'link',        0, AF_HIDE_ADD|AF_READONLY, 'source'),
+            'fid' =>                      array('Foreign ID',         'str',        0, AF_HIDE_ADD|AF_READONLY, 20),
+            'source_url' =>               array('Source URL',         'url',         0, AF_HIDE_ADD|AF_READONLY),
 
-     'reviewed_obj_type'=>         array('Reviewed Type',     'str',         0, AF_READONLY|AF_HIDE_ADD, 128),
-     'reviewed_obj_id'=>           array('Reviewed Id',       'int',         0, AF_READONLY|AF_HIDE_ADD, 11),
+            'parent_type'=>               array('Parent Type',       'parent_type', 0, AF_OBLIGATORY|AF_READONLY|AF_HIDE_ADD),
+            'parent_id'=>                 array('Parent Id',         'parent_id',   0, AF_OBLIGATORY|AF_READONLY|AF_HIDE_ADD, 11),
 
-     'language'=>                  array('Language',          'str',        '', AF_HIDE_LIST, 2),
-     'published' =>                array('Published?',        'bool',        0, AF_HIDE_LIST|AF_READONLY),
-     'anonymous' =>                array('Anonymous?',        'bool',        0, AF_HIDE_LIST|AF_READONLY),
-     'helpful'=>                   array('# Helpful',         'int',         0, AF_READONLY, 4),
-     'recommend'=>                 array('Recommend?',        'yesno',       0, AF_READONLY, 1),
+            'reviewed_obj_type'=>         array('Reviewed Type',     'str',         0, AF_READONLY|AF_HIDE_ADD, 128),
+            'reviewed_obj_id'=>           array('Reviewed Id',       'int',         0, AF_READONLY|AF_HIDE_ADD, 11),
 
-     'reviewer_name' =>            array('Name',              'str',        '', 0, 128),
-     'reviewer_city' =>            array('City',              'str',        '', 0, 128),
-     'reviewer_state' =>           array('State',              'str',        '', 0, 32),
-     'reviewer_country' =>         array('Country',           'str',        '', 0, 2),
-     'reviewer_email' =>           array('Email',             'email',        '', 0, 128),                          
-     'reviewer_phone' =>           array('Phone',             'phone',        '', 0, 16),
-     
-     'review_title' =>             array('Title',              'str',        '', 0, 128),
-     'review_comment' =>           array('Comment',           'text',       '', AF_HIDE_LIST),
-     'review_private' =>           array('Private feedback',   'text',       '', AF_HIDE_LIST),
+            'language'=>                  array('Language',          'str',        '', AF_HIDE_LIST, 2),
+            'published' =>                array('Published?',        'bool',        0, AF_HIDE_LIST|AF_READONLY),
+            'anonymous' =>                array('Anonymous?',        'bool',        0, AF_HIDE_LIST|AF_READONLY),
+            'helpful'=>                   array('# Helpful',         'int',         0, AF_READONLY, 4),
+            'recommend'=>                 array('Recommend?',        'yesno',       0, AF_READONLY, 1),
 
-     'media' =>                    array('Media',             'media',      '', 0, $single_media_options),
-     'score' =>                    array('Score',             'float',        0, AF_HIDE_ADD, '2.2'),
-  ),
+            'reviewer_name' =>            array('Name',              'str',        '', 0, 128),
+            'reviewer_city' =>            array('City',              'str',        '', 0, 128),
+            'reviewer_state' =>           array('State',              'str',        '', 0, 32),
+            'reviewer_country' =>         array('Country',           'str',        '', 0, 2),
+            'reviewer_email' =>           array('Email',             'email',        '', 0, 128),                          
+            'reviewer_phone' =>           array('Phone',             'phone',        '', 0, 16),
+
+            'review_title' =>             array('Title',              'str',        '', 0, 128),
+            'review_comment' =>           array('Comment',           'text',       '', AF_HIDE_LIST),
+            'review_private' =>           array('Private feedback',   'text',       '', AF_HIDE_LIST),
+
+            'media' =>                    array('Media',             'media',      '', 0, $single_media_options),
+            'score' =>                    array('Score',             'float',        0, AF_HIDE_ADD, '2.2'),
+        ),
+
+    /** a review category for a given parent_type and a given site */
+    "review_item" =>
+        array(
+            'id'=>                  array('ID',                'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
+            'name'=>               array('Name',              'str',   '', AF_OBLIGATORY|AF_SEARCHABLE, 128),
+            'site_id'=>            array('Site',              'link',        ATT_DEFAULT_SITE_ID, AF_OBLIGATORY|AF_HIDE_LIST|AF_LOG, 'site'),
+            'parent_type'=>        array('Parent Type',       'parent_type', 0, AF_OBLIGATORY|AF_READONLY|AF_HIDE_ADD, $reqTypeArray),
+            'rank' =>              array('Rank',              'int', 0, 0, 6),
+        ),
   
+    /** the review of one category from one user 0-10 */
+    "review_score" =>
+        array(
+            'id'=>                  array('ID',                'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
 
-  /** a review category for a given parent_type and a given site */
-  "review_item" =>
-  array(
-     'id'=>            	    array('ID',                'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
-     'name'=>               array('Name',              'str',   '', AF_OBLIGATORY|AF_SEARCHABLE, 128),
-     'site_id'=>            array('Site',              'link',        ATT_DEFAULT_SITE_ID, AF_OBLIGATORY|AF_HIDE_LIST|AF_LOG, 'site'),
-     'parent_type'=>        array('Parent Type',       'parent_type', 0, AF_OBLIGATORY|AF_READONLY|AF_HIDE_ADD, $reqTypeArray),
-     'rank' =>              array('Rank',              'int', 0, 0, 6),
-  ),
+            /** below four duplicated for DB usability */
+            'client_id'=>          array('Client',                 'link',        ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
+            'site_id'=>            array('Site',              'link',        ATT_DEFAULT_SITE_ID, AF_OBLIGATORY|AF_HIDE_LIST, 'site'),                            
+            'parent_type'=>        array('Parent Type',       'parent_type', 0, AF_OBLIGATORY|AF_READONLY|AF_HIDE_ADD, $reqTypeArray),
+            'parent_id'=>          array('Parent Id',         'parent_id',   0, AF_OBLIGATORY|AF_READONLY|AF_HIDE_ADD, 11),
+
+            'review_id'=>          array('Review ID',         'link',  0, AF_OBLIGATORY|AF_HIDE_LIST|AF_LOG, 'review'),
+            'review_item_id'=>     array('Review Item ID' ,   'link',  0, AF_OBLIGATORY|AF_HIDE_LIST|AF_LOG, 'review_item'),
+            'score' =>             array('Score',             'int',   0, AF_HIDE_ADD),
+        ),
+
+    /** legacy - used to print old quotes on home page */
   
-  /** the review of one category from one user 0-10 */
-  "review_score" =>
-  array(
-     'id'=>            	    array('ID',                'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
-     
-     /** below four duplicated for DB usability */
-     'client_id'=>          array('Client',    			   'link',        ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
-     'site_id'=>            array('Site',              'link',        ATT_DEFAULT_SITE_ID, AF_OBLIGATORY|AF_HIDE_LIST, 'site'),                            
-     'parent_type'=>        array('Parent Type',       'parent_type', 0, AF_OBLIGATORY|AF_READONLY|AF_HIDE_ADD, $reqTypeArray),
-     'parent_id'=>          array('Parent Id',         'parent_id',   0, AF_OBLIGATORY|AF_READONLY|AF_HIDE_ADD, 11),
+    "feedback_purpose" =>
+        array(
+            'id'=>                  array('ID',                 'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
+            'name'=>               array('Name',                'str',   '', AF_OBLIGATORY|AF_SEARCHABLE, 100),
+        ),
+    "feedback_profile" =>
+        array(
+            'id'=>                  array('ID',                 'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
+            'name'=>               array('Name',                'str',   '', AF_OBLIGATORY|AF_SEARCHABLE, 100),
+        ),
 
-     'review_id'=>          array('Review ID',         'link',  0, AF_OBLIGATORY|AF_HIDE_LIST|AF_LOG, 'review'),
-     'review_item_id'=>     array('Review Item ID' ,   'link',  0, AF_OBLIGATORY|AF_HIDE_LIST|AF_LOG, 'review_item'),
-     'score' =>             array('Score',             'int',   0, AF_HIDE_ADD),
-  ),
-
-  /** legacy - used to print old quotes on home page */
-  
-  "feedback_purpose" =>
-  array(
-     'id'=>            	    array('ID',                	'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
-     'name'=>               array('Name',                'str',   '', AF_OBLIGATORY|AF_SEARCHABLE, 100),
-  ),
-  "feedback_profile" =>
-  array(
-     'id'=>            	    array('ID',                	'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
-     'name'=>               array('Name',                'str',   '', AF_OBLIGATORY|AF_SEARCHABLE, 100),
-  ),
-
-  "feedback" =>                                                                                       
-  
-  array(
-
+    "feedback" =>                                                                                       
+        array(
     
-     'id'=>                        array('ID',                'id',          0, AF_HIDE_LIST|AF_PRIMARY|AF_AUTOINCREMENT),
-     'parent_id'=>                 array('Parent Id',         'parent_id',   0, AF_OBLIGATORY|AF_READONLY|AF_HIDE_ADD, 11),
-     'parent_type'=>               array('Parent Type',       'parent_type', 0, AF_OBLIGATORY|AF_READONLY|AF_HIDE_ADD, $reqTypeArray),
-     'apt_id' =>                   array('Property',          'link',        0, AF_HIDE_EDIT|AF_HIDE_ADD, 'property'),
-     'city_id' =>                  array('City',              'link',        0, AF_HIDE_EDIT|AF_HIDE_ADD, 'geo_city'),
-     'site_id'=>                   array('Site',              'many2one',   ATT_DEFAULT_SITE_ID, AF_OBLIGATORY|AF_HIDE_LIST|AF_LOG, 'site'),
-     'page_id' =>                  array('Page',              'link',        0, AF_HIDE_EDIT|AF_HIDE_ADD, 'site_page'),
-     'product_id' =>               array('Product',           'link',        0, AF_HIDE_EDIT|AF_HIDE_ADD, 'product'),
-     'property_type'=>             array('Property Type',     'valSelect',   0, AF_READONLY, $propertyTypeArray),
+            'id'=>                        array('ID',                'id',          0, AF_HIDE_LIST|AF_PRIMARY|AF_AUTOINCREMENT),
+            'parent_id'=>                 array('Parent Id',         'parent_id',   0, AF_OBLIGATORY|AF_READONLY|AF_HIDE_ADD, 11),
+            'parent_type'=>               array('Parent Type',       'parent_type', 0, AF_OBLIGATORY|AF_READONLY|AF_HIDE_ADD, $reqTypeArray),
+            'apt_id' =>                   array('Property',          'link',        0, AF_HIDE_EDIT|AF_HIDE_ADD, 'property'),
+            'city_id' =>                  array('City',              'link',        0, AF_HIDE_EDIT|AF_HIDE_ADD, 'geo_city'),
+            'site_id'=>                   array('Site',              'many2one',   ATT_DEFAULT_SITE_ID, AF_OBLIGATORY|AF_HIDE_LIST|AF_LOG, 'site'),
+            'page_id' =>                  array('Page',              'link',        0, AF_HIDE_EDIT|AF_HIDE_ADD, 'site_page'),
+            'product_id' =>               array('Product',           'link',        0, AF_HIDE_EDIT|AF_HIDE_ADD, 'product'),
+            'property_type'=>             array('Property Type',     'valSelect',   0, AF_READONLY, $propertyTypeArray),
 
-     'source_id'=>                 array('Source',            'link',        ATT_DEFAULT_NULL, 0, 'source'),
-     'source_url'=>                array('Source URL',        'url',         0, 0, 255),
-     'fid'=>                       array('Foreign ID',        'str',         0, 0, 10),
+            'source_id'=>                 array('Source',            'link',        ATT_DEFAULT_NULL, 0, 'source'),
+            'source_url'=>                array('Source URL',        'url',         0, 0, 255),
+            'fid'=>                       array('Foreign ID',        'str',         0, 0, 10),
+
+            'user_id'=>                   array('User',              'link',        ATT_DEFAULT_USER_ID, AF_HIDE_ADD, 'user'),
+            //     'owner_id'=>                  array('Owner',             'link',        ATT_DEFAULT_NULL, AF_SEARCHABLE|AF_HIDE_EDIT|AF_HIDE_ADD, 'owner'),
+            'host_id'=>                   array('Host',              'link', 0,     AF_HIDE_ADD|AF_READONLY, 'user'),
+            'guest_id'=>                  array('Guest',             'link', 0,     AF_HIDE_ADD|AF_READONLY, 'user'),
+            'agent_id'=>                  array('Agent',             'link',        ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD, 'agent'),
+            'client_id'=>                 array('Client',                 'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
+
+            'created'=>                   array('Review Date',       'datetime',    ATT_DEFAULT_NOW, 0, 20),
+            'language'=>                  array('Language',          'str',    '', AF_HIDE_LIST, 2),
+
+            'checkin'=>                   array('Checkin',           'date',   '', AF_HIDE_LIST, 50),
+            'checkout'=>                  array('Checkout',          'date',   '', AF_HIDE_LIST, 50),
+            'currency'=>                  array('Currency',          'valSelect', 0, AF_HIDE_LIST, $currencyArray),
+            'total'=>                     array('Total',             'money',   0, AF_HIDE_LIST|AF_READONLY),
+            'grand_total'=>               array('Grand Total',       'money',   0, AF_HIDE_LIST|AF_READONLY|AF_TOTAL),
+            'num_days'=>                  array('# Days',            'int',    0, AF_READONLY, 4),
+            //         'num_hours'=>                 array('# Hours',           'float',    0, AF_HIDE_LIST|AF_READONLY, '2.2'),
+            'num_guests'=>                array('# Guests',          'intSelect', 0, 0, array(1,8,1, '')),
+
+            'profile'=>                    array('Profile',          'many2one', 0, 0, 'feedback_profile'),
+            'purpose'=>                    array('Purpose',          'many2one', 0, 0, 'feedback_purpose'),
+            'ref'=>                        array('Referer',          'many2one', 0, AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD, 'referer'),
+            'ref_other'=>                  array('Ref (other)',      'str',    '', AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD, 20),
+            'ref_searchterm'=>             array('Searchterm',       'str',    '', AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD, 50),
+
+            'salutation'=>        array('Salutation',        'valSelect', '', 0, $salutationArray),
+            'first_name'=>        array('First Name',        'str',    '', AF_SEARCHABLE, 50),
+            'last_name'=>         array('Last Name',         'str',    '', AF_SEARCHABLE, 50),
+            'email_address'=>     array('Email',             'email',  '', AF_SEARCHABLE|AF_HIDE_LIST, 50),
+            'city'=>              array('City',              'str',    '', AF_HIDE_LIST, 50),
+            'state'=>             array('State',             'str',    '', AF_HIDE_LIST, 50),
+            'country'=>           array('Country',           'valSelect', ATT_DEFAULT_COUNTRY, AF_SEARCHABLE, $countryArray),
+
+            //         'feedback_website'    =>       array('Website'    , 'valSelect', 0, AF_READONLY, $ratingArray),
+            'feedback_booking'    =>       array('Booking'    , 'int', 0, AF_READONLY),
+            'feedback_pickup'     =>       array('Pickup'     , 'int', 0, AF_READONLY),
+            'feedback_checkin'    =>       array('Checkin'    , 'int', 0, AF_READONLY),
+            'feedback_catering'    =>      array('Catering'   , 'int', 0, AF_READONLY),
+            'feedback_service'    =>       array('Service'    , 'int', 0, AF_READONLY),
+            'feedback_location'   =>       array('Location'   , 'int', 0, AF_READONLY),
+            'feedback_size'       =>       array('Size'       , 'int', 0, AF_READONLY),
+            'feedback_decoration' =>       array('Decoration' , 'int', 0, AF_READONLY),
+            'feedback_comfort'    =>       array('Comfort'    , 'int', 0, AF_READONLY),
+            'feedback_cleaning'   =>       array('Cleaning'   , 'int', 0, AF_READONLY),
+            'feedback_apps'       =>       array('Applicances', 'int', 0, AF_READONLY),
+            'feedback_value'      =>       array('Value'      , 'int', 0, AF_READONLY),
+            'feedback_overall'    =>       array('Score (0-10)'    , 'float', 0, 0, "2.1"),
+            // 'feedback_overall'=>                array('Score (0-10)',          'intSelect', 0, AF_LOG, array(1,10,0.5, '')),
+
+            'feedback_recommend'  =>       array('Recommend'  , 'bool', 0, AF_READONLY),
+
+            //         'can_publish' =>               array('Can publish?', 'bool',     0, AF_HIDE_LIST|AF_READONLY),
+            'published' =>                 array('Published?',   'bool',   0, AF_HIDE_LIST|AF_READONLY),
+            'anonymous' =>                 array('Anonymous?',   'bool',   0, AF_HIDE_LIST|AF_READONLY),
+            'helpful'=>                    array('# Helpful',    'int',    0, AF_READONLY, 4),
+
+            'feedback_title' =>            array('Title',        'str',  '', 0, 128),
+            'feedback_comments' =>         array('Comments',        'text',  '', AF_HIDE_LIST),
+            'feedback_comments_neg' =>     array('Suggestions for improvement', 'text',  '', AF_HIDE_LIST),
+            'feedback_private' =>          array('Private feedback', 'text',  '', AF_HIDE_LIST),
+
+            'media' =>            array('Media',               'media', '', AF_HIDE_ADD, $single_media_options),
      
-     'user_id'=>                   array('User',              'link',        ATT_DEFAULT_USER_ID, AF_HIDE_ADD, 'user'),
-//     'owner_id'=>                  array('Owner',             'link',        ATT_DEFAULT_NULL, AF_SEARCHABLE|AF_HIDE_EDIT|AF_HIDE_ADD, 'owner'),
-     'host_id'=>                   array('Host',              'link', 0,     AF_HIDE_ADD|AF_READONLY, 'user'),
-     'guest_id'=>                  array('Guest',             'link', 0,     AF_HIDE_ADD|AF_READONLY, 'user'),
-     'agent_id'=>                  array('Agent',             'link',        ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD, 'agent'),
-     'client_id'=>                 array('Client',    			  'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
-  
-     'created'=>                   array('Review Date',       'datetime',    ATT_DEFAULT_NOW, 0, 20),
-     'language'=>                  array('Language',          'str',    '', AF_HIDE_LIST, 2),
-  
-     'checkin'=>                   array('Checkin',           'date',   '', AF_HIDE_LIST, 50),
-     'checkout'=>                  array('Checkout',          'date',   '', AF_HIDE_LIST, 50),
-     'currency'=>                  array('Currency',          'valSelect', 0, AF_HIDE_LIST, $currencyArray),
-     'total'=>                     array('Total',             'money',   0, AF_HIDE_LIST|AF_READONLY),
-     'grand_total'=>               array('Grand Total',       'money',   0, AF_HIDE_LIST|AF_READONLY|AF_TOTAL),
-     'num_days'=>                  array('# Days',            'int',    0, AF_READONLY, 4),
-  //         'num_hours'=>                 array('# Hours',           'float',    0, AF_HIDE_LIST|AF_READONLY, '2.2'),
-     'num_guests'=>                array('# Guests',          'intSelect', 0, 0, array(1,8,1, '')),
-  
-     'profile'=>                    array('Profile',          'many2one', 0, 0, 'feedback_profile'),
-     'purpose'=>                    array('Purpose',          'many2one', 0, 0, 'feedback_purpose'),
-     'ref'=>                        array('Referer',          'many2one', 0, AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD, 'referer'),
-     'ref_other'=>                  array('Ref (other)',      'str',    '', AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD, 20),
-     'ref_searchterm'=>             array('Searchterm',       'str',    '', AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD, 50),
-  
-     'salutation'=>        array('Salutation',        'valSelect', '', 0, $salutationArray),
-     'first_name'=>        array('First Name',        'str',    '', AF_SEARCHABLE, 50),
-     'last_name'=>         array('Last Name',         'str',    '', AF_SEARCHABLE, 50),
-     'email_address'=>     array('Email',             'email',  '', AF_SEARCHABLE|AF_HIDE_LIST, 50),
-     'city'=>              array('City',              'str',    '', AF_HIDE_LIST, 50),
-     'state'=>             array('State',             'str',    '', AF_HIDE_LIST, 50),
-     'country'=>           array('Country',           'valSelect', ATT_DEFAULT_COUNTRY, AF_SEARCHABLE, $countryArray),
-  
-  //         'feedback_website'    =>       array('Website'    , 'valSelect', 0, AF_READONLY, $ratingArray),
-     'feedback_booking'    =>       array('Booking'    , 'int', 0, AF_READONLY),
-     'feedback_pickup'     =>       array('Pickup'     , 'int', 0, AF_READONLY),
-     'feedback_checkin'    =>       array('Checkin'    , 'int', 0, AF_READONLY),
-     'feedback_catering'    =>      array('Catering'   , 'int', 0, AF_READONLY),
-     'feedback_service'    =>       array('Service'    , 'int', 0, AF_READONLY),
-     'feedback_location'   =>       array('Location'   , 'int', 0, AF_READONLY),
-     'feedback_size'       =>       array('Size'       , 'int', 0, AF_READONLY),
-     'feedback_decoration' =>       array('Decoration' , 'int', 0, AF_READONLY),
-     'feedback_comfort'    =>       array('Comfort'    , 'int', 0, AF_READONLY),
-     'feedback_cleaning'   =>       array('Cleaning'   , 'int', 0, AF_READONLY),
-     'feedback_apps'       =>       array('Applicances', 'int', 0, AF_READONLY),
-     'feedback_value'      =>       array('Value'      , 'int', 0, AF_READONLY),
-     'feedback_overall'    =>       array('Score (0-10)'    , 'float', 0, 0, "2.1"),
-   // 'feedback_overall'=>                array('Score (0-10)',          'intSelect', 0, AF_LOG, array(1,10,0.5, '')),
-
-     'feedback_recommend'  =>       array('Recommend'  , 'bool', 0, AF_READONLY),
-  
-  //         'can_publish' =>               array('Can publish?', 'bool',     0, AF_HIDE_LIST|AF_READONLY),
-     'published' =>                 array('Published?',   'bool',   0, AF_HIDE_LIST|AF_READONLY),
-     'anonymous' =>                 array('Anonymous?',   'bool',   0, AF_HIDE_LIST|AF_READONLY),
-     'helpful'=>                    array('# Helpful',    'int',    0, AF_READONLY, 4),
-
-     'feedback_title' =>            array('Title',        'str',  '', 0, 128),
-     'feedback_comments' =>         array('Comments',        'text',  '', AF_HIDE_LIST),
-     'feedback_comments_neg' =>     array('Suggestions for improvement', 'text',  '', AF_HIDE_LIST),
-     'feedback_private' =>          array('Private feedback', 'text',  '', AF_HIDE_LIST),
-
-     'media' =>            array('Media',               'media', '', AF_HIDE_ADD, $single_media_options),
-     
-  ),
+        ),
   
   
-  "chat" => 
+    "chat" => 
   
-  array(
+        array(
      'id'=>                        array('ID',                'id',   0, AF_HIDE_LIST|AF_PRIMARY|AF_AUTOINCREMENT),
      'parent_id'=>                 array('Parent Id',         'int',   0, AF_OBLIGATORY|AF_READONLY|AF_HIDE_ADD, 11),
      'parent_type'=>               array('Parent Type',       'str', 0, AF_OBLIGATORY|AF_READONLY|AF_HIDE_ADD),
@@ -405,677 +401,671 @@ $__CLASS_ATTRIBUTES = array(
      'message'=>                   array('Message',           'text', '', AF_HIDE_EDIT|AF_OBLIGATORY|AF_HIDE_ADD),
      'language'=>                  array('Language',          'many2one',  ATT_DEFAULT_LANG, AF_HIDE_LIST, 'language'),
      
-  ),
+        ),
   
-  "special_offer" => 
+    "special_offer" => 
   
-  array(
-     'id'=>                        array('ID',                'id',   0, AF_HIDE_LIST|AF_PRIMARY|AF_AUTOINCREMENT),
-     'created'=>                   array('Created',           'datetime', ATT_DEFAULT_NOW, AF_HIDE_ADD|AF_READONLY, 20),
-     'timestamp'=>                 array('Timestamp',         'timestamp', ATT_DEFAULT_NOW, AF_HIDE_ADD|AF_READONLY, 20),
-     'active' =>                   array('Active?',           'bool',     1, 0),
-     
-     'site_id'=>                   array('Site',    			    'link',    ATT_DEFAULT_SITE_ID, AF_READONLY|AF_HIDE, 'site'),
-     'res_id' =>                   array('Reservation',       'link',     0, AF_OBLIGATORY|AF_HIDE_EDIT|AF_HIDE_ADD, 'reservation'),
-     'user_id' =>                  array('Author',            'link', ATT_DEFAULT_USER_ID, AF_OBLIGATORY|AF_HIDE_EDIT|AF_HIDE_ADD, 'user'),
-     'host_id'=>                   array('Host',              'link',     0, AF_OBLIGATORY|AF_HIDE_ADD|AF_READONLY, 'user'),
-     'guest_id'=>                  array('Guest',             'link',     0, AF_OBLIGATORY|AF_HIDE_ADD|AF_READONLY, 'user'),
+        array(
+         'id'=>                        array('ID',                'id',   0, AF_HIDE_LIST|AF_PRIMARY|AF_AUTOINCREMENT),
+         'created'=>                   array('Created',           'datetime', ATT_DEFAULT_NOW, AF_HIDE_ADD|AF_READONLY, 20),
+         'timestamp'=>                 array('Timestamp',         'timestamp', ATT_DEFAULT_NOW, AF_HIDE_ADD|AF_READONLY, 20),
+         'active' =>                   array('Active?',           'bool',     1, 0),
+         
+         'site_id'=>                   array('Site',                    'link',    ATT_DEFAULT_SITE_ID, AF_READONLY|AF_HIDE, 'site'),
+         'res_id' =>                   array('Reservation',       'link',     0, AF_OBLIGATORY|AF_HIDE_EDIT|AF_HIDE_ADD, 'reservation'),
+         'user_id' =>                  array('Author',            'link', ATT_DEFAULT_USER_ID, AF_OBLIGATORY|AF_HIDE_EDIT|AF_HIDE_ADD, 'user'),
+         'host_id'=>                   array('Host',              'link',     0, AF_OBLIGATORY|AF_HIDE_ADD|AF_READONLY, 'user'),
+         'guest_id'=>                  array('Guest',             'link',     0, AF_OBLIGATORY|AF_HIDE_ADD|AF_READONLY, 'user'),
 
-     'property_type'=>             array('Property Type',     'valSelect', 0, AF_READONLY|AF_SEARCHABLE|AF_HIDE_ADD|AF_OBLIGATORY, $propertyTypeArray),
-     'apt_id'=>                    array('Property ID',       'link', 0, AF_OBLIGATORY|AF_HIDE_ADD|AF_READONLY, 'user'),
-     'num_guests'=>                array('# Guests',          'int', 0, AF_OBLIGATORY|AF_LOG),
-     'num_days'=>                  array('# Days',            'int', 0, AF_OBLIGATORY),
-     'checkin'=>                   array('Checkin',           'date',   '', AF_LOG),
-     'checkout'=>                  array('Checkout',          'date',   '', AF_LOG),
-                                   
-     'currency'=>                  array('Currency',          'valSelect', 0, AF_OBLIGATORY|AF_HIDE_LIST|AF_LOG, $currencyArray),
-     'rate_type'=>                 array('Rate Type',         'valSelect', 'day', AF_OBLIGATORY|AF_HIDE_LIST|AF_LOG, $rateTypeArray),
-     'rate_base'=>                 array('Base Rate',         'money',   0, AF_OBLIGATORY|AF_HIDE_LIST|AF_LOG),
-     
-  ),
+         'property_type'=>             array('Property Type',     'valSelect', 0, AF_READONLY|AF_SEARCHABLE|AF_HIDE_ADD|AF_OBLIGATORY, $propertyTypeArray),
+         'apt_id'=>                    array('Property ID',       'link', 0, AF_OBLIGATORY|AF_HIDE_ADD|AF_READONLY, 'user'),
+         'num_guests'=>                array('# Guests',          'int', 0, AF_OBLIGATORY|AF_LOG),
+         'num_days'=>                  array('# Days',            'int', 0, AF_OBLIGATORY),
+         'checkin'=>                   array('Checkin',           'date',   '', AF_LOG),
+         'checkout'=>                  array('Checkout',          'date',   '', AF_LOG),
+                                       
+         'currency'=>                  array('Currency',          'valSelect', 0, AF_OBLIGATORY|AF_HIDE_LIST|AF_LOG, $currencyArray),
+         'rate_type'=>                 array('Rate Type',         'valSelect', 'day', AF_OBLIGATORY|AF_HIDE_LIST|AF_LOG, $rateTypeArray),
+         'rate_base'=>                 array('Base Rate',         'money',   0, AF_OBLIGATORY|AF_HIDE_LIST|AF_LOG),
+         
+        ),
   
 
-  "security" => 
-  array(
+    "security" => 
+        array(
      'id'=>                    array('ID',                'id',   0, AF_HIDE|AF_PRIMARY|AF_AUTOINCREMENT),
-     'node'=>                  array('Node',          		'valSelect', 0, AF_SEARCHABLE|AF_OBLIGATORY, $nodeTypeArray),
-     'action'=>                array('Action',          	'valSelect', 0, AF_SEARCHABLE|AF_OBLIGATORY, $actionArray),
+     'node'=>                  array('Node',                'valSelect', 0, AF_SEARCHABLE|AF_OBLIGATORY, $nodeTypeArray),
+     'action'=>                array('Action',              'valSelect', 0, AF_SEARCHABLE|AF_OBLIGATORY, $actionArray),
      'user_level'=>            array('User Level',        'many2one',  0, AF_SEARCHABLE|AF_OBLIGATORY, 'user_level'),
-  ),
+        ),
   
-  "event" => 
+    "event" => 
   
-  array(
-    'id' =>                        array('ID',                'id',   0, AF_SEARCHABLE|AF_PRIMARY|AF_AUTOINCREMENT),
-    
-    'active' =>                    array('Active?',           'bool',     1, 0),
-    'client_id'=>                  array('Client',    			  'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
-    'site_id'=>                    array('Site',    			    'link',     ATT_DEFAULT_SITE_ID, AF_READONLY|AF_HIDE, 'site'),
-    'user_id' =>                   array('Author',            'link',     ATT_DEFAULT_USER_ID, AF_HIDE_EDIT|AF_HIDE_ADD, 'user'),
+        array(
+            'id' =>                        array('ID',                'id',   0, AF_SEARCHABLE|AF_PRIMARY|AF_AUTOINCREMENT),
+            
+            'active' =>                    array('Active?',           'bool',     1, 0),
+            'client_id'=>                  array('Client',                'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
+            'site_id'=>                    array('Site',                    'link',     ATT_DEFAULT_SITE_ID, AF_READONLY|AF_HIDE, 'site'),
+            'user_id' =>                   array('Author',            'link',     ATT_DEFAULT_USER_ID, AF_HIDE_EDIT|AF_HIDE_ADD, 'user'),
 
-    'host_id'=>                    array('Host',              'link',     0, AF_HIDE_ADD|AF_READONLY, 'user'),
-    'parent_id'=>                 array('Parent Id',          'parent_id',   ATT_DEFAULT_NULL, AF_SEARCHABLE|AF_READONLY|AF_HIDE_ADD|AF_HIDE_LIST, 11),
-    'parent_type'=>               array('Parent Type',        'parent_type', ATT_DEFAULT_NULL, AF_SEARCHABLE|AF_READONLY|AF_HIDE_ADD|AF_HIDE_LIST),
-    'user_level'=>                 array('User Level',        'many2one', 0, 0, "user_level"),
-    
-    'created' =>                   array('Created',           'datetime', ATT_DEFAULT_NOW, AF_HIDE_ADD|AF_READONLY),
-    'timestamp' =>                 array('Timestamp',         'timestamp', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY),
-    'type' =>                      array('Event type',        'many2one', 100, AF_OBLIGATORY|AF_SEARCHABLE, 'event_type'),
-    'status' =>                    array('Status',            'many2one', EVENT_STATUS_UNCONFIRMED, AF_OBLIGATORY|AF_LOG|AF_SEARCHABLE , 'event_status'),
-    'status_change_timestamp'=>    array('Status Changed on', 'datetime',  ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY),
+            'host_id'=>                    array('Host',              'link',     0, AF_HIDE_ADD|AF_READONLY, 'user'),
+            'parent_id'=>                 array('Parent Id',          'parent_id',   ATT_DEFAULT_NULL, AF_SEARCHABLE|AF_READONLY|AF_HIDE_ADD|AF_HIDE_LIST, 11),
+            'parent_type'=>               array('Parent Type',        'parent_type', ATT_DEFAULT_NULL, AF_SEARCHABLE|AF_READONLY|AF_HIDE_ADD|AF_HIDE_LIST),
+            'user_level'=>                 array('User Level',        'many2one', 0, 0, "user_level"),
+            
+            'created' =>                   array('Created',           'datetime', ATT_DEFAULT_NOW, AF_HIDE_ADD|AF_READONLY),
+            'timestamp' =>                 array('Timestamp',         'timestamp', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY),
+            'type' =>                      array('Event type',        'many2one', 100, AF_OBLIGATORY|AF_SEARCHABLE, 'event_type'),
+            'status' =>                    array('Status',            'many2one', EVENT_STATUS_UNCONFIRMED, AF_OBLIGATORY|AF_LOG|AF_SEARCHABLE , 'event_status'),
+            'status_change_timestamp'=>    array('Status Changed on', 'datetime',  ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY),
 
-    'language'=>                   array('Language',          'many2one', ATT_DEFAULT_LANGUAGE, 0, 'language'),
+            'language'=>                   array('Language',          'many2one', ATT_DEFAULT_LANGUAGE, 0, 'language'),
 
 
-    /** changed from name/notes */
-    'title'=>                      array('Name',              'str',      '', AF_OBLIGATORY, 128),
-    'description'=>                array('description',       'text',      '', AF_HIDE_LIST),
+            /** changed from name/notes */
+            'title'=>                      array('Name',              'str',      '', AF_OBLIGATORY, 128),
+            'description'=>                array('description',       'text',      '', AF_HIDE_LIST),
 
-    'start_time' =>                array('Start',             'datetime', '', AF_OBLIGATORY|AF_SEARCHABLE|AF_LOG, 'end_time'), // options = dependent field
-    'end_time' =>                  array('End',               'datetime', '', AF_OBLIGATORY|AF_SEARCHABLE|AF_LOG),
-    'timezone' =>                  array('Timezone',          'timezone', ATT_DEFAULT_TIMEZONE, 0, 32),
-    
-    //'start_address' =>             array('Location',          'text',     '', AF_SEARCHABLE|AF_LOG, 200),
-    //'end_address' =>               array('End Location',      'text',     '', AF_SEARCHABLE|AF_LOG, 200),
-    'all_day' =>                   array('All day?',          'bool',     0, 0),
+            'start_time' =>                array('Start',             'datetime', '', AF_OBLIGATORY|AF_SEARCHABLE|AF_LOG, 'end_time'), // options = dependent field
+            'end_time' =>                  array('End',               'datetime', '', AF_OBLIGATORY|AF_SEARCHABLE|AF_LOG),
+            'timezone' =>                  array('Timezone',          'timezone', ATT_DEFAULT_TIMEZONE, 0, 32),
+            
+            //'start_address' =>             array('Location',          'text',     '', AF_SEARCHABLE|AF_LOG, 200),
+            //'end_address' =>               array('End Location',      'text',     '', AF_SEARCHABLE|AF_LOG, 200),
+            'all_day' =>                   array('All day?',          'bool',     0, 0),
 
-    'address_street'=>    array('Street',            'str',  '', AF_HIDE_LIST, 50 ),
-    'address_number'=>    array('Number',            'str',  '', AF_HIDE_LIST, 12 ),
-    'address_city'=>      array('City',              'str',  '', AF_HIDE_LIST, 50 ),
-    'address_postcode'=>  array('Postcode',          'str',  '', AF_HIDE_LIST, 50 ),
-    'address_state'=>     array('State',             'str',  '', AF_HIDE_LIST, 50 ),
-    'address_country'=>   array('Country',           'link', '', AF_HIDE_LIST, 'countries'),
-    'address_formatted'=> array('Adddress',          'text', '', AF_HIDE_LIST),
+            'address_street'=>    array('Street',            'str',  '', AF_HIDE_LIST, 50 ),
+            'address_number'=>    array('Number',            'str',  '', AF_HIDE_LIST, 12 ),
+            'address_city'=>      array('City',              'str',  '', AF_HIDE_LIST, 50 ),
+            'address_postcode'=>  array('Postcode',          'str',  '', AF_HIDE_LIST, 50 ),
+            'address_state'=>     array('State',             'str',  '', AF_HIDE_LIST, 50 ),
+            'address_country'=>   array('Country',           'link', '', AF_HIDE_LIST, 'countries'),
+            'address_formatted'=> array('Adddress',          'text', '', AF_HIDE_LIST),
 
-     'location_id' =>     array('Location',          'link',   0, AF_READONLY|AF_HIDE_ADD, 'location'),
-    
-    'location_lat'         => array('Latitude'         , 'str','', AF_HIDE_ADD|AF_HIDE_LIST, 24),
-    'location_long'        => array('Longitude'        , 'str','', AF_HIDE_ADD|AF_HIDE_LIST, 24),
-    'location_bounds' =>  array('Bounds',            'json', '', AF_HIDE_ADD|AF_HIDE_LIST),
-    
-    'num_hours'=>          array('# Hours',           'float',    0, AF_READONLY, '2.2'),
-    'alert'=>              array('NB!',               'str',     '', AF_HIDE_LIST, 100),
+             'location_id' =>     array('Location',          'link',   0, AF_READONLY|AF_HIDE_ADD, 'location'),
+            
+            'location_lat'         => array('Latitude'         , 'str','', AF_HIDE_ADD|AF_HIDE_LIST, 24),
+            'location_long'        => array('Longitude'        , 'str','', AF_HIDE_ADD|AF_HIDE_LIST, 24),
+            'location_bounds' =>  array('Bounds',            'json', '', AF_HIDE_ADD|AF_HIDE_LIST),
+            
+            'num_hours'=>          array('# Hours',           'float',    0, AF_READONLY, '2.2'),
+            'alert'=>              array('NB!',               'str',     '', AF_HIDE_LIST, 100),
 
-    'booking_pin'=>                array('Booking PIN',       'str',    '', AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD|READONLY, 10),
-    'media'                => array('Media',             'media',     '', 0, $event_media_options),
+            'booking_pin'=>                array('Booking PIN',       'str',    '', AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD|READONLY, 10),
+            'media'                => array('Media',             'media',     '', 0, $event_media_options),
 
-    /** not yet in use 
-    'repeat_id' =>               array('Repeat ID',       'str',     '', AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD, 13),
-    'repeat_interval' =>         array('Repeat Interval', 'str',     '', AF_HIDE_LIST, 4), // todo; add class, use many2one
-    'repeat_until' =>            array('Repeat Until',    'datetime', '', AF_HIDE_LIST),
-  
-    'reminder_period1' =>         array('Reminder 1',       'str',      '', AF_HIDE_LIST, 6), // todo; add class, use many2one
-    'reminder_time1' =>           array('Remdinder Time 1', 'datetime', ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY),
-    'reminder_sent1' =>           array('Remdinder Sent 1', 'bool',     0, AF_HIDE_LIST|AF_READONLY),
-    'reminder_period2' =>         array('Reminder 2',       'str',      '', AF_HIDE_LIST, 6), // todo; add class, use many2one
-    'reminder_time2' =>           array('Remdinder Time 2', 'datetime', ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY),
-    'reminder_sent2' =>           array('Remdinder Sent 2', 'bool',     0, AF_HIDE_LIST|AF_READONLY),
-    'reminder_phone' =>          array('Reminder Phone',    'phone',    '', AF_HIDE_LIST, 20),
-    'reminder_email' =>          array('Reminder email',    'email',    '', AF_HIDE_LIST, 20),        
-    */
-    
-     
-    ),
-   
-  "reservation" => 
-  
-  array(
-     'res_id'=>                    array('ID',                'id', 0, AF_SEARCHABLE|AF_PRIMARY|AF_AUTOINCREMENT),
-     'site_id'=>                   array('Site',              'many2one',   ATT_DEFAULT_SITE_ID, AF_LOG|AF_SEARCHABLE, 'site'),
-     'status'=>                    array('Status',            'many2one',   STATUS_DRAFT, AF_OBLIGATORY|AF_LOG|AF_SEARCHABLE , 'res_status'),
-     'type'=>                      array('Type',              'many2one',   5, AF_SEARCHABLE|AF_HIDE_EDIT|AF_HIDE_ADD|AF_LOG, 'res_type'),
-     'event_id'=>                  array('Event ID',          'link', 0, AF_HIDE_LIST, 'event'),
-     'client_id'=>                 array('Client',    			  'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
-     'source_id'=>                 array('Source',    			  'many2one', ATT_DEFAULT_NULL, AF_READONLY|AF_HIDE_LIST|AF_HIDE_ADD|AF_HIDE_EDIT, 'source'),
-     'dest_id'=>                   array('Destination',    	  'many2one', ATT_DEFAULT_NULL, AF_READONLY|AF_HIDE_LIST|AF_HIDE_ADD|AF_HIDE_EDIT, 'source'),
-     'fid'=>                       array('Foreign ID',        'str',  ATT_DEFAULT_NULL, AF_SEARCHABLE|AF_READONLY|AF_HIDE_LIST|AF_HIDE_ADD|AF_HIDE_EDIT, 20),
-     'fids'                     => array('Foreign IDs'       ,'json', '', AF_HIDE_LIST|AF_HIDE_ADD, 255),
-     'fgid'=>                      array('Foreign Guest ID',  'str',  ATT_DEFAULT_NULL, AF_SEARCHABLE|AF_READONLY|AF_HIDE_LIST|AF_HIDE_ADD|AF_HIDE_EDIT, 20),
-     'property_type'=>             array('Property Type',     'valSelect', 0, AF_OBLIGATORY|AF_READONLY|AF_SEARCHABLE, $propertyTypeArray),
-     'corporate'=>                 array('Corporate?',        'bool', 0, AF_READONLY),
-     'created'=>                   array('Created',           'datetime',  ATT_DEFAULT_NOW, AF_HIDE_ADD|AF_READONLY),
-     'timestamp'=>                 array('Modified',          'timestamp',  ATT_DEFAULT_NOW, AF_HIDE_ADD|AF_READONLY),
-     'status_change_timestamp'=>   array('Status Changed on', 'datetime',  ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY),
-     'booked_timestamp'=>          array('Booked on',         'datetime',  ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY),
-     'cancel_timestamp'=>          array('Canceled on',       'datetime',  ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY),
-     'expires'=>                   array('Expires',           'datetime',  ATT_DEFAULT_NULL, AF_READONLY|AF_HIDE_LIST, 6 ),
-     'hidden'=>                    array('Hidden',            'bool',   0, AF_HIDE),
-  
-     'checkin'=>                   array('Checkin',           'datetime',   '', AF_OBLIGATORY|AF_LOG, 19),
-     'checkout'=>                  array('Checkout',          'datetime',   '', AF_OBLIGATORY|AF_LOG, 19),
-  
-      // shift hours
-     //'start_hour' =>                array('Start Time',        'str', '', AF_SEARCHABLE|AF_HIDE_LIST|AF_LOG, 5),
-     //'end_hour' =>                  array('End Time',          'str', '', AF_SEARCHABLE|AF_HIDE_LIST|AF_LOG, 5),
-  
-     'num_months'=>                array('# Months',          'float',    0, AF_READONLY|AF_HIDE_LIST, '3.2'),
-     'num_days'=>                  array('# Days',            'int',    0, AF_READONLY, 4),
-     'num_hours'=>                 array('# Hours',           'float',    0, AF_HIDE_LIST|AF_READONLY, '2.2'),
-     'num_guests'=>                array('# Guests',          'intSelect', 0, AF_LOG, array(1,8,1, '')),
-      //'num_packages'=>              array('# Packages',         'float',    0, AF_HIDE_LIST|AF_READONLY, '4.2'),
-                    
-     //'package_unit'=>              array('Package Unit',    	 'many2one', 'EA', AF_HIDE_LIST|AF_READONLY, 'product_unit'),
-     //'package_id' =>               array('Package',            'many2one', 0, AF_READONLY|AF_LOG|AF_SEARCHABLE, 'product', array('active' => 1, 'category_id' => PRODUCT_CATEGORY_PACKAGE), 'name'),
-     //'catering_id' =>              array('Catering',           'many2one', 0, AF_READONLY|AF_LOG|AF_SEARCHABLE, 'product', array('active' => 1, 'category_id' => PRODUCT_CATEGORY_CATERING), 'name'),
-  
-     'user_id'=>                   array('Author',            'link',   ATT_DEFAULT_USER_ID, AF_HIDE_LIST|AF_SEARCHABLE|AF_READONLY, 'user'),
-     'city_id'=>                   array('City',              'link',   0, AF_READONLY|AF_SEARCHABLE, 'geo_city'),
-     'apt_id'=>                    array('Apartment',         'link',   0, AF_SEARCHABLE|AF_LOG, 'property'),
-     'apartment_name'=>            array('Apartment Name',    'str',        '', AF_HIDE, 50),
-     'city_name'=>                 array('City Name',         'str',        '', 0, 128),
-
-     'guest_id'=>                  array('Guest ID',          'link',   0, AF_HIDE_ADD|AF_READONLY|AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD, 'user'),
-     'host_id'=>                   array('Host',              'link',   0, AF_HIDE_ADD|AF_READONLY, 'user'),
-
-      // 'traveler_id'=>               array('Old Guest ID',      'link',   ATT_DEFAULT_GUEST_ID, AF_HIDE_ADD|AF_READONLY|AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD, 'guest'),
-     'org_id'=>                    array('Org',               'link',   ATT_DEFAULT_ORG_ID, AF_SEARCHABLE, 'org', '', 'org.name'),
-     'contact_id'=>                array('Contact',    			  'link',   ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY_EDIT, 'contact'),
-     'bill_to'=>                   array('Bill To',           'valSelect', 0, AF_SEARCHABLE, $billtoArray),
-     
-     'agent_id'=>                  array('Agent',             'link',   ATT_DEFAULT_AGENT_ID, AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD, 'agent'),
-     'agent_contact'=>             array('Agent Contact',     'link',   ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD, 'contact'),
-      
-      //'cc_id'=>                     array('CC',                'link',       0, AF_HIDE, 'cc'), // last used cc
-     'remote_ip'=>                 array('IP',                'ip',        ATT_DEFAULT_CLIENT_IP, AF_SEARCHABLE|AF_READONLY, 15 ),
-     'remote_cc'=>                  array('Country Code',     'many2one', ATT_DEFAULT_CLIENT_CC, AF_HIDE_LIST, 'countries'),
-     'legal_entity_id'=>           array('Legal Entity',      'many2one', ATT_DEFAULT_LEGAL_ID, AF_SEARCHABLE|AF_LOG, 'legal_entity'),
-  
-     'salutation'=>        array('Salutation',        'str',    '', 0, 10),
-     'first_name'=>        array('First Name',        'str',    '', AF_SEARCHABLE, 64),
-     'last_name'=>         array('Last Name',         'str',    '', AF_SEARCHABLE, 64),
-     'address1'=>          array('Address1',          'str',    '', AF_HIDE_LIST, 128),
-     'address2'=>          array('Address2',          'str',    '', AF_HIDE_LIST, 128),
-     'city'=>              array('City',              'str',    '', AF_HIDE_LIST, 64),
-     'state'=>             array('State',             'str',    '', AF_HIDE_LIST, 64),
-     'zip'=>               array('Postal code',       'str',    '', AF_HIDE_LIST, 64),
-     'country'=>           array('Country',           'many2one', ATT_DEFAULT_COUNTRY, AF_SEARCHABLE|AF_FORCE_SELECT, 'countries'),
-     'email_address'=>     array('Email',             'email',  '', AF_SEARCHABLE|AF_HIDE_LIST, 128),
-     'phone'=>             array('Phone',             'phone',  '', AF_HIDE_LIST, 20),
-     'organization'=>      array('Company/Dept.',     'str',    '', AF_SEARCHABLE, 128),
-     'title'=>             array('Title/Attn',        'str',    '', AF_HIDE_LIST, 64),
-     
-     'language'=>                   array('Language',          'many2one', ATT_DEFAULT_LANGUAGE, 0, 'language'),
-  
-     'arrival_method'=>            array('Arrive by',         'valSelect',    '', AF_HIDE_LIST|AF_LOG, $arrivalTypeArray),
-     'arrival_from'=>              array('City of departure',  'str',    '', AF_HIDE_LIST|AF_LOG, 32),
-     'arrival_number'=>            array('Flight/Train #',     'str',    '', AF_HIDE_LIST|AF_LOG, 50),
-     'arrival_time'=>              array('Arrival airport/station',   'time',    ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_LOG),
-     'arrival_property'=>          array('Arrival property',  'time',    ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_LOG),
-     'arrival_notes'=>             array('Arrival notes',     'str',    '', AF_HIDE_LIST|AF_LOG, 100),
-     'airport_pickup'=>            array('Pickup',            'bool',   0, AF_LOG, 30),
-  
-     //'pickup_location'=>           array('Pickup location',    'many2one', 0, AF_HIDE_LIST|AF_LOG, 'landmark', array('type' => LANDMARK_TYPE_BOARDING)), // for boats
-     //'dropoff_location'=>           array('Dropoff location',   'many2one', 0, AF_HIDE_LIST|AF_LOG, 'landmark', array('type' => LANDMARK_TYPE_BOARDING)), // for boats
-  
-     'extra_info'=>                array('Guest notes',        'text',   '', AF_HIDE_LIST|AF_READONLY_EDIT|AF_HIDE_ADD),
-     'message'=>                   array('Message to guest',  'text',   '', AF_HIDE_LIST),
-     'alert'=>                     array('NB!',               'str',    '', AF_HIDE_LIST, 100),
-     'notes'=>                     array('Our Notes',         'text',    '', AF_HIDE_LIST),
-     'invoice_notes'=>             array('Invoice Notes',     'str',    '', AF_HIDE_LIST, 200),
-
-     'cancel_reason'=>             array('Cancellation reason', 'text',    '', AF_HIDE_LIST),
-     'cancel_user_id'=>            array('Canceled by',       'link',    ATT_DEFAULT_NULL, AF_HIDE_LIST, 'user'),
-                          
-     //'ref'=>                       array('Ref',               'str',    '', AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD, 20),
-     //'ref_other'=>                 array('Ref (other)',       'str',    '', AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD, 20),
-     //'ref_searchterm'=>            array('Searchterm',        'str',    '', AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD, 50),
-
-     
-     'currency'=>                  array('Currency',          'valSelect', 0, AF_HIDE_LIST|AF_LOG, $currencyArray),
-     'rate_type'=>                 array('Rate Type',         'valSelect', 'day', AF_HIDE_LIST|AF_OBLIGATORY|AF_LOG, $rateTypeArray),
-
-     'rate_class'=>                array('Rate Class',        'many2one', RATE_CLASS_STANDARD, AF_HIDE_LIST|AF_LOG, 'rate_class'),
-     'rate_base'=>                 array('Base Rate',         'money',   0, AF_HIDE_LIST|AF_LOG),
-     'rate_locked'=>               array('Lock Rate?',        'bool',  0, AF_HIDE_LIST),
-     'rate_locked'=>               array('Lock Rate?',        'bool',  0, AF_HIDE_LIST),
-     'invoice_locked'=>            array('Invoice locked?',   'bool',  0, AF_HIDE_LIST),
-     'guest_registered'=>          array('Guest registered?', 'bool',  0, AF_HIDE_LIST),
-
-     //'fee_locked'=>                array('Lock Fee?',         'bool',  0, AF_HIDE_LIST),
-     'send_email'=>                array('Send email updates?', 'bool',  0, AF_HIDE_LIST),
-     'monthly_billing'=>           array('Bill monthly?',   	'bool', 0, AF_HIDE_ADD|AF_HIDE_LIST),
-     //'price_breakdown_id'=>        array('Price breakdown',   'link', 0, AF_HIDE_LIST|AF_LOG, 'price_breakdown'),
-
-     'hourly'=>                    array('Hourly billing',    'bool', 0, 0), // redundant, but for simplicity
-     'billing_period'=>            array('Billing period',    'many2one', BILLING_PERIOD_DAY, AF_OBLIGATORY, 'billing_period', array('active' => 1)),
-     'invoice_contact'=>           array('Invoice Contact?',  'bool', 0, AF_HIDE_ADD|AF_HIDE_LIST),
-  
-     'discount'=>                  array('Base Discount',     'discount',  0, AF_HIDE_LIST|AF_LOG),
-     //'discount_locked'=>           array('Lock Discount?',    'bool',  1, AF_HIDE_LIST),
-  
-     'total'=>                     array('Total',             'money',   0, AF_HIDE_LIST|AF_READONLY|AF_TOTAL|AF_LOG),
-     'tax'=>                       array('Tax',               'money',   0, AF_HIDE_LIST|AF_READONLY|AF_TOTAL|AF_LOG),
-     'tax_of_which'=>              array('Of which tax',      'money',   0, AF_HIDE_LIST|AF_READONLY|AF_TOTAL|AF_LOG),
-                                                                        
-     'charge_city_tax' =>          array('Charge City Tax?' ,'bool', 0, AF_LOG, 0),
-     'city_tax_rate' =>            array('City Tax Rate' ,   'surcharge', '', AF_LOG, 0),
-     'charge_tax' =>               array('Charge V.A.T?'       ,'bool', 0, AF_LOG, 0),
-     'tax_included' =>             array('Tax included?'       ,'bool', 1, AF_LOG, 0),
-     
-     'fee_service' =>              array('Service fee',       'money',   0, AF_HIDE_LIST|AF_LOG|AF_TOTAL),
-     'fee_cleaning' =>             array('Cleaning fee',      'money',   0, AF_HIDE_LIST|AF_LOG|AF_TOTAL),
-     'fee_local'    =>             array('Local fee',         'money',   0, AF_HIDE_LIST|AF_LOG|AF_TOTAL),
-     'fee_booking'  =>             array('Booking fee',       'money',   0, AF_HIDE_LIST|AF_LOG|AF_TOTAL),
-     'fee_other'    =>             array('Other fee',         'money',   0, AF_HIDE_LIST|AF_LOG|AF_TOTAL),
-     'fee_pickup'   =>             array('Pickup fee',        'money',   0, AF_HIDE_LIST|AF_LOG|AF_TOTAL),
-     //'fee_callout'=>               array('Call-out fee',      'money',  0,  AF_HIDE_ADD|AF_HIDE_LIST, 8),
-     //'fee_callout_quantity'=>      array('Call-out fee quantity', 'float',  0,  AF_HIDE_ADD|AF_HIDE_LIST, '3.2'),
-     //'fee_waiting'=>               array('Waiting fee',       'money',  0,  AF_HIDE_ADD|AF_HIDE_LIST, 8),
-     //'fee_waiting_quantity'=>      array('Waiting fee quantity',  'float',  0,  AF_HIDE_ADD|AF_HIDE_LIST, '3.2'),
-  
-     'fee_json'=>                  array('Fees',              'json',   0, AF_READONLY|AF_HIDE_LIST|AF_LOG),
-     'fees'=>                      array('Total Fees',        'money',   0, AF_READONLY|AF_HIDE_LIST|AF_LOG|AF_TOTAL),
-     'city_tax'=>                  array('City Tax',          'money',  0, AF_READONLY|AF_HIDE_LIST|AF_LOG|AF_TOTAL),
-     'other_charges'=>             array('Other charges',     'money',   0, AF_HIDE_LIST|AF_READONLY|AF_LOG|AF_TOTAL),
-     'grand_total'=>               array('Grand Total',       'money',   0, AF_HIDE_LIST|AF_READONLY|AF_LOG|AF_TOTAL),
-  
-     'deposit'=>                   array('Deposit',           'money',   0, AF_HIDE_LIST|AF_READONLY|AF_LOG),
-     'deposit_percentage'=>        array('Deposit %',         'int',   0, AF_HIDE_LIST|AF_LOG, 2),
-  
-     'paid'=>                      array('Paid',              'money',   0, AF_HIDE_LIST|AF_LOG|AF_TOTAL),
-     'authorized'=>                array('Authorized',        'money',   0, AF_HIDE_LIST|AF_LOG|AF_TOTAL),
-     'balance'=>                   array('Balance',           'money',   0, AF_HIDE_LIST|AF_READONLY|AF_TOTAL),
-     'commission'=>                array('Commisssion',       'commission',   0, AF_HIDE_LIST|AF_LOG|AF_TOTAL),
-     'invoice'=>                   array('Invoices',     'one2many', 0, AF_HIDE_LIST|AF_READONLY, 'invoice', 'res_id'),
-  
-     'booking_id'=>                array('Booking ID',        'str',    '', AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD|AF_READONLY, 20),
-     'booking_pin'=>               array('Booking PIN',       'str',    '', AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD|AF_READONLY, 10),
-  
-     //'feedback_sent'=>             array('Feedback request sent?', 'bool',  0, AF_READONLY|AF_HIDE_LIST),
-     //'feedback_confirmed'=>        array('Feedback confirmed?', 'bool',  ATT_DEFAULT_NULL, AF_READONLY|AF_HIDE_LIST|AF_LOG),
-     //'feedback_score'=>            array('Feedback score?',     'int',  ATT_DEFAULT_NULL, AF_READONLY|AF_LOG),
-     //'review_confirmed'=>          array('Review confirmed?', 'bool',  ATT_DEFAULT_NULL, AF_READONLY|AF_HIDE_LIST|AF_LOG),
-
-     'reminder_sent'=>             array('Reminder sent?',     'yesno',  0, AF_READONLY|AF_HIDE_LIST),
-     'review_sent'=>               array('Review request sent?', 'yesno',  0, AF_READONLY|AF_HIDE_LIST),
-     'review_score'=>              array('Review score?',     'int',  ATT_DEFAULT_NULL, AF_READONLY|AF_LOG),
-     
-     //'block_id'=>                  array('Block ID',    	     'link',     ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD|AF_HIDE_EDIT, 'block'),
-     //'block_parent'=>              array('Block Parent',    	 'link',     ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD|AF_HIDE_EDIT, 'reservation'),
-
-     'org_currency'=>              array('Original Currency',  'valSelect', 0, AF_HIDE_LIST, $currencyArray),
-     'org_rate_type'=>             array('Original Rate Type', 'valSelect', 'day', AF_HIDE_LIST, $rateTypeArray),
-     'org_rate_base'=>             array('Original Base Rate', 'money',   0, AF_HIDE_LIST),
-     'org_fee_cleaning'=>          array('Original Cleaning Fee', 'money',   0, AF_HIDE_LIST),
-
-     'chat_count'=>                array('Chat count',         'int', 0, AF_HIDE_ADD|AF_READONLY, 3),
-     
-     'decline_reason'=>            array('Declined reason',     'int',    '', AF_HIDE_LIST),
-     'cancel_reason'=>             array('Cancellation reason', 'text',    '', AF_HIDE_LIST),
-     'upload'                =>    array('Uploaded Documents',  'media',     '', 0, $reservation_media_options),
-
-     /** one2many - not stored in table */
-     'charge'=>                    array('Charges',           'one2many', 0, AF_HIDE_LIST|AF_READONLY, 'charge', 'res_id'),
-     'payments'=>                  array('Payments',          'one2many', 0, AF_HIDE_LIST|AF_CASCADE_DELETE, 'payment', 'res_id'),
-     'transactions'=>              array('Transactions',      'one2many', 0, AF_HIDE_LIST|AF_CASCADE_DELETE, 'transaction', 'res_id'),
-     'withdrawals'=>               array('Withdrawals',       'one2many', 0, AF_HIDE_LIST|AF_CASCADE_DELETE, 'withdrawal', 'res_id'),
-     'changelog'=>                 array('Log',               'one2many', 0, AF_HIDE_LIST|AF_CASCADE_DELETE|AF_READONLY, 'changelog',  'parent_id', array('obj_type' => 'reservation')), // last is filter
-     'chat'=>                      array('Correspondence',    'one2many', 0, AF_HIDE_LIST|AF_CASCADE_DELETE|AF_READONLY, 'chat',       'parent_id', array('parent_type' => 'reservation')),
-     'maillog'=>                   array('All sent mails',    'one2many', 0, AF_HIDE_LIST|AF_CASCADE_DELETE|AF_READONLY, 'mail_queue', 'parent_id', array('parent_type' => 'reservation')), // last is filter
-  ),
-  
-  
-  
-  // reservation exceptions
-  "res_exception" => 
-  
-  array(
-     'id'=>                        array('ID',                'id',         0, AF_PRIMARY|AF_AUTOINCREMENT),
-     'active'                   => array('Active',            'bool',       1, AF_SEARCHABLE, 1),
-     'created'=>                   array('Created',           'datetime',   ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_HIDE_ADD),
-     'timestamp'=>                 array('Updated',           'timestamp',   ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_HIDE_ADD, 6 ),
-     'user_id' =>                   array('Author',            'link',     ATT_DEFAULT_USER_ID, AF_HIDE_EDIT|AF_HIDE_ADD, 'user'),
-     //'author_id'=>                 array('Author',            'link',   ATT_DEFAULT_USER_ID, AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD, 'user'),
-     'org_id' =>                   array('Organization',      'many2one',   ATT_DEFAULT_NULL, AF_SEARCHABLE, 'org', array('client_id' => $_SESSION['client_id'])),
-     'site_id'=>                   array('Site',              'link',   ATT_DEFAULT_SITE_ID, 0, 'site'),
-                                                                            
-  // which city/type/owner/apt (todo - make linked ajax choosers)                                
-  
-     'rank'=>                      array('Rank',              'int', 0, AF_HIDE_ADD, 3),
-
-     'city_id' =>                  array('City',             'many2one',   0, AF_SEARCHABLE, 'geo_city', array('active' => 1), 'name'),
-     'property_type'=>             array('Property Type',     'valSelect',  0, AF_OBLIGATORY, $propertyTypeArray),
-//     'owner_id'=>                  array('Owner',             'link',   ATT_DEFAULT_NULL, AF_SEARCHABLE, 'owner', array('shortstay' => 1)),
-     'host_id'=>                   array('Host',              'link',   ATT_DEFAULT_NULL, AF_HIDE_ADD|AF_READONLY, 'user'),
-     'apt_id' =>                   array('Property',          'link',   ATT_DEFAULT_NULL, AF_SEARCHABLE, 'property'),
-
-  //   'priority'                 => array('Priority'          ,'int', 0, 0, 6),
-  
-  // reservation parameters (input vars)
-     'start'=>                     array('From Date',              'date',       ATT_DEFAULT_NULL, 0),
-     'end'=>                       array('To Date',                'date',       ATT_DEFAULT_NULL, 0),
-
-     'start_time'=>                array('From Time',              'time',       ATT_DEFAULT_NULL),
-     'end_time'=>                  array('To Time',                'time',       ATT_DEFAULT_NULL),
-//     'num_months'=>                array('# Months',          'float',      ATT_DEFAULT_NULL, 0, '3.2'),
-     'num_days'=>                  array('# Days >=',         'int',        ATT_DEFAULT_NULL, 0),
-     'num_hours'=>                 array('# Hours >=',        'float',      ATT_DEFAULT_NULL, 0, '2.2'),
-     'num_guests'=>                array('# Guests ',         'intSelect',  ATT_DEFAULT_NULL, 0, array(1,8,1, '')),
-  
-  // calculated reservation parameters (input vars)
-     //'fit_factor'=>                 array('Fit factor (>= 0-100%)', 'int', ATT_DEFAULT_NULL, 0),
-     'fit_between'=>                array('Fit factor between (>= 0-100%)', 'int', ATT_DEFAULT_NULL, 0, 3),
-     'fit_next_to'=>                array('Fit factor next to (>= 0-100%)', 'int', ATT_DEFAULT_NULL, 0, 3),
-     'days_from_now'=>              array('# Days from now <=',     'int', ATT_DEFAULT_NULL, 0),
-     'days_from_now_gt'=>           array('# Days from now >',      'int', ATT_DEFAULT_NULL, 0),
-  
-  // property exceptions (out vars) 
-     'book_direct' =>              array('Book Direct?',       'yesno',      ATT_DEFAULT_NULL, AF_SEARCHABLE),
-     'max_guests'=>                array('Max guests',        'int',        ATT_DEFAULT_NULL, AF_SEARCHABLE),
-     'min_stay'=>                  array('Min stay',          'int',        ATT_DEFAULT_NULL, AF_SEARCHABLE),
-     'max_stay'=>                  array('Max stay',          'int',        ATT_DEFAULT_NULL, AF_SEARCHABLE),                                                                                
-
-     'currency'=>                  array('Currency',          'valSelect', 0, AF_HIDE_LIST|AF_LOG, $currencyArray),     
-     'rate_day'=>                  array('Day rate',          'int',      ATT_DEFAULT_NULL, AF_SEARCHABLE),
-     'rate_weekend'=>              array('Weekend rate',       'int',      ATT_DEFAULT_NULL, AF_SEARCHABLE),
-  //         'rate_hour'=>                 array('Hour rate',         'money',      ATT_DEFAULT_NULL, AF_SEARCHABLE),
-     'rate_extraperson'=>          array('Rate Extra person', 'int',      ATT_DEFAULT_NULL, AF_SEARCHABLE),
-     'rate_week'=>                 array('Week rate',          'int',      ATT_DEFAULT_NULL, AF_SEARCHABLE),
-     'rate_2_weeks'=>              array('2-Week rate',          'int',      ATT_DEFAULT_NULL, AF_SEARCHABLE),
-     'rate_3_weeks'=>              array('3-Week rate',          'int',      ATT_DEFAULT_NULL, AF_SEARCHABLE),
-     'rate_month'=>                array('Month rate',          'int',      ATT_DEFAULT_NULL, AF_SEARCHABLE),
-
-     'changeover'=>                array('Changeover',        'int',  0, 0),
-
-     //   'discount'=>                  array('Discount',          'discount',   ATT_DEFAULT_NULL, AF_SEARCHABLE),
-     'surcharge'=>                 array('Surcharge',         'surcharge',  ATT_DEFAULT_NULL, AF_SEARCHABLE),
-     'rate_change'=>               array('Rate Change',       'percent_or_number',  ATT_DEFAULT_NULL, AF_SEARCHABLE),
-     'last'=>                      array('Stop processing',    'bool',  0, AF_SEARCHABLE),  
-     'description'=>               array('Description',        'str',    '', 0, 255),
-   ),
-  
-  
-  "calendar_import" => 
-  array(
-     'id'=>                  array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT),
-     'active'=>              array('Active?',           'bool', 1, AF_READONLY|AF_HIDE_ADD),
-     'created'=>             array('Created',           'datetime',   ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY),
-     'last_sync'=>           array('Last Sync',         'datetime',   ATT_DEFAULT_NULL, AF_HIDE_ADD|AF_READONLY),
-     'site_id'=>             array('Site',              'link',   ATT_DEFAULT_SITE_ID, AF_OBLIGATORY, 'site'),
-     'client_id'=>           array('Client',    			  'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_HIDE_ADD|AF_SEARCHABLE|AF_READONLY_EDIT|AF_OBLIGATORY, 'client'),
-     'source_id'=>           array('Source',    			  'many2one', ATT_DEFAULT_SOURCE_ID, AF_OBLIGATORY|AF_SEARCHABLE|AF_READONLY_EDIT, 'source'),
-     'user_id'=>             array('User',              'link', ATT_DEFAULT_USER_ID, AF_HIDE_ADD|AF_READONLY|AF_OBLIGATORY, 'user'),
-     'host_id'=>             array('Host',              'link', 0, AF_HIDE_ADD|AF_READONLY|AF_OBLIGATORY, 'user'),
-     'property_type'=>       array('Property Type',     'valSelect', 0, AF_READONLY|AF_SEARCHABLE|AF_HIDE_ADD|AF_OBLIGATORY, $propertyTypeArray),
-     'apt_id'=>              array('Property ID',       'link', 0, AF_HIDE_ADD|AF_READONLY, 'user'),
-     'name'               => array('Name',              'str',  '', AF_SEARCHABLE|AF_OBLIGATORY,255),
-     'fid'=>                 array('Foreign ID',        'str',  '', 0, 40),
-     'fname'               => array('Foreign Name',     'str',  '', AF_SEARCHABLE,255),
-     'url'                => array('URL',               'url',  '', AF_SEARCHABLE|AF_OBLIGATORY),
-  ),
-
-  
-  "invoice" => 
-  
-  array(       
-     'id'=>                        array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT),
-     'cc_id'=>                     array('CC',                'link',       0, AF_HIDE, 'cc'), // last used cc
-     'res_id'=>                    array('Reservation ID',    'link', 0, AF_SEARCHABLE, 'reservation'),
-     //'order_id'=>                  array('Order ID',          'link', 0, AF_SEARCHABLE, 'payment_order'),
-
-     'parent_id'=>                 array('Parent Id',         'parent_id',   ATT_DEFAULT_NULL, AF_SEARCHABLE|AF_READONLY|AF_HIDE_ADD|AF_HIDE_LIST, 11),
-     'parent_type'=>               array('Parent Type',       'parent_type', ATT_DEFAULT_NULL, AF_SEARCHABLE|AF_READONLY|AF_HIDE_ADD|AF_HIDE_LIST),
-
-     'apt_id'=>                    array('Property',          'link', 0, AF_READONLY|AF_SEARCHABLE|AF_HIDE_ADD, 'property'),
-     'property_type'=>             array('Property Type',     'valSelect', 0, AF_READONLY|AF_SEARCHABLE|AF_HIDE_ADD, $propertyTypeArray),
-     'site_id'=>                   array('Site',              'many2one',   ATT_DEFAULT_SITE_ID, 0, 'site'),
-     'city_id'=>                   array('City',              'link',   0, AF_READONLY|AF_SEARCHABLE|AF_HIDE_EDIT|AF_HIDE_ADD, 'geo_city', array('active' => 1), 'name'),
-//     'country_id'=>                array('Country',           'link',   0, AF_READONLY|AF_SEARCHABLE|AF_HIDE_EDIT|AF_HIDE_ADD, 'country', array('active' => 1), 'name'),
-//     'owner_id'=>                  array('Owner',             'link',   ATT_DEFAULT_OWNER_ID, AF_SEARCHABLE|AF_READONLY|AF_HIDE_EDIT|AF_HIDE_ADD, 'owner', array('shortstay' => 1), 'first_name'),
-     'host_id'=>                   array('Host',              'link', 0, AF_HIDE_ADD|AF_READONLY, 'user'),
-     'agent_id'=>                   array('Agent',            'many2one',  ATT_DEFAULT_NULL, AF_SEARCHABLE, 'agent'),
-     'legal_entity_id'=>           array('Legal Entity',      'many2one', 0, AF_SEARCHABLE|AF_LOG, 'legal_entity'),
-     'client_id'=>                 array('Client',    			  'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
-     'head_invoice'=>              array('Head invoice#',     'bool', 0, AF_READONLY),
-     'locked'=>                    array('Locked?',           'bool', 0, AF_READONLY),
-     'corporate'=>                 array('Corporate?',        'bool', 0, AF_READONLY),
-     'due'=>                       array('Due',               'bool', 0, 0),
-     'received'=>                  array('Received on',       'datetime', ATT_DEFAULT_NULL, AF_READONLY),
-     'user_id'=>                   array('User ID',           'link', ATT_DEFAULT_USER_ID, AF_HIDE_ADD|AF_READONLY|AF_SEARCHABLE, 'user'),
-     'guest_id'=>                  array('Guest ID',          'link', 0, AF_HIDE_ADD|AF_READONLY|AF_SEARCHABLE, 'user'),
-  //         'legacy_id'=>                 array('Custom inv. ID',         	'str',   '', 0, 20),
-     'guest_name'=>                array('Guest',         		'str',   '', AF_READONLY, 40),
-     'org_id'=>                    array('Employer',          'many2one', 0, AF_SEARCHABLE, 'org',["active" => 1]),
-     'contact_id'=>                array('Department',    	  'many2one',   ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_HIDE_ADD, 'contact', ["org_id" => "__this->org_id", "active" => 1]),
-     'bill_to'=>                   array('Bill To',           'valSelect', 0, AF_SEARCHABLE, $billtoArray),
-     'type'=>                      array('Type',              'many2one', 0, AF_READONLY_EDIT, 'inv_type'),
-     'timestamp'=>                 array('Updated',           'timestamp',  ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY),
-     'status'=>                    array('Status',            'many2one', INV_STATUS_DRAFT, AF_SEARCHABLE|AF_LOG, 'inv_status'),
-     'status_change_timestamp'=>   array('Status Changed on', 'datetime',  ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY),
-     'created'=>                   array('Created',           'datetime', ATT_DEFAULT_NOW, AF_READONLY|AF_HIDE_LIST),
-     'invoice_date'=>              array('Invoice Date',      'date',   ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_LOG),
-     'duedate'=>                   array('Due',               'date',   ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_LOG),
-     'start_date'=>                array('From',              'datetime',   '', AF_LOG),
-     'end_date'=>                  array('To',                'datetime',   '', AF_LOG),
-     'sequence'=>                  array('Sequence #',        'int',    0, AF_READONLY|AF_HIDE_LIST),
-  
-     'booking_pin' =>              array('Booking PIN',       'str',    '',  AF_HIDE|AF_READONLY, 10),
-  
-     'invoice_id'=>                array('Invoice ID',        'str',    '', AF_SEARCHABLE|AF_LOG, 30),
-     'invoice_id_required'=>       array('Invoice ID Required?', 'bool', 0, AF_HIDE_LIST|AF_READONLY),
-     'concerning'=>                array('Concerning',        'str',    '', AF_HIDE_LIST, 200),
-     'customer_notes'=>            array('Customer Notes',    'str',    '', AF_HIDE_LIST, 200),
-     'location'=>                  array('Location',          'str',    '', AF_HIDE_LIST, 200),
-     'notes'=>                     array('Notes',             'text',    '', AF_HIDE_LIST),
-     'message'=>                   array('Message',           'text',    '', AF_HIDE_LIST),
-  
-     'sent_to'=>                   array('Sent to',           'str',    '', AF_HIDE_LIST|AF_LOG, 255),
-     'sent_date'=>                 array('Sent Date',         'datetime',   ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY|AF_LOG),
-  
-     'export_timestamp'=>          array('Export timestamp',  'datetime',    ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_HIDE_ADD|AF_HIDE_EDIT|AF_READONLY|AF_LOG),
-     'export_gateway'=>            array('Export gateway',    'str',    '', AF_HIDE_LIST|AF_HIDE_ADD|AF_LOG|AF_HIDE_EDIT|AF_READONLY, 20),
-  
-     'currency'=>                  array('Cur',               'valSelect', 0, AF_READONLY, $currencyArray),
-     'shipping'=>                  array('Shipping',          'money',  0, AF_HIDE_LIST|AF_READONLY|AF_TOTAL),
-     'handling'=>                  array('Handling',          'money',  0, AF_HIDE_LIST|AF_READONLY|AF_TOTAL),
-  //         'discount'=>                  array('Discount',          'discount',  0, AF_HIDE_LIST),
-     'tax'=>                       array('Tax',               'money',  0, AF_HIDE_LIST|AF_READONLY|AF_TOTAL),
-     'tax_of_which'=>              array('Of which tax',      'money',  0, AF_HIDE_ADD|AF_LOG|AF_READONLY),
-     'amount'=>                    array('Amount',            'money',  0, AF_READONLY|AF_TOTAL),
-     'subtotal'=>                  array('Subtotal',          'money',  0, AF_HIDE_ADD|AF_READONLY),
-     'total'=>                     array('Total',             'money',  0, AF_READONLY|AF_TOTAL),
-     'paid'=>                      array('Paid',              'money',  0, AF_READONLY|AF_TOTAL|AF_LOG),
-     'balance'=>                   array('Balance',           'money',  0, AF_READONLY|AF_TOTAL),
-     'pending'=>                   array('Pending Payments',  'money',  0, AF_READONLY|AF_TOTAL|AF_LOG),
-     'authorized'=>                array('Authorized Payments', 'money',  0, AF_READONLY|AF_TOTAL|AF_LOG),
-
-     'lineitems'=>                 array('# Lines',           'int',    0, AF_READONLY|AF_HIDE_LIST),
-     'paid_date'=>                 array('Paid date',         'datetime',   '', AF_READONLY|AF_HIDE_LIST),
-
-     'salutation'=>        array('Salutation',        'str',    '', 0, 10),
-     'first_name'=>        array('First Name',        'str',    '', AF_SEARCHABLE, 64),
-     'last_name'=>         array('Last Name',         'str',    '', AF_SEARCHABLE, 64),
-     'address1'=>          array('Address1',          'str',    '', AF_HIDE_LIST, 128),
-     'address2'=>          array('Address2',          'str',    '', AF_HIDE_LIST, 128),
-     'city'=>              array('City',              'str',    '', AF_HIDE_LIST, 64),
-     'state'=>             array('State',             'str',    '', AF_HIDE_LIST, 64),
-     'zip'=>               array('Postal code',       'str',    '', AF_HIDE_LIST, 64),
-     'country'=>           array('Country',           'many2one', ATT_DEFAULT_COUNTRY, AF_SEARCHABLE|AF_FORCE_SELECT, 'countries'),
-     'email_address'=>     array('Email',             'email',  '', AF_SEARCHABLE|AF_HIDE_LIST, 128),
-     'phone'=>             array('Phone',             'phone',  '', AF_HIDE_LIST, 20),
+            /** not yet in use 
+            'repeat_id' =>               array('Repeat ID',       'str',     '', AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD, 13),
+            'repeat_interval' =>         array('Repeat Interval', 'str',     '', AF_HIDE_LIST, 4), // todo; add class, use many2one
+            'repeat_until' =>            array('Repeat Until',    'datetime', '', AF_HIDE_LIST),
           
-     'organization'=>      array('Company/Dept.',     'str',    '', AF_SEARCHABLE, 128),
-     'title'=>             array('Title/Attn',        'str',    '', AF_HIDE_LIST, 64),
+            'reminder_period1' =>         array('Reminder 1',       'str',      '', AF_HIDE_LIST, 6), // todo; add class, use many2one
+            'reminder_time1' =>           array('Remdinder Time 1', 'datetime', ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY),
+            'reminder_sent1' =>           array('Remdinder Sent 1', 'bool',     0, AF_HIDE_LIST|AF_READONLY),
+            'reminder_period2' =>         array('Reminder 2',       'str',      '', AF_HIDE_LIST, 6), // todo; add class, use many2one
+            'reminder_time2' =>           array('Remdinder Time 2', 'datetime', ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY),
+            'reminder_sent2' =>           array('Remdinder Sent 2', 'bool',     0, AF_HIDE_LIST|AF_READONLY),
+            'reminder_phone' =>          array('Reminder Phone',    'phone',    '', AF_HIDE_LIST, 20),
+            'reminder_email' =>          array('Reminder email',    'email',    '', AF_HIDE_LIST, 20),        
+            */
      
-     'inv_lineitems'=>             array('Lineitems',         'one2many', 0, AF_HIDE_LIST|AF_CASCADE_DELETE, 'inv_lineitem', 'inv_id'),
-                                
-     'charge_city_tax' =>          array('Charge City Tax?' ,'bool', 0, AF_LOG, 0),
-     'charge_tax' =>               array('Charge V.A.T?'       ,'bool', 0, AF_LOG, 0),
-     'tax_included' =>             array('Tax included?'       ,'bool', 0, AF_LOG, 0),
+        ),
+   
+    "reservation" => 
   
-  //         'block_id'=>                  array('Block ID',           'str',      ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD|AF_HIDE_EDIT, 13),
-     'block_id'=>                  array('Block ID',    	     'link',     ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD|AF_HIDE_EDIT, 'block'),
-     'block_parent'=>              array('Block Parent',    	 'link',     ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD|AF_HIDE_EDIT, 'invoice'),
-  
-     'processed'                => array('Processed'         ,'bool', 0, AF_HIDE),
-  
-     'payments'     =>             array('Payments',       'one2many', 0, AF_HIDE_LIST|AF_CASCADE_DELETE, 'payment', 'inv_id'),
-     'withdrawals'  =>             array('Withdrawals',    'one2many', 0, AF_HIDE_LIST|AF_CASCADE_DELETE, 'withdrawal', 'inv_id'),      
-  ),
-  
-  
-  "inv_lineitem" => 
-  
-  array(                    
-     'id'=>                        array('ID',                'id',        0, AF_PRIMARY|AF_AUTOINCREMENT|AF_HIDE),
-     'inv_id'=>                    array('InvID',             'parent_id', 0, AF_HIDE|AF_OBLIGATORY, 'invoice'),
-     'user_id'=>                   array('User',              'link',      ATT_DEFAULT_USER_ID, AF_HIDE_ADD|AF_READONLY, 'user'),
-     'product_id'=>                array('Product',           'many2one',  ATT_DEFAULT_NULL, 0, 'product'),
-     'variant_id'=>                array('Variant ID',    		'link',      0, 0, 'product_variant'),
-     'supplier_id'=>               array('Supplier',          'many2one',  0, AF_HIDE, 'supplier'),
-     'type'=>                      array('Type',              'many2one',  0, 1, 'lineitem_type'),
-     'timestamp'=>                 array('Timestamp',         'timestamp',   ATT_DEFAULT_NOW, AF_HIDE_ADD|AF_READONLY, 6 ),
-     'created'=>                   array('Created',           'date',       ATT_DEFAULT_NOW, AF_HIDE_ADD|AF_READONLY),
-     'item_number'=>               array('Item number',       'str',       '', AF_HIDE_ADD|AF_READONLY, 40),
-     'quantity'=>                  array('Quantity',          'float',     1, 1, '2.4'),
-     'currency'=>                  array('Currency',          'valSelect', 0, 1, $currencyArray),
-     'amount'=>                    array('Unit price',        'money',     0, AF_LOG),
-     'discount'=>                  array('Discount',          'discount',  0, AF_LOG),
-     'subtotal'=>                  array('Subtotal',          'money',     0, AF_HIDE_ADD|AF_READONLY),
-     'tax_category'=>              array('Tax Category',      'many2one',  0, AF_OBLIGATORY, 'tax_category', array('active' => 1)),
-     'tax_percentage'=>            array('Tax %',             'float',     0, AF_LOG, '2.2'),
-     'tax_of_which'=>              array('Of which tax',      'money',     0, AF_HIDE_ADD|AF_LOG|AF_READONLY),
-     'tax'=>                       array('Tax (added)',       'money',     0, AF_HIDE_ADD|AF_LOG|AF_READONLY),
-     'shipping'=>                  array('Shipping',          'money',     0, 0),
-     'handling'=>                  array('Handling',          'money',     0, 0),
-     'total'=>                     array('Total',             'money',     0, AF_HIDE_ADD|AF_LOG|AF_READONLY),
-     'description'=>               array('Description',       'text',  '', 0, 255),
-     'account_number' =>           array('Account #',         'str',   '', AF_HIDE_LIST, 20),
-  
-  //         'block_id'=>                  array('Block ID',           'str',      ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD|AF_HIDE_EDIT, 13),
-     'block_id'=>                  array('Block ID',    	     'link',     ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD|AF_HIDE_EDIT, 'block'),
-     'block_parent'=>              array('Block Parent',    	 'link',     ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD|AF_HIDE_EDIT, 'invoice'),         
-  ),
-  
-  
-  "charge" => 
-  array(
-     'id'=>                array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 8),
-     'status'=>            array('Status',            'int',   0, 0, 4 ),
-     'user'=>              array('User',              'int',   ATT_DEFAULT_USER_ID, 0, 6 ),
-     'ipn_id'=>            array('IPN',               'int',   0, 0, 6 ),
-     'cc_id'=>             array('CC ID',             'link',  1, AF_OBLIGATORY|AF_READONLY, 'cc'),
-     'inv_id'=>            array('InvID',             'link', 0, AF_OBLIGATORY|AF_READONLY|AF_SEARCHABLE, 'invoice'),
-     'res_id'=>            array('ResId',             'link',  1, AF_OBLIGATORY|AF_READONLY|AF_SEARCHABLE, 'reservation'),
-     'timestamp'=>         array('Timestamp',         'timestamp',  ATT_DEFAULT_NOW, 0, 6 ),
-     'created'=>           array('Created',           'datetime', ATT_DEFAULT_NOW, AF_READONLY),
-     'client_id'=>         array('Client',    			  'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
-  
-     'paymentaction'=>     array('Action',            'str',  '', AF_HIDE_LIST, 20 ),
-     'acct'=>              array('Acct',              'str',  '', AF_HIDE_LIST, 20 ),
-     'currency'    =>      array('Currency',          'valSelect', 0, 0, $currencyArray),
-     'amount'=>            array('Amount',            'money', 0, 1),
-     'description'=>       array('Desc',              'str',  '', AF_HIDE_LIST, 100 ),
-     'remote_timestamp'=>  array('RTimeS',            'str',  '', AF_HIDE_LIST, 20 ),
-     'correlationid'=>     array('CorId',             'str',  '', AF_HIDE_LIST, 20 ),
-     'ack'=>               array('Ack',               'str',  '', 0, 10 ),
-     'version'=>           array('Version',           'str',  '', AF_HIDE_LIST, 10 ),
-     'build'=>             array('Build',             'str',  '', AF_HIDE_LIST, 10 ),
-     'avscode'=>           array('AVS OK',            'str',  '', AF_HIDE_LIST, 2 ),
-     'cvv2match'=>         array('CVV OK',            'str',  '', AF_HIDE_LIST, 2 ),
-     'transactionid'=>     array('TX ID',             'str',  '', 0,  20 ),
-     'amt'=>               array('Amt',               'money', 0, AF_HIDE_LIST),
-     'payment_error'=>     array('Error',             'text',  '', AF_HIDE_LIST),
-  ),
-  
-  
-  "gateway" => 
-  
-  array(
-     'id'               => array('ID'             ,'id',   0, AF_PRIMARY|AF_AUTOINCREMENT|AF_HIDE),
-     'name'             => array('Name'           ,'str', '', AF_SEARCHABLE|AF_OBLIGATORY, 50),
-  
-     'username'         => array('UserName'      ,'str', '', 0, 100),
-     'password'         => array('Password'      ,'str', '', 0, 100),
-     'signature'        => array('Signature'     ,'str', '', 0, 200),
-     'endpoint'         => array('Endpoint'      ,'str', '', 0, 200),
-  
-     'test_username'         => array('Tetst UserName'      ,'str', '', 0, 100),
-     'test_password'         => array('Tetst Password'      ,'str', '', 0, 100),
-     'test_signature'        => array('Tetst Signature'     ,'str', '', 0, 200),
-     'test_endpoint'         => array('Tetst Endpoint'      ,'str', '', 0, 200),
-  
-  ),
-  
-  
-  "transaction" => 
-  // for testing
-  // $inv_id = 2679;
-  // $pay_id = 1145;
-  // $res_id = 35195;
-  
-  array(
-     'tx_id'=>             array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 8),
-     //'tx_st'=>             array('User level',        'many2one', 0, 'tx_st'),
-     'cc_id'=>             array('CC ID',             'link',  ATT_DEFAULT_NULL, AF_READONLY_EDIT, 'cc'),
-     'inv_id'=>            array('InvID',             'link',  ATT_DEFAULT_NULL, AF_READONLY_EDIT, 'invoice'),
-     'res_id'=>            array('ResId',             'link',  ATT_DEFAULT_NULL, AF_READONLY_EDIT, 'reservation'),
-     // 'order_id'=>          array('Order',    			    'link',  ATT_DEFAULT_NULL, AF_READONLY, 'payment_order'),
-     'payment_id'=>        array('PaymentId',         'link',  ATT_DEFAULT_NULL, AF_READONLY_EDIT, 'payment'),
-//     'owner_id'=>          array('OwnerId',           'link',  ATT_DEFAULT_NULL, AF_READONLY_EDIT, 'owner'),
-     'host_id'=>           array('Host',              'link',  ATT_DEFAULT_NULL, AF_HIDE_ADD|AF_READONLY, 'user'),
-     'client_id'=>         array('Client',    			  'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
-     'site_id'=>           array('Site',    			    'link', ATT_DEFAULT_SITE_ID, AF_READONLY|AF_HIDE, 'site'),
-  
-     'tx_st'=>               array('TxSt',              'many2one', '', AF_SEARCHABLE, 'tx_status' ),
-     'timestamp'=>           array('Timestamp',         'timestamp',   ATT_DEFAULT_NOW, AF_READONLY),
-     'tx_gateway'=>          array('Gateway',           'str',      '', AF_SEARCHABLE, 10 ),
-     'tx_type'=>             array('TX Type',           'str',      '', AF_SEARCHABLE, 40 ),
-     'ipn_test'=>            array('Test',              'bool',     0, 0),
-     'txn_res'=>             array('TxnRes',            'str',      '', AF_SEARCHABLE, 10 ),
-     'txn_id'=>              array('TxnId',             'str',      '', AF_SEARCHABLE, 50 ),
-     'parent_txn_id'=>       array('Parent TxnId',      'str',      '', AF_SEARCHABLE, 50 ),
-     'item_name'=>           array('Item Name',         'str',      '', AF_SEARCHABLE, 255),
-     'item_number'=>         array('Item Number',       'str',      '', AF_SEARCHABLE, 20 ),
-     'payment_date'=>        array('Date',              'str',      '', AF_SEARCHABLE, 22 ),
-  
-     'payment_status'=>    array('Payment Status',    'many2one', 0, AF_READONLY_EDIT, 'payment_status'),
-     'pending_reason'=>    array('Pending Reason',    'str',    ATT_DEFAULT_NULL, AF_READONLY, 20),
-     'reason_code'=>       array('Reason Code',       'str',    ATT_DEFAULT_NULL, AF_READONLY, 30),
-  
-     'payer_email'=>       array('Sender',          'str',    '', AF_SEARCHABLE, 20 ),
-     'receiver_email'=>    array('Received',        'str',      '', AF_SEARCHABLE, 20 ),
-  
-     'memo'=>                array('Memo',             'str',      '', AF_SEARCHABLE|AF_HIDE_LIST, 255 ),
-     'tx_notes'=>            array('Notes',           'str',      '', AF_SEARCHABLE, 4 ),
-  
-     'mc_gross'=>        array('Gross',                 'str',      '', AF_SEARCHABLE, 22 ),
-     'mc_currency'=>     array('Currency',              'str',      '', AF_SEARCHABLE, 22 ),
-     'mc_fee'=>          array('Fee',                   'str',      '', AF_SEARCHABLE, 22 ),
-  
-     'settle_currency'=>     array('Settle Currency',     'str',      '', AF_SEARCHABLE, 3 ),
-     'settle_amount'=>       array('Settle Amount',       'str',      '', AF_SEARCHABLE, 22 ),
-     'exchange_rate'=>       array('Exchange rate',       'str',      '', AF_SEARCHABLE, 22 ),
-     
-  
-     'auth_id'=>         array('Auth ID',              'str',      '', AF_HIDE_LIST|AF_SEARCHABLE, 20),
-     'auth_amount'=>     array('Auth Amount',          'str',      '', AF_HIDE_LIST|AF_SEARCHABLE, 20),
-     'auth_exp'=>        array('Auth Expiration',      'str',      '', AF_HIDE_LIST|AF_SEARCHABLE, 25),
-  
-     'first_name'=>        array('First Name',      'str',      '', AF_HIDE_LIST|AF_SEARCHABLE, 50),
-     'last_name'=>         array('Last Name',       'str',      '', AF_HIDE_LIST|AF_SEARCHABLE, 50),
-     'residence_country'=> array('Country',         'str',      '', AF_HIDE_LIST|AF_SEARCHABLE, 2),
+        array(
+            'res_id'=>                    array('ID',                'id', 0, AF_SEARCHABLE|AF_PRIMARY|AF_AUTOINCREMENT),
+            'site_id'=>                   array('Site',              'many2one',   ATT_DEFAULT_SITE_ID, AF_LOG|AF_SEARCHABLE, 'site'),
+            'status'=>                    array('Status',            'many2one',   STATUS_DRAFT, AF_OBLIGATORY|AF_LOG|AF_SEARCHABLE , 'res_status'),
+            'type'=>                      array('Type',              'many2one',   5, AF_SEARCHABLE|AF_HIDE_EDIT|AF_HIDE_ADD|AF_LOG, 'res_type'),
+            'event_id'=>                  array('Event ID',          'link', 0, AF_HIDE_LIST, 'event'),
+            'client_id'=>                 array('Client',                 'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
+            'source_id'=>                 array('Source',                 'many2one', ATT_DEFAULT_NULL, AF_READONLY|AF_HIDE_LIST|AF_HIDE_ADD|AF_HIDE_EDIT, 'source'),
+            'dest_id'=>                   array('Destination',        'many2one', ATT_DEFAULT_NULL, AF_READONLY|AF_HIDE_LIST|AF_HIDE_ADD|AF_HIDE_EDIT, 'source'),
+            'fid'=>                       array('Foreign ID',        'str',  ATT_DEFAULT_NULL, AF_SEARCHABLE|AF_READONLY|AF_HIDE_LIST|AF_HIDE_ADD|AF_HIDE_EDIT, 20),
+            'fids'                     => array('Foreign IDs'       ,'json', '', AF_HIDE_LIST|AF_HIDE_ADD, 255),
+            'fgid'=>                      array('Foreign Guest ID',  'str',  ATT_DEFAULT_NULL, AF_SEARCHABLE|AF_READONLY|AF_HIDE_LIST|AF_HIDE_ADD|AF_HIDE_EDIT, 20),
+            'property_type'=>             array('Property Type',     'valSelect', 0, AF_OBLIGATORY|AF_READONLY|AF_SEARCHABLE, $propertyTypeArray),
+            'corporate'=>                 array('Corporate?',        'bool', 0, AF_READONLY),
+            'created'=>                   array('Created',           'datetime',  ATT_DEFAULT_NOW, AF_HIDE_ADD|AF_READONLY),
+            'timestamp'=>                 array('Modified',          'timestamp',  ATT_DEFAULT_NOW, AF_HIDE_ADD|AF_READONLY),
+            'status_change_timestamp'=>   array('Status Changed on', 'datetime',  ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY),
+            'booked_timestamp'=>          array('Booked on',         'datetime',  ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY),
+            'cancel_timestamp'=>          array('Canceled on',       'datetime',  ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY),
+            'expires'=>                   array('Expires',           'datetime',  ATT_DEFAULT_NULL, AF_READONLY|AF_HIDE_LIST, 6 ),
+            'hidden'=>                    array('Hidden',            'bool',   0, AF_HIDE),
 
-     'refund_amount'=>     array('Refund Amount',    'money', 0, AF_SEARCHABLE),
-     'bank_id'=>          array('Bank ID',              'str',      '', AF_SEARCHABLE, 10 ),
-      'bank_name'=> array('Bank name', 'str', '', AF_HIDE_LIST|AF_SEARCHABLE, 128),
-      'bank_account'=> array('Bank account', 'str', '', AF_HIDE_LIST|AF_SEARCHABLE, 128),
-      'transfer_reference'=> array('Transfer reference', 'str', '', AF_HIDE_LIST|AF_SEARCHABLE, 128),
-      'consumer_name'=> array('Consumer name', 'str', '', AF_HIDE_LIST|AF_SEARCHABLE, 128),
-      'consumer_account'=> array('Consumer account', 'str', '', AF_HIDE_LIST|AF_SEARCHABLE, 128),
-      'consumer_bic'=> array('Consumer bic', 'str', '', AF_HIDE_LIST|AF_SEARCHABLE, 128),
-      'bitcoin_address'=> array('Bitcoin address', 'str', '', AF_HIDE_LIST|AF_SEARCHABLE, 128),
-      'bitcoin_amount'=> array('Bitcoin amount', 'str', '', AF_HIDE_LIST|AF_SEARCHABLE, 128),
-      'bitcoin_rate'=> array('Bitcoin rate', 'str', '', AF_HIDE_LIST|AF_SEARCHABLE, 128),
-      'bitcoin_uri'=> array('Bitcoin uri', 'str', '', AF_HIDE_LIST|AF_SEARCHABLE, 128),
-      'paypal_reference'=> array('Paypal reference', 'str', '', AF_HIDE_LIST|AF_SEARCHABLE, 128),
-      'amount_remaining'=> array('Amount remaining', 'money', 0, AF_HIDE_LIST|AF_SEARCHABLE),
-  ),
+            'checkin'=>                   array('Checkin',           'datetime',   '', AF_OBLIGATORY|AF_LOG, 19),
+            'checkout'=>                  array('Checkout',          'datetime',   '', AF_OBLIGATORY|AF_LOG, 19),
+
+            // shift hours
+            //'start_hour' =>                array('Start Time',        'str', '', AF_SEARCHABLE|AF_HIDE_LIST|AF_LOG, 5),
+            //'end_hour' =>                  array('End Time',          'str', '', AF_SEARCHABLE|AF_HIDE_LIST|AF_LOG, 5),
+
+            'num_months'=>                array('# Months',          'float',    0, AF_READONLY|AF_HIDE_LIST, '3.2'),
+            'num_days'=>                  array('# Days',            'int',    0, AF_READONLY, 4),
+            'num_hours'=>                 array('# Hours',           'float',    0, AF_HIDE_LIST|AF_READONLY, '2.2'),
+            'num_guests'=>                array('# Guests',          'intSelect', 0, AF_LOG, array(1,8,1, '')),
+            //'num_packages'=>              array('# Packages',         'float',    0, AF_HIDE_LIST|AF_READONLY, '4.2'),
+                        
+            //'package_unit'=>              array('Package Unit',        'many2one', 'EA', AF_HIDE_LIST|AF_READONLY, 'product_unit'),
+            //'package_id' =>               array('Package',            'many2one', 0, AF_READONLY|AF_LOG|AF_SEARCHABLE, 'product', array('active' => 1, 'category_id' => PRODUCT_CATEGORY_PACKAGE), 'name'),
+            //'catering_id' =>              array('Catering',           'many2one', 0, AF_READONLY|AF_LOG|AF_SEARCHABLE, 'product', array('active' => 1, 'category_id' => PRODUCT_CATEGORY_CATERING), 'name'),
+
+            'user_id'=>                   array('Author',            'link',   ATT_DEFAULT_USER_ID, AF_HIDE_LIST|AF_SEARCHABLE|AF_READONLY, 'user'),
+            'city_id'=>                   array('City',              'link',   0, AF_READONLY|AF_SEARCHABLE, 'geo_city'),
+            'apt_id'=>                    array('Apartment',         'link',   0, AF_SEARCHABLE|AF_LOG, 'property'),
+            'apartment_name'=>            array('Apartment Name',    'str',        '', AF_HIDE, 50),
+            'city_name'=>                 array('City Name',         'str',        '', 0, 128),
+
+            'guest_id'=>                  array('Guest ID',          'link',   0, AF_HIDE_ADD|AF_READONLY|AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD, 'user'),
+            'host_id'=>                   array('Host',              'link',   0, AF_HIDE_ADD|AF_READONLY, 'user'),
+
+            // 'traveler_id'=>               array('Old Guest ID',      'link',   ATT_DEFAULT_GUEST_ID, AF_HIDE_ADD|AF_READONLY|AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD, 'guest'),
+            'org_id'=>                    array('Org',               'link',   ATT_DEFAULT_ORG_ID, AF_SEARCHABLE, 'org', '', 'org.name'),
+            'contact_id'=>                array('Contact',                'link',   ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY_EDIT, 'contact'),
+            'bill_to'=>                   array('Bill To',           'valSelect', 0, AF_SEARCHABLE, $billtoArray),
+
+            'agent_id'=>                  array('Agent',             'link',   ATT_DEFAULT_AGENT_ID, AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD, 'agent'),
+            'agent_contact'=>             array('Agent Contact',     'link',   ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD, 'contact'),
+
+            //'cc_id'=>                     array('CC',                'link',       0, AF_HIDE, 'cc'), // last used cc
+            'remote_ip'=>                 array('IP',                'ip',        ATT_DEFAULT_CLIENT_IP, AF_SEARCHABLE|AF_READONLY, 15 ),
+            'remote_cc'=>                  array('Country Code',     'many2one', ATT_DEFAULT_CLIENT_CC, AF_HIDE_LIST, 'countries'),
+            'legal_entity_id'=>           array('Legal Entity',      'many2one', ATT_DEFAULT_LEGAL_ID, AF_SEARCHABLE|AF_LOG, 'legal_entity'),
+
+            'salutation'=>        array('Salutation',        'str',    '', 0, 10),
+            'first_name'=>        array('First Name',        'str',    '', AF_SEARCHABLE, 64),
+            'last_name'=>         array('Last Name',         'str',    '', AF_SEARCHABLE, 64),
+            'address1'=>          array('Address1',          'str',    '', AF_HIDE_LIST, 128),
+            'address2'=>          array('Address2',          'str',    '', AF_HIDE_LIST, 128),
+            'city'=>              array('City',              'str',    '', AF_HIDE_LIST, 64),
+            'state'=>             array('State',             'str',    '', AF_HIDE_LIST, 64),
+            'zip'=>               array('Postal code',       'str',    '', AF_HIDE_LIST, 64),
+            'country'=>           array('Country',           'many2one', ATT_DEFAULT_COUNTRY, AF_SEARCHABLE|AF_FORCE_SELECT, 'countries'),
+            'email_address'=>     array('Email',             'email',  '', AF_SEARCHABLE|AF_HIDE_LIST, 128),
+            'phone'=>             array('Phone',             'phone',  '', AF_HIDE_LIST, 20),
+            'organization'=>      array('Company/Dept.',     'str',    '', AF_SEARCHABLE, 128),
+            'title'=>             array('Title/Attn',        'str',    '', AF_HIDE_LIST, 64),
+
+            'language'=>                   array('Language',          'many2one', ATT_DEFAULT_LANGUAGE, 0, 'language'),
+
+            'arrival_method'=>            array('Arrive by',         'valSelect',    '', AF_HIDE_LIST|AF_LOG, $arrivalTypeArray),
+            'arrival_from'=>              array('City of departure',  'str',    '', AF_HIDE_LIST|AF_LOG, 32),
+            'arrival_number'=>            array('Flight/Train #',     'str',    '', AF_HIDE_LIST|AF_LOG, 50),
+            'arrival_time'=>              array('Arrival airport/station',   'time',    ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_LOG),
+            'arrival_property'=>          array('Arrival property',  'time',    ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_LOG),
+            'arrival_notes'=>             array('Arrival notes',     'str',    '', AF_HIDE_LIST|AF_LOG, 100),
+            'airport_pickup'=>            array('Pickup',            'bool',   0, AF_LOG, 30),
+
+            //'pickup_location'=>           array('Pickup location',    'many2one', 0, AF_HIDE_LIST|AF_LOG, 'landmark', array('type' => LANDMARK_TYPE_BOARDING)), // for boats
+            //'dropoff_location'=>           array('Dropoff location',   'many2one', 0, AF_HIDE_LIST|AF_LOG, 'landmark', array('type' => LANDMARK_TYPE_BOARDING)), // for boats
+
+            'extra_info'=>                array('Guest notes',        'text',   '', AF_HIDE_LIST|AF_READONLY_EDIT|AF_HIDE_ADD),
+            'message'=>                   array('Message to guest',  'text',   '', AF_HIDE_LIST),
+            'alert'=>                     array('NB!',               'str',    '', AF_HIDE_LIST, 100),
+            'notes'=>                     array('Our Notes',         'text',    '', AF_HIDE_LIST),
+            'invoice_notes'=>             array('Invoice Notes',     'str',    '', AF_HIDE_LIST, 200),
+
+            'cancel_reason'=>             array('Cancellation reason', 'text',    '', AF_HIDE_LIST),
+            'cancel_user_id'=>            array('Canceled by',       'link',    ATT_DEFAULT_NULL, AF_HIDE_LIST, 'user'),
+                              
+            //'ref'=>                       array('Ref',               'str',    '', AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD, 20),
+            //'ref_other'=>                 array('Ref (other)',       'str',    '', AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD, 20),
+            //'ref_searchterm'=>            array('Searchterm',        'str',    '', AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD, 50),
+
+
+            'currency'=>                  array('Currency',          'valSelect', 0, AF_HIDE_LIST|AF_LOG, $currencyArray),
+            'rate_type'=>                 array('Rate Type',         'valSelect', 'day', AF_HIDE_LIST|AF_OBLIGATORY|AF_LOG, $rateTypeArray),
+
+            'rate_class'=>                array('Rate Class',        'many2one', RATE_CLASS_STANDARD, AF_HIDE_LIST|AF_LOG, 'rate_class'),
+            'rate_base'=>                 array('Base Rate',         'money',   0, AF_HIDE_LIST|AF_LOG),
+            'rate_locked'=>               array('Lock Rate?',        'bool',  0, AF_HIDE_LIST),
+            'rate_locked'=>               array('Lock Rate?',        'bool',  0, AF_HIDE_LIST),
+            'invoice_locked'=>            array('Invoice locked?',   'bool',  0, AF_HIDE_LIST),
+            'guest_registered'=>          array('Guest registered?', 'bool',  0, AF_HIDE_LIST),
+
+            //'fee_locked'=>                array('Lock Fee?',         'bool',  0, AF_HIDE_LIST),
+            'send_email'=>                array('Send email updates?', 'bool',  0, AF_HIDE_LIST),
+            'monthly_billing'=>           array('Bill monthly?',    'bool', 0, AF_HIDE_ADD|AF_HIDE_LIST),
+            //'price_breakdown_id'=>        array('Price breakdown',   'link', 0, AF_HIDE_LIST|AF_LOG, 'price_breakdown'),
+
+            'hourly'=>                    array('Hourly billing',    'bool', 0, 0), // redundant, but for simplicity
+            'billing_period'=>            array('Billing period',    'many2one', BILLING_PERIOD_DAY, AF_OBLIGATORY, 'billing_period', array('active' => 1)),
+            'invoice_contact'=>           array('Invoice Contact?',  'bool', 0, AF_HIDE_ADD|AF_HIDE_LIST),
+
+            'discount'=>                  array('Base Discount',     'discount',  0, AF_HIDE_LIST|AF_LOG),
+            //'discount_locked'=>           array('Lock Discount?',    'bool',  1, AF_HIDE_LIST),
+
+            'total'=>                     array('Total',             'money',   0, AF_HIDE_LIST|AF_READONLY|AF_TOTAL|AF_LOG),
+            'tax'=>                       array('Tax',               'money',   0, AF_HIDE_LIST|AF_READONLY|AF_TOTAL|AF_LOG),
+            'tax_of_which'=>              array('Of which tax',      'money',   0, AF_HIDE_LIST|AF_READONLY|AF_TOTAL|AF_LOG),
+                                                                            
+            'charge_city_tax' =>          array('Charge City Tax?' ,'bool', 0, AF_LOG, 0),
+            'city_tax_rate' =>            array('City Tax Rate' ,   'surcharge', '', AF_LOG, 0),
+            'charge_tax' =>               array('Charge V.A.T?'       ,'bool', 0, AF_LOG, 0),
+            'tax_included' =>             array('Tax included?'       ,'bool', 1, AF_LOG, 0),
+
+            'fee_service' =>              array('Service fee',       'money',   0, AF_HIDE_LIST|AF_LOG|AF_TOTAL),
+            'fee_cleaning' =>             array('Cleaning fee',      'money',   0, AF_HIDE_LIST|AF_LOG|AF_TOTAL),
+            'fee_local'    =>             array('Local fee',         'money',   0, AF_HIDE_LIST|AF_LOG|AF_TOTAL),
+            'fee_booking'  =>             array('Booking fee',       'money',   0, AF_HIDE_LIST|AF_LOG|AF_TOTAL),
+            'fee_other'    =>             array('Other fee',         'money',   0, AF_HIDE_LIST|AF_LOG|AF_TOTAL),
+            'fee_pickup'   =>             array('Pickup fee',        'money',   0, AF_HIDE_LIST|AF_LOG|AF_TOTAL),
+            //'fee_callout'=>               array('Call-out fee',      'money',  0,  AF_HIDE_ADD|AF_HIDE_LIST, 8),
+            //'fee_callout_quantity'=>      array('Call-out fee quantity', 'float',  0,  AF_HIDE_ADD|AF_HIDE_LIST, '3.2'),
+            //'fee_waiting'=>               array('Waiting fee',       'money',  0,  AF_HIDE_ADD|AF_HIDE_LIST, 8),
+            //'fee_waiting_quantity'=>      array('Waiting fee quantity',  'float',  0,  AF_HIDE_ADD|AF_HIDE_LIST, '3.2'),
+
+            'fee_json'=>                  array('Fees',              'json',   0, AF_READONLY|AF_HIDE_LIST|AF_LOG),
+            'fees'=>                      array('Total Fees',        'money',   0, AF_READONLY|AF_HIDE_LIST|AF_LOG|AF_TOTAL),
+            'city_tax'=>                  array('City Tax',          'money',  0, AF_READONLY|AF_HIDE_LIST|AF_LOG|AF_TOTAL),
+            'other_charges'=>             array('Other charges',     'money',   0, AF_HIDE_LIST|AF_READONLY|AF_LOG|AF_TOTAL),
+            'grand_total'=>               array('Grand Total',       'money',   0, AF_HIDE_LIST|AF_READONLY|AF_LOG|AF_TOTAL),
+
+            'deposit'=>                   array('Deposit',           'money',   0, AF_HIDE_LIST|AF_READONLY|AF_LOG),
+            'deposit_percentage'=>        array('Deposit %',         'int',   0, AF_HIDE_LIST|AF_LOG, 2),
+
+            'paid'=>                      array('Paid',              'money',   0, AF_HIDE_LIST|AF_LOG|AF_TOTAL),
+            'authorized'=>                array('Authorized',        'money',   0, AF_HIDE_LIST|AF_LOG|AF_TOTAL),
+            'balance'=>                   array('Balance',           'money',   0, AF_HIDE_LIST|AF_READONLY|AF_TOTAL),
+            'commission'=>                array('Commisssion',       'commission',   0, AF_HIDE_LIST|AF_LOG|AF_TOTAL),
+            'invoice'=>                   array('Invoices',     'one2many', 0, AF_HIDE_LIST|AF_READONLY, 'invoice', 'res_id'),
+
+            'booking_id'=>                array('Booking ID',        'str',    '', AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD|AF_READONLY, 20),
+            'booking_pin'=>               array('Booking PIN',       'str',    '', AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD|AF_READONLY, 10),
+
+            //'feedback_sent'=>             array('Feedback request sent?', 'bool',  0, AF_READONLY|AF_HIDE_LIST),
+            //'feedback_confirmed'=>        array('Feedback confirmed?', 'bool',  ATT_DEFAULT_NULL, AF_READONLY|AF_HIDE_LIST|AF_LOG),
+            //'feedback_score'=>            array('Feedback score?',     'int',  ATT_DEFAULT_NULL, AF_READONLY|AF_LOG),
+            //'review_confirmed'=>          array('Review confirmed?', 'bool',  ATT_DEFAULT_NULL, AF_READONLY|AF_HIDE_LIST|AF_LOG),
+
+            'reminder_sent'=>             array('Reminder sent?',     'yesno',  0, AF_READONLY|AF_HIDE_LIST),
+            'review_sent'=>               array('Review request sent?', 'yesno',  0, AF_READONLY|AF_HIDE_LIST),
+            'review_score'=>              array('Review score?',     'int',  ATT_DEFAULT_NULL, AF_READONLY|AF_LOG),
+
+            //'block_id'=>                  array('Block ID',            'link',     ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD|AF_HIDE_EDIT, 'block'),
+            //'block_parent'=>              array('Block Parent',        'link',     ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD|AF_HIDE_EDIT, 'reservation'),
+
+            'org_currency'=>              array('Original Currency',  'valSelect', 0, AF_HIDE_LIST, $currencyArray),
+            'org_rate_type'=>             array('Original Rate Type', 'valSelect', 'day', AF_HIDE_LIST, $rateTypeArray),
+            'org_rate_base'=>             array('Original Base Rate', 'money',   0, AF_HIDE_LIST),
+            'org_fee_cleaning'=>          array('Original Cleaning Fee', 'money',   0, AF_HIDE_LIST),
+
+            'chat_count'=>                array('Chat count',         'int', 0, AF_HIDE_ADD|AF_READONLY, 3),
+
+            'decline_reason'=>            array('Declined reason',     'int',    '', AF_HIDE_LIST),
+            'cancel_reason'=>             array('Cancellation reason', 'text',    '', AF_HIDE_LIST),
+            'upload'                =>    array('Uploaded Documents',  'media',     '', 0, $reservation_media_options),
+
+            /** one2many - not stored in table */
+            'charge'=>                    array('Charges',           'one2many', 0, AF_HIDE_LIST|AF_READONLY, 'charge', 'res_id'),
+            'payments'=>                  array('Payments',          'one2many', 0, AF_HIDE_LIST|AF_CASCADE_DELETE, 'payment', 'res_id'),
+            'transactions'=>              array('Transactions',      'one2many', 0, AF_HIDE_LIST|AF_CASCADE_DELETE, 'transaction', 'res_id'),
+            'withdrawals'=>               array('Withdrawals',       'one2many', 0, AF_HIDE_LIST|AF_CASCADE_DELETE, 'withdrawal', 'res_id'),
+            'changelog'=>                 array('Log',               'one2many', 0, AF_HIDE_LIST|AF_CASCADE_DELETE|AF_READONLY, 'changelog',  'parent_id', array('obj_type' => 'reservation')), // last is filter
+            'chat'=>                      array('Correspondence',    'one2many', 0, AF_HIDE_LIST|AF_CASCADE_DELETE|AF_READONLY, 'chat',       'parent_id', array('parent_type' => 'reservation')),
+            'maillog'=>                   array('All sent mails',    'one2many', 0, AF_HIDE_LIST|AF_CASCADE_DELETE|AF_READONLY, 'mail_queue', 'parent_id', array('parent_type' => 'reservation')), // last is filter
+        ),
+  
+    // reservation exceptions
+    "res_exception" => 
+        array(
+            'id'=>                        array('ID',                'id',         0, AF_PRIMARY|AF_AUTOINCREMENT),
+            'active'                   => array('Active',            'bool',       1, AF_SEARCHABLE, 1),
+            'created'=>                   array('Created',           'datetime',   ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_HIDE_ADD),
+            'timestamp'=>                 array('Updated',           'timestamp',   ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_HIDE_ADD, 6 ),
+            'user_id' =>                   array('Author',            'link',     ATT_DEFAULT_USER_ID, AF_HIDE_EDIT|AF_HIDE_ADD, 'user'),
+            //'author_id'=>                 array('Author',            'link',   ATT_DEFAULT_USER_ID, AF_HIDE_LIST|AF_HIDE_EDIT|AF_HIDE_ADD, 'user'),
+            'org_id' =>                   array('Organization',      'many2one',   ATT_DEFAULT_NULL, AF_SEARCHABLE, 'org', array('client_id' => $_SESSION['client_id'])),
+            'site_id'=>                   array('Site',              'link',   ATT_DEFAULT_SITE_ID, 0, 'site'),
+                                                                            
+            // which city/type/owner/apt (todo - make linked ajax choosers)                                
+
+            'rank'=>                      array('Rank',              'int', 0, AF_HIDE_ADD, 3),
+
+            'city_id' =>                  array('City',             'many2one',   0, AF_SEARCHABLE, 'geo_city', array('active' => 1), 'name'),
+            'property_type'=>             array('Property Type',     'valSelect',  0, AF_OBLIGATORY, $propertyTypeArray),
+            //     'owner_id'=>                  array('Owner',             'link',   ATT_DEFAULT_NULL, AF_SEARCHABLE, 'owner', array('shortstay' => 1)),
+            'host_id'=>                   array('Host',              'link',   ATT_DEFAULT_NULL, AF_HIDE_ADD|AF_READONLY, 'user'),
+            'apt_id' =>                   array('Property',          'link',   ATT_DEFAULT_NULL, AF_SEARCHABLE, 'property'),
+
+            //   'priority'                 => array('Priority'          ,'int', 0, 0, 6),
+
+            // reservation parameters (input vars)
+            'start'=>                     array('From Date',              'date',       ATT_DEFAULT_NULL, 0),
+            'end'=>                       array('To Date',                'date',       ATT_DEFAULT_NULL, 0),
+
+            'start_time'=>                array('From Time',              'time',       ATT_DEFAULT_NULL),
+            'end_time'=>                  array('To Time',                'time',       ATT_DEFAULT_NULL),
+            //     'num_months'=>                array('# Months',          'float',      ATT_DEFAULT_NULL, 0, '3.2'),
+            'num_days'=>                  array('# Days >=',         'int',        ATT_DEFAULT_NULL, 0),
+            'num_hours'=>                 array('# Hours >=',        'float',      ATT_DEFAULT_NULL, 0, '2.2'),
+            'num_guests'=>                array('# Guests ',         'intSelect',  ATT_DEFAULT_NULL, 0, array(1,8,1, '')),
+
+            // calculated reservation parameters (input vars)
+            //'fit_factor'=>                 array('Fit factor (>= 0-100%)', 'int', ATT_DEFAULT_NULL, 0),
+            'fit_between'=>                array('Fit factor between (>= 0-100%)', 'int', ATT_DEFAULT_NULL, 0, 3),
+            'fit_next_to'=>                array('Fit factor next to (>= 0-100%)', 'int', ATT_DEFAULT_NULL, 0, 3),
+            'days_from_now'=>              array('# Days from now <=',     'int', ATT_DEFAULT_NULL, 0),
+            'days_from_now_gt'=>           array('# Days from now >',      'int', ATT_DEFAULT_NULL, 0),
+
+            // property exceptions (out vars) 
+            'book_direct' =>              array('Book Direct?',       'yesno',      ATT_DEFAULT_NULL, AF_SEARCHABLE),
+            'max_guests'=>                array('Max guests',        'int',        ATT_DEFAULT_NULL, AF_SEARCHABLE),
+            'min_stay'=>                  array('Min stay',          'int',        ATT_DEFAULT_NULL, AF_SEARCHABLE),
+            'max_stay'=>                  array('Max stay',          'int',        ATT_DEFAULT_NULL, AF_SEARCHABLE),                                                                                
+
+            'currency'=>                  array('Currency',          'valSelect', 0, AF_HIDE_LIST|AF_LOG, $currencyArray),     
+            'rate_day'=>                  array('Day rate',          'int',      ATT_DEFAULT_NULL, AF_SEARCHABLE),
+            'rate_weekend'=>              array('Weekend rate',       'int',      ATT_DEFAULT_NULL, AF_SEARCHABLE),
+            //         'rate_hour'=>                 array('Hour rate',         'money',      ATT_DEFAULT_NULL, AF_SEARCHABLE),
+            'rate_extraperson'=>          array('Rate Extra person', 'int',      ATT_DEFAULT_NULL, AF_SEARCHABLE),
+            'rate_week'=>                 array('Week rate',          'int',      ATT_DEFAULT_NULL, AF_SEARCHABLE),
+            'rate_2_weeks'=>              array('2-Week rate',          'int',      ATT_DEFAULT_NULL, AF_SEARCHABLE),
+            'rate_3_weeks'=>              array('3-Week rate',          'int',      ATT_DEFAULT_NULL, AF_SEARCHABLE),
+            'rate_month'=>                array('Month rate',          'int',      ATT_DEFAULT_NULL, AF_SEARCHABLE),
+
+            'changeover'=>                array('Changeover',        'int',  0, 0),
+
+            //   'discount'=>                  array('Discount',          'discount',   ATT_DEFAULT_NULL, AF_SEARCHABLE),
+            'surcharge'=>                 array('Surcharge',         'surcharge',  ATT_DEFAULT_NULL, AF_SEARCHABLE),
+            'rate_change'=>               array('Rate Change',       'percent_or_number',  ATT_DEFAULT_NULL, AF_SEARCHABLE),
+            'last'=>                      array('Stop processing',    'bool',  0, AF_SEARCHABLE),  
+            'description'=>               array('Description',        'str',    '', 0, 255),
+        ),
   
   
-  "payment_type" => 
-  array(
-     'id'=>                array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 2),
+    "calendar_import" => 
+        array(
+            'id'=>                  array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT),
+            'active'=>              array('Active?',           'bool', 1, AF_READONLY|AF_HIDE_ADD),
+            'created'=>             array('Created',           'datetime',   ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY),
+            'last_sync'=>           array('Last Sync',         'datetime',   ATT_DEFAULT_NULL, AF_HIDE_ADD|AF_READONLY),
+            'site_id'=>             array('Site',              'link',   ATT_DEFAULT_SITE_ID, AF_OBLIGATORY, 'site'),
+            'client_id'=>           array('Client',               'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_HIDE_ADD|AF_SEARCHABLE|AF_READONLY_EDIT|AF_OBLIGATORY, 'client'),
+            'source_id'=>           array('Source',               'many2one', ATT_DEFAULT_SOURCE_ID, AF_OBLIGATORY|AF_SEARCHABLE|AF_READONLY_EDIT, 'source'),
+            'user_id'=>             array('User',              'link', ATT_DEFAULT_USER_ID, AF_HIDE_ADD|AF_READONLY|AF_OBLIGATORY, 'user'),
+            'host_id'=>             array('Host',              'link', 0, AF_HIDE_ADD|AF_READONLY|AF_OBLIGATORY, 'user'),
+            'property_type'=>       array('Property Type',     'valSelect', 0, AF_READONLY|AF_SEARCHABLE|AF_HIDE_ADD|AF_OBLIGATORY, $propertyTypeArray),
+            'apt_id'=>              array('Property ID',       'link', 0, AF_HIDE_ADD|AF_READONLY, 'user'),
+            'name'               => array('Name',              'str',  '', AF_SEARCHABLE|AF_OBLIGATORY,255),
+            'fid'=>                 array('Foreign ID',        'str',  '', 0, 40),
+            'fname'               => array('Foreign Name',     'str',  '', AF_SEARCHABLE,255),
+            'url'                => array('URL',               'url',  '', AF_SEARCHABLE|AF_OBLIGATORY),
+        ),
+
+  
+    "invoice" => 
+  
+        array(       
+            'id'=>                        array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT),
+            'cc_id'=>                     array('CC',                'link',       0, AF_HIDE, 'cc'), // last used cc
+            'res_id'=>                    array('Reservation ID',    'link', 0, AF_SEARCHABLE, 'reservation'),
+            //'order_id'=>                  array('Order ID',          'link', 0, AF_SEARCHABLE, 'payment_order'),
+
+            'parent_id'=>                 array('Parent Id',         'parent_id',   ATT_DEFAULT_NULL, AF_SEARCHABLE|AF_READONLY|AF_HIDE_ADD|AF_HIDE_LIST, 11),
+            'parent_type'=>               array('Parent Type',       'parent_type', ATT_DEFAULT_NULL, AF_SEARCHABLE|AF_READONLY|AF_HIDE_ADD|AF_HIDE_LIST),
+
+            'apt_id'=>                    array('Property',          'link', 0, AF_READONLY|AF_SEARCHABLE|AF_HIDE_ADD, 'property'),
+            'property_type'=>             array('Property Type',     'valSelect', 0, AF_READONLY|AF_SEARCHABLE|AF_HIDE_ADD, $propertyTypeArray),
+            'site_id'=>                   array('Site',              'many2one',   ATT_DEFAULT_SITE_ID, 0, 'site'),
+            'city_id'=>                   array('City',              'link',   0, AF_READONLY|AF_SEARCHABLE|AF_HIDE_EDIT|AF_HIDE_ADD, 'geo_city', array('active' => 1), 'name'),
+            //     'country_id'=>                array('Country',           'link',   0, AF_READONLY|AF_SEARCHABLE|AF_HIDE_EDIT|AF_HIDE_ADD, 'country', array('active' => 1), 'name'),
+            //     'owner_id'=>                  array('Owner',             'link',   ATT_DEFAULT_OWNER_ID, AF_SEARCHABLE|AF_READONLY|AF_HIDE_EDIT|AF_HIDE_ADD, 'owner', array('shortstay' => 1), 'first_name'),
+            'host_id'=>                   array('Host',              'link', 0, AF_HIDE_ADD|AF_READONLY, 'user'),
+            'agent_id'=>                   array('Agent',            'many2one',  ATT_DEFAULT_NULL, AF_SEARCHABLE, 'agent'),
+            'legal_entity_id'=>           array('Legal Entity',      'many2one', 0, AF_SEARCHABLE|AF_LOG, 'legal_entity'),
+            'client_id'=>                 array('Client',                 'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
+            'head_invoice'=>              array('Head invoice#',     'bool', 0, AF_READONLY),
+            'locked'=>                    array('Locked?',           'bool', 0, AF_READONLY),
+            'corporate'=>                 array('Corporate?',        'bool', 0, AF_READONLY),
+            'due'=>                       array('Due',               'bool', 0, 0),
+            'received'=>                  array('Received on',       'datetime', ATT_DEFAULT_NULL, AF_READONLY),
+            'user_id'=>                   array('User ID',           'link', ATT_DEFAULT_USER_ID, AF_HIDE_ADD|AF_READONLY|AF_SEARCHABLE, 'user'),
+            'guest_id'=>                  array('Guest ID',          'link', 0, AF_HIDE_ADD|AF_READONLY|AF_SEARCHABLE, 'user'),
+            //         'legacy_id'=>                 array('Custom inv. ID',            'str',   '', 0, 20),
+            'guest_name'=>                array('Guest',                'str',   '', AF_READONLY, 40),
+            'org_id'=>                    array('Employer',          'many2one', 0, AF_SEARCHABLE, 'org',["active" => 1]),
+            'contact_id'=>                array('Department',         'many2one',   ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_HIDE_ADD, 'contact', ["org_id" => "__this->org_id", "active" => 1]),
+            'bill_to'=>                   array('Bill To',           'valSelect', 0, AF_SEARCHABLE, $billtoArray),
+            'type'=>                      array('Type',              'many2one', 0, AF_READONLY_EDIT, 'inv_type'),
+            'timestamp'=>                 array('Updated',           'timestamp',  ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY),
+            'status'=>                    array('Status',            'many2one', INV_STATUS_DRAFT, AF_SEARCHABLE|AF_LOG, 'inv_status'),
+            'status_change_timestamp'=>   array('Status Changed on', 'datetime',  ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY),
+            'created'=>                   array('Created',           'datetime', ATT_DEFAULT_NOW, AF_READONLY|AF_HIDE_LIST),
+            'invoice_date'=>              array('Invoice Date',      'date',   ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_LOG),
+            'duedate'=>                   array('Due',               'date',   ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_LOG),
+            'start_date'=>                array('From',              'datetime',   '', AF_LOG),
+            'end_date'=>                  array('To',                'datetime',   '', AF_LOG),
+            'sequence'=>                  array('Sequence #',        'int',    0, AF_READONLY|AF_HIDE_LIST),
+
+            'booking_pin' =>              array('Booking PIN',       'str',    '',  AF_HIDE|AF_READONLY, 10),
+
+            'invoice_id'=>                array('Invoice ID',        'str',    '', AF_SEARCHABLE|AF_LOG, 30),
+            'invoice_id_required'=>       array('Invoice ID Required?', 'bool', 0, AF_HIDE_LIST|AF_READONLY),
+            'concerning'=>                array('Concerning',        'str',    '', AF_HIDE_LIST, 200),
+            'customer_notes'=>            array('Customer Notes',    'str',    '', AF_HIDE_LIST, 200),
+            'location'=>                  array('Location',          'str',    '', AF_HIDE_LIST, 200),
+            'notes'=>                     array('Notes',             'text',    '', AF_HIDE_LIST),
+            'message'=>                   array('Message',           'text',    '', AF_HIDE_LIST),
+
+            'sent_to'=>                   array('Sent to',           'str',    '', AF_HIDE_LIST|AF_LOG, 255),
+            'sent_date'=>                 array('Sent Date',         'datetime',   ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY|AF_LOG),
+
+            'export_timestamp'=>          array('Export timestamp',  'datetime',    ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_HIDE_ADD|AF_HIDE_EDIT|AF_READONLY|AF_LOG),
+            'export_gateway'=>            array('Export gateway',    'str',    '', AF_HIDE_LIST|AF_HIDE_ADD|AF_LOG|AF_HIDE_EDIT|AF_READONLY, 20),
+
+            'currency'=>                  array('Cur',               'valSelect', 0, AF_READONLY, $currencyArray),
+            'shipping'=>                  array('Shipping',          'money',  0, AF_HIDE_LIST|AF_READONLY|AF_TOTAL),
+            'handling'=>                  array('Handling',          'money',  0, AF_HIDE_LIST|AF_READONLY|AF_TOTAL),
+            //         'discount'=>                  array('Discount',          'discount',  0, AF_HIDE_LIST),
+            'tax'=>                       array('Tax',               'money',  0, AF_HIDE_LIST|AF_READONLY|AF_TOTAL),
+            'tax_of_which'=>              array('Of which tax',      'money',  0, AF_HIDE_ADD|AF_LOG|AF_READONLY),
+            'amount'=>                    array('Amount',            'money',  0, AF_READONLY|AF_TOTAL),
+            'subtotal'=>                  array('Subtotal',          'money',  0, AF_HIDE_ADD|AF_READONLY),
+            'total'=>                     array('Total',             'money',  0, AF_READONLY|AF_TOTAL),
+            'paid'=>                      array('Paid',              'money',  0, AF_READONLY|AF_TOTAL|AF_LOG),
+            'balance'=>                   array('Balance',           'money',  0, AF_READONLY|AF_TOTAL),
+            'pending'=>                   array('Pending Payments',  'money',  0, AF_READONLY|AF_TOTAL|AF_LOG),
+            'authorized'=>                array('Authorized Payments', 'money',  0, AF_READONLY|AF_TOTAL|AF_LOG),
+
+            'lineitems'=>                 array('# Lines',           'int',    0, AF_READONLY|AF_HIDE_LIST),
+            'paid_date'=>                 array('Paid date',         'datetime',   '', AF_READONLY|AF_HIDE_LIST),
+
+            'salutation'=>        array('Salutation',        'str',    '', 0, 10),
+            'first_name'=>        array('First Name',        'str',    '', AF_SEARCHABLE, 64),
+            'last_name'=>         array('Last Name',         'str',    '', AF_SEARCHABLE, 64),
+            'address1'=>          array('Address1',          'str',    '', AF_HIDE_LIST, 128),
+            'address2'=>          array('Address2',          'str',    '', AF_HIDE_LIST, 128),
+            'city'=>              array('City',              'str',    '', AF_HIDE_LIST, 64),
+            'state'=>             array('State',             'str',    '', AF_HIDE_LIST, 64),
+            'zip'=>               array('Postal code',       'str',    '', AF_HIDE_LIST, 64),
+            'country'=>           array('Country',           'many2one', ATT_DEFAULT_COUNTRY, AF_SEARCHABLE|AF_FORCE_SELECT, 'countries'),
+            'email_address'=>     array('Email',             'email',  '', AF_SEARCHABLE|AF_HIDE_LIST, 128),
+            'phone'=>             array('Phone',             'phone',  '', AF_HIDE_LIST, 20),
+              
+            'organization'=>      array('Company/Dept.',     'str',    '', AF_SEARCHABLE, 128),
+            'title'=>             array('Title/Attn',        'str',    '', AF_HIDE_LIST, 64),
+
+            'inv_lineitems'=>             array('Lineitems',         'one2many', 0, AF_HIDE_LIST|AF_CASCADE_DELETE, 'inv_lineitem', 'inv_id'),
+                                    
+            'charge_city_tax' =>          array('Charge City Tax?' ,'bool', 0, AF_LOG, 0),
+            'charge_tax' =>               array('Charge V.A.T?'       ,'bool', 0, AF_LOG, 0),
+            'tax_included' =>             array('Tax included?'       ,'bool', 0, AF_LOG, 0),
+
+            //         'block_id'=>                  array('Block ID',           'str',      ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD|AF_HIDE_EDIT, 13),
+            'block_id'=>                  array('Block ID',          'link',     ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD|AF_HIDE_EDIT, 'block'),
+            'block_parent'=>              array('Block Parent',      'link',     ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD|AF_HIDE_EDIT, 'invoice'),
+
+            'processed'                => array('Processed'         ,'bool', 0, AF_HIDE),
+
+            'payments'     =>             array('Payments',       'one2many', 0, AF_HIDE_LIST|AF_CASCADE_DELETE, 'payment', 'inv_id'),
+            'withdrawals'  =>             array('Withdrawals',    'one2many', 0, AF_HIDE_LIST|AF_CASCADE_DELETE, 'withdrawal', 'inv_id'),      
+        ),
+  
+  
+    "inv_lineitem" => 
+  
+        array(                    
+            'id'=>                        array('ID',                'id',        0, AF_PRIMARY|AF_AUTOINCREMENT|AF_HIDE),
+            'inv_id'=>                    array('InvID',             'parent_id', 0, AF_HIDE|AF_OBLIGATORY, 'invoice'),
+            'user_id'=>                   array('User',              'link',      ATT_DEFAULT_USER_ID, AF_HIDE_ADD|AF_READONLY, 'user'),
+            'product_id'=>                array('Product',           'many2one',  ATT_DEFAULT_NULL, 0, 'product'),
+            'variant_id'=>                array('Variant ID',           'link',      0, 0, 'product_variant'),
+            'supplier_id'=>               array('Supplier',          'many2one',  0, AF_HIDE, 'supplier'),
+            'type'=>                      array('Type',              'many2one',  0, 1, 'lineitem_type'),
+            'timestamp'=>                 array('Timestamp',         'timestamp',   ATT_DEFAULT_NOW, AF_HIDE_ADD|AF_READONLY, 6 ),
+            'created'=>                   array('Created',           'date',       ATT_DEFAULT_NOW, AF_HIDE_ADD|AF_READONLY),
+            'item_number'=>               array('Item number',       'str',       '', AF_HIDE_ADD|AF_READONLY, 40),
+            'quantity'=>                  array('Quantity',          'float',     1, 1, '2.4'),
+            'currency'=>                  array('Currency',          'valSelect', 0, 1, $currencyArray),
+            'amount'=>                    array('Unit price',        'money',     0, AF_LOG),
+            'discount'=>                  array('Discount',          'discount',  0, AF_LOG),
+            'subtotal'=>                  array('Subtotal',          'money',     0, AF_HIDE_ADD|AF_READONLY),
+            'tax_category'=>              array('Tax Category',      'many2one',  0, AF_OBLIGATORY, 'tax_category', array('active' => 1)),
+            'tax_percentage'=>            array('Tax %',             'float',     0, AF_LOG, '2.2'),
+            'tax_of_which'=>              array('Of which tax',      'money',     0, AF_HIDE_ADD|AF_LOG|AF_READONLY),
+            'tax'=>                       array('Tax (added)',       'money',     0, AF_HIDE_ADD|AF_LOG|AF_READONLY),
+            'shipping'=>                  array('Shipping',          'money',     0, 0),
+            'handling'=>                  array('Handling',          'money',     0, 0),
+            'total'=>                     array('Total',             'money',     0, AF_HIDE_ADD|AF_LOG|AF_READONLY),
+            'description'=>               array('Description',       'text',  '', 0, 255),
+            'account_number' =>           array('Account #',         'str',   '', AF_HIDE_LIST, 20),
+
+            //         'block_id'=>                  array('Block ID',           'str',      ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD|AF_HIDE_EDIT, 13),
+            'block_id'=>                  array('Block ID',          'link',     ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD|AF_HIDE_EDIT, 'block'),
+            'block_parent'=>              array('Block Parent',      'link',     ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD|AF_HIDE_EDIT, 'invoice'),         
+        ),
+  
+  
+    "charge" => 
+        array(
+            'id'=>                array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 8),
+            'status'=>            array('Status',            'int',   0, 0, 4 ),
+            'user'=>              array('User',              'int',   ATT_DEFAULT_USER_ID, 0, 6 ),
+            'ipn_id'=>            array('IPN',               'int',   0, 0, 6 ),
+            'cc_id'=>             array('CC ID',             'link',  1, AF_OBLIGATORY|AF_READONLY, 'cc'),
+            'inv_id'=>            array('InvID',             'link', 0, AF_OBLIGATORY|AF_READONLY|AF_SEARCHABLE, 'invoice'),
+            'res_id'=>            array('ResId',             'link',  1, AF_OBLIGATORY|AF_READONLY|AF_SEARCHABLE, 'reservation'),
+            'timestamp'=>         array('Timestamp',         'timestamp',  ATT_DEFAULT_NOW, 0, 6 ),
+            'created'=>           array('Created',           'datetime', ATT_DEFAULT_NOW, AF_READONLY),
+            'client_id'=>         array('Client',                 'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
+
+            'paymentaction'=>     array('Action',            'str',  '', AF_HIDE_LIST, 20 ),
+            'acct'=>              array('Acct',              'str',  '', AF_HIDE_LIST, 20 ),
+            'currency'    =>      array('Currency',          'valSelect', 0, 0, $currencyArray),
+            'amount'=>            array('Amount',            'money', 0, 1),
+            'description'=>       array('Desc',              'str',  '', AF_HIDE_LIST, 100 ),
+            'remote_timestamp'=>  array('RTimeS',            'str',  '', AF_HIDE_LIST, 20 ),
+            'correlationid'=>     array('CorId',             'str',  '', AF_HIDE_LIST, 20 ),
+            'ack'=>               array('Ack',               'str',  '', 0, 10 ),
+            'version'=>           array('Version',           'str',  '', AF_HIDE_LIST, 10 ),
+            'build'=>             array('Build',             'str',  '', AF_HIDE_LIST, 10 ),
+            'avscode'=>           array('AVS OK',            'str',  '', AF_HIDE_LIST, 2 ),
+            'cvv2match'=>         array('CVV OK',            'str',  '', AF_HIDE_LIST, 2 ),
+            'transactionid'=>     array('TX ID',             'str',  '', 0,  20 ),
+            'amt'=>               array('Amt',               'money', 0, AF_HIDE_LIST),
+            'payment_error'=>     array('Error',             'text',  '', AF_HIDE_LIST),
+            ),
+
+
+            "gateway" => 
+
+            array(
+            'id'               => array('ID'             ,'id',   0, AF_PRIMARY|AF_AUTOINCREMENT|AF_HIDE),
+            'name'             => array('Name'           ,'str', '', AF_SEARCHABLE|AF_OBLIGATORY, 50),
+
+            'username'         => array('UserName'      ,'str', '', 0, 100),
+            'password'         => array('Password'      ,'str', '', 0, 100),
+            'signature'        => array('Signature'     ,'str', '', 0, 200),
+            'endpoint'         => array('Endpoint'      ,'str', '', 0, 200),
+
+            'test_username'         => array('Tetst UserName'      ,'str', '', 0, 100),
+            'test_password'         => array('Tetst Password'      ,'str', '', 0, 100),
+            'test_signature'        => array('Tetst Signature'     ,'str', '', 0, 200),
+            'test_endpoint'         => array('Tetst Endpoint'      ,'str', '', 0, 200),
+  
+        ),
+  
+    "transaction" => 
+        // for testing
+        // $inv_id = 2679;
+        // $pay_id = 1145;
+        // $res_id = 35195;
+  
+        array(
+            'tx_id'=>             array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 8),
+            //'tx_st'=>             array('User level',        'many2one', 0, 'tx_st'),
+            'cc_id'=>             array('CC ID',             'link',  ATT_DEFAULT_NULL, AF_READONLY_EDIT, 'cc'),
+            'inv_id'=>            array('InvID',             'link',  ATT_DEFAULT_NULL, AF_READONLY_EDIT, 'invoice'),
+            'res_id'=>            array('ResId',             'link',  ATT_DEFAULT_NULL, AF_READONLY_EDIT, 'reservation'),
+            // 'order_id'=>          array('Order',                 'link',  ATT_DEFAULT_NULL, AF_READONLY, 'payment_order'),
+            'payment_id'=>        array('PaymentId',         'link',  ATT_DEFAULT_NULL, AF_READONLY_EDIT, 'payment'),
+            //     'owner_id'=>          array('OwnerId',           'link',  ATT_DEFAULT_NULL, AF_READONLY_EDIT, 'owner'),
+            'host_id'=>           array('Host',              'link',  ATT_DEFAULT_NULL, AF_HIDE_ADD|AF_READONLY, 'user'),
+            'client_id'=>         array('Client',                 'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
+            'site_id'=>           array('Site',                 'link', ATT_DEFAULT_SITE_ID, AF_READONLY|AF_HIDE, 'site'),
+
+            'tx_st'=>               array('TxSt',              'many2one', '', AF_SEARCHABLE, 'tx_status' ),
+            'timestamp'=>           array('Timestamp',         'timestamp',   ATT_DEFAULT_NOW, AF_READONLY),
+            'tx_gateway'=>          array('Gateway',           'str',      '', AF_SEARCHABLE, 10 ),
+            'tx_type'=>             array('TX Type',           'str',      '', AF_SEARCHABLE, 40 ),
+            'ipn_test'=>            array('Test',              'bool',     0, 0),
+            'txn_res'=>             array('TxnRes',            'str',      '', AF_SEARCHABLE, 10 ),
+            'txn_id'=>              array('TxnId',             'str',      '', AF_SEARCHABLE, 50 ),
+            'parent_txn_id'=>       array('Parent TxnId',      'str',      '', AF_SEARCHABLE, 50 ),
+            'item_name'=>           array('Item Name',         'str',      '', AF_SEARCHABLE, 255),
+            'item_number'=>         array('Item Number',       'str',      '', AF_SEARCHABLE, 20 ),
+            'payment_date'=>        array('Date',              'str',      '', AF_SEARCHABLE, 22 ),
+
+            'payment_status'=>    array('Payment Status',    'many2one', 0, AF_READONLY_EDIT, 'payment_status'),
+            'pending_reason'=>    array('Pending Reason',    'str',    ATT_DEFAULT_NULL, AF_READONLY, 20),
+            'reason_code'=>       array('Reason Code',       'str',    ATT_DEFAULT_NULL, AF_READONLY, 30),
+
+            'payer_email'=>       array('Sender',          'str',    '', AF_SEARCHABLE, 20 ),
+            'receiver_email'=>    array('Received',        'str',      '', AF_SEARCHABLE, 20 ),
+
+            'memo'=>                array('Memo',             'str',      '', AF_SEARCHABLE|AF_HIDE_LIST, 255 ),
+            'tx_notes'=>            array('Notes',           'str',      '', AF_SEARCHABLE, 4 ),
+
+            'mc_gross'=>        array('Gross',                 'str',      '', AF_SEARCHABLE, 22 ),
+            'mc_currency'=>     array('Currency',              'str',      '', AF_SEARCHABLE, 22 ),
+            'mc_fee'=>          array('Fee',                   'str',      '', AF_SEARCHABLE, 22 ),
+
+            'settle_currency'=>     array('Settle Currency',     'str',      '', AF_SEARCHABLE, 3 ),
+            'settle_amount'=>       array('Settle Amount',       'str',      '', AF_SEARCHABLE, 22 ),
+            'exchange_rate'=>       array('Exchange rate',       'str',      '', AF_SEARCHABLE, 22 ),
+
+
+            'auth_id'=>         array('Auth ID',              'str',      '', AF_HIDE_LIST|AF_SEARCHABLE, 20),
+            'auth_amount'=>     array('Auth Amount',          'str',      '', AF_HIDE_LIST|AF_SEARCHABLE, 20),
+            'auth_exp'=>        array('Auth Expiration',      'str',      '', AF_HIDE_LIST|AF_SEARCHABLE, 25),
+
+            'first_name'=>        array('First Name',      'str',      '', AF_HIDE_LIST|AF_SEARCHABLE, 50),
+            'last_name'=>         array('Last Name',       'str',      '', AF_HIDE_LIST|AF_SEARCHABLE, 50),
+            'residence_country'=> array('Country',         'str',      '', AF_HIDE_LIST|AF_SEARCHABLE, 2),
+
+            'refund_amount'=>     array('Refund Amount',    'money', 0, AF_SEARCHABLE),
+            'bank_id'=>          array('Bank ID',              'str',      '', AF_SEARCHABLE, 10 ),
+            'bank_name'=> array('Bank name', 'str', '', AF_HIDE_LIST|AF_SEARCHABLE, 128),
+            'bank_account'=> array('Bank account', 'str', '', AF_HIDE_LIST|AF_SEARCHABLE, 128),
+            'transfer_reference'=> array('Transfer reference', 'str', '', AF_HIDE_LIST|AF_SEARCHABLE, 128),
+            'consumer_name'=> array('Consumer name', 'str', '', AF_HIDE_LIST|AF_SEARCHABLE, 128),
+            'consumer_account'=> array('Consumer account', 'str', '', AF_HIDE_LIST|AF_SEARCHABLE, 128),
+            'consumer_bic'=> array('Consumer bic', 'str', '', AF_HIDE_LIST|AF_SEARCHABLE, 128),
+            'bitcoin_address'=> array('Bitcoin address', 'str', '', AF_HIDE_LIST|AF_SEARCHABLE, 128),
+            'bitcoin_amount'=> array('Bitcoin amount', 'str', '', AF_HIDE_LIST|AF_SEARCHABLE, 128),
+            'bitcoin_rate'=> array('Bitcoin rate', 'str', '', AF_HIDE_LIST|AF_SEARCHABLE, 128),
+            'bitcoin_uri'=> array('Bitcoin uri', 'str', '', AF_HIDE_LIST|AF_SEARCHABLE, 128),
+            'paypal_reference'=> array('Paypal reference', 'str', '', AF_HIDE_LIST|AF_SEARCHABLE, 128),
+            'amount_remaining'=> array('Amount remaining', 'money', 0, AF_HIDE_LIST|AF_SEARCHABLE),
+        ),
+  
+    "payment_type" => 
+        array(
+            'id'=>                array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 2),
      'name'=>              array('Name',              'str',   '', 1, 20 ),
      'user_select'=>       array('Selectable source?',  'bool', 0, AF_READONLY|AF_HIDE_ADD),
      'refundable'=>        array('Refundable?',  'bool', 0, AF_READONLY|AF_HIDE_ADD),
@@ -1107,7 +1097,7 @@ $__CLASS_ATTRIBUTES = array(
      'recipient_id'=>      array('Recipient',         'link', 0, AF_HIDE_ADD|AF_READONLY, 'user'),
      'host_id'=>           array('Host',              'link',       ATT_DEFAULT_NULL, AF_HIDE_ADD|AF_READONLY, 'user'),
      'agent_id'=>          array('Agent',             'link',       ATT_DEFAULT_NULL, AF_SEARCHABLE|AF_HIDE|AF_READONLY, 'agent'),
-     'client_id'=>         array('Client',    			  'many2one',   ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
+     'client_id'=>         array('Client',                'many2one',   ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
      'gateway_id'=>        array('Gateway',           'many2one',   ATT_DEFAULT_NULL, AF_OBLIGATORY, 'gateway'),
      'inv_id'=>            array('InvID',             'link',       ATT_DEFAULT_NULL, AF_SEARCHABLE, 'invoice'),
      'res_id'=>            array('ResId',             'link',       ATT_DEFAULT_NULL, AF_SEARCHABLE, 'reservation'),
@@ -1136,8 +1126,8 @@ $__CLASS_ATTRIBUTES = array(
   array(
      'id'=>                array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 2),
      'parent_id'=>         array('Parent Payment',    'link',   0, AF_SEARCHABLE, 'payment'),
-     'client_id'=>         array('Client',    			  'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
-     'site_id'=>           array('Site',    			    'link', ATT_DEFAULT_SITE_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'site'),
+     'client_id'=>         array('Client',                'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
+     'site_id'=>           array('Site',                    'link', ATT_DEFAULT_SITE_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'site'),
      'legal_entity_id'=>   array('Legal Entity',      'link', ATT_DEFAULT_LEGAL_ID, AF_SEARCHABLE|AF_LOG, 'legal_entity'),
      'timestamp'=>         array('Timestamp',         'timestamp',  ATT_DEFAULT_NOW, AF_HIDE, 14 ),
      'created'=>           array('Created',           'datetime',  ATT_DEFAULT_NOW, AF_SEARCHABLE|AF_READONLY),
@@ -1148,7 +1138,7 @@ $__CLASS_ATTRIBUTES = array(
      'res_id'=>            array('ResId',             'link',  0, AF_SEARCHABLE, 'reservation'),
      'org_id'=>            array('OrgId',             'link',  0, AF_SEARCHABLE, 'org'),
      'apt_id'=>            array('Rental Id',         'link',  0, AF_SEARCHABLE, 'property'),
-     // 'order_id'=>          array('Order',    			    'link', ATT_DEFAULT_NULL, AF_READONLY, 'payment_order'),
+     // 'order_id'=>          array('Order',                    'link', ATT_DEFAULT_NULL, AF_READONLY, 'payment_order'),
      'user_id'=>           array('Author',            'link',   ATT_DEFAULT_USER_ID, AF_HIDE_LIST|AF_SEARCHABLE|AF_READONLY, 'user'),
 //     'from_owner_id'=>     array('From Owner',        'link',  0, AF_SEARCHABLE|AF_READONLY_EDIT, 'owner'),
 //     'owner_id'=>          array('Owner',             'link',  0, AF_SEARCHABLE|AF_READONLY_EDIT, 'owner'),
@@ -1202,10 +1192,10 @@ $__CLASS_ATTRIBUTES = array(
      'withdrawals'=>       array('Withdrawals',       'one2many', 0, AF_HIDE_LIST|AF_CASCADE_DELETE, 'withdrawal', 'payment_id'),
   
   //         'block_id'=>                  array('Block ID',           'str',      ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD|AF_HIDE_EDIT, 13),
-     'block_id'=>                  array('Block ID',    	     'link',     ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD|AF_HIDE_EDIT, 'block'),
-     'block_parent'=>              array('Block Inv ID',    	 'link',     ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD|AF_HIDE_EDIT, 'invoice'),         
+     'block_id'=>                  array('Block ID',             'link',     ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD|AF_HIDE_EDIT, 'block'),
+     'block_parent'=>              array('Block Inv ID',         'link',     ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD|AF_HIDE_EDIT, 'invoice'),         
   
-     'inv_lineitem_list'    =>  array('Lineitem list',    	   'str',     '', AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD|AF_HIDE_EDIT, 255),
+     'inv_lineitem_list'    =>  array('Lineitem list',         'str',     '', AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD|AF_HIDE_EDIT, 255),
   ),
   
 
@@ -1244,7 +1234,7 @@ $__CLASS_ATTRIBUTES = array(
      'twitter'=>           array('Twitter',           'str',    '', AF_HIDE_LIST, 255),
      'address_formatted'=> array('Formatted Address', 'text',   '', AF_HIDE_LIST),
 
-     'address_type'=>      array('Address type',    	'many2one',   ADDRESS_TYPE_PHYSICAL, AF_HIDE_LIST, 'address_type'),
+     'address_type'=>      array('Address type',        'many2one',   ADDRESS_TYPE_PHYSICAL, AF_HIDE_LIST, 'address_type'),
      'address_parent_id'=>         array('Parent Id',         'parent_id',   ATT_DEFAULT_NULL, AF_SEARCHABLE|AF_READONLY|AF_HIDE_ADD|AF_HIDE_LIST, 11),
      'address_parent_type'=>       array('Parent Type',       'parent_type', ATT_DEFAULT_NULL, AF_SEARCHABLE|AF_READONLY|AF_HIDE_ADD|AF_HIDE_LIST),
   
@@ -1256,19 +1246,26 @@ $__CLASS_ATTRIBUTES = array(
      'created'=>           array('Created',           'datetime',   ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY),
      'last_login'=>        array('Last login',        'datetime',   ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_HIDE_ADD|AF_HIDE_EDIT|AF_READONLY),
      'active'=>            array('Active?',           'bool', 1, AF_READONLY|AF_HIDE_ADD),
-     'client_id'=>         array('Client',    			  'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
-     'site_id'=>           array('Site',    			    'link', ATT_DEFAULT_SITE_ID, AF_HIDE_ADD|AF_SEARCHABLE|AF_READONLY_EDIT, 'site'),
+     'client_id'=>         array('Client',                'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
+     'site_id'=>           array('Site',                    'link', ATT_DEFAULT_SITE_ID, AF_HIDE_ADD|AF_SEARCHABLE|AF_READONLY_EDIT, 'site'),
      'aff_id'=>            array('Affiliate',         'link', ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_SEARCHABLE|AF_READONLY, 'user'),
      'auth_sites'=>        array('Allowed Sites',     'msel',     '', 0, 'site', array('active' => 1)),
-//     'profile_id'=>        array('Profile',    			  'link', 0,   0, 'user_profile'),
-//     'profile_id'=>        array('Profile',    			  'one2one', 0,   AF_HIDE_LIST|AF_CASCADE_DELETE|AF_ONE2ONE_INTEGRATE, 'user_profile'),
-     'profile_id'=>        array('Profile',    			  'one2one', 0,   AF_HIDE_LIST|AF_CASCADE_DELETE|AF_OBLIGATORY|AF_ONE2ONE_INTEGRATE, 'user_profile'),
+//     'profile_id'=>        array('Profile',                 'link', 0,   0, 'user_profile'),
+//     'profile_id'=>        array('Profile',                 'one2one', 0,   AF_HIDE_LIST|AF_CASCADE_DELETE|AF_ONE2ONE_INTEGRATE, 'user_profile'),
+     'profile_id'=>        array('Profile',               'one2one', 0,   AF_HIDE_LIST|AF_CASCADE_DELETE|AF_OBLIGATORY|AF_ONE2ONE_INTEGRATE, 'user_profile'),
      'verified'=>          array('Verified?',         'bool', 1, AF_READONLY|AF_HIDE_ADD),
      'user_level'=>        array('Type',              'many2one',   USER_LEVEL_USER,   AF_HIDE_ADD|AF_HIDE_LIST|AF_READONLY|AF_OBLIGATORY, "user_level"),
      'roles'=>             array('Roles',             'flags', 1, AF_OBLIGATORY|AF_READONLY|AF_HIDE_ADD, $__USER_ROLES),
      'username'=>          array('Username',          'str', '',    AF_UNIQUE|AF_OBLIGATORY|AF_SEARCHABLE, 50),
      'password'=>          array('Password',          'str',   '',  AF_HIDE, 32),
      'auto_password'=>     array('Generated password?', 'bool', 0, AF_READONLY|AF_HIDE_ADD),
+        'subscription_reference'=>array('subscription_reference','str','', AF_OBLIGATORY, 50 ),
+        
+        'subscription_plan_id'=>array('subscription_plan_id',         'int', ATT_DEFAULT_NULL, AF_SEARCHABLE|AF_READONLY_EDIT), // really a link to agent/guest/org/owner/client etc..
+
+        // 'subscription_plan_id'=>array('subscription_plan','one2one', 0,   AF_HIDE_LIST|AF_CASCADE_DELETE|AF_OBLIGATORY|AF_ONE2ONE_INTEGRATE, 'subscription_plans'),
+
+
   ),
   
   
@@ -1282,7 +1279,7 @@ $__CLASS_ATTRIBUTES = array(
      'active'=>            array('Active',            'bool',   1, AF_HIDE_ADD),
      'name'=>              array('Name',  'str', '', AF_OBLIGATORY|AF_SEARCHABLE, 100),
      'invoice'=>           array('Pay by invoice?',   'bool', 0, AF_HIDE_LIST),
-     'monthly_billing'=>   array('Bill monthly?',   	'bool', 0, AF_HIDE_LIST),
+     'monthly_billing'=>   array('Bill monthly?',       'bool', 0, AF_HIDE_LIST),
 
      'salutation'=>        array('Salutation',        'str',    '', 0, 10),
      'first_name'=>        array('First Name',        'str',    '', AF_SEARCHABLE, 64),
@@ -1296,13 +1293,13 @@ $__CLASS_ATTRIBUTES = array(
      'email_address'=>     array('Email',             'email',  '', AF_SEARCHABLE|AF_HIDE_LIST, 128),
      'phone'=>             array('Phone',             'phone',  '', AF_HIDE_LIST, 20),
           
-     'client_id'=>         array('Client',    			  'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_HIDE_ADD|AF_SEARCHABLE|AF_READONLY_EDIT, 'client'),
+     'client_id'=>         array('Client',                'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_HIDE_ADD|AF_SEARCHABLE|AF_READONLY_EDIT, 'client'),
   
      'export_timestamp'=>          array('Export timestamp',  'datetime',    ATT_DEFAULT_NULL, AF_HIDE_LIST|AF_HIDE_ADD|AF_HIDE_EDIT|AF_READONLY|AF_LOG),
      'export_gateway'=>            array('Export gateway',    'str',    '', AF_HIDE_LIST|AF_HIDE_ADD|AF_LOG|AF_HIDE_EDIT|AF_READONLY, 20),
   
-     'default_address'=>     array('Default Address',    	  'many2one', ADDRESS_TYPE_PHYSICAL, AF_OBLIGATORY|AF_HIDE_LIST, 'address_type'),
-     'comment' =>        	   array('Comment',        			  'text',     '',  AF_HIDE_LIST),
+     'default_address'=>     array('Default Address',         'many2one', ADDRESS_TYPE_PHYSICAL, AF_OBLIGATORY|AF_HIDE_LIST, 'address_type'),
+     'comment' =>              array('Comment',                   'text',     '',  AF_HIDE_LIST),
      'coc_number'=>          array('Chamber of Commerce #', 'str',      '',  AF_SEARCHABLE|AF_HIDE_LIST, 50),
      'coc_city'=>            array('Ch. of Com. City',      'str',      '',  AF_SEARCHABLE|AF_HIDE_LIST, 50),
      'tax_number'=>          array('Tax number',            'str',      '',  AF_SEARCHABLE|AF_HIDE_LIST, 50),
@@ -1321,7 +1318,7 @@ $__CLASS_ATTRIBUTES = array(
   
   "contact_status" =>
   array(
-     'id'=>            	    array('ID',                	'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
+     'id'=>                 array('ID',                 'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
      'name'=>               array('Name',                'str',   '', AF_OBLIGATORY|AF_SEARCHABLE, 100),
   ),
 
@@ -1332,11 +1329,11 @@ $__CLASS_ATTRIBUTES = array(
      'modified'=>          array('Modified',          'timestamp',   0, AF_HIDE|AF_READONLY, 14 ),
      'active'=>            array('Active',            'bool',   1, 0),
   //         'name'=>              array('Name',              'str',   '', AF_OBLIGATORY, 50 ),
-     'client_id'=>         array('Client',    			  'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
+     'client_id'=>         array('Client',                'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
      'site_id' =>          array('Site',              'link', ATT_DEFAULT_SITE_ID, AF_OBLIGATORY, 'site'),
      'org_id'=>            array('Organization',      'link',  ATT_DEFAULT_NULL, AF_SEARCHABLE, 'org'),                               
      'agent_id'=>          array('Agent',             'link',  ATT_DEFAULT_NULL, AF_SEARCHABLE, 'agent'),                               
-     'language'=>          array('Language',    			'many2one', 'en', AF_OBLIGATORY|AF_SEARCHABLE, 'language'),                               
+     'language'=>          array('Language',                'many2one', 'en', AF_OBLIGATORY|AF_SEARCHABLE, 'language'),                               
 
      'salutation'=>        array('Salutation',        'str',    '', 0, 10),
      'first_name'=>        array('First Name',        'str',    '', AF_SEARCHABLE, 64),
@@ -1364,13 +1361,13 @@ $__CLASS_ATTRIBUTES = array(
      'active'=>            array('Active',            'bool',   1, AF_HIDE_ADD),
      'source_type'=>       array('Source Type',       'str',  '', AF_HIDE, 50),
      'fid'=>               array('Foreign ID',        'str',  '', AF_SEARCHABLE, 20),
-     'client_id'=>         array('Client',    			  'link', ATT_DEFAULT_CLIENT_ID, AF_HIDE_LIST|AF_OBLIGATORY|AF_SEARCHABLE, 'client'),
-     'category_id'=>       array('Category',    		  'many2one', 0, AF_OBLIGATORY|AF_SEARCHABLE, 'product_category'),
-  //         'language'=>          array('Language',    			'many2one', 'en', AF_OBLIGATORY|AF_SEARCHABLE, 'language'),                               
+     'client_id'=>         array('Client',                'link', ATT_DEFAULT_CLIENT_ID, AF_HIDE_LIST|AF_OBLIGATORY|AF_SEARCHABLE, 'client'),
+     'category_id'=>       array('Category',              'many2one', 0, AF_OBLIGATORY|AF_SEARCHABLE, 'product_category'),
+  //         'language'=>          array('Language',                'many2one', 'en', AF_OBLIGATORY|AF_SEARCHABLE, 'language'),                               
      'name'=>              array('Name',              'str',   '', AF_OBLIGATORY|AF_SEARCHABLE, 100 ),
      'description'=>       array('Description',       'text',  '', AF_HIDE_LIST),
      'comment'=>           array('Comment',           'str',   '', AF_HIDE_LIST, 255),
-     'unit'=>              array('Unit',    		      'many2one', 'EA', AF_OBLIGATORY, 'product_unit'),
+     'unit'=>              array('Unit',                  'many2one', 'EA', AF_OBLIGATORY, 'product_unit'),
      'currency' =>         array('Currency',          'valSelect', 'EUR', AF_READONLY|AF_HIDE_ADD|AF_HIDE_LIST, $currencyArray),
      'price'=>             array('Price',             'money',   0, 0),
      'minimum_quantity'=>  array('Min. Quantity',     'int',   0, 0),
@@ -1390,9 +1387,9 @@ $__CLASS_ATTRIBUTES = array(
      'created'=>           array('Created',           'datetime',  ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY, 6 ),
      'modified'=>          array('Modified',          'timestamp',   0, AF_HIDE|AF_READONLY, 14 ),
      'active'=>            array('Active',            'bool',   1, 0),
-     'product_id'=>        array('Product ID',    		'link', ATT_DEFAULT_NULL, AF_OBLIGATORY, 'product'),
+     'product_id'=>        array('Product ID',          'link', ATT_DEFAULT_NULL, AF_OBLIGATORY, 'product'),
      'name'=>              array('Name',              'str', ATT_DEFAULT_NULL, AF_OBLIGATORY, 100),
-     'option_id'=>         array('Option ID',    	    'link', ATT_DEFAULT_NULL, AF_OBLIGATORY, 'product_option'),
+     'option_id'=>         array('Option ID',           'link', ATT_DEFAULT_NULL, AF_OBLIGATORY, 'product_option'),
      'option_name'=>       array('Option Name',       'str', ATT_DEFAULT_NULL, AF_OBLIGATORY, 100),
      'option_value'=>      array('Option Value',      'str', ATT_DEFAULT_NULL, AF_OBLIGATORY, 50),
      'price'=>             array('Price',             'money',   0, 0),
@@ -1413,8 +1410,8 @@ $__CLASS_ATTRIBUTES = array(
      'created'=>           array('Created',           'datetime',  ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY, 6 ),
      'modified'=>          array('Modified',          'timestamp',   0, AF_HIDE|AF_READONLY, 14 ),
      'active'=>            array('Active',            'bool',   1, 0),
-     'client_id'=>         array('Client',    			  'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY, 'client'),
-     'language'=>          array('Language',    			'many2one', 'en', AF_OBLIGATORY|AF_SEARCHABLE, 'language'),                               
+     'client_id'=>         array('Client',                'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY, 'client'),
+     'language'=>          array('Language',                'many2one', 'en', AF_OBLIGATORY|AF_SEARCHABLE, 'language'),                               
      'name'=>              array('Name',              'str',   '', AF_OBLIGATORY, 50 ),
      'description'=>       array('Description',       'text',   '', AF_HIDE_LIST),
      'comment'=>           array('Comment',           'str',   '', AF_HIDE_LIST, 255),
@@ -1438,26 +1435,58 @@ $__CLASS_ATTRIBUTES = array(
      'supplier_id'=>      array('Supplier',           'many2one',  0, AF_OBLIGATORY, 'supplier'),
      ),
   
-  "user_map" => 
-  array(
-     'id'=>            array('ID',             'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 11),
-     'created'=>       array('Created',        'datetime',  ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY),
-     'active'=>        array('Active',         'bool',  1, 0),
-     'soft_delete'=>   array('soft_delete',    'bool',  1, 0),
-     'verified'=>      array('Verified',       'bool',  0, 0),
-     'site_id'=>       array('Site ID',        'link',  0, AF_OBLIGATORY, 'site'),
-     'user_id'=>       array('User',           'link',  0, AF_OBLIGATORY, 'user'),
-     //'page_id'=>       array('Page ID',         'text',  0, AF_OBLIGATORY, 'minisite_page'),
-     'host_user_id'=>  array('Host',           'link',  0, AF_OBLIGATORY, 'user'),
-     'permissions' =>  array('Permissions',    'json', '', 0),
-     ),               
+        "user_map" => 
+            array(
+                'id'=>            array('ID',             'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 11),
+                'created'=>       array('Created',        'datetime',  ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY),
+                'active'=>        array('Active',         'bool',  1, 0),
+                'soft_delete'=>   array('soft_delete',    'bool',  1, 0),
+                'verified'=>      array('Verified',       'bool',  0, 0),
+                'site_id'=>       array('Site ID',        'link',  0, AF_OBLIGATORY, 'site'),
+                'user_id'=>       array('User',           'link',  0, AF_OBLIGATORY, 'user'),
+                //'page_id'=>       array('Page ID',         'text',  0, AF_OBLIGATORY, 'minisite_page'),
+                'host_user_id'=>  array('Host',           'link',  0, AF_OBLIGATORY, 'user'),
+                'permissions' =>  array('Permissions',    'json', '', 0),
+            ),
+
+        "subscribed_users" => 
+            array(
+                'id'=>array('id','id',0, AF_PRIMARY|AF_AUTOINCREMENT, 11),
+                'status'=>array('status','bool',1, 0),
+                'user_id'=> array('user_id','link',0, AF_OBLIGATORY, 'user'),
+                'subscription_plan_id'=> array('subscription_plan_id','link',0, AF_OBLIGATORY, 'subscription_plans'),
+                'email'=>array('email','str','', AF_OBLIGATORY, 50 ),
+                'reference_code'=>array('reference_code','str','', AF_OBLIGATORY, 50 ),
+                'expire_on'=>array('expire_on','datetime',   ATT_DEFAULT_NULL, AF_HIDE|AF_READONLY, 14 ),
+            ),
+
+        "subscription_plans" => 
+            array(
+                'id'=>array('id','id',0, AF_PRIMARY|AF_AUTOINCREMENT, 11),
+                'status'=>array('status','bool',1, 0),
+                'name'=>array('name','str','', AF_OBLIGATORY, 50 ),
+                'short_name'=>array('short_name','str','', AF_OBLIGATORY, 50 ),
+                'image_limit'=>array('image_limit','int',   0, 0),
+                'upgrade_link'=>array('upgrade_link','str','', AF_OBLIGATORY, 50 ),
+                'cost'=>array('cost','int',   0, 0),
+                'user_role' =>array('user_role','link', ATT_DEFAULT_USER_LEVEL, 0, 'user'),     
+            ),  
+
+        "subscription_plan_features" => 
+            array(
+                'id'=>array('id','id',0, AF_PRIMARY|AF_AUTOINCREMENT, 11),
+                'status'=>array('status','bool',1, 0),
+                'key_feature'=>array('name','str','', AF_OBLIGATORY, 50 ),
+                'subscription_plan_id'=> array('subscription_plan_id','link',0, AF_OBLIGATORY, 'subscription_plans'),
+                'plan'=>array('name','str','', AF_OBLIGATORY, 50 ),
+            ),                
 
   "auth_log" => 
   array(
      'id'=>                array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 8),
      'timestamp'=>         array('Timestamp',         'timestamp',   ATT_DEFAULT_NOW, AF_HIDE|AF_READONLY, 14 ),
      //'expires'=>           array('Expires',           'datetime',   ATT_DEFAULT_NULL, AF_HIDE|AF_READONLY, 14 ),
-     'client_id'=>         array('Client',    			  'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
+     'client_id'=>         array('Client',                'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
      'site_id'=>           array('Site',              'link',   ATT_DEFAULT_SITE_ID, AF_READONLY, 'site'),
      'user_id' =>          array('User ID',           'link', ATT_DEFAULT_USER_ID, 0, 'user'),     
      'provider_id' =>      array('Provider ID',       'link', 0, 0, 'provider'),     
@@ -1483,7 +1512,7 @@ $__CLASS_ATTRIBUTES = array(
      'id'=>                array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 8),
      'timestamp'=>         array('Timestamp',         'timestamp',   ATT_DEFAULT_NOW, AF_HIDE|AF_READONLY, 14 ),
 
-     'client_id'=>         array('Client',    			  'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
+     'client_id'=>         array('Client',                'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
      'site_id'=>           array('Site',              'link',   ATT_DEFAULT_SITE_ID, AF_READONLY, 'site'),
      'user_id' =>          array('User ID',           'link', ATT_DEFAULT_USER_ID, 0, 'user'),     
      'mail_id' =>          array('Mail ID'  ,         'link', 0, AF_OBLIGATORY, 'mail_queue'),     
@@ -1524,7 +1553,7 @@ $__CLASS_ATTRIBUTES = array(
      'id'=>                array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 3),
      'created'=>           array('Created',           'datetime',  ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY, 6 ),
      'timestamp'=>         array('Timestamp',         'timestamp',   ATT_DEFAULT_NOW, AF_HIDE|AF_READONLY, 14 ),
-     'client_id'=>         array('Client',    			  'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
+     'client_id'=>         array('Client',                'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
      'res_id' =>           array('Site',              'link', ATT_DEFAULT_SITE_ID, AF_OBLIGATORY, 'reservation'),
      'apt_id' =>           array('Property',          'link', ATT_DEFAULT_USER_ID, 0, 'property'),     
      'currency' =>         array('Currency',          'valSelect', 'EUR', AF_READONLY|AF_HIDE_ADD|AF_HIDE_LIST, $currencyArray),
@@ -1552,7 +1581,7 @@ $__CLASS_ATTRIBUTES = array(
      'id'=>                array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 3),
      'price_breakdown_id'=>array('Parent ID',         'parent_id',  0, AF_OBLIGATORY, 'price_breakdown'),
      'weekend_rate'=>      array('Weekend rate',      'bool', 0, 0),
-     'weekday'=>           array('Weekday',    			  'many2one', 0, AF_OBLIGATORY, 'weekday'),
+     'weekday'=>           array('Weekday',               'many2one', 0, AF_OBLIGATORY, 'weekday'),
      'date'=>              array('Date',              'date',  0, AF_OBLIGATORY),
      'currency' =>         array('Currency',          'valSelect', 'EUR', AF_READONLY|AF_HIDE_ADD|AF_HIDE_LIST, $currencyArray),
      'base_rate'=>         array('Base rate',         'money',   0, 0),
@@ -1567,8 +1596,8 @@ $__CLASS_ATTRIBUTES = array(
      'created'=>           array('Created',           'datetime',  ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY, 6 ),
      'modified'=>          array('Modified',          'timestamp',   0, AF_HIDE|AF_READONLY, 14 ),
      'active'=>            array('Active',            'bool',   1, 0),
-     'client_id'=>         array('Client',    			  'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
-     'language'=>          array('Language',    			'many2one', 'en', AF_OBLIGATORY|AF_SEARCHABLE, 'language'),                               
+     'client_id'=>         array('Client',                'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
+     'language'=>          array('Language',                'many2one', 'en', AF_OBLIGATORY|AF_SEARCHABLE, 'language'),                               
      'delivery'=>          array('Delivery?',         'bool',   0, 1),
 
      'organization'=>      array('Company/Dept.',     'str',    '', AF_SEARCHABLE, 128),
@@ -1605,7 +1634,7 @@ $__CLASS_ATTRIBUTES = array(
      'active'=>            array('Active',            'bool',   1, 0),
      'name'=>                 array('Agent Name',        'str',      '', AF_OBLIGATORY|AF_LOG, 30),
 
-     'client_id'=>            array('Client',    		  	 'link',       ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
+     'client_id'=>            array('Client',                'link',       ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
 
      'invoice'=>              array('Pay by invoice?',   'bool', 0, AF_HIDE_LIST),
 
@@ -1830,7 +1859,7 @@ $__CLASS_ATTRIBUTES = array(
   array(
      'id'=>                array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 8),
      'site_id'=>           array('Site',              'link',  ATT_DEFAULT_SITE_ID, AF_SEARCHABLE|AF_HIDE_EDIT|AF_HIDE_ADD, 'site'),
-     'client_id'=>          array('Client',    		  	 'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
+     'client_id'=>          array('Client',              'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
      'city_id'=>           array('City',              'link',   ATT_DEFAUL_NULL, AF_SEARCHABLE, 'geo_city'),
      'user_id'=>           array('User',              'link', 0, AF_OBLIGATORY, 'user'),
      'created'=>           array('Created',           'datetime',  ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY),
@@ -1912,7 +1941,7 @@ $__CLASS_ATTRIBUTES = array(
   
   "landmark_type" => 
   array(
-     'id'=>            	    array('ID',                	'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
+     'id'=>                 array('ID',                 'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
      'name'=>               array('Name',                'str',   '', AF_OBLIGATORY|AF_SEARCHABLE, 20),
      'description'=>        array('Description',       'str',   '', 1, 200 ),
   ),
@@ -1941,7 +1970,7 @@ $__CLASS_ATTRIBUTES = array(
      'address_city'=>      array('City',              'str',   '', AF_HIDE_LIST, 50 ),
      'address_country'=>   array('Country',           'many2one', 0, AF_HIDE_LIST, 'countries'),
   
-     'location_accuracy'    => array('Accuracy'    			, 'map',  0, 0),
+     'location_accuracy'    => array('Accuracy'             , 'map',  0, 0),
      'location_lat'         => array('Latitude'         , 'str','', AF_HIDE_ADD|AF_HIDE_LIST, 24),
      'location_long'        => array('Longitude'        , 'str','', AF_HIDE_ADD|AF_HIDE_LIST, 24),
      'location_bounds'      => array('Bounds'           , 'json', '', AF_HIDE_ADD|AF_HIDE_LIST, 200),
@@ -1980,7 +2009,7 @@ $__CLASS_ATTRIBUTES = array(
 
      'cities'=>            array('Cities',            'msel',     '', AF_HIDE_LIST, 'geo_city', array('active' => 1), 'name'),
      'types'=>             array('Property Types',    'msel',     '', AF_HIDE_LIST, 'property_type'),
-     'language'=>           array('Language',    			'many2one', 'en', AF_OBLIGATORY|AF_SEARCHABLE, 'language'),                               
+     'language'=>           array('Language',               'many2one', 'en', AF_OBLIGATORY|AF_SEARCHABLE, 'language'),                               
      'languages'=>         array('Languages',         'json',     '', AF_HIDE_LIST, 'language'),
      'mollie_profile'=> array('Mollie Profile', 'str',   '', AF_HIDE_LIST|AF_HIDE_ADD, 8),
   ),
@@ -1991,7 +2020,7 @@ $__CLASS_ATTRIBUTES = array(
      'id'=>                  array('ID',                 'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 3),
      'name'=>                array('Name',               'str',   '', 1, 100 ),
                              
-     'client_id'=>           array('Client',    			   'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
+     'client_id'=>           array('Client',                   'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
   
      'bank_name'=>           array('Bank name',          'str',   '', AF_HIDE_LIST, 100),
      'account_name'=>        array('Account name',       'str',   '', AF_HIDE_LIST, 100),
@@ -2041,7 +2070,7 @@ $__CLASS_ATTRIBUTES = array(
   
      'active'=>            array('Active?',             'bool',     1, 0),
   
-     'language'=>           array('Language',    			  'many2one', 'en', AF_OBLIGATORY|AF_SEARCHABLE, 'language'),                               
+     'language'=>           array('Language',                 'many2one', 'en', AF_OBLIGATORY|AF_SEARCHABLE, 'language'),                               
      'title'=>             array('Screen Title',        'str',  '', AF_OBLIGATORY, 255 ),
      'subtitle'=>          array('Screen Subtitle',     'str',  '', AF_HIDE_LIST, 255),
   
@@ -2101,10 +2130,10 @@ $__CLASS_ATTRIBUTES = array(
      'active'  =>           array('Active?',          'bool',     1,  AF_HIDE_ADD, 0),
   
      'legal_entity_id'=>   array('Legal Entity',      'many2one', 0, AF_OBLIGATORY, 'legal_entity'),
-     'client_id'=>         array('Client',    			  'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
+     'client_id'=>         array('Client',                'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
   
-     'languages'=>            array('Languages',    	'json', 'en', AF_OBLIGATORY, 'language', array('active' => 1)),
-     'default_language'=>     array('Language',    		'valSelect', 'en', AF_OBLIGATORY|AF_SEARCHABLE, $langArray),
+     'languages'=>            array('Languages',        'json', 'en', AF_OBLIGATORY, 'language', array('active' => 1)),
+     'default_language'=>     array('Language',         'valSelect', 'en', AF_OBLIGATORY|AF_SEARCHABLE, $langArray),
      
      'template' =>         array('Template',          'str', '', 0, 128),
      //'template_id'=>       array('Template ID',       'many2one', 1014, AF_HIDE_LIST, 'site_template', array('skel_directory' => array('!=', ''))), // baris
@@ -2252,7 +2281,7 @@ $__CLASS_ATTRIBUTES = array(
      'created'=>           array('Created',             'datetime',     ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT),
      'timestamp'=>         array('Timestamp',           'timestamp',     ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT, 14 ),
      'published'=>         array('Published?',          'bool',     0, AF_READONLY),
-     'language'=>          array('Language',    			  'many2one', 'en', AF_OBLIGATORY|AF_SEARCHABLE, 'language'),
+     'language'=>          array('Language',                  'many2one', 'en', AF_OBLIGATORY|AF_SEARCHABLE, 'language'),
      'path'=>              array('Path',                'str',  '', AF_SEARCHABLE, 128 ),
      'menu_title'=>        array('Menu title',          'str',  '', AF_HIDE_LIST, 100 ),
 
@@ -2280,7 +2309,7 @@ $__CLASS_ATTRIBUTES = array(
      'created'=>           array('Created',             'datetime',     ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT),
      'rank'=>              array('Rank',                'int', 1, AF_HIDE_ADD, 3),
      'timestamp'=>         array('Timestamp',           'timestamp',     ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT, 14 ),
-     'language'=>          array('Language',    			  'many2one', 'en', AF_OBLIGATORY|AF_SEARCHABLE, 'language'),                               
+     'language'=>          array('Language',                  'many2one', 'en', AF_OBLIGATORY|AF_SEARCHABLE, 'language'),                               
      'name'=>              array('Name',                'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 100 ),
      'type'=>              array('Type',                'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 50 ),
      'content'=>           array('Content',             'text',  '', 0),
@@ -2303,7 +2332,7 @@ $__CLASS_ATTRIBUTES = array(
      'id'=>                array('ID',                'id',       0, AF_PRIMARY|AF_AUTOINCREMENT, 8),
      'created'=>           array('Created',           'datetime', ATT_DEFAULT_NOW, AF_HIDE_LIST, 14 ),
      'timestamp'=>         array('Timestamp',         'timestamp', ATT_DEFAULT_NOW, AF_HIDE_LIST, 14 ),
-     'client_id'=>         array('Client',    			  'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
+     'client_id'=>         array('Client',                'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY_EDIT, 'client'),
      'site_id'=>           array('Site',              'many2one', ATT_DEFAULT_SITE_ID, AF_READONLY, 'site'),
      'parent_id'=>         array('Parent Id',         'parent_id',   0, AF_SEARCHABLE|AF_READONLY|AF_HIDE_ADD, 11),
      'parent_type'=>       array('Parent Type',       'parent_type', '', AF_SEARCHABLE|AF_READONLY|AF_HIDE_ADD),
@@ -2358,7 +2387,7 @@ $__CLASS_ATTRIBUTES = array(
      'user_level'=>        array('User Level',        'many2one',  0, AF_SEARCHABLE, 'user_level'),
      'title'=>             array('Title',             'str',   '', AF_OBLIGATORY, 255),
      'content'=>           array('Content',           'html',  '', AF_HIDE_LIST|AF_OBLIGATORY),
-     'language'=>          array('Language',    			'many2one', ATT_DEFAULT_LANGUAGE, AF_OBLIGATORY|AF_SEARCHABLE, 'language'),
+     'language'=>          array('Language',                'many2one', ATT_DEFAULT_LANGUAGE, AF_OBLIGATORY|AF_SEARCHABLE, 'language'),
      'image'=>             array('Image',             'image',  '', AF_HIDE_LIST, 128),
   ),
   
@@ -2383,7 +2412,7 @@ $__CLASS_ATTRIBUTES = array(
      'title'=>             array('Title',             'text',   '', 0, 255),
      'subtitle'=>          array('Subtitle',          'str',   '', 0, 255),
      'content'=>           array('Content',           'html',  '', AF_HIDE_LIST|AF_OBLIGATORY),
-     'language'=>          array('Language',    			'many2one', ATT_DEFAULT_LANGUAGE, AF_OBLIGATORY|AF_SEARCHABLE, 'language'),
+     'language'=>          array('Language',                'many2one', ATT_DEFAULT_LANGUAGE, AF_OBLIGATORY|AF_SEARCHABLE, 'language'),
      'link'=>              array('URL',               'str',    '', AF_HIDE_ADD|AF_HIDE_LIST, 100),
      'image'=>             array('Image',             'image',  '', AF_HIDE_LIST, 128),
      'media'            => array('Media',             'media',     '', 0, $gallery_media_options),
@@ -2403,7 +2432,7 @@ $__CLASS_ATTRIBUTES = array(
      'article_id'=>        array('Article',           'link',   ATT_DEFAULT_ARTICLE_ID, AF_READONLY, 'article', $article_filters),
      'comment_id'=>        array('Comment',           'link',   ATT_DEFAULT_COMMENT_ID, AF_READONLY, 'comment', $comment_filters),
      'user_id'=>           array('User',              'link',  ATT_DEFAULT_USER_ID, AF_SEARCHABLE, 'user'),
-     'language'=>          array('Language',    			'many2one', ATT_DEFAULT_LANGUAGE, AF_OBLIGATORY|AF_SEARCHABLE, 'language'),
+     'language'=>          array('Language',                'many2one', ATT_DEFAULT_LANGUAGE, AF_OBLIGATORY|AF_SEARCHABLE, 'language'),
 //     'salutation'=>        array('Salutation',        'valSelect', '', 0, $salutationArray),
      'first_name'=>        array('Name',              'str',    '', AF_OBLIGATORY|AF_SEARCHABLE, 50),
      'last_name'=>         array('Last Name',         'str',    '', AF_SEARCHABLE, 50),
@@ -2424,7 +2453,7 @@ $__CLASS_ATTRIBUTES = array(
      'first_name'=>        array('First Name',        'str',    '', AF_SEARCHABLE, 50),
      'last_name'=>         array('Last Name',         'str',    '', AF_SEARCHABLE, 50),
      'email_address'=>     array('Email',             'email',  '', AF_SEARCHABLE|AF_HIDE_LIST, 50),
-     'language'=>          array('Language',    			'many2one', ATT_DEFAULT_LANGUAGE, AF_OBLIGATORY|AF_SEARCHABLE, 'language'),
+     'language'=>          array('Language',                'many2one', ATT_DEFAULT_LANGUAGE, AF_OBLIGATORY|AF_SEARCHABLE, 'language'),
   ),
 
   
@@ -2435,10 +2464,10 @@ $__CLASS_ATTRIBUTES = array(
      'guid'=>              array('GUID',          'uuid',        ATT_DEFAULT_UUID, AF_SEARCHABLE|AF_READONLY|AF_HIDE_ADD, 24),
      'parent_id'=>         array('Parent Id',     'parent_id',   ATT_DEFAULT_NULL, AF_SEARCHABLE|AF_READONLY|AF_HIDE_ADD, 11),
      'parent_type'=>       array('Parent Type',   'parent_type', ATT_DEFAULT_NULL, AF_SEARCHABLE|AF_READONLY|AF_HIDE_ADD),
-     'client_id'=>         array('Client',    		'link',       ATT_DEFAULT_CLIENT_ID, AF_READONLY|AF_HIDE, 'client'),
+     'client_id'=>         array('Client',          'link',       ATT_DEFAULT_CLIENT_ID, AF_READONLY|AF_HIDE, 'client'),
      'site_id'=>           array('Site',          'link',       ATT_DEFAULT_SITE_ID, AF_READONLY, 'site'),
      'user_id' =>          array('User ID',       'link', ATT_DEFAULT_USER_ID, 0, 'user'),     
-     'sender_id'=>         array('Sender ID',    	'link',       0, AF_READONLY, 'user'),
+     'sender_id'=>         array('Sender ID',       'link',       0, AF_READONLY, 'user'),
      'receiver_id'=>       array('Receiver ID',   'link',       0, AF_READONLY, 'user'),
      'receiver_role'=>     array('Receiver Role', 'str',        '', AF_READONLY, 32),
      'receiver_name'=>     array('Receiver Name', 'str',        '', AF_READONLY, 128),
@@ -2469,10 +2498,10 @@ $__CLASS_ATTRIBUTES = array(
      'guid'=>              array('GUID',          'uuid',        ATT_DEFAULT_UUID, AF_SEARCHABLE|AF_READONLY|AF_HIDE_ADD, 24),
      'parent_id'=>         array('Parent Id',     'parent_id',  ATT_DEFAULT_NULL, AF_SEARCHABLE|AF_READONLY|AF_HIDE_ADD, 11),
      'parent_type'=>       array('Parent Type',   'parent_type',ATT_DEFAULT_NULL, AF_SEARCHABLE|AF_READONLY|AF_HIDE_ADD),
-     'client_id'=>         array('Client',    		'link',       ATT_DEFAULT_CLIENT_ID, AF_READONLY|AF_HIDE, 'client'),
+     'client_id'=>         array('Client',          'link',       ATT_DEFAULT_CLIENT_ID, AF_READONLY|AF_HIDE, 'client'),
      'site_id'=>           array('Site',          'link',       ATT_DEFAULT_SITE_ID, AF_READONLY, 'site'),
      'user_id' =>          array('User ID',       'link',       ATT_DEFAULT_USER_ID, 0, 'user'),
-     'sender_id'=>         array('Sender ID',    	'link',       0, AF_READONLY, 'user'),
+     'sender_id'=>         array('Sender ID',       'link',       0, AF_READONLY, 'user'),
 
      'name'=>              array('Name',          'str',    '', AF_SEARCHABLE|AF_OBLIGATORY, 32),
      'description'=>       array('Description',   'text',     '', AF_HIDE_LIST),
@@ -2514,7 +2543,7 @@ $__CLASS_ATTRIBUTES = array(
      'parent_id'=>         array('Parent Id',     'parent_id',   ATT_DEFAULT_NULL, AF_READONLY|AF_HIDE_ADD, 11),
      'parent_type'=>       array('Parent Type',   'parent_type', ATT_DEFAULT_NULL, AF_READONLY|AF_HIDE_ADD),
      'site_id'=>           array('Site',          'link',     ATT_DEFAULT_SITE_ID, AF_READONLY, 'site'),
-     'client_id'=>         array('Client',    	  'link',     ATT_DEFAULT_CLIENT_ID, AF_READONLY|AF_HIDE, 'client'),
+     'client_id'=>         array('Client',        'link',     ATT_DEFAULT_CLIENT_ID, AF_READONLY|AF_HIDE, 'client'),
      'create_time'=>       array('Created',       'datetime', ATT_DEFAULT_NOW, AF_READONLY|AF_HIDE_ADD, 21 ),
      'time_to_send'=>      array('Time to Send',  'datetime', ATT_DEFAULT_NOW, 0, 21 ),
      'sent_time'=>         array('Sent',          'datetime', ATT_DEFAULT_NULL, AF_READONLY|AF_HIDE_ADD|AF_READONLY_EDIT, 21 ),
@@ -2756,7 +2785,7 @@ $__CLASS_ATTRIBUTES = array(
   
   "object_description" => 
   array(
-     'id'=>            	    array('ID',                	'id',       '', AF_PRIMARY|AF_AUTOINCREMENT|AF_HIDE, 11),
+     'id'=>                 array('ID',                 'id',       '', AF_PRIMARY|AF_AUTOINCREMENT|AF_HIDE, 11),
      'parent_type'=>        array('Parent Type',        'parent_type', '', AF_OBLIGATORY, $parentTypeArray),
      'parent_id'=>          array('Parent Id',          'parent_id',      0, AF_OBLIGATORY, 11),
      'site_id' =>           array('Site',               'link',     ATT_DEFAULT_SITE_ID, 0, 'site'),
@@ -2764,7 +2793,7 @@ $__CLASS_ATTRIBUTES = array(
      'timestamp'=>          array('Timestamp',          'timestamp',  ATT_DEFAULT_NOW, AF_HIDE|AF_HIDE_ADD|AF_READONLY, 14),
      'user_id'=>            array('Author',             'many2one', ATT_DEFAULT_USER_ID, AF_HIDE_LIST|AF_HIDE_ADD|AF_SEARCHABLE|AF_READONLY, 'user'),
      'machine_translated'=> array('Machine Translated', 'bool',  0, AF_HIDE_ADD|AF_READONLY),
-     'language'=>           array('Language',    			  'valSelect', 'en', AF_OBLIGATORY|AF_SEARCHABLE, $langArray),
+     'language'=>           array('Language',                 'valSelect', 'en', AF_OBLIGATORY|AF_SEARCHABLE, $langArray),
      'type' =>              array('Desc.Type',          'many2one', 0, AF_SEARCHABLE, 'description_type'),
      'title'=>              array('Title (text)',       'text',     '', AF_HIDE_LIST, 255),
      'description'=>        array('Content (HTML)',     'html',     '', AF_OBLIGATORY|AF_HIDE_LIST),
@@ -2773,13 +2802,13 @@ $__CLASS_ATTRIBUTES = array(
 
   "dictionary" => 
   array(
-     'id'=>            	    array('ID',                	'id',       '', AF_PRIMARY|AF_AUTOINCREMENT|AF_HIDE, 11),
+     'id'=>                 array('ID',                 'id',       '', AF_PRIMARY|AF_AUTOINCREMENT|AF_HIDE, 11),
      'site_id' =>           array('Site',               'link',     0, 0, 'site'),
      'user_id'=>            array('Author',             'link',     ATT_DEFAULT_USER_ID, AF_HIDE|AF_SEARCHABLE|AF_READONLY, 'user'),
      'machine_translated'=> array('Machine Translated?', 'bool',  0, AF_HIDE|AF_HIDE_ADD|AF_SEARCHABLE|AF_READONLY),
 
      'language'=>           array('Language',           'many2one',  ATT_DEFAULT_LANG, AF_OBLIGATORY|AF_SEARCHABLE|AF_READONLY_EDIT, 'language'),
-     'term'=>            	  array('Term',               'str',       '', AF_OBLIGATORY|AF_SEARCHABLE|AF_READONLY_EDIT, 100),
+     'term'=>                 array('Term',               'str',       '', AF_OBLIGATORY|AF_SEARCHABLE|AF_READONLY_EDIT, 100),
      'phrase'=>             array('Phrase (HTML)',      'text',     '', AF_OBLIGATORY|AF_HIDE_LIST, 30),
 
      /** get rid of author */
@@ -2793,7 +2822,7 @@ $__CLASS_ATTRIBUTES = array(
 
   "description_type" => 
   array(
-     'id'=>            	    array('ID',                	'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
+     'id'=>                 array('ID',                 'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
      'name'=>               array('Name',                'str',   '', AF_OBLIGATORY|AF_SEARCHABLE, 100),
      'private'  =>          array('Private?',            'bool',  0,  0, 0),
      'generic'  =>          array('Generic?',            'bool',  0,  0, 0),
@@ -2803,14 +2832,14 @@ $__CLASS_ATTRIBUTES = array(
 
   "article_type" => 
   array(
-     'id'=>            	    array('ID',                	'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
+     'id'=>                 array('ID',                 'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
      'name'=>               array('Name',                'str',   '', AF_OBLIGATORY|AF_SEARCHABLE, 100),
   ),
   
   
   "billing_period" => 
   array(
-     'id'=>            	    array('ID',                	'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
+     'id'=>                 array('ID',                 'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
      'active'=>             array('Active',             'bool',  1, AF_SEARCHABLE, 1),
      'name'=>               array('Name',               'str',   '', AF_OBLIGATORY|AF_SEARCHABLE, 100),
   ),
@@ -2818,7 +2847,7 @@ $__CLASS_ATTRIBUTES = array(
   
   "exchange_rate" => 
   array(
-     'id'=>            	    array('ID',                	'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
+     'id'=>                 array('ID',                 'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
      'last_updated'=>       array('Timestamp',          'timestamp',     ATT_DEFAULT_NOW, AF_READONLY, 14),
      'from_currency'=>      array('From Currency',      'valSelect', 0, AF_OBLIGATORY, $currencyArray),
      'to_currency'=>        array('To Currency',        'valSelect', 0, AF_OBLIGATORY, $currencyArray),
@@ -2836,7 +2865,7 @@ $__CLASS_ATTRIBUTES = array(
   
   "class" => 
   array(
-     'type'=>            	  array('Type',                'str',   '', AF_PRIMARY, 128),
+     'type'=>                 array('Type',                'str',   '', AF_PRIMARY, 128),
      'name'=>               array('Name',                'str',   '', AF_OBLIGATORY|AF_SEARCHABLE, 128),
      'active'  =>           array('Active?',             'bool',     1,  AF_HIDE_ADD, 0),
      //'site_id'=>            array('Site',                'link', 0, 0, 'site'),
@@ -2855,8 +2884,8 @@ $__CLASS_ATTRIBUTES = array(
   
   "attribute" => 
   array(
-     'id'=>            	    array('ID',                  'int',   '', AF_PRIMARY|AF_AUTOINCREMENT, 100),
-     'field'=>            	array('DB Field',            'str',   '', AF_OBLIGATORY, 100),
+     'id'=>                 array('ID',                  'int',   '', AF_PRIMARY|AF_AUTOINCREMENT, 100),
+     'field'=>              array('DB Field',            'str',   '', AF_OBLIGATORY, 100),
      'name'=>               array('Name',                'str',   '', AF_OBLIGATORY|AF_SEARCHABLE, 100),
      'class'=>              array('Class',               'str',   '', AF_OBLIGATORY|AF_SEARCHABLE, 100),
      'type'=>               array('Type',                'many2one', '', AF_SEARCHABLE, 'attribute_type'),
@@ -2873,8 +2902,8 @@ $__CLASS_ATTRIBUTES = array(
   
   "attribute_type" => 
   array(
-//     'id'=>            	    array('ID',                  'int',   '', AF_PRIMARY|AF_AUTOINCREMENT, 100),
-     'name'=>            	  array('Type',                'str',   '', AF_PRIMARY, 128),
+//     'id'=>                   array('ID',                  'int',   '', AF_PRIMARY|AF_AUTOINCREMENT, 100),
+     'name'=>                 array('Type',                'str',   '', AF_PRIMARY, 128),
      'modifier'=>           array('Modifier',            'str',   0, 0, 16),
      'length'=>             array('Length',              'int',   0, 0, 4),
      'db_type'=>            array('DB Type',             'valSelect', '', AF_OBLIGATORY|AF_SEARCHABLE, $db_types),
@@ -2926,7 +2955,7 @@ $__CLASS_ATTRIBUTES = array(
      'created'=>           array('Created',           'datetime', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT),
      'timestamp'=>         array('Timestamp',         'timestamp', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT, 14 ),
   //         'active'  =>          array('Active?',           'bool',     1,  AF_HIDE_ADD, 0),
-     'client_id'=>         array('Client',    			  'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
+     'client_id'=>         array('Client',                'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
 //     'site_id'          => array('Site',              'many2one', 0, AF_OBLIGATORY, 'site'),
      'site_id'=>           array('Site',              'link',   ATT_DEFAULT_SITE_ID, AF_HIDE_LIST|AF_LOG, 'site'),
      'user_id'          => array('User',              'many2one', 0, AF_OBLIGATORY, 'user'),
@@ -2964,7 +2993,7 @@ $__CLASS_ATTRIBUTES = array(
      'timestamp'=>         array('Timestamp',         'timestamp', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_EDIT, 14 ),
   //         'active'  =>          array('Active?',           'bool',     1,  AF_HIDE_ADD, 0),
      'site_id'=>           array('Site',              'link',   ATT_DEFAULT_SITE_ID, AF_HIDE_LIST|AF_LOG, 'site'),
-     'client_id'=>         array('Client',    			  'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
+     'client_id'=>         array('Client',                'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
      'rank'=>              array('Rank',               'int',  0, 0, 3),
   
      'location_id'=>       array('Location ID',        'link',   0, 0, 'location'),
@@ -3057,7 +3086,7 @@ $__CLASS_ATTRIBUTES = array(
      'id'=>                array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 3),
      'created'=>           array('Created',           'datetime', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD),
      'timestamp'=>         array('Timestamp',         'timestamp', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD, 14 ),
-     'client_id'=>         array('Client',    			  'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
+     'client_id'=>         array('Client',                'many2one', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
      'site_id'=>           array('Site',              'many2one',   ATT_DEFAULT_SITE_ID, AF_HIDE_LIST|AF_HIDE_ADD|AF_LOG, 'site'),
      'page_id' =>          array('Page',              'link',        0, AF_HIDE_EDIT|AF_HIDE_ADD, 'site_page'),  
      'user_id'=>           array('User',              'link', ATT_DEFAULT_USER_ID, AF_OBLIGATORY|AF_HIDE_ADD, 'user'),
@@ -3098,7 +3127,7 @@ $__CLASS_ATTRIBUTES = array(
      'created'=>           array('Created',           'datetime', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD),
      'timestamp'=>         array('Timestamp',         'timestamp', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD, 14 ),
 
-     'client_id'=>         array('Client',    			  'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
+     'client_id'=>         array('Client',                'link', ATT_DEFAULT_CLIENT_ID, AF_OBLIGATORY|AF_READONLY|AF_HIDE, 'client'),
      'site_id'=>           array('Target Site',       'link', ATT_DEFAULT_SITE_ID, AF_HIDE_LIST|AF_HIDE_ADD|AF_LOG, 'site'),
      'page_id' =>          array('Target Page',       'link', ATT_DEFAULT_PAGE_ID, AF_HIDE_EDIT|AF_HIDE_ADD, 'site_page'),  
      'user_id'=>           array('Target User',       'link', ATT_DEFAULT_USER_ID, AF_HIDE_ADD, 'user'),
@@ -3127,19 +3156,19 @@ $__CLASS_ATTRIBUTES = array(
   
   "weekday" =>
   array(
-     'id'=>            	    array('ID',                	'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
+     'id'=>                 array('ID',                 'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
      'name'=>               array('Name',                'str',   '', AF_OBLIGATORY|AF_SEARCHABLE, 100),
   ),
 
   "gender" =>
   array(
-     'id'=>            	    array('ID',                	'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
+     'id'=>                 array('ID',                 'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
      'name'=>               array('Name',                'str',   '', AF_OBLIGATORY|AF_SEARCHABLE, 100),
   ),
 
   "access_token" =>
   array(
-     'id'=>            	    array('ID',                	'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
+     'id'=>                 array('ID',                 'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
      'service'=>            array('service',            'str',  'google', AF_OBLIGATORY|AF_SEARCHABLE, 40),
      'account_id'=>         array('account id',         'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 100),
      'account_name'=>       array('account name',       'str',  '', AF_SEARCHABLE, 100),
@@ -3149,7 +3178,7 @@ $__CLASS_ATTRIBUTES = array(
   
   "google_application" =>
   array(
-     'id'=>            	    array('ID',              'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
+     'id'=>                 array('ID',              'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
      'name'=>               array('name',            'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 40),
      'api_key'=>            array('API Key',         'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 40),
      'client_id'=>          array('client id',       'str',  '', AF_OBLIGATORY|AF_SEARCHABLE, 60),
@@ -3160,7 +3189,7 @@ $__CLASS_ATTRIBUTES = array(
 
   "default_attributes" =>
   array(
-     'id'=>            	    array('ID',                	'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
+     'id'=>                 array('ID',                 'id',   '', AF_PRIMARY|AF_AUTOINCREMENT, 11),
      'name'=>               array('Name',                'str',   '', AF_OBLIGATORY|AF_SEARCHABLE, 100),
   ),
   

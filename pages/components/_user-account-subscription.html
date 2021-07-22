@@ -1,0 +1,267 @@
+
+{$subscription_plan = $scope.subscription_plan}
+
+
+<style>
+	img{
+		width:auto;
+		max-width:100%;
+	}
+	.panel-title > a {
+		display: block;
+		position: relative;
+	}
+	.panel-title > a:after {
+		content: "\f067"; /* fa-chevron-down */
+		font-family: 'FontAwesome';
+		position: absolute;
+		right: 8px;
+	}
+	.panel-title > a[aria-expanded="true"]:after {
+		content: "\f068"; /* fa-chevron-up */
+	}
+	.panel-image{
+		width:600px;
+		max-width:100%;
+		display: block;
+		float: none;
+		margin: auto;
+		overflow: hidden;
+		border: 1px solid #c3c3c3;
+		border-radius: 4px;
+		padding:8px;
+	}
+	.panel-image img{
+		max-width:100%;
+	}
+	iframe{
+		max-width: 100%;
+	}
+	.card{
+	  	margin: 5% 0%;
+	  	-webkit-box-shadow: 0 2px 5px 0 rgb(0 0 0 / 16%), 0 2px 10px 0 rgb(0 0 0 / 12%);
+	    box-shadow: 0 2px 5px 0 rgb(0 0 0 / 16%), 0 2px 10px 0 rgb(0 0 0 / 12%);
+	    border: 0;
+	}
+
+	.card-body{
+	  	margin: 0% 0% 0% 3%;
+	  	padding: 6% 0%;
+	}
+	.ml{
+		margin-left: 25px;
+	}
+	ul.a {
+	  	list-style-type: circle;
+	}
+</style>
+
+
+<div class="container">
+	<!-- Card deck -->
+	<div class="card-deck row">
+  		<div class="col-md-5">
+ 			<!-- Card -->
+  			<div class="card">
+    		<!--Card image-->    			
+    			<!--Card content-->
+				<div class="card-body" align="center">
+					<!--Title-->
+					<h3 class="card-title" style="color: green; font-weight: bold;">Your Current Plan</h3>
+					<!--Text-->
+
+					
+					{if ($scope.user.subscription_reference!=null) }
+						<p class="card-text">{$subscription_plan.name} (€{$subscription_plan.cost})</p>
+
+						<!-- <p class="card-text">Cost - {$subscription_plan.cost} $</p> -->
+						<p class="card-text"><i class="fa fa-calendar" style="color: red" aria-hidden="true"></i>
+						<p class="card-text">Subscription Expiration Date</p>
+						<p class="card-text" style="color: red;font-weight: 5px">{$subscription_plan.expire_on} </p>
+
+						<!-- Provides extra visual weight and identifies the primary action in a set of buttons -->
+						<button type="button" class="btn btn-success ml5" style="border-radius:10px;"> <a target="_blank" href="{$subscription_plan.upgrade_link}&BACK_REF=https://new.vpatina.dci.in/exhibition/payment-upgrade?user={$scope.user.username}" style="color: white;"> Upgrade Plan </a></button>
+					{else}
+						<p class="card-text">{$subscription_plan.name} (€{$subscription_plan.cost})</p>
+
+						<button type="button" class="btn btn-success ml5"> <a target="_blank" href="http://3.108.99.134/2checkout/pricing.html" style="color: white;"> Buy Plan </a></button>
+					{/if}
+					<span class="form-group form-group-icon-left help-block pt5" style="color: black;"><b><i>(It takes up to 30 minutes for the plan to update when you upgrade)<i></b> </span>
+
+
+				</div>
+  			</div>
+  			<!-- Card -->
+  			
+  		</div>
+
+  		<div class="col-md-5">
+  			<!-- Card -->
+  			<div class="card">
+				<!--Card image-->				
+				<!--Card content-->
+				<div class="card-body" >
+					<!--Title-->
+					<h3 class="card-title " style="color: green;font-weight: bold;" align="center">Features</h3>
+					<!--Text-->
+						<ul class="a">
+							{foreach from=$subscription_plan.features item=feature}
+							  	<li class="card-text ml">{$feature.key_feature}</li>
+							{/foreach}
+						</ul>
+
+						<!-- <ul class="a">
+							{foreach from=$subscription_plan.features item=feature}
+							  	<li class="card-text ml mt10"><input name="last_name" class="form-control" readable type="text" value="{$feature.key_feature}" /> </li>
+							{/foreach}
+						</ul> -->
+					<!-- Provides extra visual weight and identifies the primary action in a set of buttons -->
+				</div>
+  			</div>
+  			<!-- Card -->
+		</div>  
+	</div>
+	<!-- Card deck -->  
+</div>
+
+<style type="text/css">
+	.card{
+	  	margin: 5% 0%;
+	  	-webkit-box-shadow: 0 2px 5px 0 rgb(0 0 0 / 16%), 0 2px 10px 0 rgb(0 0 0 / 12%);
+	    box-shadow: 0 2px 5px 0 rgb(0 0 0 / 16%), 0 2px 10px 0 rgb(0 0 0 / 12%);
+	    border: 0;
+	}
+
+	.card-body{
+	  	margin: 0% 0% 0% 3%;
+	  	padding: 6% 0%;
+	}
+</style>
+<div class="mt20 mb50">
+	<h3 align="center" style="font-weight: bold; ">Frequently Asked Questions</h3>
+	<div class="panel-group mt40" id="accordion1">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<a data-toggle="collapse" data-parent="#accordion8" href="#sub8collapse1">Can I upgrade or downgrade my plan?</a>
+				</h4>
+			</div>
+			<div id="sub8collapse1" class="panel-collapse collapse">
+				<div class="panel-body">
+					<p>Yes, you can upgrade your subscription plan at any time. To upgrade, select “Subscription” in the settings and click “Upgrade plan”. The system will recalculate the amount you need to pay extra, where applicable. You will see the final price on the checkout page.</p>
+				</div>
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<a data-toggle="collapse" data-parent="#accordion8" href="#sub8collapse2">Can I stop automatic payments?</a>
+				</h4>
+			</div>
+			<div id="sub8collapse2" class="panel-collapse collapse">
+				<div class="panel-body">
+					<p>Yes, you can disable automatic billing via your 2Checkout account at any time. 2Checkout is our partner billing system. Your login details are sent to you after the first payment goes through. If you don’t remember your 2Checkout account password, please reset it.</p>
+				</div>
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<a data-toggle="collapse" data-parent="#accordion8" href="#sub8collapse3">What payment options do you provide for clients?</a>
+				</h4>
+			</div>
+			<div id="sub8collapse3" class="panel-collapse collapse">
+				<div class="panel-body">
+					<p>All payments are accepted via our billing partner 2Сheckout (ex. Avangate). There are more than 45 payment methods depending on the country including Visa, Mastercard, American Express, PayPal, Direct Debit, Discover/Novus, Eurocard, Wire Transfer, UnionPay and many more. If you can’t find an appropriate payment method, please contact our Support Team.</p>
+				</div>
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<a data-toggle="collapse" data-parent="#accordion8" href="#sub8collapse3">What payment options do you provide for clients?</a>
+				</h4>
+			</div>
+			<div id="sub8collapse3" class="panel-collapse collapse">
+				<div class="panel-body">
+					<p>All payments are accepted via our billing partner 2Сheckout (ex. Avangate). There are more than 45 payment methods depending on the country including Visa, Mastercard, American Express, PayPal, Direct Debit, Discover/Novus, Eurocard, Wire Transfer, UnionPay and many more. If you can’t find an appropriate payment method, please contact our Support Team.</p>
+				</div>
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<a data-toggle="collapse" data-parent="#accordion8" href="#sub8collapse4">How can I reduce the price of a subscription plan?</a>
+				</h4>
+			</div>
+			<div id="sub8collapse4" class="panel-collapse collapse">
+				<div class="panel-body">
+					<p>You can reduce the price of a plan by choosing a longer subscription period. By getting a 3-month subscription, you will get a 5% discount; 6 months – 10%, 9 months – 15%, and the annual plan brings 20% in savings. You can also reduce the cost by changing the rankings check frequency to once every 3 days (20% off) or weekly (40% off) instead of daily.</p>
+				</div>
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<a data-toggle="collapse" data-parent="#accordion8" href="#sub8collapse5">Where can I find the invoices?</a>
+				</h4>
+			</div>
+			<div id="sub8collapse5" class="panel-collapse collapse">
+				<div class="panel-body">
+					<p>All invoices are available in your 2Checkout account. 2Checkout is our billing partner. Your login details are sent to you after the first payment goes through. If you don’t remember your 2Checkout account password, please reset it.</p>
+				</div>
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<a data-toggle="collapse" data-parent="#accordion8" href="#sub8collapse6">Where do I need to enter the VAT ID to exclude VAT from the payment?</a>
+				</h4>
+			</div>
+			<div id="sub8collapse6" class="panel-collapse collapse">
+				<div class="panel-body">
+					<p>When submitting your payment, choose to make payments as a Company under the Billing Information section and add the VAT ID into the corresponding field.
+					<img src="https://online.seranking.com/skin/site/main/images/faq-img.png">
+					If you choose PayPal as your payment method, please follow these instructions to avoid paying VAT.</p>
+				</div>
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<a data-toggle="collapse" data-parent="#accordion8" href="#sub8collapse7">What if I don’t know what plan I need?</a>
+				</h4>
+			</div>
+			<div id="sub8collapse7" class="panel-collapse collapse">
+				<div class="panel-body">
+					<p>Please contact us via live chat and we will help you choose the best option according to your needs.</p>
+				</div>
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<a data-toggle="collapse" data-parent="#accordion8" href="#sub8collapse8">How to cancel my subscription?</a>
+				</h4>
+			</div>
+			<div id="sub8collapse8" class="panel-collapse collapse">
+				<div class="panel-body">
+					<p>Billing is provided through our partner 2Checkout and you can disable automatic billing in your 2Checkout account. Username and password were sent after the first payment, if you don’t remember your 2Checkout account password, please reset it. If you need assistance with billing details or any other questions do not hesitate to contact our support team. Email notifications about upcoming renewals are sent to your email 7 days before each renewal and they also contain instructions on cancelling automatic billing.</p>
+				</div>
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<a data-toggle="collapse" data-parent="#accordion8" href="#sub8collapse9">How to delete my account?</a>
+				</h4>
+			</div>
+			<div id="sub8collapse9" class="panel-collapse collapse">
+				<div class="panel-body">
+					<p>Contact our Support Team via email or chat to delete your account.</p>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+

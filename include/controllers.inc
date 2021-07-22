@@ -3484,7 +3484,7 @@
     }
 
     function controller_artist_profile($app, $options = []) {
-        
+        dump("AShii");
         //echo "addf";
         global $u_id;
         $__header = $app->header; 
@@ -4873,6 +4873,9 @@
                 $scope->obj_type = $obj_type = "ACsettings";
                 $id = $app->user_id;
                 $scope->obj_id = $id;
+
+                if($app->page->tab=='subscription')
+                    user_subscription($app,$scope);
               
                 if(!$add) {   
                     if(!$id) return controller_error($app, "Missing ID");
@@ -5210,6 +5213,17 @@
 
                     $filter_json = count($filters) ? json_encode($filters) : '';
                     $scope->list_url = "/ajax.php?oper=get-rows&obj_type=media_folder".($filter_json ? "&filters=".urlencode($filter_json) : '');
+
+                    if($scope->user->subscription_plan_id!=9 || $scope->user->subscription_plan_id!=null){
+                        $subscription_plan=find_object('subscription_plans', ['id' => $scope->user->subscription_plan_id, 'status' =>1]); // can take user id, role
+                        $scope->limitcount=$subscription_plan->image_limit." images";
+                        $scope->limit=1;
+                    }
+                    else
+                        $scope->limit=0;
+
+                    // dump($scope);
+
                 }
 
                 break;
@@ -5490,6 +5504,7 @@
                 $scope->section = 'settings';
             break;
             case "profile":
+            dump("Ashiiprofile");
                 $scope->section = 'network';
                 $scope->obj_type = $obj_type = "artist";
                 //controller_gallery_collections($app);
@@ -6538,6 +6553,175 @@
                         }
                     // }
                     }
+                    else if($uri_segments[2] == 'payment-upgrade'){
+                        $username=$_GET['user'];
+
+                        echo "Asha ".$username;
+                        // print_r( apache_request_headers());
+
+                        dump(' Subscription for vPatina'); 
+                        $host   = "https://api.2checkout.com";
+                        $client = new SoapClient($host . "/soap/3.0/?wsdl", array(
+                            'location' => $host . "/soap/3.0/",
+                            "stream_context" => stream_context_create(array(
+                                'ssl' => array(
+                                    'verify_peer' => false,
+                                    'verify_peer_name' => false
+                                )
+                            ))
+                        ));
+                        $merchantCode = "250900952756";
+                        $key = "LFrb4Wys0qGpRvuD6dOA";
+                        // $merchantCode = "251079116805";
+                        // $key = "~B#[0)+XLh(xKg8C?UN%";
+                        $now          = gmdate('Y-m-d H:i:s');
+                        $string = strlen($merchantCode) . $merchantCode . strlen($now) . $now;
+                        $hash   = hmac($key, $string);
+
+                        try {
+                            // echo "Ashiii";
+                            $sessionID = $client->login($merchantCode, $now, $hash);
+                        }
+                        catch (SoapFault $e) {
+                            echo "Asha";
+                            echo "Authentication: " . $e->getMessage();
+                            exit;
+                        }
+
+                        $SubscriptionSearch = new stdClass();
+                        $SubscriptionSearch->CustomerEmail  = $username;
+                        // $SubscriptionSearch->DeliveredCode = null;
+                        // $SubscriptionSearch->2CheckoutCustomerReference = null;
+                        // $SubscriptionSearch->ExternalCustomerReference = null;
+                        // $SubscriptionSearch->Aggregate = false;
+                        $SubscriptionSearch->SubscriptionEnabled = true; //true false null
+                        $SubscriptionSearch->RecurringEnabled = null; // true - autorenewal, false - manual renewal, null = both(default) 
+                        $SubscriptionSearch->ProductCodes = null; //array('Product_Code1', 'Product_Code2');
+                        $SubscriptionSearch->CountryCodes = null;//array ('au')
+                        $SubscriptionSearch->PurchasedAfter = null;
+                        $SubscriptionSearch->PurchasedBefore = null;
+                        $SubscriptionSearch->ExpireAfter = null;
+                        $SubscriptionSearch->ExpireBefore = null;
+                        $SubscriptionSearch->LifetimeSubscription = null;
+                        $SubscriptionSearch->Type = 'regular'; //'trial', 'regular', 'regularfromtrial'
+                        $SubscriptionSearch->TestSubscription = null; // true, false, null = both(default) $SubscriptionSearch->Page = 1;$SubscriptionSearch->Limit = 25;
+                        $SubscriptionSearch->Page = 1;
+                        $SubscriptionSearch->Limit = 1;
+                        try {
+                            $accountSubscriptions = $client->searchSubscriptions($sessionID, $SubscriptionSearch);
+                        }
+                        catch (SoapFault $e) {
+                            echo "accountSubscriptions: " . $e->getMessage();
+                            exit;
+                        }
+                            // print_r($accountSubscriptions);
+
+                            $subscriptionInfo = $accountSubscriptions[0];
+                            // print_r($subscriptionInfo);
+
+                            if(!empty($subscriptionInfo)){
+                                dump($subscription_refernce.'ifff');
+                                $subscription_plan=find_object('subscription_plans', ['2checkout_code' => $subscriptionInfo->Product->ProductCode,'status' =>1]);
+                            
+                                $subscribed_user=find_object('subscribed_users', ['email' => $username, 'status' =>1]);
+                                $expire_on=$subscriptionInfo->ExpirationDate;
+
+                                $subscription_refernce=$subscriptionInfo->SubscriptionReference;
+                                // echo $subscription_refernce;
+                                // print_r($subscribed_user);
+
+                                if($subscribed_user!=null)
+                                    db_query("UPDATE subscribed_users SET reference_code='$subscription_refernce',subscription_plan_id='$subscription_plan->id',expire_on='$expire_on' WHERE email='$username'");
+
+                                $user=find_object('user', ['username' => $username, 'active' =>1]);
+                                if($user!=null && $user->subscription_reference!=$subscription_refernce){
+                                    dump($subscription_refernce.'ifff');
+
+                                    db_query("UPDATE user SET subscription_reference='$subscription_refernce',subscription_plan_id='$subscription_plan->id' WHERE id='$user->id'");
+                                }
+                                echo " your plan has been upgraded to " .$subscription_plan->name;
+
+                            }
+                            // exit;
+                            header('Location: https://new.vpatina.dci.in/backend');
+                        
+                    }
+                    else if($uri_segments[2] == 'payment'){
+                        // print_r( apache_request_headers());
+
+                        dump(' Subscription for vPatina'); 
+                        $host   = "https://api.2checkout.com";
+                        $client = new SoapClient($host . "/soap/3.0/?wsdl", array(
+                            'location' => $host . "/soap/3.0/",
+                            "stream_context" => stream_context_create(array(
+                                'ssl' => array(
+                                    'verify_peer' => false,
+                                    'verify_peer_name' => false
+                                )
+                            ))
+                        ));
+                        $merchantCode = "250900952756";
+                        $key = "LFrb4Wys0qGpRvuD6dOA";
+                        // $merchantCode = "251079116805";
+                        // $key = "~B#[0)+XLh(xKg8C?UN%";
+                        $now          = gmdate('Y-m-d H:i:s');
+                        $string = strlen($merchantCode) . $merchantCode . strlen($now) . $now;
+                        $hash   = hmac($key, $string);
+
+                        try {
+                            // echo "Ashiii";
+                            $sessionID = $client->login($merchantCode, $now, $hash);
+                        }
+                        catch (SoapFault $e) {
+                            echo "Asha";
+                            echo "Authentication: " . $e->getMessage();
+                            exit;
+                        }
+
+                        try {
+                            $getOrder = $client->getOrder($sessionID, $_GET['refno']);
+                            $get_order = (array)$getOrder;
+                            $items=$get_order['Items'][0];
+                            $subscription_refernce=$items->ProductDetails->Subscriptions[0]->SubscriptionReference;
+                            $subscriptionInfo = $client->getSubscription($sessionID, $subscription_refernce);
+                            $subscription_plan=find_object('subscription_plans', ['2checkout_code' => $subscriptionInfo->Product->ProductCode,'status' =>1]);
+                            $username=$get_order['BillingDetails']->Email;
+                            $expire_on=$items->ProductDetails->Subscriptions[0]->ExpirationDate;
+                            // print_r($expire_on);exit;
+
+
+                            
+                            $subscribed_user=find_object('subscribed_users', ['email' => $username, 'status' =>1]);
+                            
+                            if($subscribed_user==null)
+                                db_query("INSERT INTO subscribed_users (
+                                        email,
+                                        user_id,
+                                        subscription_plan_id,
+                                        reference_code,
+                                        expire_on,
+                                        status
+                                    ) values (
+                                        '$username',
+                                        '',
+                                        '$subscription_plan->id',
+                                        '$subscription_refernce',
+                                        '$expire_on',
+                                        1
+                                    )
+                                ");
+                            else
+                                db_query("UPDATE subscribed_users SET reference_code='$subscription_refernce',subscription_plan_id='$subscription_plan->id',expire_on='$expire_on' WHERE email='$username'");
+
+                            $user=find_object('user', ['username' => $get_order['BillingDetails']->Email, 'active' =>1]);
+                            if($user)
+                                db_query("UPDATE user SET subscription_reference='$subscription_refernce',subscription_plan_id='$subscription_plan->id' WHERE id='$user->id'");
+                            
+                            header('Location: https://new.vpatina.dci.in/register/?ref=%2Fbackend');
+                        } catch (SoapFault $e) {
+                            echo "getOrder: " . $e->getMessage() ;
+                        }
+                    }
                     else if($uri_segments[2] == 'event'){
                         $eve = array('subtype' => 30, 'type' => $collection_type, 'active' => 1);
                         //$user_id = pick_first($scope->artist_id, $scope->user_id, $u_id);    
@@ -6710,6 +6894,136 @@
         //$scope->redirect = 'http://www.google.com';
         //$scope->template = 'test2';
         return;
+    }
+    function hmac($key, $data)
+    {
+        $b = 64; // byte length for md5
+        if (strlen($key) > $b) {
+            $key = pack("H*", md5($key));
+        }
+        
+        $key    = str_pad($key, $b, chr(0x00));
+        $ipad   = str_pad('', $b, chr(0x36));
+        $opad   = str_pad('', $b, chr(0x5c));
+        $k_ipad = $key ^ $ipad;
+        $k_opad = $key ^ $opad;
+        return md5($k_opad . pack("H*", md5($k_ipad . $data)));
+    }
+
+    function user_subscription($app,$scope){
+        // dump('Ashiii Subscriptions');
+
+        $scope->user_detail=get_user($_GET['user_id']);
+        if(!$app->user_id) return controller_error($app, "Missing ID");
+                    $scope->profile = $profile_data= get_user($app->user_id);
+        // dump($scope->profile->subscription_plan_id);
+
+        $scope->subscription_plan=find_object('subscription_plans', ['id' =>$scope->profile->subscription_plan_id , 'status' =>1]);
+        $subscribed_user=find_object('subscribed_users', ['email' =>$scope->user->username , 'status' =>1]);
+        $dt = new DateTime($subscribed_user->expire_on);
+
+        $scope->subscription_plan->expire_on=$dt->format('M d Y');
+        // dump($subscribed_user);
+        $scope->ashi='Ashiitest';
+        $scope->subscription_plan->features=find_objects('subscription_plan_features', ['plan' =>$scope->subscription_plan->short_name , 'status' =>1]);
+        dump($scope->user->subscription_reference);
+            // dump($scope->user);
+
+        if($scope->user->subscription_reference!=null){
+            dump('if');
+            $username=$scope->user->username;
+
+            // echo "Asha ".$username;
+            // print_r( apache_request_headers());
+
+            // dump(' Subscription for vPatina'); 
+            $host   = "https://api.2checkout.com";
+            $client = new SoapClient($host . "/soap/3.0/?wsdl", array(
+                'location' => $host . "/soap/3.0/",
+                "stream_context" => stream_context_create(array(
+                    'ssl' => array(
+                        'verify_peer' => false,
+                        'verify_peer_name' => false
+                    )
+                ))
+            ));
+            $merchantCode = "250900952756";
+            $key = "LFrb4Wys0qGpRvuD6dOA";
+            // $merchantCode = "251079116805";
+            // $key = "~B#[0)+XLh(xKg8C?UN%";
+            $now          = gmdate('Y-m-d H:i:s');
+            $string = strlen($merchantCode) . $merchantCode . strlen($now) . $now;
+            $hash   = hmac($key, $string);
+
+            try {
+                // echo "Ashiii";
+                $sessionID = $client->login($merchantCode, $now, $hash);
+            }
+            catch (SoapFault $e) {
+                echo "Asha";
+                echo "Authentication: " . $e->getMessage();
+                exit;
+            }
+
+            $SubscriptionSearch = new stdClass();
+            $SubscriptionSearch->CustomerEmail  = $username;
+            // $SubscriptionSearch->DeliveredCode = null;
+            // $SubscriptionSearch->2CheckoutCustomerReference = null;
+            // $SubscriptionSearch->ExternalCustomerReference = null;
+            // $SubscriptionSearch->Aggregate = false;
+            $SubscriptionSearch->SubscriptionEnabled = true; //true false null
+            $SubscriptionSearch->RecurringEnabled = null; // true - autorenewal, false - manual renewal, null = both(default) 
+            $SubscriptionSearch->ProductCodes = null; //array('Product_Code1', 'Product_Code2');
+            $SubscriptionSearch->CountryCodes = null;//array ('au')
+            $SubscriptionSearch->PurchasedAfter = null;
+            $SubscriptionSearch->PurchasedBefore = null;
+            $SubscriptionSearch->ExpireAfter = null;
+            $SubscriptionSearch->ExpireBefore = null;
+            $SubscriptionSearch->LifetimeSubscription = null;
+            $SubscriptionSearch->Type = 'regular'; //'trial', 'regular', 'regularfromtrial'
+            $SubscriptionSearch->TestSubscription = null; // true, false, null = both(default) $SubscriptionSearch->Page = 1;$SubscriptionSearch->Limit = 25;
+            $SubscriptionSearch->Page = 1;
+            $SubscriptionSearch->Limit = 1;
+            try {
+                $accountSubscriptions = $client->searchSubscriptions($sessionID, $SubscriptionSearch);
+            }
+            catch (SoapFault $e) {
+                echo "accountSubscriptions: " . $e->getMessage();
+                exit;
+            }
+                // print_r($accountSubscriptions);
+
+            $subscriptionInfo = $accountSubscriptions[0];
+            // print_r($subscriptionInfo);
+
+            if(!empty($subscriptionInfo)){
+                    dump($subscription_refernce.'ifff');
+                $subscription_plan=find_object('subscription_plans', ['2checkout_code' => $subscriptionInfo->Product->ProductCode,'status' =>1]);
+            
+                $subscribed_user=find_object('subscribed_users', ['email' => $username, 'status' =>1]);
+                $expire_on=$subscriptionInfo->ExpirationDate;
+
+                $subscription_refernce=$subscriptionInfo->SubscriptionReference;
+                // echo $subscription_refernce;
+                // print_r($subscribed_user);
+
+                if($subscribed_user!=null)
+                    db_query("UPDATE subscribed_users SET reference_code='$subscription_refernce',subscription_plan_id='$subscription_plan->id',expire_on='$expire_on' WHERE email='$username'");
+
+                $user=find_object('user', ['username' => $username, 'active' =>1]);
+                if($user!=null && $user->subscription_reference!=$subscription_refernce){
+                    dump($subscription_refernce.'ifff');
+
+                    db_query("UPDATE user SET subscription_reference='$subscription_refernce',subscription_plan_id='$subscription_plan->id' WHERE id='$user->id'");
+                }
+            }
+            
+        }
+        
+            // dump("else");
+
+        return $scope;
+
     }
 
     /** End vPatina + Art controllers */

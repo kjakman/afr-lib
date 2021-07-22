@@ -838,6 +838,8 @@ function gallery_artwork_related($siteObj_or_id, $artworkObj_or_id, $options = a
     
 
 function gallery_explore($siteObj_or_id, $obj_type, $id, $options = array()) {
+        dump("Ashiiiiiiiiii");
+  
   global $u_id, $u_level;
   
   $obj = $obj_type && $id ? get_object($obj_type, $id) : null;
