@@ -6643,7 +6643,7 @@
 
                             }
                             // exit;
-                            header('Location: https://new.vpatina.dci.in/backend');
+                            header('Location: https://dev.vpatina.com/backend');
                         
                     }
                     else if($uri_segments[2] == 'payment'){
@@ -6717,7 +6717,7 @@
                             if($user)
                                 db_query("UPDATE user SET subscription_reference='$subscription_refernce',subscription_plan_id='$subscription_plan->id' WHERE id='$user->id'");
                             
-                            header('Location: https://new.vpatina.dci.in/register/?ref=%2Fbackend');
+                            header('Location: https://dev.vpatina.com/register/?ref=%2Fbackend');
                         } catch (SoapFault $e) {
                             echo "getOrder: " . $e->getMessage() ;
                         }
