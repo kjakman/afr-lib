@@ -60,7 +60,12 @@
 <div class="container">
 	<!-- Card deck -->
 	<div class="card-deck row">
-  		<div class="col-md-5">
+		{if ($scope.user.subscription_plan_id!=null) }
+  			<div class="col-md-5" >
+		{else}
+  			<div class="col-md-5 col-md-offset-3" >
+		{/if}
+
  			<!-- Card -->
   			<div class="card">
     		<!--Card image-->    			
@@ -82,9 +87,17 @@
 						<!-- Provides extra visual weight and identifies the primary action in a set of buttons -->
 						<button type="button" class="btn btn-success ml5" style="border-radius:10px;"> <a target="_blank" href="{$subscription_plan.upgrade_link}&BACK_REF=https://new.vpatina.dci.in/exhibition/payment-upgrade?user={$scope.user.username}" style="color: white;"> Upgrade Plan </a></button>
 					{else}
-						<p class="card-text">{$subscription_plan.name} (€{$subscription_plan.cost})</p>
+						{if ($scope.user.subscription_plan_id==null) }
+							<p class="card-text">Currently you are in a Beta Testing Plan - please contact vPatina for information on how to upgrade <a target="_blank" href="mailto:info@vpatina.com"> (info@vpatina.com)</a></p>
 
-						<button type="button" class="btn btn-success ml5"> <a target="_blank" href="http://3.108.99.134/2checkout/pricing.html" style="color: white;"> Buy Plan </a></button>
+							<button type="button" class="btn btn-success ml5"> <a target="_blank" href="http://3.108.99.134/2checkout/pricing.html" style="color: white;">Click to Buy Plan </a></button>
+						{else}
+
+							<p class="card-text">{$subscription_plan.name} (€{$subscription_plan.cost})</p>
+
+							<button type="button" class="btn btn-success ml5"> <a target="_blank" href="http://3.108.99.134/2checkout/pricing.html" style="color: white;"> Buy Plan </a></button>
+						{/if}
+
 					{/if}
 					<span class="form-group form-group-icon-left help-block pt5" style="color: black;"><b><i>(It takes up to 30 minutes for the plan to update when you upgrade)<i></b> </span>
 
@@ -94,32 +107,34 @@
   			<!-- Card -->
   			
   		</div>
+		{if ($scope.user.subscription_plan_id!=null) }
+	  		<div class="col-md-5">
+	  			<!-- Card -->
+	  			<div class="card">
+					<!--Card image-->				
+					<!--Card content-->
+					<div class="card-body" >
+						<!--Title-->
+						<h3 class="card-title " style="color: green;font-weight: bold;" align="center">Features</h3>
+						<!--Text-->
+							<ul class="a">
+								{foreach from=$subscription_plan.features item=feature}
+								  	<li class="card-text ml">{$feature.key_feature}</li>
+								{/foreach}
+							</ul>
 
-  		<div class="col-md-5">
-  			<!-- Card -->
-  			<div class="card">
-				<!--Card image-->				
-				<!--Card content-->
-				<div class="card-body" >
-					<!--Title-->
-					<h3 class="card-title " style="color: green;font-weight: bold;" align="center">Features</h3>
-					<!--Text-->
-						<ul class="a">
-							{foreach from=$subscription_plan.features item=feature}
-							  	<li class="card-text ml">{$feature.key_feature}</li>
-							{/foreach}
-						</ul>
+							<!-- <ul class="a">
+								{foreach from=$subscription_plan.features item=feature}
+								  	<li class="card-text ml mt10"><input name="last_name" class="form-control" readable type="text" value="{$feature.key_feature}" /> </li>
+								{/foreach}
+							</ul> -->
+						<!-- Provides extra visual weight and identifies the primary action in a set of buttons -->
+					</div>
+	  			</div>
+	  			<!-- Card -->
+			</div>  
+		{/if}
 
-						<!-- <ul class="a">
-							{foreach from=$subscription_plan.features item=feature}
-							  	<li class="card-text ml mt10"><input name="last_name" class="form-control" readable type="text" value="{$feature.key_feature}" /> </li>
-							{/foreach}
-						</ul> -->
-					<!-- Provides extra visual weight and identifies the primary action in a set of buttons -->
-				</div>
-  			</div>
-  			<!-- Card -->
-		</div>  
 	</div>
 	<!-- Card deck -->  
 </div>
