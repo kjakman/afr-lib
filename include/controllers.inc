@@ -6643,10 +6643,13 @@
 
                             }
                             // exit;
-                            header('Location: https://dev.vpatina.com/backend');
+                            header('Location: '.$app->site_url.'backend');
+                            
+                            // header('Location: https://dev.vpatina.com/backend');
                         
                     }
                     else if($uri_segments[2] == 'payment'){
+                        // dump($app->site_url);
                         // print_r( apache_request_headers());
 
                         dump(' Subscription for vPatina'); 
@@ -6716,8 +6719,9 @@
                             $user=find_object('user', ['username' => $get_order['BillingDetails']->Email, 'active' =>1]);
                             if($user)
                                 db_query("UPDATE user SET subscription_reference='$subscription_refernce',subscription_plan_id='$subscription_plan->id' WHERE id='$user->id'");
+                            header('Location: '.$app->site_url.'register/?ref=%2Fbackend');
                             
-                            header('Location: https://dev.vpatina.com/register/?ref=%2Fbackend');
+                            // header('Location: {$app->site_url}/register/?ref=%2Fbackend');
                         } catch (SoapFault $e) {
                             echo "getOrder: " . $e->getMessage() ;
                         }
