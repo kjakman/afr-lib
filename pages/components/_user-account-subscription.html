@@ -85,7 +85,10 @@
 						<p class="card-text" style="color: red;font-weight: 5px">{$subscription_plan.expire_on} </p>
 
 						<!-- Provides extra visual weight and identifies the primary action in a set of buttons -->
-						<button type="button" class="btn btn-success ml5" style="border-radius:10px;"> <a target="_blank" href="{$subscription_plan.upgrade_link}&BACK_REF=https://dev.vpatina.com/exhibition/payment-upgrade?user={$scope.user.username}" style="color: white;"> Upgrade Plan </a></button>
+						{if ($scope.user.subscription_plan_id!=9) }
+							<button type="button" class="btn btn-success ml5" style="border-radius:10px;"> <a target="_blank" href="{$subscription_plan.upgrade_link}&BACK_REF=https://dev.vpatina.com/exhibition/payment-upgrade?user={$scope.user.username}" style="color: white;"> Upgrade Plan </a></button>
+						{/if}
+
 					{else}
 						{if ($scope.user.subscription_plan_id==null) }
 							<p class="card-text">Currently you are in a Beta Testing Plan - please contact vPatina for information on how to upgrade <a target="_blank" href="mailto:info@vpatina.com"> (info@vpatina.com)</a></p>
