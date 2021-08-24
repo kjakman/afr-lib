@@ -6651,7 +6651,11 @@
                     else if($uri_segments[2] == 'payment'){
                         // dump($app->site_url);
                         // print_r( apache_request_headers());
+                        // sleep(60);
+                        // dump(phpinfo());
+// set_time_limit ( 120 );
 
+                        // sleep(45);
                         dump(' Subscription for vPatina'); 
                         $host   = "https://api.2checkout.com";
                         $client = new SoapClient($host . "/soap/3.0/?wsdl", array(
@@ -6680,14 +6684,18 @@
                             echo "Authentication: " . $e->getMessage();
                             exit;
                         }
+                        // sleep(45);
 
                         try {
                             $getOrder = $client->getOrder($sessionID, $_GET['refno']);
                             $get_order = (array)$getOrder;
                             $items=$get_order['Items'][0];
-                            $subscription_refernce=$items->ProductDetails->Subscriptions[0]->SubscriptionReference;
-                            $subscriptionInfo = $client->getSubscription($sessionID, $subscription_refernce);
-                            $subscription_plan=find_object('subscription_plans', ['2checkout_code' => $subscriptionInfo->Product->ProductCode,'status' =>1]);
+                            print_r($items);
+                            // $subscription_refernce=$items->ProductDetails->Subscriptions[0]->SubscriptionReference;
+                            // $subscriptionInfo = $client->getSubscription($sessionID, $subscription_refernce);
+                            // print_r($items->Code);
+
+                            $subscription_plan=find_object('subscription_plans', ['2checkout_code' => $items->Code,'status' =>1]);
                             $username=$get_order['BillingDetails']->Email;
                             $expire_on=$items->ProductDetails->Subscriptions[0]->ExpirationDate;
                             // print_r($expire_on);exit;
@@ -6720,9 +6728,12 @@
                             if($user)
                                 db_query("UPDATE user SET subscription_reference='$subscription_refernce',subscription_plan_id='$subscription_plan->id' WHERE id='$user->id'");
                             header('Location: '.$app->site_url.'register/?ref=%2Fbackend');
-                            
+                            // $actual_link = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+
                             // header('Location: {$app->site_url}/register/?ref=%2Fbackend');
                         } catch (SoapFault $e) {
+                            header('Location: '.$actual_link.'');
+
                             echo "getOrder: " . $e->getMessage() ;
                         }
                     }
