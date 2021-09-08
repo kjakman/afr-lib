@@ -6944,7 +6944,7 @@
         dump($scope->user->subscription_reference);
             // dump($scope->user);
 
-        if($scope->user->subscription_reference!=null){
+        // if($scope->user->subscription_reference!=null){
             dump('if');
             $username=$scope->user->username;
 
@@ -7009,7 +7009,8 @@
                 // print_r($accountSubscriptions);
 
             $subscriptionInfo = $accountSubscriptions[0];
-            // print_r($subscriptionInfo);
+            dump($subscriptionInfo);
+            dump("asd");
 
             if(!empty($subscriptionInfo)){
                     dump($subscription_refernce.'ifff');
@@ -7033,9 +7034,13 @@
                 }
             }
             
-        }
+        // }
         
-            // dump("else");
+            // dump($app->site_url);
+        if($app->site_url=='https://vpatina.com')
+            $scope->site_url='https://www.vpatina.com';   
+        else
+            $scope->site_url='https://new.vpatina.dci.in';    
 
         return $scope;
 
