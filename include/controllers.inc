@@ -7040,7 +7040,7 @@
         if($app->site_url=='https://vpatina.com')
             $scope->site_url='https://www.vpatina.com';   
         else
-            $scope->site_url='https://new.vpatina.dci.in';    
+            $scope->site_url=$scope->site_url;    
 
         return $scope;
 
