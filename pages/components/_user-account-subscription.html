@@ -85,7 +85,7 @@
 
 						<!-- Provides extra visual weight and identifies the primary action in a set of buttons -->
 						{if ($scope.user.subscription_plan_id!=9) }
-							<button type="button" class="btn btn-success ml5" style="border-radius:10px;"> <a target="_blank" href="{$subscription_plan.upgrade_link}?LICENSE={$scope.user.subscription_reference}&BACK_REF={$scope.site_url}/exhibition/payment-upgrade?user={$scope.user.username}" style="color: white;"> Upgrade Plan </a></button>
+							<button type="button" class="btn btn-success ml5" style="border-radius:10px;"> <a target="_blank" href="https://secure.2checkout.com/order/upgrade.php?LICENSE={$scope.user.subscription_reference}&BACK_REF={$scope.site_url}/exhibition/payment-upgrade?user={$scope.user.username}" style="color: white;"> Upgrade Plan </a></button>
 						{/if}
 
 					{else}
