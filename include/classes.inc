@@ -1467,6 +1467,7 @@
                 'name'=>array('name','str','', AF_OBLIGATORY, 50 ),
                 'short_name'=>array('short_name','str','', AF_OBLIGATORY, 50 ),
                 'image_limit'=>array('image_limit','int',   0, 0),
+                'upgrade_link'=>array('upgrade_link','str','', AF_OBLIGATORY, 50 ),
                 'cost'=>array('cost','int',   0, 0),
                 'user_role' =>array('user_role','link', ATT_DEFAULT_USER_LEVEL, 0, 'user'),     
             ),  
