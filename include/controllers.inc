@@ -3484,7 +3484,7 @@
     }
 
     function controller_artist_profile($app, $options = []) {
-        dump("AShii");
+        // dump("AShii");
         //echo "addf";
         global $u_id;
         $__header = $app->header; 
@@ -5504,7 +5504,7 @@
                 $scope->section = 'settings';
             break;
             case "profile":
-            dump("Ashiiprofile");
+            // dump("Ashiiprofile");
                 $scope->section = 'network';
                 $scope->obj_type = $obj_type = "artist";
                 //controller_gallery_collections($app);
@@ -7031,6 +7031,12 @@
                     dump($subscription_refernce.'ifff');
 
                     db_query("UPDATE user SET subscription_reference='$subscription_refernce',subscription_plan_id='$subscription_plan->id' WHERE id='$user->id'");
+
+                    if($subscription_plan->id==8 || $subscription_plan->id==9)
+                        db_query("UPDATE user SET subscription_reference='$subscription_refernce',subscription_plan_id='$subscription_plan->id',roles=256 WHERE id='$user->id'");
+                    else
+                        db_query("UPDATE user SET subscription_reference='$subscription_refernce',subscription_plan_id='$subscription_plan->id' WHERE id='$user->id'");
+
                 }
             }
             
