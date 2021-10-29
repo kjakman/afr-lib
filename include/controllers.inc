@@ -363,7 +363,7 @@
                             unset($search['end_date']);
                             $latestexhibition = find_objects('media_collection', $search, ['sort' => 'exhibition_sequence desc', 'limit' => 1]) ?: []; 
                             //dump($latestexhibition);
-                            if(($latestexhibition) ){
+                            // if(($latestexhibition) ){
                                 foreach($latestexhibition as $exhibition) {
                                     if($exhibition->exhibition_sequence || $exhibition->end_date){
                                         $exhibition->slug = slugify($exhibition->title);
@@ -394,9 +394,9 @@
                                 }
                                 $scope->latest_exhibitions = $latestexhibitions;
                                 //dump($latestexhibitions);
-                            }else{
-                                return scope_error($app, "Missing Latest Exhibitions in home page", '404');
-                            }
+                            // }else{
+                            //     return scope_error($app, "Missing Latest Exhibitions in home page", '404');
+                            // }
                         }        
                     } 
 
@@ -1355,6 +1355,8 @@
         $obj_name = get_object_name($obj_type);
         $scope->data_url = "/ajax.php?oper=get-rows&obj_type=$obj_type".($filter_json ? "&filters=".urlencode($filter_json) : '');
         $scope->edit_url = "/ajax.php?oper=save&obj_type=$obj_type";
+            dump($scope->title);
+        
         $scope->title = $obj_name."s ".($client_id ? " for $client_name" : "")." ({$count})";
 
         return;
@@ -4863,12 +4865,46 @@
             case "tutorial":
                 $scope->section = 'tutorial';
                 $scope->obj_type = $obj_type = "tutorial";
+                if($app->page->tab=='quickstart'){
+                    $app->page->subtemplate = $sub = '_gallery-backend-quick-start.html';
+                    $app->page->itemview = 'quickstart';
+                    $app->page->listview = 'quickstart';
+                }
                 $app->page->subtemplate = $sub = '_gallery-backend-tutorial.html';
                 $app->page->itemview = 'tutorial';
                 $app->page->listview = 'tutorial';
+                $user_id=$scope->user->id;
+                $scope->user->profile = $profile_data= get_user($user_id);
+                $scope->quickstart->subscription_plan=find_object('subscription_plans', ['id' => $scope->user->subscription_plan_id,'status' =>1]);
+                $scope->quickstart->profile=$scope->user->profile->photo!=null ? "Yes" : "No";
+                $scope->quickstart->artworks=count(db_getAll("SELECT id from artwork WHERE active=1 AND user_id='$user_id'"));
+                $scope->quickstart->exhibitions=count(db_getAll("SELECT id from media_collection WHERE  active=1 AND user_id='$user_id'"));
+                $scope->quickstart->media=count(db_getAll("SELECT id from media WHERE  active=1 AND user_id='$user_id'"));
+                $scope->quickstart->bio=count(db_getAll("SELECT id from user_profile WHERE user_id!='$user_id'")) !=0 ? 'Yes' : 'No';
+                return $scope;
+                break;
+            
+            case "Analytics":
+                $year=$_GET['year'];
+                $month=$_GET['month'];
 
+                dump('Ashii-Analytics');
+                if($app->page->tab=='overview' || $app->page->tab==""){
+                    if($year!="" && $year!=null && $month!="" && $month!=null)
+                        analytics_overview_filter($app,$scope,$year,$month);
+                    else
+                        analytics_overview($app,$scope);
+                }
+
+                $scope->section = 'Analytics';
+                $scope->obj_type = $obj_type = "Analytics";
+                $app->page->subtemplate = $sub = '_gallery-backend-Analytics.html';
+                $app->page->itemview = 'Analytics';
+                $app->page->listview = 'Analytics';
+                dump($scope->analytics);
                 break;
             case "ACsettings":
+            dump($app->page);
                 $scope->section = 'ACsettings';
                 $scope->obj_type = $obj_type = "ACsettings";
                 $id = $app->user_id;
@@ -4876,6 +4912,9 @@
 
                 if($app->page->tab=='subscription')
                     user_subscription($app,$scope);
+
+                if($app->page->tab=='integration')
+                    user_integration($app,$scope);
               
                 if(!$add) {   
                     if(!$id) return controller_error($app, "Missing ID");
@@ -4969,6 +5008,16 @@
                 $filters = ['active' => 1];
                 $filter_json = count($filters) ? json_encode($filters) : '';
                 $scope->list_url = "/ajax.php?oper=get-rows&obj_type=cruds".($filter_json ? "&filters=".urlencode($filter_json) : '');
+            break;
+            case "users":
+                $scope->section = 'user';
+                $scope->obj_type = $obj_type = "users";
+                $app->page->itemview = 'user';
+                $app->page->listview = 'user';
+                //dump($scope);
+                $filters = ['active' => 1];
+                $filter_json = count($filters) ? json_encode($filters) : '';
+                $scope->list_url = "/ajax.php?oper=get-rows&obj_type=user".($filter_json ? "&filters=".urlencode($filter_json) : '');
             break;
 
             //---------------------------End Vignesh Implimented------------------//
@@ -6648,6 +6697,16 @@
                             // header('Location: https://dev.vpatina.com/backend');
                         
                     }
+                    else if($uri_segments[2] == 'update-address-status'){
+                        dump('Ashi-address'.$_GET['status']);
+                        $status=$_GET['status'];
+                        $user_id=$_GET['user_id'];
+
+                        $a=db_query("UPDATE user_profile SET address_show_status='$status' WHERE id='$user_id'");
+
+                        dump($a);
+                    }
+
                     else if($uri_segments[2] == 'payment'){
                         // dump($app->site_url);
                         // print_r( apache_request_headers());
@@ -7050,6 +7109,369 @@
 
         return $scope;
 
+    }
+
+    function user_integration($app,$scope){
+
+        dump($scope);
+        dump('Ashi-address'.$_GET['status']);
+        $status=$_GET['status'];
+        $user_id=$_GET['user_id'];
+
+        $a=db_query("UPDATE user_profile SET address_show_status='$status' WHERE id='$user_id'");
+        dump($a);
+    }
+
+    function analytics_overview($app,$scope){
+        $total_users=db_getAll("SELECT id from user WHERE active=1  ");;
+        $scope->analytics->total_users=count($total_users);
+
+        $free_users=db_getAll("SELECT id from user WHERE active=1 AND subscription_plan_id=1  "); 
+        $scope->analytics->free_users=count($free_users);
+
+        $basic_users=db_getAll("SELECT id from user WHERE active=1 AND subscription_plan_id=2 AND'subscription_plan_id' =3  "); 
+        $scope->analytics->basic_users=count($basic_users);
+
+        $pro_users=db_getAll("SELECT id from user WHERE active=1 AND subscription_plan_id=4 AND'subscription_plan_id' =5  "); 
+        $scope->analytics->pro_users=count($pro_users);
+
+        $premium_users=db_getAll("SELECT id from user WHERE active=1 AND subscription_plan_id=6 AND'subscription_plan_id' =7  "); 
+        $scope->analytics->premium_users=count($premium_users);
+
+        $vip_users=db_getAll("SELECT id from user WHERE active=1 AND subscription_plan_id=8 AND'subscription_plan_id' =9  "); 
+        $scope->analytics->vip_users=count($vip_users);
+
+
+        $logined_total_users= db_getAll("SELECT id from user WHERE active=1 AND last_login!='NULL'  ");
+        $scope->analytics->logined_total_users=count($logined_total_users);
+        $logined_free_users=db_getAll("SELECT id from user WHERE active=1 AND last_login!='NULL' AND subscription_plan_id=1 ");
+        $scope->analytics->logined_free_users=count($logined_free_users);
+
+        $logined_monthly_basic_users=db_getAll("SELECT id from user WHERE active=1 AND last_login!='NULL' AND subscription_plan_id=2 ");
+        $logined_yearly_basic_users=db_getAll("SELECT id from user WHERE active=1 AND last_login!='NULL' AND subscription_plan_id=3 ");
+        $scope->analytics->logined_basic_users=count($logined_monthly_basic_users)+count($logined_yearly_basic_users);
+
+        $logined_monthly_pro_users=db_getAll("SELECT id from user WHERE active=1 AND last_login!='NULL' AND subscription_plan_id=4 ");
+        $logined_yearly_pro_users=db_getAll("SELECT id from user WHERE active=1 AND last_login!='NULL' AND subscription_plan_id=5 ");
+        $scope->analytics->logined_pro_users=count($logined_monthly_pro_users)+count($logined_yearly_pro_users);
+
+        $logined_monthly_premium_users=db_getAll("SELECT id from user WHERE active=1 AND last_login!='NULL' AND subscription_plan_id=6 ");
+        $logined_yearly_premium_users=db_getAll("SELECT id from user WHERE active=1 AND last_login!='NULL' AND subscription_plan_id=7 ");
+        $scope->analytics->logined_premium_users=count($logined_monthly_premium_users)+count($logined_yearly_premium_users);
+
+        $logined_monthly_vip_users=db_getAll("SELECT id from user WHERE active=1 AND last_login!='NULL' AND subscription_plan_id=8 ");
+        $logined_yearly_vip_users=db_getAll("SELECT id from user WHERE active=1 AND last_login!='NULL' AND subscription_plan_id=9 ");
+        $scope->analytics->logined_vip_users=count($logined_monthly_vip_users)+count($logined_yearly_vip_users);
+
+        
+
+
+        $total_artwork_users=db_getAll("SELECT * FROM artwork LEFT JOIN user ON artwork.user_id = user.id where user.active =1 ");
+        $scope->analytics->total_artwork_users=count($total_artwork_users);
+
+        $free_artwork_users=db_getAll("SELECT * FROM artwork LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND subscription_plan_id=1 ");
+        $scope->analytics->free_artwork_users=count($free_artwork_users);
+
+        $monthly_basic_artwork_users=db_getAll("SELECT * FROM artwork LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND subscription_plan_id=2 ");
+        $yearly_basic_artwork_users=db_getAll("SELECT * FROM artwork LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND subscription_plan_id=3 ");
+        $scope->analytics->basic_artwork_users=count($monthly_basic_artwork_users)+count($yearly_basic_artwork_users);
+
+        $monthly_pro_artwork_users=db_getAll("SELECT * FROM artwork LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND subscription_plan_id=4  ");
+        $yearly_pro_artwork_users=db_getAll("SELECT * FROM artwork LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND  subscription_plan_id=5 ");
+        $scope->analytics->pro_artwork_users=count($monthly_pro_artwork_users)+count($yearly_pro_artwork_users);
+
+        $monthly_premium_artwork_users=db_getAll("SELECT * FROM artwork LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND subscription_plan_id=6  ");
+        $yearly_premium_artwork_users=db_getAll("SELECT * FROM artwork LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND  subscription_plan_id=7 ");
+        $scope->analytics->premium_artwork_users=count($monthly_premium_artwork_users)+count($yearly_premium_artwork_users);
+
+        $monthly_vip_artwork_users=db_getAll("SELECT * FROM artwork LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND subscription_plan_id=8  ");
+        $yearly_vip_artwork_users=db_getAll("SELECT * FROM artwork LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND subscription_plan_id=9 ");
+        $scope->analytics->vip_artwork_users=count($monthly_vip_artwork_users)+count($yearly_vip_artwork_users);
+
+
+
+        $total_media_users=db_getAll("SELECT * FROM media LEFT JOIN user ON media.user_id = user.id where user.active =1 ");
+        $scope->analytics->total_media_users=count($total_media_users);
+
+        $free_media_users=db_getAll("SELECT * FROM media LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=1 ");
+        $scope->analytics->free_media_users=count($free_media_users);
+
+
+        $monthly_basic_media_users=db_getAll("SELECT * FROM media LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=2  ");
+        $yearly_basic_media_users=db_getAll("SELECT * FROM media LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=3 ");
+        $scope->analytics->basic_media_users=count($monthly_basic_media_users)+count($yearly_basic_media_users);
+
+        $monthly_pro_media_users=db_getAll("SELECT * FROM media LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=4  ");
+        $yearly_pro_media_users=db_getAll("SELECT * FROM media LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=5 ");
+        $scope->analytics->pro_media_users=count($monthly_pro_media_users)+count($yearly_pro_media_users);
+
+        $monthly_premium_media_users=db_getAll("SELECT * FROM media LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=6  ");
+        $yearly_premium_media_users=db_getAll("SELECT * FROM media LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=7 ");
+        $scope->analytics->premium_media_users=count($monthly_premium_media_users)+count($yearly_premium_media_users);
+
+        $monthly_vip_media_users=db_getAll("SELECT * FROM media LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=8  ");
+        $yearly_vip_media_users=db_getAll("SELECT * FROM media LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=9 ");
+        $scope->analytics->vip_media_users=count($monthly_vip_media_users)+count($yearly_vip_media_users);
+
+
+
+        $total_media_collection_users=db_getAll("SELECT * FROM media_collection LEFT JOIN user ON media_collection.user_id = user.id where user.active =1 ");
+        $scope->analytics->total_media_collection_users=count($total_media_collection_users);
+
+        $free_media_collection_users=db_getAll("SELECT * FROM media_collection LEFT JOIN user ON media_collection.user_id = user.id where user.active =1 AND subscription_plan_id=1 ");
+        $scope->analytics->free_media_collection_users=count($free_media_collection_users);
+
+        $monthly_basic_media_collection_users=db_getAll("SELECT * FROM media_collection LEFT JOIN user ON media_collection.user_id = user.id where user.active =1 AND subscription_plan_id=2 ");
+        $yearly_basic_media_collection_users=db_getAll("SELECT * FROM media_collection LEFT JOIN user ON media_collection.user_id = user.id where user.active =1 AND subscription_plan_id=3 ");
+        $scope->analytics->basic_media_collection_users=count($monthly_basic_media_collection_users)+count($yearly_basic_media_collection_users);
+
+        $monthly_pro_media_collection_users=db_getAll("SELECT * FROM media_collection LEFT JOIN user ON media_collection.user_id = user.id where user.active =1 AND subscription_plan_id=4 ");
+        $yearly_pro_media_collection_users=db_getAll("SELECT * FROM media_collection LEFT JOIN user ON media_collection.user_id = user.id where user.active =1 AND  subscription_plan_id=5 ");
+        $scope->analytics->pro_media_collection_users=count($pro_media_collection_users);
+
+        $monthly_premium_media_collection_users=db_getAll("SELECT * FROM media_collection LEFT JOIN user ON media_collection.user_id = user.id where user.active =1 AND subscription_plan_id=6 ");
+        $yearly_premium_media_collection_users=db_getAll("SELECT * FROM media_collection LEFT JOIN user ON media_collection.user_id = user.id where user.active =1 AND subscription_plan_id=7 ");
+        $scope->analytics->premium_media_collection_users=count($premium_media_collection_users);
+
+        $monthly_vip_media_collection_users=db_getAll("SELECT * FROM media_collection LEFT JOIN user ON media_collection.user_id = user.id where user.active =1 AND subscription_plan_id=8 ");
+        $yearly_vip_media_collection_users=db_getAll("SELECT * FROM media_collection LEFT JOIN user ON media_collection.user_id = user.id where user.active =1 AND subscription_plan_id=9 ");
+        $scope->analytics->vip_media_collection_users=count($monthly_vip_media_collection_users)+count($yearly_vip_media_collection_users);
+
+
+
+
+        $total_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 ");
+        $scope->analytics->total_minisite_users=count($total_minisite_users);
+
+        $free_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=1 ");
+        $scope->analytics->free_minisite_users=count($free_minisite_users);
+
+        $monthly_basic_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=3 ");
+        $yearly_basic_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=3 ");
+        $scope->analytics->basic_minisite_users=count($monthly_basic_minisite_users)+count($yearly_basic_minisite_users);
+
+        $monthly_pro_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=4 ");
+        $yearly_pro_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=5 ");
+        $scope->analytics->pro_minisite_users=count($monthly_pro_minisite_users)+count($yearly_pro_minisite_users);
+
+        $monthly_premium_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=6 ");
+        $yearly_premium_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=7 ");
+        $scope->analytics->premium_minisite_users=count($monthly_premium_minisite_users)+count($yearly_premium_minisite_users);
+
+        $monthly_vip_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=8 ");
+        $yearly_vip_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=9 ");
+        $scope->analytics->vip_minisite_users=count($monthly_vip_minisite_users)+count($yearly_vip_minisite_users);
+
+
+
+        $total_connected_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 ");
+        $scope->analytics->total_connected_minisite_users=count($total_connected_minisite_users);
+
+        $free_connected_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=1 ");
+        $scope->analytics->free_connected_minisite_users=count($free_connected_minisite_users);
+
+        $monthly_basic_connected_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=3 ");
+        $yearly_basic_connected_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=3 ");
+        $scope->analytics->basic_connected_minisite_users=count($monthly_basic_connected_minisite_users)+count($yearly_basic_connected_minisite_users);
+
+        $monthly_pro_connected_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=4 ");
+        $yearly_pro_connected_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=5 ");
+        $scope->analytics->pro_connected_minisite_users=count($monthly_pro_connected_minisite_users)+count($yearly_pro_connected_minisite_users);
+
+        $monthly_premium_connected_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=6 ");
+        $yearly_premium_connected_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=7 ");
+        $scope->analytics->premium_connected_minisite_users=count($monthly_premium_connected_minisite_users)+count($yearly_premium_connected_minisite_users);
+
+        $monthly_vip_connected_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=8 ");
+        $yearly_vip_connected_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=9 ");
+        $scope->analytics->vip_connected_minisite_users=count($monthly_vip_connected_minisite_users)+count($yearly_vip_connected_minisite_users);
+
+
+
+        // $start="2017-02-21 02:04:40";
+        // $end="2017-02-21 02:04:40";
+        
+        dump(count(db_getAll("SELECT * from user where YEAR(created)=2021")));
+
+        // dump(db_query("SELECT id from user where created BETWEEN '".$start."' AND '".$end."'"));
+        // dump("asasd");
+
+        return $scope;
+    }
+    function analytics_overview_filter($app,$scope,$year,$month){
+        // dump("Ash");
+        $total_users=db_getAll("SELECT id from user WHERE active=1 AND YEAR(created)='$year' AND MONTH(created)='$month' ");;
+        $scope->analytics->total_users=count($total_users);
+
+        $free_users=db_getAll("SELECT id from user WHERE active=1 AND subscription_plan_id=1 AND YEAR(created)='$year' AND MONTH(created)='$month' "); 
+        $scope->analytics->free_users=count($free_users);
+
+        $basic_users=db_getAll("SELECT id from user WHERE active=1 AND subscription_plan_id=2 AND'subscription_plan_id' =3 AND YEAR(created)='$year' AND MONTH(created)='$month' "); 
+        $scope->analytics->basic_users=count($basic_users);
+
+        $pro_users=db_getAll("SELECT id from user WHERE active=1 AND subscription_plan_id=4 AND'subscription_plan_id' =5 AND YEAR(created)='$year' AND MONTH(created)='$month' "); 
+        $scope->analytics->pro_users=count($pro_users);
+
+        $premium_users=db_getAll("SELECT id from user WHERE active=1 AND subscription_plan_id=6 AND'subscription_plan_id' =7 AND YEAR(created)='$year' AND MONTH(created)='$month' "); 
+        $scope->analytics->premium_users=count($premium_users);
+
+        $vip_users=db_getAll("SELECT id from user WHERE active=1 AND subscription_plan_id=8 AND'subscription_plan_id' =9 AND YEAR(created)='$year' AND MONTH(created)='$month' "); 
+        $scope->analytics->vip_users=count($vip_users);
+
+
+        $logined_total_users= db_getAll("SELECT id from user WHERE active=1 AND last_login!='NULL' AND YEAR(created)='$year' AND MONTH(created)='$month' ");
+        $scope->analytics->logined_total_users=count($logined_total_users);
+        $logined_free_users=db_getAll("SELECT id from user WHERE active=1 AND last_login!='NULL' AND subscription_plan_id=1 AND YEAR(created)='$year' AND MONTH(created)='$month'");
+        $scope->analytics->logined_free_users=count($logined_free_users);
+
+        $logined_monthly_basic_users=db_getAll("SELECT id from user WHERE active=1 AND last_login!='NULL' AND subscription_plan_id=2 AND YEAR(created)='$year' AND MONTH(created)='$month'");
+        $logined_yearly_basic_users=db_getAll("SELECT id from user WHERE active=1 AND last_login!='NULL' AND subscription_plan_id=3 AND YEAR(created)='$year' AND MONTH(created)='$month'");
+        $scope->analytics->logined_basic_users=count($logined_monthly_basic_users)+count($logined_yearly_basic_users);
+
+        $logined_monthly_pro_users=db_getAll("SELECT id from user WHERE active=1 AND last_login!='NULL' AND subscription_plan_id=4 AND YEAR(created)='$year' AND MONTH(created)='$month'");
+        $logined_yearly_pro_users=db_getAll("SELECT id from user WHERE active=1 AND last_login!='NULL' AND subscription_plan_id=5 AND YEAR(created)='$year' AND MONTH(created)='$month'");
+        $scope->analytics->logined_pro_users=count($logined_monthly_pro_users)+count($logined_yearly_pro_users);
+
+        $logined_monthly_premium_users=db_getAll("SELECT id from user WHERE active=1 AND last_login!='NULL' AND subscription_plan_id=6 AND YEAR(created)='$year' AND MONTH(created)='$month'");
+        $logined_yearly_premium_users=db_getAll("SELECT id from user WHERE active=1 AND last_login!='NULL' AND subscription_plan_id=7 AND YEAR(created)='$year' AND MONTH(created)='$month'");
+        $scope->analytics->logined_premium_users=count($logined_monthly_premium_users)+count($logined_yearly_premium_users);
+
+        $logined_monthly_vip_users=db_getAll("SELECT id from user WHERE active=1 AND last_login!='NULL' AND subscription_plan_id=8 AND YEAR(created)='$year' AND MONTH(created)='$month'");
+        $logined_yearly_vip_users=db_getAll("SELECT id from user WHERE active=1 AND last_login!='NULL' AND subscription_plan_id=9 AND YEAR(created)='$year' AND MONTH(created)='$month'");
+        $scope->analytics->logined_vip_users=count($logined_monthly_vip_users)+count($logined_yearly_vip_users);
+
+        
+
+
+        $total_artwork_users=db_getAll("SELECT * FROM artwork LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND YEAR(artwork.created)='$year' AND MONTH(artwork.created)='$month'");
+        $scope->analytics->total_artwork_users=count($total_artwork_users);
+
+        $free_artwork_users=db_getAll("SELECT * FROM artwork LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND subscription_plan_id=1 AND YEAR(artwork.created)='$year' AND MONTH(artwork.created)='$month'");
+        $scope->analytics->free_artwork_users=count($free_artwork_users);
+
+        $monthly_basic_artwork_users=db_getAll("SELECT * FROM artwork LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND subscription_plan_id=2 AND YEAR(artwork.created)='$year' AND MONTH(artwork.created)='$month'");
+        $yearly_basic_artwork_users=db_getAll("SELECT * FROM artwork LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND subscription_plan_id=3 AND YEAR(artwork.created)='$year' AND MONTH(artwork.created)='$month'");
+        $scope->analytics->basic_artwork_users=count($monthly_basic_artwork_users)+count($yearly_basic_artwork_users);
+
+        $monthly_pro_artwork_users=db_getAll("SELECT * FROM artwork LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND subscription_plan_id=4  AND YEAR(artwork.created)='$year' AND MONTH(artwork.created)='$month'");
+        $yearly_pro_artwork_users=db_getAll("SELECT * FROM artwork LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND  subscription_plan_id=5 AND YEAR(artwork.created)='$year' AND MONTH(artwork.created)='$month'");
+        $scope->analytics->pro_artwork_users=count($monthly_pro_artwork_users)+count($yearly_pro_artwork_users);
+
+        $monthly_premium_artwork_users=db_getAll("SELECT * FROM artwork LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND subscription_plan_id=6  AND YEAR(artwork.created)='$year' AND MONTH(artwork.created)='$month'");
+        $yearly_premium_artwork_users=db_getAll("SELECT * FROM artwork LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND  subscription_plan_id=7 AND YEAR(artwork.created)='$year' AND MONTH(artwork.created)='$month'");
+        $scope->analytics->premium_artwork_users=count($monthly_premium_artwork_users)+count($yearly_premium_artwork_users);
+
+        $monthly_vip_artwork_users=db_getAll("SELECT * FROM artwork LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND subscription_plan_id=8  AND YEAR(artwork.created)='$year' AND MONTH(artwork.created)='$month'");
+        $yearly_vip_artwork_users=db_getAll("SELECT * FROM artwork LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND subscription_plan_id=9 AND YEAR(artwork.created)='$year' AND MONTH(artwork.created)='$month'");
+        $scope->analytics->vip_artwork_users=count($monthly_vip_artwork_users)+count($yearly_vip_artwork_users);
+
+
+
+        $total_media_users=db_getAll("SELECT * FROM media LEFT JOIN user ON media.user_id = user.id where user.active =1 AND YEAR(media.created)='$year' AND MONTH(media.created)='$month'");
+        $scope->analytics->total_media_users=count($total_media_users);
+
+        $free_media_users=db_getAll("SELECT * FROM media LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=1 AND YEAR(media.created)='$year' AND MONTH(media.created)='$month'");
+        $scope->analytics->free_media_users=count($free_media_users);
+
+
+        $monthly_basic_media_users=db_getAll("SELECT * FROM media LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=2  AND YEAR(media.created)='$year' AND MONTH(media.created)='$month'");
+        $yearly_basic_media_users=db_getAll("SELECT * FROM media LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=3 AND YEAR(media.created)='$year' AND MONTH(media.created)='$month'");
+        $scope->analytics->basic_media_users=count($monthly_basic_media_users)+count($yearly_basic_media_users);
+
+        $monthly_pro_media_users=db_getAll("SELECT * FROM media LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=4  AND YEAR(media.created)='$year' AND MONTH(media.created)='$month'");
+        $yearly_pro_media_users=db_getAll("SELECT * FROM media LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=5 AND YEAR(media.created)='$year' AND MONTH(media.created)='$month'");
+        $scope->analytics->pro_media_users=count($monthly_pro_media_users)+count($yearly_pro_media_users);
+
+        $monthly_premium_media_users=db_getAll("SELECT * FROM media LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=6  AND YEAR(media.created)='$year' AND MONTH(media.created)='$month'");
+        $yearly_premium_media_users=db_getAll("SELECT * FROM media LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=7 AND YEAR(media.created)='$year' AND MONTH(media.created)='$month'");
+        $scope->analytics->premium_media_users=count($monthly_premium_media_users)+count($yearly_premium_media_users);
+
+        $monthly_vip_media_users=db_getAll("SELECT * FROM media LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=8  AND YEAR(media.created)='$year' AND MONTH(media.created)='$month'");
+        $yearly_vip_media_users=db_getAll("SELECT * FROM media LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=9 AND YEAR(media.created)='$year' AND MONTH(media.created)='$month'");
+        $scope->analytics->vip_media_users=count($monthly_vip_media_users)+count($yearly_vip_media_users);
+
+
+
+        $total_media_collection_users=db_getAll("SELECT * FROM media_collection LEFT JOIN user ON media_collection.user_id = user.id where user.active =1 AND YEAR(media_collection.created)='$year' AND MONTH(media_collection.created)='$month'");
+        $scope->analytics->total_media_collection_users=count($total_media_collection_users);
+
+        $free_media_collection_users=db_getAll("SELECT * FROM media_collection LEFT JOIN user ON media_collection.user_id = user.id where user.active =1 AND subscription_plan_id=1 AND YEAR(media_collection.created)='$year' AND MONTH(media_collection.created)='$month'");
+        $scope->analytics->free_media_collection_users=count($free_media_collection_users);
+
+        $monthly_basic_media_collection_users=db_getAll("SELECT * FROM media_collection LEFT JOIN user ON media_collection.user_id = user.id where user.active =1 AND subscription_plan_id=2 AND YEAR(media_collection.created)='$year' AND MONTH(media_collection.created)='$month'");
+        $yearly_basic_media_collection_users=db_getAll("SELECT * FROM media_collection LEFT JOIN user ON media_collection.user_id = user.id where user.active =1 AND subscription_plan_id=3 AND YEAR(media_collection.created)='$year' AND MONTH(media_collection.created)='$month'");
+        $scope->analytics->basic_media_collection_users=count($monthly_basic_media_collection_users)+count($yearly_basic_media_collection_users);
+
+        $monthly_pro_media_collection_users=db_getAll("SELECT * FROM media_collection LEFT JOIN user ON media_collection.user_id = user.id where user.active =1 AND subscription_plan_id=4 AND YEAR(media_collection.created)='$year' AND MONTH(media_collection.created)='$month'");
+        $yearly_pro_media_collection_users=db_getAll("SELECT * FROM media_collection LEFT JOIN user ON media_collection.user_id = user.id where user.active =1 AND  subscription_plan_id=5 AND YEAR(media_collection.created)='$year' AND MONTH(media_collection.created)='$month'");
+        $scope->analytics->pro_media_collection_users=count($pro_media_collection_users);
+
+        $monthly_premium_media_collection_users=db_getAll("SELECT * FROM media_collection LEFT JOIN user ON media_collection.user_id = user.id where user.active =1 AND subscription_plan_id=6 AND YEAR(media_collection.created)='$year' AND MONTH(media_collection.created)='$month'");
+        $yearly_premium_media_collection_users=db_getAll("SELECT * FROM media_collection LEFT JOIN user ON media_collection.user_id = user.id where user.active =1 AND subscription_plan_id=7 AND YEAR(media_collection.created)='$year' AND MONTH(media_collection.created)='$month'");
+        $scope->analytics->premium_media_collection_users=count($premium_media_collection_users);
+
+        $monthly_vip_media_collection_users=db_getAll("SELECT * FROM media_collection LEFT JOIN user ON media_collection.user_id = user.id where user.active =1 AND subscription_plan_id=8 AND YEAR(media_collection.created)='$year' AND MONTH(media_collection.created)='$month'");
+        $yearly_vip_media_collection_users=db_getAll("SELECT * FROM media_collection LEFT JOIN user ON media_collection.user_id = user.id where user.active =1 AND subscription_plan_id=9 AND YEAR(media_collection.created)='$year' AND MONTH(media_collection.created)='$month'");
+        $scope->analytics->vip_media_collection_users=count($monthly_vip_media_collection_users)+count($yearly_vip_media_collection_users);
+
+
+
+
+        $total_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND YEAR(minisite.created)='$year' AND MONTH(minisite.created)='$month'");
+        $scope->analytics->total_minisite_users=count($total_minisite_users);
+
+        $free_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=1 AND YEAR(minisite.created)='$year' AND MONTH(minisite.created)='$month'");
+        $scope->analytics->free_minisite_users=count($free_minisite_users);
+
+        $monthly_basic_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=3 AND YEAR(minisite.created)='$year' AND MONTH(minisite.created)='$month'");
+        $yearly_basic_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=3 AND YEAR(minisite.created)='$year' AND MONTH(minisite.created)='$month'");
+        $scope->analytics->basic_minisite_users=count($monthly_basic_minisite_users)+count($yearly_basic_minisite_users);
+
+        $monthly_pro_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=4 AND YEAR(minisite.created)='$year' AND MONTH(minisite.created)='$month'");
+        $yearly_pro_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=5 AND YEAR(minisite.created)='$year' AND MONTH(minisite.created)='$month'");
+        $scope->analytics->pro_minisite_users=count($monthly_pro_minisite_users)+count($yearly_pro_minisite_users);
+
+        $monthly_premium_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=6 AND YEAR(minisite.created)='$year' AND MONTH(minisite.created)='$month'");
+        $yearly_premium_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=7 AND YEAR(minisite.created)='$year' AND MONTH(minisite.created)='$month'");
+        $scope->analytics->premium_minisite_users=count($monthly_premium_minisite_users)+count($yearly_premium_minisite_users);
+
+        $monthly_vip_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=8 AND YEAR(minisite.created)='$year' AND MONTH(minisite.created)='$month'");
+        $yearly_vip_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=9 AND YEAR(minisite.created)='$year' AND MONTH(minisite.created)='$month'");
+        $scope->analytics->vip_minisite_users=count($monthly_vip_minisite_users)+count($yearly_vip_minisite_users);
+
+
+
+        $total_connected_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND YEAR(minisite.created)='$year' AND MONTH(minisite.created)='$month'");
+        $scope->analytics->total_connected_minisite_users=count($total_connected_minisite_users);
+
+        $free_connected_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=1 AND YEAR(minisite.created)='$year' AND MONTH(minisite.created)='$month'");
+        $scope->analytics->free_connected_minisite_users=count($free_connected_minisite_users);
+
+        $monthly_basic_connected_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=3 AND YEAR(minisite.created)='$year' AND MONTH(minisite.created)='$month'");
+        $yearly_basic_connected_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=3 AND YEAR(minisite.created)='$year' AND MONTH(minisite.created)='$month'");
+        $scope->analytics->basic_connected_minisite_users=count($monthly_basic_connected_minisite_users)+count($yearly_basic_connected_minisite_users);
+
+        $monthly_pro_connected_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=4 AND YEAR(minisite.created)='$year' AND MONTH(minisite.created)='$month'");
+        $yearly_pro_connected_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=5 AND YEAR(minisite.created)='$year' AND MONTH(minisite.created)='$month'");
+        $scope->analytics->pro_connected_minisite_users=count($monthly_pro_connected_minisite_users)+count($yearly_pro_connected_minisite_users);
+
+        $monthly_premium_connected_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=6 AND YEAR(minisite.created)='$year' AND MONTH(minisite.created)='$month'");
+        $yearly_premium_connected_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=7 AND YEAR(minisite.created)='$year' AND MONTH(minisite.created)='$month'");
+        $scope->analytics->premium_connected_minisite_users=count($monthly_premium_connected_minisite_users)+count($yearly_premium_connected_minisite_users);
+
+        $monthly_vip_connected_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=8 AND YEAR(minisite.created)='$year' AND MONTH(minisite.created)='$month'");
+        $yearly_vip_connected_minisite_users=db_getAll("SELECT * FROM minisite LEFT JOIN user ON minisite.user_id = user.id where user.active =1 AND subscription_plan_id=9 AND YEAR(minisite.created)='$year' AND MONTH(minisite.created)='$month'");
+        $scope->analytics->vip_connected_minisite_users=count($monthly_vip_connected_minisite_users)+count($yearly_vip_connected_minisite_users);
+
+        // $start="2017-02-21 02:04:40";
+        // $end="2017-02-21 02:04:40";
+        
+        dump(count(db_getAll("SELECT * from user where YEAR(created)='$year' AND MONTH(created)='$month'")));
+
+        // dump(db_query("SELECT id from user where created BETWEEN '".$start."' AND '".$end."'"));
+        // dump("asasd");
+
+        return $scope;
     }
 
     /** End vPatina + Art controllers */

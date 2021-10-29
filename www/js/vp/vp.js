@@ -842,6 +842,7 @@
                   var b = $b(a);
                   b && (!b.loaded && !b.loading || x) && (Ca("gettingData", a, b), b.src && jc(b))
               },
+              
               initController: function() {
                   e.extend(i, ec, !0), f.items = Xb = c, $b = f.getItemAt, _b = i.getNumItemsFn, ac = i.loop, _b() < 3 && (i.loop = !1), Ba("beforeChange", function(a) {
                       var b, c = i.preload,
@@ -2077,7 +2078,7 @@ function vp_artwork_info(vpdata) {
   //  content = content + "Price on inquiry<br>";
   //}
 
-  if (item.comment) content = content + "<hr><p>floop" + item.comment + "</p><br>";
+  if (item.comment) content = content + "<hr><p>" + item.comment + "</p><br>";
 
   //<div class='vp__tab-content'><p>" + comment + "</p></div>";
   return content;

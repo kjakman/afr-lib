@@ -4983,6 +4983,8 @@ function gethome_exhibitionJson(){
   $search['show_gallery'] = 1;
   $search['show_artfair'] = 1;
   $search['show_others'] = 1;
+  $search['show_selection'] = 1;
+  
   return (json_encode($search));
 }
 
@@ -5442,7 +5444,7 @@ function default_contact($id, $obj_type ,$data){ //Contact
   $data['menu_title'] = $page;
   $data['slug'] = $slug;
   $data['minisite_id'] = $id;
-  $data['page_layout'] = 118;
+  $data['page_layout'] = 117;
   $data['second_layout'] = 0;
   $data['template'] = 0;
   $data['show_details'] = 0;

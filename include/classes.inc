@@ -3074,6 +3074,13 @@
      'press_data'               => array('Press data'  ,      'html',     '', 0),
      'show_data'            => array('Show Data'  ,      'html',     '', 0),
      'free_text'            => array('Free Text'  ,      'html',     '', 0),
+    'address_show_status'=>array('address_show_status',  'int', AF_SEARCHABLE|AF_READONLY_EDIT), // really a link to agent/guest/org/owner/client etc..
+    'sign_up_link'=>array('sign_up_link',  'str', AF_SEARCHABLE|AF_READONLY_EDIT), // really a link to agent/guest/org/owner/client etc..
+    'sign_up_link_status'=>array('sign_up_link_status',  'int', AF_SEARCHABLE|AF_READONLY_EDIT), // really a link to agent/guest/org/owner/client etc..
+    'appointment_link'=>array('appointment_link',  'str', AF_SEARCHABLE|AF_READONLY_EDIT), // really a link to agent/guest/org/owner/client etc..
+    'appointment_link_status'=>array('appointment_link_status',  'int', AF_SEARCHABLE|AF_READONLY_EDIT), // really a link to agent/guest/org/owner/client etc..
+
+
   ),
 
 

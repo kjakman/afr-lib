@@ -21,7 +21,7 @@
 		$data= $_REQUEST['data'];
 		$obj_data= array('obj_type'=>$obj_type,'obj_id'=>$obj_id,$obj_col=>$data);
 		$result= update_object($obj_type, $obj_data, $obj_id);
-		die("success");
+		die("           ");
   	}
   
 	if($_REQUEST['type'] == 'media_collection') {
@@ -479,14 +479,29 @@
 			echo(json_encode($result));
 			exit;      
 	  	break;
+		case 'get-analytics':
+			extract($obj_data);
+			dump($obj_data);
+			$result->success = 1;
+			$result->data = $obj;
+			$result->message = "OK. Saved profile";
+			$obj_type = $obj_data['obj_type'];
+			$obj=[];
+			$result=$obj;
+			echo(json_encode($result));
+			exit;     
+	  	break;
 
 		case 'save-profile':
 			extract($obj_data);
-			// dump($obj_data);
 			$id = $obj_data[obj_id];
 			$user_id = $obj_data[user_id];
 			$contact = $obj_data[contact];
 			$obj_type = 'user_profile';
+			if($obj_data[address_formatted]==null)
+				$obj_data[address_formatted] =$obj_data[profile-address];
+
+			$obj_data[address_show_status] =$obj_data[address_show_status];
 
 			$obj_data[date_of_birth] = date("Y-m-d", strtotime($obj_data[date_of_birth]));
 			// $obj_data[languages]= str_replace("[","",str_replace("]","",$obj_data[language]));
@@ -2695,6 +2710,17 @@
 			$response->total = ceil(($total_rows+1)/$limit)*$limit;
 
 			$response->rows = $objs;
+
+			if($obj_type=='user')
+				foreach($response->rows as $row){
+					$row->subscription_plan = find_objects('subscription_plans', array('id' => $row->subscription_plan_id));
+					$row->media = count(find_objects('media', array('user_id' => $row->id)));
+					$row->artworks = count(find_objects('artwork', array('user_id' => $row->id)));
+					$row->exhibitions = count(find_objects('media_collection', array('user_id' => $row->id)));;
+					$row->minisites = count(find_objects('minisite', array('user_id' => $row->id)));;
+					$row->connected_minisites = count(find_objects('minisite', array('user_id' => $row->id,'connect_domain'=>1)));
+				}
+				
 			echo(json_encode($response, JSON_PRETTY_PRINT));exit;
 		  
 		break;

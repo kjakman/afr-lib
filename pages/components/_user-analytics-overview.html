@@ -1,0 +1,228 @@
+{$analytics = $scope['analytics']}
+{$profile = $scope.profile}
+
+<div class="container">
+	<form id="user_profile_form" class="ajax-submit"  data-toggle="validator" data-reload_link="#user-verification-link">
+		
+	    <input type="hidden" name="year"  id="selected_year" value="" />
+	    <input type="hidden" name="month"  id="selected_month" value="" />
+
+    	<input hidden="1" name="next_tab" type="hidden" value="styling"> 
+  		<div class="form-group col-sm-12">
+    		<label for="website-type">Select Month and Year<span style="font-size:16px;font-weight: lighter;">: </span></label>
+    	</div>
+		<div class="form-group col-sm-2">
+			<SELECT style="width:150px;" name="type" class="form-control auto-select" id ="year" name = "yyyy" onchange="change_year(this)"></SELECT>
+        </div>
+		<div class="form-group col-sm-2">
+
+	    	<SELECT  style="width:150px;" name="type" class="form-control auto-select" id ="month" name = "mm" onchange="change_month(this)"></SELECT>
+    	</div>
+
+		<div class="form-group col-sm-2">
+			<a href="/backend/Analytics/" class="ajax-loader btn btn-success" data-target="#subview-container" id="sub">Overview</a>
+    	</div>
+
+  		<br />
+	</form>
+
+	<table class="table table-bordered">
+	    <thead>
+	      	<tr>
+		        <th>Variable</th>
+		        <th>Free</th>
+		        <th>Basic</th>
+		        <th>Pro</th>
+		        <th>Premium</th>
+		        <th>VIP</th>
+		        <th>Total</th>
+	      	</tr>
+	    </thead>
+	    <tbody>
+	    	<tr>
+		      	<th scope="row">Users</th>
+		        <td>{$analytics['free_users']}</td>
+		        <td>{$analytics['basic_users']}</td>
+		        <td>{$analytics['pro_users']}</td>
+		        <td>{$analytics['premium_users']}</td>
+		        <td>{$analytics['vip_users']}</td>
+		        <td>{$analytics['total_users']}</td>
+	      	</tr>
+	      	<tr>
+		      	<th scope="row">Login</th>
+		        <td>{$analytics['logined_free_users']}</td>
+		        <td>{$analytics['logined_basic_users']}</td>
+		        <td>{$analytics['logined_pro_users']}</td>
+		        <td>{$analytics['logined_premium_users']}</td>
+		        <td>{$analytics['logined_vip_users']}</td>
+		        <td>{$analytics['logined_total_users']}</td>
+	      	</tr>
+	      	<tr>
+		      	<th scope="row">Artworks</th>
+		        <td>{$analytics['free_artwork_users']}</td>
+		        <td>{$analytics['basic_artwork_users']}</td>
+		        <td>{$analytics['pro_artwork_users']}</td>
+		        <td>{$analytics['premium_artwork_users']}</td>
+		        <td>{$analytics['vip_artwork_users']}</td>
+		        <td>{$analytics['total_artwork_users']}</td>
+	      	</tr>
+	      	<tr>
+		      	<th scope="row">Media</th>
+		        <td>{$analytics['free_media_users']}</td>
+		        <td>{$analytics['basic_media_users']}</td>
+		        <td>{$analytics['pro_media_users']}</td>
+		        <td>{$analytics['premium_media_users']}</td>
+		        <td>{$analytics['vip_media_users']}</td>
+		        <td>{$analytics['total_media_users']}</td>
+	      	</tr>
+	      	
+	      	<tr>
+		      	<th scope="row">Exhibition</th>
+		        <td>{$analytics['free_media_collection_users']}</td>
+		        <td>{$analytics['basic_media_collection_users']}</td>
+		        <td>{$analytics['pro_media_collection_users']}</td>
+		        <td>{$analytics['premium_media_collection_users']}</td>
+		        <td>{$analytics['vip_media_collection_users']}</td>
+		        <td>{$analytics['total_media_collection_users']}</td>
+	      	</tr>
+	      	<tr>
+		      	<th scope="row">Minisites</th>
+		        <td>{$analytics['free_minisite_users']}</td>
+		        <td>{$analytics['basic_minisite_users']}</td>
+		        <td>{$analytics['pro_minisite_users']}</td>
+		        <td>{$analytics['premium_minisite_users']}</td>
+		        <td>{$analytics['vip_minisite_users']}</td>
+		        <td>{$analytics['total_minisite_users']}</td>
+	      	</tr>
+	      	<tr>
+		      	<th scope="row">Connected Minisites</th>
+		        <td>{$analytics['free_connected_minisite_users']}</td>
+		        <td>{$analytics['basic_connected_minisite_users']}</td>
+		        <td>{$analytics['pro_connected_minisite_users']}</td>
+		        <td>{$analytics['premium_connected_minisite_users']}</td>
+		        <td>{$analytics['vip_connected_minisite_users']}</td>
+		        <td>{$analytics['total_connected_minisite_users']}</td>
+	      	</tr>
+
+	     
+	    </tbody>
+	</table>
+	
+</div>
+<script type="text/javascript">
+	var Days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];// index => month [0-11]
+
+	$(document).ready(function () {
+		
+		$("#sub").click(function() {
+            $('#selected_year').val($("#year").val());
+            $('#selected_month').val($("#month").val());
+            var url="/backend/Analytics/0/edit/overview?_pv=1&year="+$("#year").val()+"&month="+$("#month").val();
+            $("#sub").attr("href", url)
+
+      //       $.ajax({
+		    //     url: "/backend/Analytics/0/edit/overview?_pv=1&year="+$("#year").val()+"&month="+$("#month").val(),
+		    //     data: { 
+		    //         id: $(this).val(), // < note use of 'this' here
+		    //         access_token: $("#access_token").val() 
+		    //     },
+		    //     success: function(result) {
+		    //         // alert('Hi Fakruddeen');
+		    //     },
+		    //     error: function(result) {
+		    //         // alert('error');
+		    //     }
+		    // });
+        });
+		var option = '<option value="day">day</option>';
+		var selectedDay = "day";
+		for (var i = 1; i <= Days[0]; i++) { //add option days
+			option += '<option value="' + i + '">' + i + '</option>';
+		}
+		$('#day').append(option);
+		$('#day').val(selectedDay);
+
+		var option = '<option value="month">month</option>';
+		var selectedMon = "month";
+		for (var i = 1; i <= 12; i++) {
+		    option += '<option value="' + i + '">' + i + '</option>';
+	  	}
+		$('#month').append(option);
+		$('#month').val(selectedMon);
+
+		var option = '<option value="month">month</option>';
+		var selectedMon = "month";
+		for (var i = 1; i <= 12; i++) {
+			option += '<option value="' + i + '">' + i + '</option>';
+		}
+		$('#month2').append(option);
+		$('#month2').val(selectedMon);
+
+		var d = new Date();
+		var option = '<option value="year">year</option>';
+		selectedYear = "year";
+		var fldate = d.getFullYear();
+	  	for (var i = fldate; i >= 2010; i--) { 
+		    option += '<option value="' + i + '">' + i + '</option>';
+
+	  	}
+	  	$('#year').append(option);
+	  	$('#year').val(selectedYear);
+	  	var url="/backend/Analytics/0/edit/overview?_pv=1&year="+$("#year").val()+"&month="+$("#month").val();
+            console.log(url)
+        $("#sub").attr("href", url)
+	});
+	function isLeapYear(year) {
+		year = parseInt(year);
+		if (year % 4 != 0) {
+			return false;
+		} else if (year % 400 == 0) {
+			return true;
+		} else if (year % 100 == 0) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	function change_year(select) {
+	  	if (isLeapYear($(select).val())) {
+	    	Days[1] = 29;
+	  	}
+	  	else {
+	   		Days[1] = 28;
+	  	}
+	  	if ($("#month").val() == 2) {
+		    var day = $('#day');
+		    var val = $(day).val();
+		    $(day).empty();
+		    var option = '<option value="day">day</option>';
+		    for (var i = 1; i <= Days[1]; i++) { //add option days
+		      	option += '<option value="' + i + '">' + i + '</option>';
+		    }
+	    	$(day).append(option);
+	    	if (val > Days[month]) {
+	      		val = 1;
+	    	}
+	    	$(day).val(val);
+	  	}
+	}
+
+	function change_month(select) {
+		var day = $('#day');
+		var val = $(day).val();
+		$(day).empty();
+		var option = '<option value="day">day</option>';
+		var month = parseInt($(select).val()) - 1;
+		for (var i = 1; i <= Days[month]; i++) { //add option days
+			option += '<option value="' + i + '">' + i + '</option>';
+		}
+		$(day).append(option);
+		if (val > Days[month]) {
+			val = 1;
+		}
+		$(day).val(val);
+	}
+</script>
+
+
