@@ -8158,18 +8158,18 @@ function upload_validation($target){
     var dc=$target.data("download-count");
     console.log('funcAshiiiiiiiiiii'+dc);
 
-    if(dc>=12){
-        console.log('funcAshiiiiiiiiiiiffffffffffff'+dc);
+    // if(dc>=12){
+    //     console.log('funcAshiiiiiiiiiiiffffffffffff'+dc);
 
-        document.getElementById("file_input").style.display = "none";
-        document.getElementById("validation_error").style.display = "block";
-    }else{
-        console.log('funcAshiiiiiiiiiiielseee'+dc);
+    //     document.getElementById("file_input").style.display = "none";
+    //     document.getElementById("validation_error").style.display = "block";
+    // }else{
+    //     console.log('funcAshiiiiiiiiiiielseee'+dc);
 
         document.getElementById("file_input").style.display = "block";
-        document.getElementById("validation_error").style.display = "none";
+    //     document.getElementById("validation_error").style.display = "none";
 
-    }
+    // }
 }
 
 function jfu_tip($uploader, tip) {
@@ -8213,7 +8213,7 @@ function jfu_buttons($uploader, ui) {
                 <span class="btn btn-success fileinput-button">\
                     <i class="glyphicon glyphicon-plus"></i>\
                     <span>Upload</span>\
-                    <input class="file-input" id="file_input" style="display:none" type="file" name="files[]" multiple>\
+                    <input class="file-input" id="file_input" type="file" name="files[]" multiple>\
                 </span>\
                 <button type="submit" class="hidden upload-all btn btn-primary start">\
                     <i class="glyphicon glyphicon-upload"></i>\
