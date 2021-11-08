@@ -5170,7 +5170,16 @@
                 }
                 $scope->tags=  $tag_arr;
                 print_log("actionsadas={$action} type={$obj_type} id={$obj_id} title={$obj->title} edit={$edit} auth={$auth_edit} sub={$sub}", 'backend', LOG_LEVEL_TEST);
-
+                    if($scope->user->subscription_plan_id!=9 || $scope->user->subscription_plan_id!=null){
+                        $subscription_plan=find_object('subscription_plans', ['id' => $scope->user->subscription_plan_id, 'status' =>1]); // can take user id, role
+                        $scope->limitcount=$subscription_plan->image_limit." images";
+                        $scope->limit=1;
+                    }
+                    else{
+                        $scope->limitcount="10 images";
+                        $scope->limit=0;
+                    }
+                    // dump('Ashii');
                 break;
 
             case "vaults":
@@ -5183,6 +5192,7 @@
                 $scope->imagecount = count(find_objects('media', ['user_id' => $app->user_id, 'active' => 1]));
                 print_log("folderlist".$scope->folderlist);
                 $user = get_user($app->user_id);
+
                 if($user->roles == 256) $scope->limitcount = 'unlimited';
                 else $scope->limitcount = '100 image';
 
@@ -5263,17 +5273,20 @@
                     $filter_json = count($filters) ? json_encode($filters) : '';
                     $scope->list_url = "/ajax.php?oper=get-rows&obj_type=media_folder".($filter_json ? "&filters=".urlencode($filter_json) : '');
 
-                    if($scope->user->subscription_plan_id!=9 || $scope->user->subscription_plan_id!=null){
+                    
+
+                }
+                if($scope->user->subscription_plan_id!=9 || $scope->user->subscription_plan_id!=null){
                         $subscription_plan=find_object('subscription_plans', ['id' => $scope->user->subscription_plan_id, 'status' =>1]); // can take user id, role
                         $scope->limitcount=$subscription_plan->image_limit." images";
                         $scope->limit=1;
                     }
-                    else
+                    else{
+                        $scope->limitcount="10 images";
                         $scope->limit=0;
-
+                    }
+                    // dump('Ashii');
                     // dump($scope);
-
-                }
 
                 break;
 
