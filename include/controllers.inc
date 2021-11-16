@@ -4888,7 +4888,7 @@
                 $year=$_GET['year'];
                 $month=$_GET['month'];
 
-                dump('Ashii-Analytics');
+                // dump('Ashii-Analytics');
                 if($app->page->tab=='overview' || $app->page->tab==""){
                     if($year!="" && $year!=null && $month!="" && $month!=null)
                         analytics_overview_filter($app,$scope,$year,$month);
@@ -6711,7 +6711,7 @@
                         
                     }
                     else if($uri_segments[2] == 'update-address-status'){
-                        dump('Ashi-address'.$_GET['status']);
+                        // dump('Ashi-address'.$_GET['status']);
                         $status=$_GET['status'];
                         $user_id=$_GET['user_id'];
 
@@ -7011,7 +7011,7 @@
 
         $scope->subscription_plan->expire_on=$dt->format('M d Y');
         // dump($subscribed_user);
-        $scope->ashi='Ashiitest';
+        // $scope->ashi='Ashiitest';
         $scope->subscription_plan->features=find_objects('subscription_plan_features', ['plan' =>$scope->subscription_plan->short_name , 'status' =>1]);
         dump($scope->user->subscription_reference);
             // dump($scope->user);
@@ -7127,7 +7127,7 @@
     function user_integration($app,$scope){
 
         dump($scope);
-        dump('Ashi-address'.$_GET['status']);
+        // dump('Ashi-address'.$_GET['status']);
         $status=$_GET['status'];
         $user_id=$_GET['user_id'];
 
