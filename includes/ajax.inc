@@ -1954,6 +1954,7 @@
 			extract($_POST);
 			   
 			print_log("mail-preview scope:".dump($_POST,true), 'app', LOG_LEVEL_TEST);
+			print_log("mail-preview scope:".dump($_POST,true), 'mail', LOG_LEVEL_TEST);
 
 			if(isset($_POST['g-recaptcha-response'])) {
 			$captcha_response = $_POST['g-recaptcha-response'];

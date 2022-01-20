@@ -507,11 +507,25 @@ if($no_app) {
   $gapi_key = "AIzaSyDqzndmgSgkwaD6AEATZOkeEWUo4foizEo";
   define("GMAP_API", "https://maps.googleapis.com/maps/api/js?key={$gapi_key}&libraries=places&language={$__LANG}&v=3.26");
   
-  $_SESSION['send_mail']['test'] = 0; 
-  if($client_ip == '213.93.144.196') {
-    $_SESSION['send_mail']['test'] = 'test@kjakman.com'; 
-    $_SESSION['send_mail']['dev'] = 'dev@kjakman.com';
+  
+  //$client_ip == '213.93.144.196') 
+  if(isset($_GET['send_mail'])) {
+    $send_mail = $_GET['send_mail'];
+    if($send_mail) { 
+      $_SESSION['send_mail']['test'] = 'test@kjakman.com'; 
+      $_SESSION['send_mail']['dev'] = 'dev@kjakman.com';
+    } else {
+      $_SESSION['send_mail'] = 0;
+    }
+    print_log("set_env: setting send_mail to {$send_mail} session=".dump($_SESSION['send_mail'], true), 'mail', $log_level);
+    
   }
+
+  if(isset($_GET['debug_mail'])) { 
+    $debug_mail = $_SESSION['debug_mail'] = $_GET['debug_mail'];
+    print_log("set_env: setting debug_mail to {$debug_mail}", 'mail', $log_level);
+  }
+
   
   $__EDIT_MENU = ''; 
   $__AUTH_EDIT = auth_site($siteObj); // allowed to edit using CMS

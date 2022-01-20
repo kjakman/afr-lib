@@ -856,23 +856,7 @@ function send_mail($siteObj_or_id, $subject, $body, $recipient, $options = array
   $receiver_email = $options['receiver_email'] = isset($options['receiver_email']) ? $options['receiver_email'] : email_receiver_email($to); // get 'foo@bar.com'
   $receiver_username = $options['receiver_username'] = $options['receiver_id'] ? username($options['receiver_id']) : $receiver_email; // login username
   
-  $log_level = $debug_mail || (isset($options['log']) && $options['log'])  ? LOG_LEVEL_ALWAYS : LOG_LEVEL_TEST;
 
-  $debug_mail = isset($_SESSION['debug_mail']) ? $_SESSION['debug_mail'] : false;
-  /** extensive debug logging
-  if($debug_mail) { 
-    print_log("\n\n------------", 'mail', $log_level);
-    print_log("send_mail: {$now}", 'mail', $log_level);
-    print_log("send_mail: subject: $subject", 'mail', $log_level);
-    print_log("send_mail: sender: ".(is_array($sender) ? dump($sender,true) : $sender), 'mail', $log_level);
-    print_log("send_mail: receiver: ".(is_array($recipient) ? dump($recipient,true) : $recipient), 'mail', $log_level);
-    //if($cc) print_log("send_mail: cc: ".(is_array($cc) ? dump($cc,true) : $cc), 'mail', $log_level);
-    print_log("send_mail: receiver: strlen:".strlen($recipient), 'mail', $log_level);
-    print_log("send_mail: receiver: array?:".(is_array($recipient) ? " yes " : " no"), 'mail', $log_level);
-    print_log("send_mail: receiver: obj?:".(is_object($recipient) ? " yes " : " no"), 'mail', $log_level);
-    if($options) print_log("send_mail: options:".dump($options,true), 'mail', $log_level);
-  } */
-  
   if(!$host) $host = "ssl://smtp.gmail.com"; // fallback
   if(!$port) $port = "465"; // fallback
   if(!$user) $errors[] = "Cannot send email: missing username for {$siteObj->id}"; 
@@ -897,16 +881,30 @@ function send_mail($siteObj_or_id, $subject, $body, $recipient, $options = array
   $body_len = human2bytes(strlen($body));
   print_log("send_mail role: {$role} to: {$recipient} from: {$sender} subject: {$subject} body: {$body_len}", 'mail', LOG_LEVEL_TEST);  
   if($debug) return array2obj(['to' => $recipient, 'from' => $sender, 'subject' => $subject, 'body' => $body]); // do nothing, just return
-    
-  $send_mail = $_SESSION['live'] ? 1 : 0; // by default, send mail if live
-  $send_mail_ar = $_SESSION['send_mail'];
-  if(is_array($send_mail_ar) && $deployment) { // override in index.php of site
-    $send_mail = $send_mail_ar[$deployment];
-    if(is_email($send_mail)) {
-      $body = "<b>Recipient: ".htmlspecialchars($recipient)."</b><br>{$body}";
-      $recipient = $to = $send_mail;
-    }
+  
+  // for debugging
+  $send_in_test = 1;
+  
+  if($send_in_test && $deployment == 'test') { 
+    $_SESSION['send_mail']['test'] = 'test@kjakman.com'; 
+    $_SESSION['send_mail']['dev'] = 'dev@kjakman.com';
   }
+  
+  if($send_mail_ar = $_SESSION['send_mail']) {
+    if(is_array($send_mail_ar) && $deployment) { // override in index.php of site
+      $send_mail = $send_mail_ar[$deployment];
+      if(is_email($send_mail)) {
+        $body = "<b>Recipient: ".htmlspecialchars($recipient)."</b><br>{$body}";
+        $recipient = $to = $send_mail;
+        print_log("send_mail deployment=$deployment send_mail is email: {$send_mail}", 'mail', $log_level);
+      }
+    } 
+  } else {
+    $send_mail = $_SESSION['live'] ? 1 : 0; // by default, send mail if live
+  }
+  
+  print_log("send_mail deployment=$deployment send_mail=$send_mail session=".dump($_SESSION['send_mail'], true), 'mail', $log_level);
+  
   if(!$_SESSION['live'] && $deployment) $subject = "<{$deployment}> {$subject}";
    
   // for staging, only send mail to logged in user
@@ -924,18 +922,7 @@ function send_mail($siteObj_or_id, $subject, $body, $recipient, $options = array
     } else {
       $send_mail = 0;
     }
-  } elseif(0 && $dev) {
-    switch($siteObj->id) {
-    case '263':
-      break;
-      $to = array('hitabrickbv@gmail.com' => "Test Mail ({$recipient})");
-    default:      
-      $to = array('dev@kjakman.com' => "Test Mail ({$siteObj->domain})");
-      break;
-    }
-    $cc = $bcc = '';
-    $subject = "[DEV] {$subject}";
-  }
+  } 
     
   if(!$from) return json_error_object("Sender $sender not valid email");
   if(!$to) return json_error_object("Receiver $recipient not valid email");
@@ -957,6 +944,28 @@ function send_mail($siteObj_or_id, $subject, $body, $recipient, $options = array
     $from = [$sender => $siteObj->name];
   }
   
+  $debug_mail = isset($_SESSION['debug_mail']) ? $_SESSION['debug_mail'] : false;
+  $log_level = $debug_mail || (isset($options['log']) && $options['log'])  ? LOG_LEVEL_ALWAYS : LOG_LEVEL_TEST;
+
+  /** extensive debug logging */
+  if($debug_mail) { 
+    print_log("\n\n------------", 'mail', $log_level);
+    print_log("send_mail: {$now} send_mail={$send_mail} deployment={$deployment}", 'mail', $log_level);
+    print_log("send_mail: subject: $subject", 'mail', $log_level);
+    print_log("send_mail: sender: ".(is_array($sender) ? dump($sender,true) : $sender)." org_sender={$org_sender}", 'mail', $log_level);
+    print_log("send_mail: receiver: ".(is_array($recipient) ? dump($recipient,true) : $recipient), 'mail', $log_level);
+    if($cc) print_log("send_mail: cc: ".(is_array($cc) ? dump($cc,true) : $cc), 'mail', $log_level);
+    if($bcc) print_log("send_mail: bcc: ".(is_array($bcc) ? dump($bcc,true) : $bcc), 'mail', $log_level);
+    if($replyto) print_log("send_mail: replyto: ".(is_array($replyto) ? dump($replyto,true) : $replyto), 'mail', $log_level);
+    
+    print_log("send_mail: site_email={$site_email}", 'mail', $log_level);
+    print_log("send_mail: smtp host={$host} port={$port} user={$user}", 'mail', $log_level);
+    //print_log("send_mail: receiver: strlen:".strlen($recipient), 'mail', $log_level);
+    //print_log("send_mail: receiver: array?:".(is_array($recipient) ? " yes " : " no"), 'mail', $log_level);
+    //print_log("send_mail: receiver: obj?:".(is_object($recipient) ? " yes " : " no"), 'mail', $log_level);
+    if($options) print_log("send_mail: options:".dump($options,true), 'mail', $log_level);
+  }
+    
   $message = Swift_Message::newInstance()
   ->setSubject($subject)
   ->setFrom($from)
@@ -986,12 +995,19 @@ function send_mail($siteObj_or_id, $subject, $body, $recipient, $options = array
   if($pass) $transport->setPassword($pass);
 
   $mailer = Swift_Mailer::newInstance($transport);
-  
-
+ 
   
   $result = new stdClass;
   $log_mail = false;
-  if(!$send) $send_mail = false;
+  
+  print_log("Send_mail 1={$send_mail}", 'mail', $log_level); 
+  if(!$send) {
+    $send_mail = false;
+    print_log("Send_mail off in options, turning off", 'mail', $log_level); 
+  }
+  print_log("Send_mail 2={$send_mail}", 'mail', $log_level); 
+  
+  
   $options['send_mail'] = $send_mail;
   
   if($batch) { /** send one email for each recipient */
@@ -1006,11 +1022,11 @@ function send_mail($siteObj_or_id, $subject, $body, $recipient, $options = array
     $message->setBody($body, 'text/html');
     if($send_mail) { /** send is from options and overrides all others */
       $log_mail = true;
-      $result->success = $options['count'] = $mailer->send($message);    
+      $result->success = $success = $options['count'] = $mailer->send($message);    
       $result->message = $message = "OK: Sent mail";    
     } else {
       $log_mail = $_SESSION['db_dev'] ? 1 : 0; // don't log unsent mail on live database
-      $result->success = 1;
+      $result->success = $success = 1;
       $result->message = $message = "NOT SENDING: simulated sent mail";
     }
   }
@@ -1037,6 +1053,8 @@ function send_mail($siteObj_or_id, $subject, $body, $recipient, $options = array
     echo("<pre>From: {$sender}<br>To: {$recipient}<br>Subject: {$subject} Body ($body_len): <hr>{$body}<br></pre>".dump($result,true));
   }
   
+  print_log("Send_mail done! From: {$sender} To: {$recipient} Subject: {$subject} Message:{$message} Success: {$success}", 'mail', $log_level); 
+  //print_log("Send_mail done! From: {$sender} To: {$recipient} Subject: {$subject} Message:{$message} Success: {$success} Result:".dump($result_copy,true), 'mail', $log_level); 
   
   return $result;
     
