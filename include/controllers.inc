@@ -473,6 +473,23 @@
                         elseif($minisite_pageObj->page_layout == 118)     
                             $tpl = $page = 'contact1'; 
                     }   
+                    if($page == 'blog'){
+                        // dump("Ashiqq");
+                        $scope->page_slug = ($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
+                        $page_slug = ($parts[0] != '') ? "/".$parts[0]."/" :  "/".$get_tpl['get_slug']."/";
+                        $minisite_id = $msObj->id;
+
+                        $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'slug' => $page_slug, 'active' => 1]);
+
+                        $scope->minisite_pageObj->blog = $blog = find_object('user_blogs', ['user_id' => $user_id, 'minisite_id' => $minisite_pageObj->minisite_id,'minisite_page_id' => $minisite_pageObj->id,  'status' => 1]);
+                        // dump($minisite_pageObj);
+
+                        // if($minisite_pageObj->page_layout == 117)  
+                        //     $tpl = $page = 'contact';
+                        // elseif($minisite_pageObj->page_layout == 118)     
+                        //     $tpl = $page = 'contact1'; 
+                        // dump($scope);
+                    }  
                     if($page == 'bio'){
                         $scope->subview = $subview = $parts[1];
                         $scope->sub_slug = $title= $subviews = $parts[2];
@@ -500,6 +517,7 @@
                         elseif($minisite_pageObj->page_layout == 209)   $tpl = $page = 'artist_layout10';
                     }
                     if($page == 'singleExhibitions'){
+                        // dump('Ashiiii');
                         $scope->subview = $subview = $parts[2];
                         $scope->page_slug = $slugstr =($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
                         $minisite_id = $msObj->id;
@@ -4904,7 +4922,6 @@
                 dump($scope->analytics);
                 break;
             case "ACsettings":
-            dump($app->page);
                 $scope->section = 'ACsettings';
                 $scope->obj_type = $obj_type = "ACsettings";
                 $id = $app->user_id;
@@ -5183,6 +5200,7 @@
                 break;
 
             case "vaults":
+
                 $scope->section = 'vault';
                 $scope->obj_type = $obj_type = "media_folder";
                 $app->page->itemview = 'vault';
@@ -5463,10 +5481,17 @@
 
                 $scope->contact_layout = $contact_layout = find_objects('minisite_layout', ['type' => 40, 'subtype' => 1, 'active'=>1], ['sort' => 'row_order asc']);
                 $scope->single_exb_layout = $single_exb_layout = find_objects('minisite_layout', ['type' => 60, 'subtype' => 1, 'active'=>1], ['sort' => 'row_order asc']);
+               
 
                 $col = ['id' => $page_id, 'user_id' => $obj->user_id, 'active' => 1];
                 $scope->minisitepage = $minisitepage = find_object('minisite_page', $col);
                 $scope->minisite_page_type = $minisite_page_type = find_objects('minisite_page_type', ['active'=>1], ['sort'=>'row_order']);
+                $scope->site_url=$app->site_url;
+                 // dump($scope);
+
+                if($minisitepage->type==65)
+                    $scope->minisitepage->blog = $blog = find_object('user_blogs', ['user_id' => $minisitepage->user_id, 'minisite_page_id' => $minisitepage->id,'minisite_id' => $minisitepage->minisite_id, 'status' => 1]);
+                // dump($minisitepage);
                 $scope->userprofile = $userprofile = get_user($obj->user_id);
 
                 //Sorting CV details
@@ -6051,13 +6076,13 @@
         
             /** must be artwork */
             $artwork_id = $obj_id;
-        
+            
             $scope->artwork = $artworkObj = get_object('artwork', $artwork_id);
             //print_r($artworkObj);
             $scope->artist_id = $artist_id = $artworkObj->artist_id;
             $scope->media_id = $media_id = $scope->artwork->title_image = $artworkObj->title_image; 
 
-        
+            // dump($scope->artwork);
             foreach($related as $k => $v) $scope->$k = $v;
             if(!$collectionObj) $collectionObj = $related->exhibition;
             if(!$curator_id) $curator_id = $related->curator_id;
@@ -6235,7 +6260,7 @@
         } else { 
             /** browse artworks: todo */
         }
-        // dump($scope);
+        dump("ashii");
         return;
     }
                                
@@ -6368,12 +6393,18 @@
                 $art_id = $data->parent_id;
                 $find = find_object('artwork', array('id' => $art_id));
                 if($find) $b = (array)$find;
+                $find = find_object('artwork', array('id' => $find->id));
+                if($find) $b = (array)$find;
                 else $b = (array)$data;
                 $merge[] = array_merge($a, $b);
             }
             //print_r($merge);
             $scope->artwork = $merge;
             $scope->artworks = $artworks;
+            foreach ($scope->artwork as $current_artwork) {
+                $current_artwork=find_object('artwork', array('id' => $current_artwork->artwork_id));
+            }
+            dump($scope->artwork);
 
             if($collectionObj->type == MEDIA_COLLECTION_TYPE_EXHIBITION) {
                 if($scope->curator_id = $curator_id = $collectionObj->user_id) 
