@@ -1,5 +1,4 @@
 console.log("loading afr.js 201911200225");
-console.log("loading afr.js 201911200225");
 
 if(typeof g_ready_scripts == "undefined") var g_ready_scripts = [];
 g_ready_scripts.push('afr_ready');
@@ -36,6 +35,7 @@ $.fn.toggleInputError = function(erred) {
 /**
 if(window.addEventListener) document.addEventListener('DOMMouseScroll', stopScroll, false);
 document.onmousewheel = stopScroll;
+
 function stopScroll() {
   //console.log("Scroll stop");
   $('html, body').stop();
@@ -44,8 +44,6 @@ function stopScroll() {
 */
 
 function in_iframe() {
-      console.log("in_iframe:");
-
   try {
     return window.self !== window.top;
   } catch (e) {
@@ -54,33 +52,23 @@ function in_iframe() {
 }
 
 function isDefined(thevar){
-      console.log("isDefined:");
-
    return (typeof(thevar) == 'undefined') ? false : true;
 }
 
 function isExisting(obj){
-      console.log("isExisting:");
-
   return typeof(obj)!='undefined';
 }
 
 //returns true is it is an array
 function isArray(obj) {
-      console.log("isArray:");
-
   return (obj.constructor.toString().indexOf("Array") == -1) ? false : true;
 }
 
 function is_array(input){
-      console.log("is_array:");
-
   return typeof(input)=='object' && (input instanceof Array);
 }
 
 function in_array(needle, haystack) {
-      console.log("in_array:");
-
   var length = haystack.length;
   for(var i = 0; i < length; i++) {
       if(haystack[i] == needle) return true;
@@ -90,14 +78,10 @@ function in_array(needle, haystack) {
 
 // return a clone of object members (not prototypes);
 function clone_object(obj) {
-      console.log("clone_object:");
-
   return JSON.parse(JSON.stringify(obj));
 }
 
 function truncate(str, len, elipsis) {
-      console.log("truncate:");
-
   if(!str) return str;
   if(str.length <= len) return str;
   if(typeof elipsis == "undefined") var elipsis = "...";
@@ -106,8 +90,6 @@ function truncate(str, len, elipsis) {
 
 // http://kevin.vanzonneveld.net
 function is_object (mixed_var) {
-      console.log("is_object:");
-
   if (Object.prototype.toString.call(mixed_var) === '[object Array]') {
     return false;
   }
@@ -150,8 +132,6 @@ Array.min = function( array ){
 
 // http://stackoverflow.com/questions/17264639/replace-text-but-keep-case
 function matchCase(text, pattern) {
-      console.log("matchCase:");
-
   var result = '';
 
   for(var i = 0; i < text.length; i++) {
@@ -169,14 +149,10 @@ function matchCase(text, pattern) {
 }
 
 function form_input_is_int(input) {
-      console.log("form_input_is_int:");
-
   return !isNaN(input)&&parseInt(input)==input;
 }
 
 function currency2symbol(currency) {
-      console.log("currency2symbol:");
-
   var currency_symbols = {
       'USD': '$', // US Dollar
       'EUR': '€', // Euro
@@ -202,8 +178,6 @@ function currency2symbol(currency) {
 
 // http://phpjs.org/functions/extract/
 function extract (arr, type, prefix) {
-      console.log("extract:");
-
   // From: http://phpjs.org/functions
   // +   original by: Brett Zamir (http://brett-zamir.me)
   // %        note 1: Only works by extracting into global context (whether called in the global scope or
@@ -292,14 +266,10 @@ function extract (arr, type, prefix) {
 
 // following 2 from http://www.andrewpeace.com/javascript-is-int.html
 function is_int(input) {
-      console.log("is_int:");
-
   return typeof(input)=='number'&&parseInt(input)==input;
 }
 
 function remove_null(obj_or_array) {
-      console.log("remove_null:");
-
   for (i in obj_or_array) {
     //alert("i=" + i + " val=" + obj_or_array[i] + ' is null=' + (obj_or_array[i] === null ? "true" : "false"));
     if (obj_or_array[i] === null || obj_or_array[i] === undefined) {      
@@ -311,8 +281,6 @@ function remove_null(obj_or_array) {
 
 // finds object(s) with key=val in obj (or array)
 function findObjects(obj, key, val) {
-      console.log("findObjects:");
-
   var objects = [];
   for (var i in obj) {
     if (!obj.hasOwnProperty(i)) continue;
@@ -372,8 +340,6 @@ function log() {
 // takes a jquery object, splits id, returns 2nd part
 // so foo_233 returns 233
 function get_target_id($target) {
-      console.log("findObjects:");
-
   var tid = $target.prop("id");
   var ar = tid.split("_");
   return ar[1];
@@ -381,18 +347,16 @@ function get_target_id($target) {
                   
 // removes empty elements from form before submitting (makes for cleaner query string.)
 function cleanEmptyFields(theform) {
-      console.log("findObjects:");
-
-  //return;
+	//return;
   //var theform = thebutton.form;
-  //return true;    
-  var fs='';
-  for(i=0; i<theform.elements.length; i++) {
-    var fldName = theform.elements[i].name;
-    //alert(fldName + " = " + theform.elements[i].value); 
-    if(theform.elements[i].value == '') theform.elements[i].disabled = true; 
-  }
-  return true;    
+	//return true;		
+	var fs='';
+	for(i=0; i<theform.elements.length; i++) {
+		var fldName = theform.elements[i].name;
+		//alert(fldName + " = " + theform.elements[i].value); 
+		if(theform.elements[i].value == '') theform.elements[i].disabled = true; 
+	}
+	return true;		
 }
 
 
@@ -401,8 +365,6 @@ function cleanEmptyFields(theform) {
 // so first use: var queryString = url.substring( query.indexOf('?') + 1); 
 // Thanks http://www.joezimjs.com/javascript/3-ways-to-parse-a-query-string-in-a-url/
 function parseQueryString (queryString) {
-      console.log("findObjects:");
-
   var params = {}, queries, temp, i, l;
   queries = queryString.split("&"); // Split into key/value pairs
  
@@ -416,8 +378,6 @@ function parseQueryString (queryString) {
 
 // thanks http://stackoverflow.com/questions/5999118/add-or-update-query-string-parameter
 function replace_query_var(uri, key, value) {
-      console.log("replace_query_var:");
-
   if(uri == '#') return "?" + key + "=" + encodeURIComponent(value);
   var hash = '';  
   if(uri.indexOf('#') > 0) { // handle hash
@@ -436,10 +396,8 @@ function replace_query_var(uri, key, value) {
 }
 
 function hideEl(el){
-      console.log("hideEl:");
-
-  //return;
-  if (document.getElementById(el)){
+	//return;
+	if (document.getElementById(el)){
         document.getElementById(el).style.display = 'none';
   } else {
     //alert('hideEl: no element'+el);
@@ -447,8 +405,6 @@ function hideEl(el){
 }
 
 function showEl(el){
-      console.log("showEl:");
-
   //alert('showEl:'+el);
   if (document.getElementById(el)){
       document.getElementById(el).style.display = 'block';
@@ -462,10 +418,10 @@ function limitText(limitField, limitCount, limitNum) {
   var $limitField = $('#'+limitField);
   var $limitCount = $('#'+limitCount);
   if ($limitField.val().length > limitNum) {
-    $limitField.val($limitField.val().substring(0, limitNum));
-  } else {
-    $limitCount.html(limitNum - $limitField.val().length);
-  }
+		$limitField.val($limitField.val().substring(0, limitNum));
+	} else {
+		$limitCount.html(limitNum - $limitField.val().length);
+	}
 }
 
 function autocomplete_off(el_id) { // hack since autocomplete='off' is not strict (x)html
@@ -499,28 +455,28 @@ function print_message(message, style) {
 
 /* Function : dump()  http://www.openjs.com/scripts/others/dump_function_php_print_r.php */
 function dumpArr(arr,level) {
-  var dumped_text = "";
-  if(!level) level = 0;
-  
-  //The padding given at the beginning of the line.
-  var level_padding = "";
-  for(var j=0;j<level+1;j++) level_padding += "    ";
-  
-  if(typeof(arr) == 'object') { //Array/Hashes/Objects 
-    for(var item in arr) {
-      var value = arr[item];
-      
-      if(typeof(value) == 'object') { //If it is an array,
-        dumped_text += level_padding + "'" + item + "' ...\n";
-        dumped_text += dump(value,level+1);
-      } else {
-        dumped_text += level_padding + "'" + item + "' => \"" + value + "\"\n";
-      }
-    }
-  } else { //Stings/Chars/Numbers etc.
-    dumped_text = "===>"+arr+"<===("+typeof(arr)+")";
-  }
-  return dumped_text;
+	var dumped_text = "";
+	if(!level) level = 0;
+	
+	//The padding given at the beginning of the line.
+	var level_padding = "";
+	for(var j=0;j<level+1;j++) level_padding += "    ";
+	
+	if(typeof(arr) == 'object') { //Array/Hashes/Objects 
+		for(var item in arr) {
+			var value = arr[item];
+			
+			if(typeof(value) == 'object') { //If it is an array,
+				dumped_text += level_padding + "'" + item + "' ...\n";
+				dumped_text += dump(value,level+1);
+			} else {
+				dumped_text += level_padding + "'" + item + "' => \"" + value + "\"\n";
+			}
+		}
+	} else { //Stings/Chars/Numbers etc.
+		dumped_text = "===>"+arr+"<===("+typeof(arr)+")";
+	}
+	return dumped_text;
 }
 
 /* repeatString() returns a string which has been repeated a set number of times */ 
@@ -1009,90 +965,90 @@ function time_between(datein, dateout, unit_in_ms) {
 */
 
 (function(jQuery){
-  
-  jQuery.hotkeys = {
-    version: "0.8",
+	
+	jQuery.hotkeys = {
+		version: "0.8",
 
-    specialKeys: {
-      8: "backspace", 9: "tab", 13: "return", 16: "shift", 17: "ctrl", 18: "alt", 19: "pause",
-      20: "capslock", 27: "esc", 32: "space", 33: "pageup", 34: "pagedown", 35: "end", 36: "home",
-      37: "left", 38: "up", 39: "right", 40: "down", 45: "insert", 46: "del", 
-      96: "0", 97: "1", 98: "2", 99: "3", 100: "4", 101: "5", 102: "6", 103: "7",
-      104: "8", 105: "9", 106: "*", 107: "+", 109: "-", 110: ".", 111 : "/", 
-      112: "f1", 113: "f2", 114: "f3", 115: "f4", 116: "f5", 117: "f6", 118: "f7", 119: "f8", 
-      120: "f9", 121: "f10", 122: "f11", 123: "f12", 144: "numlock", 145: "scroll", 191: "/", 224: "meta"
-    },
-  
-    shiftNums: {
-      "`": "~", "1": "!", "2": "@", "3": "#", "4": "$", "5": "%", "6": "^", "7": "&", 
-      "8": "*", "9": "(", "0": ")", "-": "_", "=": "+", ";": ": ", "'": "\"", ",": "<", 
-      ".": ">",  "/": "?",  "\\": "|"
-    }
-  };
+		specialKeys: {
+			8: "backspace", 9: "tab", 13: "return", 16: "shift", 17: "ctrl", 18: "alt", 19: "pause",
+			20: "capslock", 27: "esc", 32: "space", 33: "pageup", 34: "pagedown", 35: "end", 36: "home",
+			37: "left", 38: "up", 39: "right", 40: "down", 45: "insert", 46: "del", 
+			96: "0", 97: "1", 98: "2", 99: "3", 100: "4", 101: "5", 102: "6", 103: "7",
+			104: "8", 105: "9", 106: "*", 107: "+", 109: "-", 110: ".", 111 : "/", 
+			112: "f1", 113: "f2", 114: "f3", 115: "f4", 116: "f5", 117: "f6", 118: "f7", 119: "f8", 
+			120: "f9", 121: "f10", 122: "f11", 123: "f12", 144: "numlock", 145: "scroll", 191: "/", 224: "meta"
+		},
+	
+		shiftNums: {
+			"`": "~", "1": "!", "2": "@", "3": "#", "4": "$", "5": "%", "6": "^", "7": "&", 
+			"8": "*", "9": "(", "0": ")", "-": "_", "=": "+", ";": ": ", "'": "\"", ",": "<", 
+			".": ">",  "/": "?",  "\\": "|"
+		}
+	};
 
-  function keyHandler( handleObj ) {
-    // Only care when a possible input has been specified
-    if ( typeof handleObj.data !== "string" ) {
-      return;
-    }
-    
-    var origHandler = handleObj.handler,
-      keys = handleObj.data.toLowerCase().split(" ");
-  
-    handleObj.handler = function( event ) {
-      // Don't fire in text-accepting inputs that we didn't directly bind to
-      if ( this !== event.target && (/textarea|select/i.test( event.target.nodeName ) ||
-         event.target.type === "text") ) {
-        return;
-      }
-      
-      // Keypress represents characters, not special keys
-      var special = event.type !== "keypress" && jQuery.hotkeys.specialKeys[ event.which ],
-        character = String.fromCharCode( event.which ).toLowerCase(),
-        key, modif = "", possible = {};
+	function keyHandler( handleObj ) {
+		// Only care when a possible input has been specified
+		if ( typeof handleObj.data !== "string" ) {
+			return;
+		}
+		
+		var origHandler = handleObj.handler,
+			keys = handleObj.data.toLowerCase().split(" ");
+	
+		handleObj.handler = function( event ) {
+			// Don't fire in text-accepting inputs that we didn't directly bind to
+			if ( this !== event.target && (/textarea|select/i.test( event.target.nodeName ) ||
+				 event.target.type === "text") ) {
+				return;
+			}
+			
+			// Keypress represents characters, not special keys
+			var special = event.type !== "keypress" && jQuery.hotkeys.specialKeys[ event.which ],
+				character = String.fromCharCode( event.which ).toLowerCase(),
+				key, modif = "", possible = {};
 
-      // check combinations (alt|ctrl|shift+anything)
-      if ( event.altKey && special !== "alt" ) {
-        modif += "alt+";
-      }
+			// check combinations (alt|ctrl|shift+anything)
+			if ( event.altKey && special !== "alt" ) {
+				modif += "alt+";
+			}
 
-      if ( event.ctrlKey && special !== "ctrl" ) {
-        modif += "ctrl+";
-      }
-      
-      // TODO: Need to make sure this works consistently across platforms
-      if ( event.metaKey && !event.ctrlKey && special !== "meta" ) {
-        modif += "meta+";
-      }
+			if ( event.ctrlKey && special !== "ctrl" ) {
+				modif += "ctrl+";
+			}
+			
+			// TODO: Need to make sure this works consistently across platforms
+			if ( event.metaKey && !event.ctrlKey && special !== "meta" ) {
+				modif += "meta+";
+			}
 
-      if ( event.shiftKey && special !== "shift" ) {
-        modif += "shift+";
-      }
+			if ( event.shiftKey && special !== "shift" ) {
+				modif += "shift+";
+			}
 
-      if ( special ) {
-        possible[ modif + special ] = true;
+			if ( special ) {
+				possible[ modif + special ] = true;
 
-      } else {
-        possible[ modif + character ] = true;
-        possible[ modif + jQuery.hotkeys.shiftNums[ character ] ] = true;
+			} else {
+				possible[ modif + character ] = true;
+				possible[ modif + jQuery.hotkeys.shiftNums[ character ] ] = true;
 
-        // "$" can be triggered as "Shift+4" or "Shift+$" or just "$"
-        if ( modif === "shift+" ) {
-          possible[ jQuery.hotkeys.shiftNums[ character ] ] = true;
-        }
-      }
+				// "$" can be triggered as "Shift+4" or "Shift+$" or just "$"
+				if ( modif === "shift+" ) {
+					possible[ jQuery.hotkeys.shiftNums[ character ] ] = true;
+				}
+			}
 
-      for ( var i = 0, l = keys.length; i < l; i++ ) {
-        if ( possible[ keys[i] ] ) {
-          return origHandler.apply( this, arguments );
-        }
-      }
-    };
-  }
+			for ( var i = 0, l = keys.length; i < l; i++ ) {
+				if ( possible[ keys[i] ] ) {
+					return origHandler.apply( this, arguments );
+				}
+			}
+		};
+	}
 
-  jQuery.each([ "keydown", "keyup", "keypress" ], function() {
-    jQuery.event.special[ this ] = { add: keyHandler };
-  });
+	jQuery.each([ "keydown", "keyup", "keypress" ], function() {
+		jQuery.event.special[ this ] = { add: keyHandler };
+	});
 
 })( jQuery );
 
@@ -1289,7 +1245,7 @@ function parse_json(json) {
  * Converts the given data structure to a JSON string.
  * Argument: arr - The data structure that must be converted to JSON
  * Example: var json_string = array2json(['e', {pluribus: 'unum'}]);
- *      var json = array2json({"success":"Sweet","failure":false,"empty_array":[],"numbers":[1,2,3],"info":{"name":"Binny","site":"http:\/\/www.openjs.com\/"}});
+ * 			var json = array2json({"success":"Sweet","failure":false,"empty_array":[],"numbers":[1,2,3],"info":{"name":"Binny","site":"http:\/\/www.openjs.com\/"}});
  * http://www.openjs.com/scripts/data/json_encode.php
  */
 function array2json(arr) {
@@ -1301,7 +1257,7 @@ function array2json(arr) {
     var is_list = (Object.prototype.toString.apply(arr) === '[object Array]');
 
     for(var key in arr) {
-      var value = arr[key];
+    	var value = arr[key];
         if(typeof value == "object") { //Custom handling for arrays
             //alert(dump(value) + " is object"); 
             if(is_list) parts.push(array2json(value)); /* :RECURSION: */
@@ -1348,9 +1304,9 @@ function update_gallery_trash(params, data) {
  * Simply loops thru each jquery item and logs it
  */
 jQuery.fn.debug = function() {
-  return this.each(function(){
-    $.log(this);
-  });
+	return this.each(function(){
+		$.log(this);
+	});
 };
 
 /*
@@ -1360,22 +1316,22 @@ jQuery.fn.debug = function() {
  * If not, it creates a string representation of the html element (if message is an object), or just uses the supplied value (if not an object).
  */
 jQuery.log = function(message){
-  // only if debugging is on
-  if( window.DEBUG ){
-    // if no firebug, build a debug line from the actual html element if it's an object, or just send the string
-    var str = message;
-    if( !('firebug' in console) ){
-      if( typeof(message) == 'object' ){
-        str = '&lt;';
-        str += message.nodeName.toLowerCase();
-        for( var i = 0; i < message.attributes.length; i++ ){
-          str += ' ' + message.attributes[i].nodeName.toLowerCase() + '="' + message.attributes[i].nodeValue + '"';
-        }
-        str += '&gt;';
-      }
-    }
-    console.console.log(str);
-  }
+	// only if debugging is on
+	if( window.DEBUG ){
+		// if no firebug, build a debug line from the actual html element if it's an object, or just send the string
+		var str = message;
+		if( !('firebug' in console) ){
+			if( typeof(message) == 'object' ){
+				str = '&lt;';
+				str += message.nodeName.toLowerCase();
+				for( var i = 0; i < message.attributes.length; i++ ){
+					str += ' ' + message.attributes[i].nodeName.toLowerCase() + '="' + message.attributes[i].nodeValue + '"';
+				}
+				str += '&gt;';
+			}
+		}
+		console.console.log(str);
+	}
 };
 
 // end logging
@@ -1390,42 +1346,39 @@ jQuery.log = function(message){
  *
  */
  
-this.imagePreview = function(){ 
-	console.log('imagePreview starts');
-  /* CONFIG */
-    
-    yOffset = 500;
-    xOffset = 30;
-    
-    // these 2 variable determine popup's distance from the cursor
-    // you might want to adjust to get the right result
-    
-  /* END CONFIG */
-  $("a.preview, img.image_preview").hover(function(e){
-    this.t = this.title;
-    this.title = "";  
-    //alert(this.href);
-    var c = (this.t != "") ? "<br/>" + this.t : "";
-    $("body").append("<p id='preview' style='z-index: 1000'><img src='"+ (this.href ? this.href : this.src) +"' alt='Image preview' />"+ c +"</p>");                 
-    var height = parseInt($('#preview').css('height'));
-    // if(height > 700) yOffset += 300;
-    // $("#preview").append("<p> h ="+ height +"</p>");                
-    $("#preview")                                                         
-      .css("top",(e.pageY - yOffset) + "px")
-      .css("left",(e.pageX + xOffset) + "px")
-      .fadeIn("fast");            
+this.imagePreview = function(){	
+	/* CONFIG */
+		
+		yOffset = 500;
+		xOffset = 30;
+		
+		// these 2 variable determine popup's distance from the cursor
+		// you might want to adjust to get the right result
+		
+	/* END CONFIG */
+	$("a.preview, img.image_preview").hover(function(e){
+		this.t = this.title;
+		this.title = "";	
+		//alert(this.href);
+		var c = (this.t != "") ? "<br/>" + this.t : "";
+		$("body").append("<p id='preview' style='z-index: 1000'><img src='"+ (this.href ? this.href : this.src) +"' alt='Image preview' />"+ c +"</p>");								 
+		var height = parseInt($('#preview').css('height'));
+		// if(height > 700) yOffset += 300;
+		// $("#preview").append("<p> h ="+ height +"</p>");								 
+		$("#preview")                                                         
+			.css("top",(e.pageY - yOffset) + "px")
+			.css("left",(e.pageX + xOffset) + "px")
+			.fadeIn("fast");						
     },
-  function(){
-    this.title = this.t;  
-    $("#preview").remove();
-    }); 
-  // $("a.preview").mousemove(function(e){
-  //  $("#preview")
-  //    .css("bottom",(e.pageY - yOffset) + "px")
-  //    .css("left",(e.pageX + xOffset) + "px");
-  // });      
-	console.log('imagePreview ends');
-
+	function(){
+		this.title = this.t;	
+		$("#preview").remove();
+    });	
+	// $("a.preview").mousemove(function(e){
+	// 	$("#preview")
+	// 		.css("bottom",(e.pageY - yOffset) + "px")
+	// 		.css("left",(e.pageX + xOffset) + "px");
+	// });			
 };
 
 function neosmart_wall(user, limit, offset) {  
@@ -1459,11 +1412,11 @@ function facebook_wall(user, limit, offset) {
 
 function facebook_wall_js(div_id, user, token, limit, offset) {
   $('#' + div_id).facebookWall({
-    id: user,
-    access_token: token,
-    limit: limit,
-    offset: offset
-  });
+		id: user,
+		access_token: token,
+		limit: limit,
+		offset: offset
+	});
 }
 
 // removes a paramter from query string
@@ -1811,12 +1764,12 @@ $(document).on("click", "A.goto-tab", function() {
 
 $(document).on("click", ".tooltip-ajax", function() {
   $(this).tooltip({
-    content:function(callback) { //callback
+		content:function(callback) { //callback
       var url = $(this).data("url");
-      $.get(url,{}, function(data) {
-        callback(data); //call the callback function to return the value
-      });
-    },
+			$.get(url,{}, function(data) {
+				callback(data); //call the callback function to return the value
+			});
+		},
   });
 });
 
@@ -2318,8 +2271,6 @@ $(document).on("change", ".mail-form INPUT.auto-preview, .mail-form TEXTAREA.aut
   var $form = $(this).closest('form');
   var form_id = $form.attr('id');
   mail_preview(form_id);
-      console.log("auto-preview:");
-
 });
 
 function escapeHtml(unsafe) {
@@ -2340,8 +2291,6 @@ function mail_preview(form_id) {
   }
   
   $("#mail_preview").attr("srcdoc", "Loading preview...");
-      console.log("mail_preview:");
-
   var ajax_url = "/ajax.php?oper=mail-preview";
   console.log("url=" + ajax_url);
   jQuery.ajax({
@@ -2482,10 +2431,12 @@ function datepicker_setval($dp) {
 }
 
 /** not in use 
+
 function init_date_range() {
   init_datepicker_ranges();
   return false;
 }
+
 function init_datepicker_range($dp) {
   
   return;
@@ -2543,6 +2494,7 @@ function init_datepicker_range($dp) {
   });
   
   datepicker_set_duration($dp, 'days');
+
   if($start.val() || $end.val()) {
     update = false; // value already set
     //console.log("no update, vals set");
@@ -2831,12 +2783,51 @@ function afr_ready() {
   } 
   
   if($(".summernote").length) {
-    //console.log("GH: Found " + $('.summernote').length + " summernote");
-    //var toolbar = {};
+    var HightlightButton = function(context) {  
+  var ui = $.summernote.ui;  
+  var button = ui.button({  
+    contents: '<i class="fa fa-pencil"/> Highlight3',  
+    tooltip: 'Highlight text with red color',  
+    click: function() {  
+      context.invoke('editor.foreColor', 'red');  
+//  do whatever you want here like open popup  
+    }  
+  });  
+  
+  return button.render();  
+}  
+  
+$(document).ready(function() {  
+  $('#summernote').summernote({  
+    toolbar: [  
+     ['style', ['bold', 'italic', 'underline', 'clear']],
+            ['font', ['strikethrough', 'superscript', 'subscript']],
+            ['fontsize', ['fontsize']],
+            ['color', ['color']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['height', ['height']],
+            ['insert', ['picture', 'video']],
+            ['view', ['codeview']]
+    ],  
+    buttons: {  
+      highlight: HightlightButton,  
+    }  
+  });  
+}); 
+
+    console.log("GH: Found " + $('.summernote').length + " summernote");
+    var toolbar = {};
     $(".summernote").each(function() {
       var $editor = $(this);
       var default_toolbar = [
-          ["style", ["bold", "italic", "underline", "clear"]]
+			['style', ['bold', 'italic', 'underline', 'clear']],
+			['font', ['strikethrough', 'superscript', 'subscript']],
+			['fontsize', ['fontsize']],
+			['color', ['color']],
+			['para', ['ul', 'ol', 'paragraph']],
+			['height', ['height']],
+			['insert', ['picture', 'video']],
+			['view', ['codeview']]
         ];
       var toolbar = $editor.data('toolbar') || default_toolbar;
       var options = {onpaste: on_paste};
@@ -3042,12 +3033,12 @@ function afr_ready() {
 
   //console.log("Found " + $('.tooltip-ajax').length + " ajax tooltips");
   $('.tooltip-ajax').tooltip({
-    content:function(callback) { //callback
+		content:function(callback) { //callback
       var url = $(this).data("url");
-      $.get(url,{}, function(data) {
-        callback(data); //call the callback function to return the value
-      });
-    },
+			$.get(url,{}, function(data) {
+				callback(data); //call the callback function to return the value
+			});
+		},
   });
 
 
@@ -3368,6 +3359,7 @@ function afr_ready() {
     var url = $input.data('url');
     var operation = $input.data('operation');
     var ajax_url = operation ? "/ajax.php?oper=" + operation : url;
+
     if(ajax_url) {
       var bh = new Bloodhound({
         datumTokenizer: Bloodhound.tokenizers.obj.whitespace('value'),
@@ -4522,6 +4514,7 @@ function fc_get_day_rate(apt, weekend) {
   rate_weekend += extra_guest_rate; 
   var rate_extraperson = parseInt(apt.rate_extraperson || 0);
   var rate_num_guests = parseInt(apt.rate_num_guests || 2);
+
   // if num_guests
   var ng = apt.ng || 1;
   var extra_guests = Math.max(ng - rate_num_guests, 0);
@@ -4533,8 +4526,10 @@ function fc_get_day_rate(apt, weekend) {
   
   // if dates
   var num_days = apt.nd;
+
   if(weekend && apt.rate_weekend > 0 && apt.rate_weekend != apt.rate_day) return rate_weekend;
   return rate_day;
+
   */
 }
 
@@ -4682,12 +4677,12 @@ function fc_average_rate($fullcalendar, start, end, unit) {
 function init_tooltip() {
   //console.log("init tooltip()");
   $('.tooltip-ajax').tooltip({
-    content:function(callback) { //callback
+		content:function(callback) { //callback
       var url = $(this).data("url");
-      $.get(url,{}, function(data) {
-        callback(data); //call the callback function to return the value
-      });
-    },
+			$.get(url,{}, function(data) {
+				callback(data); //call the callback function to return the value
+			});
+		},
   });
   //console.log("init_tooltip(): jquery len=" + $('.tooltip-jq').length);
   $('.tooltip-jq').tooltip({
@@ -4934,7 +4929,7 @@ function fancybox_loader() {
   // Disable opening and closing animations, change title type
   $(".fancybox-effects-b").fancybox({
     openEffect  : 'none',
-    closeEffect : 'none',
+    closeEffect	: 'none',
 
     helpers : {
       title : {
@@ -4996,7 +4991,7 @@ function fancybox_loader() {
       title : {
         type : 'inside'
       },
-      buttons : {}
+      buttons	: {}
     },
 
     afterLoad : function() {
@@ -5089,9 +5084,9 @@ function fancybox_loader() {
  *  Copyright (c) 2001-2013. Matteo Bicocchi (Pupunzi);
  *  Open lab srl, Firenze - Italy
  *  email: matteo@open-lab.com
- *  site:   http://pupunzi.com
- *  blog: http://pupunzi.open-lab.com
- *  http://open-lab.com
+ *  site: 	http://pupunzi.com
+ *  blog:	http://pupunzi.open-lab.com
+ * 	http://open-lab.com
  *
  *  Licences: MIT, GPL
  *  http://www.opensource.org/licenses/mit-license.php
@@ -5112,78 +5107,78 @@ function fancybox_loader() {
 
 (function($){
 
-  var jQversion = jQuery.fn.jquery.split(".");
-  if(jQversion[1]<8)
-    return;
+	var jQversion = jQuery.fn.jquery.split(".");
+	if(jQversion[1]<8)
+		return;
 
-  jQuery.browser = {};
-  jQuery.browser.mozilla = false;
-  jQuery.browser.webkit = false;
-  jQuery.browser.opera = false;
-  jQuery.browser.msie = false;
+	jQuery.browser = {};
+	jQuery.browser.mozilla = false;
+	jQuery.browser.webkit = false;
+	jQuery.browser.opera = false;
+	jQuery.browser.msie = false;
 
-  var nAgt = navigator.userAgent;
-  jQuery.browser.name  = navigator.appName;
-  jQuery.browser.fullVersion  = ''+parseFloat(navigator.appVersion);
-  jQuery.browser.majorVersion = parseInt(navigator.appVersion,10);
-  var nameOffset,verOffset,ix;
+	var nAgt = navigator.userAgent;
+	jQuery.browser.name  = navigator.appName;
+	jQuery.browser.fullVersion  = ''+parseFloat(navigator.appVersion);
+	jQuery.browser.majorVersion = parseInt(navigator.appVersion,10);
+	var nameOffset,verOffset,ix;
 
 // In Opera, the true version is after "Opera" or after "Version"
-  if ((verOffset=nAgt.indexOf("Opera"))!=-1) {
-    jQuery.browser.opera = true;
-    jQuery.browser.name = "Opera";
-    jQuery.browser.fullVersion = nAgt.substring(verOffset+6);
-    if ((verOffset=nAgt.indexOf("Version"))!=-1)
-      jQuery.browser.fullVersion = nAgt.substring(verOffset+8);
-  }
+	if ((verOffset=nAgt.indexOf("Opera"))!=-1) {
+		jQuery.browser.opera = true;
+		jQuery.browser.name = "Opera";
+		jQuery.browser.fullVersion = nAgt.substring(verOffset+6);
+		if ((verOffset=nAgt.indexOf("Version"))!=-1)
+			jQuery.browser.fullVersion = nAgt.substring(verOffset+8);
+	}
 // In MSIE, the true version is after "MSIE" in userAgent
-  else if ((verOffset=nAgt.indexOf("MSIE"))!=-1) {
-    jQuery.browser.msie = true;
-    jQuery.browser.name = "Microsoft Internet Explorer";
-    jQuery.browser.fullVersion = nAgt.substring(verOffset+5);
-  }
+	else if ((verOffset=nAgt.indexOf("MSIE"))!=-1) {
+		jQuery.browser.msie = true;
+		jQuery.browser.name = "Microsoft Internet Explorer";
+		jQuery.browser.fullVersion = nAgt.substring(verOffset+5);
+	}
 // In Chrome, the true version is after "Chrome"
-  else if ((verOffset=nAgt.indexOf("Chrome"))!=-1) {
-    jQuery.browser.webkit = true;
-    jQuery.browser.name = "Chrome";
-    jQuery.browser.fullVersion = nAgt.substring(verOffset+7);
-  }
+	else if ((verOffset=nAgt.indexOf("Chrome"))!=-1) {
+		jQuery.browser.webkit = true;
+		jQuery.browser.name = "Chrome";
+		jQuery.browser.fullVersion = nAgt.substring(verOffset+7);
+	}
 // In Safari, the true version is after "Safari" or after "Version"
-  else if ((verOffset=nAgt.indexOf("Safari"))!=-1) {
-    jQuery.browser.webkit = true;
-    jQuery.browser.name = "Safari";
-    jQuery.browser.fullVersion = nAgt.substring(verOffset+7);
-    if ((verOffset=nAgt.indexOf("Version"))!=-1)
-      jQuery.browser.fullVersion = nAgt.substring(verOffset+8);
-  }
+	else if ((verOffset=nAgt.indexOf("Safari"))!=-1) {
+		jQuery.browser.webkit = true;
+		jQuery.browser.name = "Safari";
+		jQuery.browser.fullVersion = nAgt.substring(verOffset+7);
+		if ((verOffset=nAgt.indexOf("Version"))!=-1)
+			jQuery.browser.fullVersion = nAgt.substring(verOffset+8);
+	}
 // In Firefox, the true version is after "Firefox"
-  else if ((verOffset=nAgt.indexOf("Firefox"))!=-1) {
-    jQuery.browser.mozilla = true;
-    jQuery.browser.name = "Firefox";
-    jQuery.browser.fullVersion = nAgt.substring(verOffset+8);
-  }
+	else if ((verOffset=nAgt.indexOf("Firefox"))!=-1) {
+		jQuery.browser.mozilla = true;
+		jQuery.browser.name = "Firefox";
+		jQuery.browser.fullVersion = nAgt.substring(verOffset+8);
+	}
 // In most other browsers, "name/version" is at the end of userAgent
-  else if ( (nameOffset=nAgt.lastIndexOf(' ')+1) <
-      (verOffset=nAgt.lastIndexOf('/')) )
-  {
-    jQuery.browser.name = nAgt.substring(nameOffset,verOffset);
-    jQuery.browser.fullVersion = nAgt.substring(verOffset+1);
-    if (jQuery.browser.name.toLowerCase()==jQuery.browser.name.toUpperCase()) {
-      jQuery.browser.name = navigator.appName;
-    }
-  }
+	else if ( (nameOffset=nAgt.lastIndexOf(' ')+1) <
+			(verOffset=nAgt.lastIndexOf('/')) )
+	{
+		jQuery.browser.name = nAgt.substring(nameOffset,verOffset);
+		jQuery.browser.fullVersion = nAgt.substring(verOffset+1);
+		if (jQuery.browser.name.toLowerCase()==jQuery.browser.name.toUpperCase()) {
+			jQuery.browser.name = navigator.appName;
+		}
+	}
 // trim the fullVersion string at semicolon/space if present
-  if ((ix=jQuery.browser.fullVersion.indexOf(";"))!=-1)
-    jQuery.browser.fullVersion=jQuery.browser.fullVersion.substring(0,ix);
-  if ((ix=jQuery.browser.fullVersion.indexOf(" "))!=-1)
-    jQuery.browser.fullVersion=jQuery.browser.fullVersion.substring(0,ix);
+	if ((ix=jQuery.browser.fullVersion.indexOf(";"))!=-1)
+		jQuery.browser.fullVersion=jQuery.browser.fullVersion.substring(0,ix);
+	if ((ix=jQuery.browser.fullVersion.indexOf(" "))!=-1)
+		jQuery.browser.fullVersion=jQuery.browser.fullVersion.substring(0,ix);
 
-  jQuery.browser.majorVersion = parseInt(''+jQuery.browser.fullVersion,10);
-  if (isNaN(jQuery.browser.majorVersion)) {
-    jQuery.browser.fullVersion  = ''+parseFloat(navigator.appVersion);
-    jQuery.browser.majorVersion = parseInt(navigator.appVersion,10);
-  }
-  jQuery.browser.version = jQuery.browser.majorVersion;
+	jQuery.browser.majorVersion = parseInt(''+jQuery.browser.fullVersion,10);
+	if (isNaN(jQuery.browser.majorVersion)) {
+		jQuery.browser.fullVersion  = ''+parseFloat(navigator.appVersion);
+		jQuery.browser.majorVersion = parseInt(navigator.appVersion,10);
+	}
+	jQuery.browser.version = jQuery.browser.majorVersion;
 })(jQuery)
 
 function array2tr(ar) {
@@ -6221,10 +6216,12 @@ $(document).on("click", "A.smtlink", function() {
   }
   data.page_id = $("BODY").data('id');
   var tpl = $item.data("tpl") || $item.data("template") || '';
+
   console.log("smtlink: Loading tpl=" + tpl + " into " + target + " data=", data);
   return template_load(target, tpl, controller, options, data);     
                                                               
 });
+
     
 $(document).on("click", ".vmenu-item", function() {
   var $item = $(this);
@@ -6249,6 +6246,7 @@ $(document).on("click", ".vmenu-item", function() {
     if(data) ajax_url = ajax_url + '&' + obj2qs(data);
     $('#' + target).load(ajax_url, function(responseText) {        
       var onload = $anchor.data('onload'); // optionally call JS function on load
+
       // done, restore
       $icon.css('background-position', icon_pos); // hide icon
       $icon.html(''); // hide wheel
@@ -6509,14 +6507,14 @@ function lunh_calc(number) {
     sum += parseInt(number.substring(i,i+1));
   }
   var delta = new Array (0,1,2,3,4,-4,-3,-2,-1,0);
-  for (i=number.length-1; i>=0; i-=2 ) {    
+  for (i=number.length-1; i>=0; i-=2 ) {		
     var deltaIndex = parseInt(number.substring(i,i+1));
-    var deltaValue = delta[deltaIndex]; 
+    var deltaValue = delta[deltaIndex];	
     sum += deltaValue;
-  } 
+  }	
   var mod10 = sum % 10;
-  mod10 = 10 - mod10; 
-  if (mod10==10) {    
+  mod10 = 10 - mod10;	
+  if (mod10==10) {		
     mod10=0;                                              
   }
   return mod10;
@@ -7475,339 +7473,326 @@ function jfu_file_list($target) {
 
 // new uploader, using Blueimp jquery-fileupload
 function init_fileuploader($target, loadData, extra_options) {
-
-    console.log('Ashiiiiiiiiiidc'+$target.data('download_count'));
-
-    console.log("afr.js: init_fileuploader");
-
-    if(typeof extra_options === 'undefined') var extra_options = {}; // overrides
-    if(typeof loadData === 'undefined') loadData = true;
-
-    var ui = $target.data('ui') || 'basic';
-    var options = $target.data('options') || {};
-    options = $.extend(options, extra_options);
-
-    var view = $target.data('download_template') || $target.data('view') || options.view || "list"; // grid (compact) or list
-    if(!(view == "grid" || view == "list")) view = "list";
-
-    var mediaData = $target.data('media_data') || {};
-    console.log("afr.js: init_fileuploader1");
+  if(typeof extra_options === 'undefined') var extra_options = {}; // overrides
+  if(typeof loadData === 'undefined') loadData = true;
+ 
+  var ui = $target.data('ui') || 'basic';
+  var options = $target.data('options') || {};
+  options = $.extend(options, extra_options);
   
-    $target.data('initialized', 1);
-    $target.data("upload-count", 0); // number of files in the upload queue
-    $target.data("download-count", 0); // number of files in the download table (filled in later by jfu_load)
-    $target.data("send-count", 0); // number of files being sent
-    $target.data('view', view);
+  var view = $target.data('download_template') || $target.data('view') || options.view || "list"; // grid (compact) or list
+  if(!(view == "grid" || view == "list")) view = "list";
   
-    jfu_buttons($target, ui); // append buttons
-    if(tip = $target.data('tip')) {
-        jfu_tip($target, tip); // tooltip
-    }
+  var mediaData = $target.data('media_data') || {};
   
-    var disabled = $target.hasClass('disabled') ? true : false;
-    var div_id = $target.prop('id');
-    //  alert("id=" + div_id);
-    console.log("afr.js: init_fileuploader2");
+  $target.data('initialized', 1);
+  $target.data("upload-count", 0); // number of files in the upload queue
+  $target.data("download-count", 0); // number of files in the download table (filled in later by jfu_load)
+  $target.data("send-count", 0); // number of files being sent
+  $target.data('view', view);
+  
+  jfu_buttons($target, ui); // append buttons
+  if(tip = $target.data('tip')) {
+    jfu_tip($target, tip); // tooltip
+  }
+  
+  var disabled = $target.hasClass('disabled') ? true : false;
+  var div_id = $target.prop('id');
+  //  alert("id=" + div_id);
 
-    // defaults
-    var extensions = options.allowed_extensions || ['jpeg', 'jpg', 'gif', 'png'];
-    var endpoint = options.endpoint || '/ajax.php?oper=upload';
-    var allow_multiple = options.allow_multiple || false;
-    var title = options.title || 'Click or Drop';
-    var sizeLimit = options.maximum_file_size || 10 * 1024 * 1024; // 10M default
+  // defaults
+  var extensions = options.allowed_extensions || ['jpeg', 'jpg', 'gif', 'png'];
+  var endpoint = options.endpoint || '/ajax.php?oper=upload';
+  var allow_multiple = options.allow_multiple || false;
+  var title = options.title || 'Click or Drop';
+  var sizeLimit = options.maximum_file_size || 10 * 1024 * 1024; // 10M default
 
-    var resize = options.resize || {};
-    var handler_options = $target.data('handler_options') || {};
-    var handler = handler_options.handler || $target.data('handler') || '';
-    var target_field = options.target_field || '';
+  var resize = options.resize || {};
+  var handler_options = $target.data('handler_options') || {};
+  var handler = handler_options.handler || $target.data('handler') || '';
+  var target_field = options.target_field || '';
   
 
-    //console.log("init_uploader for " + div_id + " handler=" + handler + " view=" + view + " extra options="); // + " data=" + dump(mediaData) + " options=" + dump(options));
-    //console.log(extra_options);
-    //console.log(options);
-    //console.log("extension=");//console.log(extensions);
-    //console.log("media data=");//console.log(mediaData);
-    delete options.media_data;
+  //console.log("init_uploader for " + div_id + " handler=" + handler + " view=" + view + " extra options="); // + " data=" + dump(mediaData) + " options=" + dump(options));
+  //console.log(extra_options);
+  //console.log(options);
+  //console.log("extension=");//console.log(extensions);
+  //console.log("media data=");//console.log(mediaData);
+  delete options.media_data;
   
-    //if(!mediaData.parent_id) {
-    //  var parent_id = $target.data('parent_id');
-    //  //console.log("No parent ID, looking at element, found:" + parent_id);
-    //  mediaData.parent_id = parent_id;
-    //}
-    console.log("afr.js: init_fileuploader3");
+  //if(!mediaData.parent_id) {
+  //  var parent_id = $target.data('parent_id');
+  //  //console.log("No parent ID, looking at element, found:" + parent_id);
+  //  mediaData.parent_id = parent_id;
+  //}
 
-    var endpoint = '/ajax.php?oper=jq-file-upload';
-    var params = {
-        options: JSON.stringify(options),
-        mediaData: JSON.stringify(mediaData)
+  var endpoint = '/ajax.php?oper=jq-file-upload';
+  var params = {
+      options: JSON.stringify(options),
+      mediaData: JSON.stringify(mediaData)
     };
            
-    if(params) endpoint += '&' + obj2qs(params); // this shouln't be needed as params below should handle this. Doesn't work for some reason      
+  if(params) endpoint += '&' + obj2qs(params); // this shouln't be needed as params below should handle this. Doesn't work for some reason      
 
-    //console.log("Our options:");
-    //console.log(options);
+  //console.log("Our options:");
+  //console.log(options);
 
-    var uploader_options = jq_uploader_options(options);
-
-    console.log("Endpoint options:", options);
-    console.log("Uploader options:", uploader_options);
-    //console.log(uploader_options);
-
-    /** todo: turn off local_resize, set imageMaxWidth/Height in options */
-    var localResize = /Android(?!.*Chrome)|Opera/.test(window.navigator && navigator.userAgent);
-    var crop = false;
-    console.log("afr.js: init_fileuploader4");
+  var uploader_options = jq_uploader_options(options);
   
-    console.log("local resize=" + localResize);
+  console.log("Endpoint options:", options);
+  console.log("Uploader options:", uploader_options);
+  //console.log(uploader_options);
+  
+  /** todo: turn off local_resize, set imageMaxWidth/Height in options */
+  var localResize = /Android(?!.*Chrome)|Opera/.test(window.navigator && navigator.userAgent);
+  var crop = false;
+  
+  console.log("local resize=" + localResize);
     
-    $target.fileupload({
-        // Uncomment the following to send cross-domain cookies:
-        //xhrFields: {withCredentials: true},
-        url: endpoint,
-        options: uploader_options,
-        acceptFileTypes: uploader_options.acceptFileTypes,
-        maxFileSize: uploader_options.maxFileSize,
-        minFileSize: uploader_options.minFileSize,
-        maxNumberOfFiles: uploader_options.maxNumberOfFiles,
-        downloadTemplateId: "template-download-" + view,    
-        disableImageResize: localResize,
+  $target.fileupload({
+    // Uncomment the following to send cross-domain cookies:
+    //xhrFields: {withCredentials: true},
+    url: endpoint,
+    options: uploader_options,
+    acceptFileTypes: uploader_options.acceptFileTypes,
+    maxFileSize: uploader_options.maxFileSize,
+    minFileSize: uploader_options.minFileSize,
+    maxNumberOfFiles: uploader_options.maxNumberOfFiles,
+    downloadTemplateId: "template-download-" + view,    
+    disableImageResize: localResize,
 
-        imageMaxWidth: 1920,
-        imageMaxHeight: 1920,
-        imageCrop: crop, // Force cropped images
-
-        dropZone: $(this),
-        autoUpload: false
-    }).on('fileuploadchange', function (e, data) {
-        if(is_object(data)) {
-            var valid_count = 0;
-            var $files = $target.find("TABLE TBODY.files TR");
-            //console.log('fileuploadchange rows=' + $files.length);
-            var er = data.files.error;
-            $.each(data.files, function (index, file) {
-             if(!file.error) valid_count++;
-            });
-        } else {
-            var org = data;
-            data = {};
-            data.files = [];
-            data.files.error = data;
-        }
-        //console.log('len=' + data.files.length + ' valid files=' + valid_count + " gler=" + er + " fer=" + data.files[0].error + " 2nd=" + (data.files.length > 1 ? data.files[1].error : ' none'));
-        console.log("afr.js: init_fileuploader ends");
+    imageMaxWidth: 1920,
+    imageMaxHeight: 1920,
+    imageCrop: crop, // Force cropped images
+    
+    dropZone: $(this),
+    autoUpload: false
+   }).on('fileuploadchange', function (e, data) {
+     if(is_object(data)) {
+       var valid_count = 0;
+       var $files = $target.find("TABLE TBODY.files TR");
+       //console.log('fileuploadchange rows=' + $files.length);
+       var er = data.files.error;
+       $.each(data.files, function (index, file) {
+         if(!file.error) valid_count++;
+       });
+     } else {
+       var org = data;
+       data = {};
+       data.files = [];
+       data.files.error = data;
+     }
+     //console.log('len=' + data.files.length + ' valid files=' + valid_count + " gler=" + er + " fer=" + data.files[0].error + " 2nd=" + (data.files.length > 1 ? data.files[1].error : ' none'));
+     
    });
 
-    $(document).on('click', "INPUT.check-all, INPUT[type='checkbox'][name='delete']", function() {
-        var $target = $(this).closest('.jquery-fileupload');
-        console.log("delete click, wait target=" + $target.attr('id'));
-        setTimeout(function(){console.log("run");jfu_del_update($target); }, 30);     
-    });
+   $(document).on('click', "INPUT.check-all, INPUT[type='checkbox'][name='delete']", function() {
+     var $target = $(this).closest('.jquery-fileupload');
+     console.log("delete click, wait target=" + $target.attr('id'));
+     setTimeout(function(){console.log("run");jfu_del_update($target); }, 30);     
+   });
    
    
-    $target.on('fileuploaddestroyed', function(e, data) { 
-        //console.log("fileuploadcompleted: data=");
-        //console.log(data);
+   $target.on('fileuploaddestroyed', function(e, data) { 
+     //console.log("fileuploadcompleted: data=");
+     //console.log(data);
 
-        //$target.data("download-count", $target.data("download-count") - 1);
-        jfu_ui_update($target);
-
-        var up_count = $target.data("upload-count") || 0;
-        var down_count = $target.data("download-count") || 0;
-
-        //console.log("fileuploaddestroyed: up=" + up_count + " down=" + down_count);
-    });      
+     //$target.data("download-count", $target.data("download-count") - 1);
+     jfu_ui_update($target);
+     
+     var up_count = $target.data("upload-count") || 0;
+     var down_count = $target.data("download-count") || 0;
        
-    $target.on('fileuploadprocessdone', function (e, data) {
-      
-        console.log("fileuploadprocessdone:");
-        //console.log(data.exif.getAll()); 
-    });
+     //console.log("fileuploaddestroyed: up=" + up_count + " down=" + down_count);
 
-    $target.on('fileuploadcompleted', function(e, data) {
-        var result = data ? data.result : {};
-        var success = result.success;
-        var error = result.error;
-        console.log("fileuploadcompleted: success=" + success + " error=" + error);
-        //if(error) console.log("fileuploadcompleted: error=" + error);
-        var file = data.files ? data.files[0] : null;
-        console.log("fileuploadcompleted v2: data=",data);
-        //console.log(file);
+   });      
+       
+   $target.on('fileuploadcompleted', function(e, data) {
+     var result = data ? data.result : {};
+     var success = result.success;
+     var error = result.error;
+     console.log("fileuploadcompleted: success=" + success + " error=" + error);
+     //if(error) console.log("fileuploadcompleted: error=" + error);
+     var file = data.files ? data.files[0] : null;
+     console.log("fileuploadcompleted v2: data=",data);
+     //console.log(file);
 
-        if(error) {
-            var $messages = form_messages(div_id); // get message div
-            console.log("msg len=" + $messages.length);
-            $messages.append(bootstrap_error_message(error)).parent().show(); // append       
-        } else if(file) { // file successfully uploaded 
-            var file_error = file.error;
+     if(error) {
+       var $messages = form_messages(div_id); // get message div
+       console.log("msg len=" + $messages.length);
+       $messages.append(bootstrap_error_message(error)).parent().show(); // append       
+     } else if(file) { // file successfully uploaded 
+       var file_error = file.error;
+       
+       if(!file_error) $target.data("send-count", Math.min($target.data("send-count") - 1, 0));
 
-            if(!file_error) $target.data("send-count", Math.min($target.data("send-count") - 1, 0));
+       //if(!error) jfu_ui_update($target);
 
-            //if(!error) jfu_ui_update($target);
+       var upload_count = $target.data("upload-count");
+       var send_count = $target.data("send-count");
 
-            var upload_count = $target.data("upload-count");
-            var send_count = $target.data("send-count");
-
-            //console.log("fileuploadcompleted with file: error=" + error + " send count=" + send_count + " upload count=" + upload_count);
-            if(upload_count >= 0) {
-                //console.log("calling load");
-                jfu_load($target); // calls sortable, adds edit buttons
-            }
-        }
+       //console.log("fileuploadcompleted with file: error=" + error + " send count=" + send_count + " upload count=" + upload_count);
+       if(upload_count >= 0) {
+         //console.log("calling load");
+         jfu_load($target); // calls sortable, adds edit buttons
+       }
+       
+     }
      
-        var up_count = $target.data("upload-count") || 0;
-        var down_count = $target.data("download-count") || 0;
-        var handler_options = $target.data('handler_options') || {};
-        var handler = handler_options.handler || $target.data('handler') || '';
-        console.log('Assshiiiiii');
+     var up_count = $target.data("upload-count") || 0;
+     var down_count = $target.data("download-count") || 0;
+     var handler_options = $target.data('handler_options') || {};
+     var handler = handler_options.handler || $target.data('handler') || '';
+       
+     console.log("\n\n---\n\nfileuploadcompleted: up=" + up_count + " down=" + down_count + " handler=" + handler + " data=", data);
+     var uploaded_files = jfu_file_list($target);
+     if(uploaded_files.length && handler && !error) {
+       data = {"files": uploaded_files}            
+       console.log("fileuploadcompleted calling " + handler + " with ", data);
+       success_handler(handler_options, data);
+     }
 
-        console.log("\n\n---\n\nfileuploadcompleted: up=" + up_count + " down=" + down_count + " handler=" + handler + " data=", data);
-        var uploaded_files = jfu_file_list($target);
-        if(uploaded_files.length && handler && !error) {
-            data = {"files": uploaded_files}            
-            console.log("fileuploadcompleted calling " + handler + " with ", data);
-            success_handler(handler_options, data);
-        }
+   });      
 
-    });      
+   $target.on('fileuploadstart', function(e, data) { 
+     console.log("fileuploadstart");
+     console.log(data);
+   });      
 
-    $target.on('fileuploadstart', function(e, data) { 
-        console.log("fileuploadstart");
-        console.log(data);
-    });      
-
-    $target.on('fileuploadsend', function(e, data) { 
-
-        $target.data("send-count", $target.data("send-count") + 1);
-        jfu_ui_update($target);
-
-        //console.log("fileuploadsend");
-        //console.log(data); 
-    });      
-
-    $target.on('fileuploadadd', function(e, data) { 
+   $target.on('fileuploadsend', function(e, data) { 
      
-        //console.log("fileuploadadd data=", data);
+     $target.data("send-count", $target.data("send-count") + 1);
+     jfu_ui_update($target);
+     
+     //console.log("fileuploadsend");
+     //console.log(data); 
+   });      
 
-        // Note: for this to work delete the line "delete file.error" in jquery.fileupload-validate.js;
-        //data.files[0].error = "Foobar error";
-        //data.files.error = true;
-        //data.messages = [error];
+   $target.on('fileuploadadd', function(e, data) { 
+     
+     //console.log("fileuploadadd data=", data);
 
-        var file = data.files[0];
-        //console.log("fileuploadadd file=");
-        //console.log(file);
-        var type = file ? file.type : '';
-        if(type.indexOf('image') == 0) {
-            file_get_dimensions(file, options, function(file, options) {
+     // Note: for this to work delete the line "delete file.error" in jquery.fileupload-validate.js;
+     //data.files[0].error = "Foobar error";
+     //data.files.error = true;
+     //data.messages = [error];
+ 
+     var file = data.files[0];
+     //console.log("fileuploadadd file=");
+     //console.log(file);
+     var type = file ? file.type : '';
+     if(type.indexOf('image') == 0) {
+       file_get_dimensions(file, options, function(file, options) {
           
-                //console.log("Done with aysnc dimension check dim=" + file.width + "/" + file.height);
-                //console.log("Options=");
-                //console.log(options);
-                //console.log(file);
-                file = file_check_dimensions(file, options);
-                data.files[data.index] = file;
-                //console.log("calling check_file: error= " + file.error + " file=");
-                //console.log(file);
-
-                var error = file.error; 
-                if(error) data.files.error = true;
-                //console.log("fileuploadadd: Adding file: error =" + error);
-
-                //console.log(file);        
-                data.process().done(function () {
-                    //console.log("Done processing"); 
-                    //data.submit();
-                });
-            });
-        }
-        //validation.done(function(e, data) {
-        //    //console.log("validation done");
-     //});      
-    });      
-  
-    $target.on('fileuploadfail', function(e, data) {
-        console.log("fileuploadfail: Fail to add file: data=", data);
-        if(is_object(data) && data.files) {
-            var file = data.files[0];
-            var error = file.error;
-        } else {
-            var error = data;
-        }
-    });      
-
-    $target.on('fileuploadfailed', function(e, data) {
-        //var file = data.files[0];
-        //var error = file.error;
-        //console.log(data);     
-        //if(1) { // removed from upload queue or download table ?
-        //  //if(!error) $target.data("upload-count", $target.data("upload-count") - 1);
-        //  var count = $target.data("upload-count") || 0;
-        //} else {
-        //  //if(!error) $target.data("download-count", $target.data("download-count") - 1);
-        //  var count = $target.data("download-count") || 0;
-        //}
-        //console.log("fileuploadfailed: Failed to add file: error=" + error + " count=" + count);
-        jfu_ui_update($target);
-     
-    });      
-   
-    $target.on('fileuploadadded', function(e, data) { // only called after successful add with no errors
-        var upload_count = jfu_upload_count($target);
-
-        //var upload_count = $target.data("upload-count") || 0;
-
-        var file = data.files[0];
-        //var mediaData = $target.data('media_data') || {};     
-        //file = file_get_exif(file, mediaData);
-
-        var error = file.error;
-        //console.log(data);
-        //console.log("fileuploadadded: Added file: count =" + upload_count + " data=", data);
-        jfu_ui_update($target);
-     
-    });      
-   
-    if(handler) {
-        $target.on('fileuploaddestroyed', function(e, data) {       
-            console.log("upload destroyed");
-
-            var uploaded_files = jfu_file_list($target);
-            if(uploaded_files.length && handler) {
-                data = {"files": uploaded_files}            
-                console.log("fileuploaddestroyed calling " + handler + " with ", data);
-                success_handler(handler_options, data);
-            }
+         //console.log("Done with aysnc dimension check dim=" + file.width + "/" + file.height);
+         //console.log("Options=");
+         //console.log(options);
+         //console.log(file);
+         file = file_check_dimensions(file, options);
+         data.files[data.index] = file;
+         //console.log("calling check_file: error= " + file.error + " file=");
+         //console.log(file);
        
-            //success_handler(handler_options, data);
-        });
-    }
+         var error = file.error; 
+         if(error) data.files.error = true;
+         //console.log("fileuploadadd: Adding file: error =" + error);
+         
+         //console.log(file);        
+         data.process().done(function () {
+           //console.log("Done processing"); 
+           //data.submit();
+         });
+       });
+     }
+      //validation.done(function(e, data) {
+     //    //console.log("validation done");
+     //});      
+   });      
+  
+   $target.on('fileuploadfail', function(e, data) {
+     console.log("fileuploadfail: Fail to add file: data=", data);
+     if(is_object(data) && data.files) {
+       var file = data.files[0];
+       var error = file.error;
+     } else {
+       var error = data;
+     }
+   });      
 
-    //console.log($target.fileupload());
+   $target.on('fileuploadfailed', function(e, data) {
+     //var file = data.files[0];
+     //var error = file.error;
+     //console.log(data);     
+     //if(1) { // removed from upload queue or download table ?
+     //  //if(!error) $target.data("upload-count", $target.data("upload-count") - 1);
+     //  var count = $target.data("upload-count") || 0;
+     //} else {
+     //  //if(!error) $target.data("download-count", $target.data("download-count") - 1);
+     //  var count = $target.data("download-count") || 0;
+     //}
+     //console.log("fileuploadfailed: Failed to add file: error=" + error + " count=" + count);
+     jfu_ui_update($target);
+     
+   });      
+   
+   $target.on('fileuploadadded', function(e, data) { // only called after successful add with no errors
+     var upload_count = jfu_upload_count($target);
+     
+     //var upload_count = $target.data("upload-count") || 0;
+     
+     var file = data.files[0];
+     //var mediaData = $target.data('media_data') || {};     
+     //file = file_get_exif(file, mediaData);
+     
+     var error = file.error;
+     //console.log(data);
+     //console.log("fileuploadadded: Added file: count =" + upload_count + " data=", data);
+     jfu_ui_update($target);
+     
+   });      
+   
+   if(handler) {
+     $target.on('fileuploaddestroyed', function(e, data) {       
+       console.log("upload destroyed");
+
+       var uploaded_files = jfu_file_list($target);
+       if(uploaded_files.length && handler) {
+         data = {"files": uploaded_files}            
+         console.log("fileuploaddestroyed calling " + handler + " with ", data);
+         success_handler(handler_options, data);
+       }
+       
+       //success_handler(handler_options, data);
+     });
+   }
+
+  //console.log($target.fileupload());
   
-    // Enable iframe cross-domain access via redirect option:
-    $target.fileupload(
-        'option',
-        'redirect',
-        window.location.href.replace(
-            /\/[^\/]*$/,
-            '/cors/result.html?%s'
-        )
-    );   
+  // Enable iframe cross-domain access via redirect option:
+  $target.fileupload(
+    'option',
+    'redirect',
+    window.location.href.replace(
+      /\/[^\/]*$/,
+      '/cors/result.html?%s'
+    )
+  );   
   
-    // Load existing files:
-    $target.addClass('fileupload-processing');
-    if(loadData) {
-        //console.log("jquery_file_uploader: loading data as loadData=" + loadData);
-        jfu_load($target, mediaData, false);
-    }
+  // Load existing files:
+  $target.addClass('fileupload-processing');
+  if(loadData) {
+    //console.log("jquery_file_uploader: loading data as loadData=" + loadData);
+    jfu_load($target, mediaData, false);
+  }
+
 }                                   
 
 function jfu_download_count($target) {
-    $file_cont = $target.parent().find('.file-table tbody');
-    $files = $file_cont.find('.template-download');
-    //console.log("File table download file count=" + $files.length);
-    var download_count = $files.length;     
-    return download_count;
+  $file_cont = $target.parent().find('.file-table tbody');
+  $files = $file_cont.find('.template-download');
+  //console.log("File table download file count=" + $files.length);
+  var download_count = $files.length;     
+  return download_count;
 }
 
 // Not sure why, but this button stopeed working
@@ -7835,142 +7820,140 @@ function jfu_delete_all() {
 }
 
 function jfu_del_update($target, del) {
-    var $cb = $("INPUT[type='checkbox'][name='delete']");
-    var $checked = $("INPUT[type='checkbox'][name='delete']:checked");
-    var checked_count = $checked.length;
-    console.log("CB len= " + $cb.length + " Checked len=" + checked_count + " target=" + $target.attr('id'));
-    var $delete_button = $target.find('BUTTON.delete-all');
-    if(checked_count > 0) { // if more than one, make sortable and show Delete-all button on top
-        $delete_button.removeClass("hidden").show();
-        if(del) {
-            console.log("Deleting " + checked_count);
-            $.each($checked, function() {
-                var $cb = $(this);
-                var ajax_url = $(this).data('url');
-                if(ajax_url) {
-                    console.log("Deleting URL=" + ajax_url);
-                    $.ajax({ url: ajax_url}).done(function() {
-                        var $el = $cb.closest("LI");              
-                        console.log("Done. Removing LI len=" + $el.length);
-                        $target.data('download-count',$target.data('download-count')-$el.length);
-                        upload_validation($target);
-                        $el.remove()
-                    });
-                }
-            });
+  var $cb = $("INPUT[type='checkbox'][name='delete']");
+  var $checked = $("INPUT[type='checkbox'][name='delete']:checked");
+  var checked_count = $checked.length;
+  console.log("CB len= " + $cb.length + " Checked len=" + checked_count + " target=" + $target.attr('id'));
+  var $delete_button = $target.find('BUTTON.delete-all');
+  if(checked_count > 0) { // if more than one, make sortable and show Delete-all button on top
+    $delete_button.removeClass("hidden").show();
+    if(del) {
+      console.log("Deleting " + checked_count);
+      $.each($checked, function() {
+        var $cb = $(this);
+        var ajax_url = $(this).data('url');
+        if(ajax_url) {
+          console.log("Deleting URL=" + ajax_url);
+          $.ajax({ url: ajax_url}).done(function() {
+            var $el = $cb.closest("LI");              
+            console.log("Done. Removing LI len=" + $el.length);
+            $el.remove()
+          });
         }
-    } else {
-        $delete_button.addClass("hidden").hide();      
+      });
     }
-    // console.log("deleteeeeeeeeeeeeeee"+$target.data('download-count'));
-    // upload_validation($target);
+  } else {
+    $delete_button.addClass("hidden").hide();      
+  }
 }
 
 // show hide UI buttons depending on settings (ui) and file count (upload/download)
 function jfu_ui_update($target) {
-    var ui = $target.data("ui");
-    var mediaData = $target.data('media_data') || {}
-
-    var upload_count = jfu_upload_count($target);
-    var download_count = jfu_download_count($target);
-    var send_count = $target.data('send-count');
-
-    $target.data("upload-count", upload_count || 0);
-    $target.data("download-count", download_count || 0);
-
-    $('[data-toggle="confirmation"]').confirmation({
-        //'singleton':true      
-    });
+  var ui = $target.data("ui");
+  var mediaData = $target.data('media_data') || {}
   
-    if(ui != "full") return; 
+  var upload_count = jfu_upload_count($target);
+  var download_count = jfu_download_count($target);
+  var send_count = $target.data('send-count');
 
-    var $upload_button = $target.find('BUTTON.upload-all');
-    var $cancel_button = $target.find('BUTTON.cancel-all');
-    var $check_all = $target.find('INPUT.check-all');
-    var $view_buttons = $target.find('.jfu-switch-view');
-
-    $file_cont = $target.parent().find('.file-table tbody');
-    $checkboxes = $file_cont.find('INPUT.toggle');
-
-    if(send_count > 1) {
-        $cancel_button.removeClass("hidden").show();      
-    } else {
-        $cancel_button.addClass("hidden").hide();      
-    }             
-
-    var show_view_buttons = false;
+  $target.data("upload-count", upload_count || 0);
+  $target.data("download-count", download_count || 0);
   
-    if(download_count > 1) { // if more than one, make sortable and show Delete-all button on top
-        $check_all.removeClass("hidden").show();      
-        $checkboxes.removeClass("hidden").show();
-        show_view_buttons = true;
-    } else {
-        //console.log("hiding delete button");
-        // $delete_button.addClass("hidden").hide();      
-        $check_all.addClass("hidden").hide();      
-        $checkboxes.addClass("hidden").hide();      
-    }
-
-    if(upload_count) show_view_buttons = false;
-
-    if(upload_count > 1) { // if more than one, show upload-all button on top
-        $upload_button.removeClass("hidden").show();      
-    } else {
-        $upload_button.addClass("hidden").hide();      
-    }
+  $('[data-toggle="confirmation"]').confirmation({
+    //'singleton':true      
+  });
   
-    if(show_view_buttons) {
-        var view = $target.data("view");
-        $view_buttons.removeClass("hidden").show();
-        if(view) $(".jfu-switch-view.jfu-view-" + view).removeClass("btn-default").addClass("btn-positive");
-    } else {
-        $view_buttons.addClass("hidden").hide();      
+  if(ui != "full") return; 
+  
+  var $upload_button = $target.find('BUTTON.upload-all');
+  var $cancel_button = $target.find('BUTTON.cancel-all');
+  var $check_all = $target.find('INPUT.check-all');
+  var $view_buttons = $target.find('.jfu-switch-view');
+
+  $file_cont = $target.parent().find('.file-table tbody');
+  $checkboxes = $file_cont.find('INPUT.toggle');
+
+  if(send_count > 1) {
+    $cancel_button.removeClass("hidden").show();      
+  } else {
+    $cancel_button.addClass("hidden").hide();      
+  }             
+  
+  var show_view_buttons = false;
+
+  
+
+  
+  if(download_count > 1) { // if more than one, make sortable and show Delete-all button on top
+    $check_all.removeClass("hidden").show();      
+    $checkboxes.removeClass("hidden").show();
+    show_view_buttons = true;
+  } else {
+    //console.log("hiding delete button");
+    // $delete_button.addClass("hidden").hide();      
+    $check_all.addClass("hidden").hide();      
+    $checkboxes.addClass("hidden").hide();      
+  }
+
+  if(upload_count) show_view_buttons = false;
+  
+  if(upload_count > 1) { // if more than one, show upload-all button on top
+    $upload_button.removeClass("hidden").show();      
+  } else {
+    $upload_button.addClass("hidden").hide();      
+  }
+  
+  if(show_view_buttons) {
+    var view = $target.data("view");
+    $view_buttons.removeClass("hidden").show();
+    if(view) $(".jfu-switch-view.jfu-view-" + view).removeClass("btn-default").addClass("btn-positive");
+    
+  } else {
+    $view_buttons.addClass("hidden").hide();      
+  }
+
+  var view = $target.data("view") || 'list';
+  
+  var download_count = $target.data("download-count");
+  if(download_count > 1) {
+    var sortable_options = {'handle': '.handle'};
+    var handler_options = $target.data('handler_options') || {};
+    var handler = handler_options.handler || $target.data('handler') || '';
+    sortable_options.handler = handler;                         
+    sortable_options.handler_options = handler_options;
+    var $parent = $target.parent();
+    if(view == 'list') {
+      sortable_options.helper = fixHelper; // needed so table row won't shrink
+      $file_cont = $parent.find('.file-table tbody');
+    } else { // grid view
+      //sortable_options.helper = fixHelper;
+      $file_cont = $parent.find('.file-table UL.file-container');
     }
-
-    var view = $target.data("view") || 'list';
-
-    var download_count = $target.data("download-count");
-    if(download_count > 1) {
-        var sortable_options = {'handle': '.handle'};
-        var handler_options = $target.data('handler_options') || {};
-        var handler = handler_options.handler || $target.data('handler') || '';
-        sortable_options.handler = handler;                         
-        sortable_options.handler_options = handler_options;
-        var $parent = $target.parent();
-        if(view == 'list') {
-            sortable_options.helper = fixHelper; // needed so table row won't shrink
-            $file_cont = $parent.find('.file-table tbody');
-        } else { // grid view
-            //sortable_options.helper = fixHelper;
-            $file_cont = $parent.find('.file-table UL.file-container');
-        }
         
-        if(mediaData.inline) {
-            sortable_options.inline = 1;
-            sortable_options.obj_type = mediaData.parent_type;
-            sortable_options.obj_id = mediaData.parent_id;
-            sortable_options.obj_field = mediaData.parent_field;
-        }
+    if(mediaData.inline) {
+      sortable_options.inline = 1;
+      sortable_options.obj_type = mediaData.parent_type;
+      sortable_options.obj_id = mediaData.parent_id;
+      sortable_options.obj_field = mediaData.parent_field;
+    }
 
-        if(upload_count > 0) {
-            //$("html, body").animate({ scrollTop: $(document).height() }, "fast");
-            if(0) { // swap upload/download template
-                $(".template-upload").insertBefore("#template-download-row");
-            } else { // scroll to download template
-                $('html, body').animate({
-                    scrollTop: $("#template-download-row").offset().top + $("#template-download-row").height() 
-                }, 100);                                                                                                
-                console.log("Scrolling to download row len=" + $("#template-download-row").length + " upload_count=" + upload_count + "top=" + $("#template-download-row").offset().top + " height=" + $("#template-download-row").height());
-            }        
-        }
-        console.log("Assshiiiiiiiiiiiii"+download_count);
-        upload_validation($target);
-        console.log("Target:" + $target.attr('id') + " parent=" + $parent.attr('class') 
-          + " dl count=" + download_count + " file_cont=" + $file_cont.length);
-        //console.log("Media Data:", mediaData);
-        //console.log("Sortable options:", sortable_options);
-        sortable_object_list($file_cont, sortable_options);
-    }                 
+    if(upload_count > 0) {
+      //$("html, body").animate({ scrollTop: $(document).height() }, "fast");
+      if(0) { // swap upload/download template
+        $(".template-upload").insertBefore("#template-download-row");
+      } else { // scroll to download template
+        $('html, body').animate({
+            scrollTop: $("#template-download-row").offset().top + $("#template-download-row").height() 
+        }, 100);                                                                                                
+        console.log("Scrolling to download row len=" + $("#template-download-row").length + " upload_count=" + upload_count + "top=" + $("#template-download-row").offset().top + " height=" + $("#template-download-row").height());
+      }        
+    }
+    
+    console.log("Target:" + $target.attr('id') + " parent=" + $parent.attr('class') + " dl count=" + download_count + " file_cont=" + $file_cont.length);
+    //console.log("Media Data:", mediaData);
+    //console.log("Sortable options:", sortable_options);
+    sortable_object_list($file_cont, sortable_options);
+  }                 
 }
 
 // makes a list sortable
@@ -8095,81 +8078,61 @@ function sortable_object_list($target, options) {
 }
 
 function jfu_load($target, mediaData, call_handler) {
-    console.log("jfu_loadAsshhhiiiiiiiiiii");
-    if(typeof mediaData === 'undefined') var mediaData = $target.data('media_data') || {};
-    if(typeof call_handler === 'undefined') var call_handler = true;
+  if(typeof mediaData === 'undefined') var mediaData = $target.data('media_data') || {};
+  if(typeof call_handler === 'undefined') var call_handler = true;
                        
-    var pid = mediaData.parent_id;
-    var pt = mediaData.parent_type;
-    var pf = mediaData.parent_field;
-    var inline = mediaData.inline ? 1 : 0;
+  var pid = mediaData.parent_id;
+  var pt = mediaData.parent_type;
+  var pf = mediaData.parent_field;
+  var inline = mediaData.inline ? 1 : 0;
+  
+  var options = $target.data("options") || {};
+  var edit_url = options.edit_url;
+  var edit_target = options.edit_target;
+  var url = '/ajax.php?oper=jq-get-media&parent_type=' + pt + '&parent_id=' + pid + '&parent_field=' + pf + '&inline=' + inline;
+  if(edit_url) url = url + "&edit_url=" + encodeURIComponent(edit_url);
+  if(edit_target) url = url + "&edit_target=" + encodeURIComponent(edit_target);
+  
+  //console.log("Load existing files from " + url + " target id=" + $target.attr("id"));
+  $.ajax({
+    // Uncomment the following to send cross-domain cookies:
+    //xhrFields: {withCredentials: true},
+    url: url,
+    dataType: 'json',
+    context: $target[0]
+  }).always(function () {
+    $(this).removeClass('fileupload-processing');
+  }).done(function (result) {
+    $("table tbody.files").empty();
+    //console.log("result=", result);
+    //console.log("this=", this);
+    
+    $(this).fileupload('option', 'done')
+      .call(this, $.Event('done'), {result: result});
+    
+    $file_cont = $target.parent().find('.file-table tbody');
+    $files = $file_cont.find('TR.template-download');
+    //console.log("File table file count=" + $files.length);
+
+    $target.data("download-count", $files.length);
+    jfu_ui_update($target)
 
     var options = $target.data("options") || {};
-    var edit_url = options.edit_url;
-    var edit_target = options.edit_target;
-    var url = '/ajax.php?oper=jq-get-media&parent_type=' + pt + '&parent_id=' + pid + '&parent_field=' + pf + '&inline=' + inline;
-    if(edit_url) url = url + "&edit_url=" + encodeURIComponent(edit_url);
-    if(edit_target) url = url + "&edit_target=" + encodeURIComponent(edit_target);
-  
-    //console.log("Load existing files from " + url + " target id=" + $target.attr("id"));
-    $.ajax({
-        // Uncomment the following to send cross-domain cookies:
-        //xhrFields: {withCredentials: true},
-        url: url,
-        dataType: 'json',
-        context: $target[0]
-    }).always(function () {
-        $(this).removeClass('fileupload-processing');
-    }).done(function (result) {
-        $("table tbody.files").empty();
-        //console.log("result=", result);
-        //console.log("this=", this);
+
+    var handler_options = $target.data('handler_options') || {};
+    var handler = handler_options.handler || $target.data('handler') || '';
+    //console.log("jfu_load handler=" + handler + " handler options=");
+    //console.log(handler_options);
     
-        $(this).fileupload('option', 'done')
-            .call(this, $.Event('done'), {result: result});
-    
-        $file_cont = $target.parent().find('.file-table tbody');
-        $files = $file_cont.find('TR.template-download');
-        //console.log("File table file count=" + $files.length);
+    if(handler && call_handler) { // handler is stored in handler_options.handler      
+      //console.log("jfu_load: Calling handler: " + handler);
+      result.files = $files;
+      success_handler(handler_options, result);
+      //success_handler(handler_options, false); /** does this break vpatina ? */
+    }
 
-        $target.data("download-count", $files.length);
-        jfu_ui_update($target)
-        console.log("jfu_loadAsshhhiiiiiiiiiii"+$files.length);
-        upload_validation($target);
+  })
 
-        var options = $target.data("options") || {};
-
-        var handler_options = $target.data('handler_options') || {};
-        var handler = handler_options.handler || $target.data('handler') || '';
-        //console.log("jfu_load handler=" + handler + " handler options=");
-        //console.log(handler_options);
-    
-        if(handler && call_handler) { // handler is stored in handler_options.handler      
-            //console.log("jfu_load: Calling handler: " + handler);
-            result.files = $files;
-            success_handler(handler_options, result);
-            //success_handler(handler_options, false); /** does this break vpatina ? */
-        }
-    })
-}
-
-function upload_validation($target){
-
-    var dc=$target.data("download-count");
-    console.log('funcAshiiiiiiiiiii'+dc);
-
-    // if(dc>=12){
-    //     console.log('funcAshiiiiiiiiiiiffffffffffff'+dc);
-
-    //     document.getElementById("file_input").style.display = "none";
-    //     document.getElementById("validation_error").style.display = "block";
-    // }else{
-    //     console.log('funcAshiiiiiiiiiiielseee'+dc);
-
-        document.getElementById("file_input").style.display = "block";
-    //     document.getElementById("validation_error").style.display = "none";
-
-    // }
 }
 
 function jfu_tip($uploader, tip) {
@@ -8189,101 +8152,95 @@ function jfu_tip($uploader, tip) {
 }
 
 function jfu_buttons($uploader, ui) {
-    var download_count = jfu_download_count($uploader);
-    console.log('ASHIIIIIIIII'+download_count);
-    console.log($uploader.data("download-count"));
-    console.log('ASHIIIIIIIIIssssss');
+  var version = $uploader.data("version") || 'bootstrap';
+  //var button_class = ui == 'full' ? '' : 'hidden ';
+  var options = $uploader.data("options") || {};
 
-    var version = $uploader.data("version") || 'bootstrap';
-    //var button_class = ui == 'full' ? '' : 'hidden ';
-    var options = $uploader.data("options") || {};
-
-    //console.log("jfu_buttons options=", options);
-    // buttons to switch view; only if multiple files are allowed and template not set
-    var view_buttons = options.allow_multiple && !$uploader.data("download_template") ? 
-    '<button type="button" class="jfu-switch-view jfu-view-grid margin-right margin-bottom btn btn-default" data-template="grid" title="Grid view"><i class="black fa fa-th" aria-hidden="true"></i></button>' +
-    '<button type="button" class="jfu-switch-view jfu-view-list margin-right margin-bottom btn btn-default" data-template="list" title="List view"><i class="black fa fa-list" aria-hidden="true"></i></button>' : '';
+  //console.log("jfu_buttons options=", options);
+  // buttons to switch view; only if multiple files are allowed and template not set
+  var view_buttons = options.allow_multiple && !$uploader.data("download_template") ? 
+  '<button type="button" class="jfu-switch-view jfu-view-grid margin-right margin-bottom btn btn-default" data-template="grid" title="Grid view"><i class="black fa fa-th" aria-hidden="true"></i></button>' +
+  '<button type="button" class="jfu-switch-view jfu-view-list margin-right margin-bottom btn btn-default" data-template="list" title="List view"><i class="black fa fa-list" aria-hidden="true"></i></button>' : '';
   
-    var output = '';
-    if(version == 'bootstrap')  { // bootstrap version
-        var button_bar = '\
-        <div class="row fileupload-buttonbar">\
-            <div class="col-lg-7">\
-                <span id="validation_error" style="display:none;color:red">To enable the upload button, Please upgrade your plan or delete the existing images.</span>\
-                <span class="btn btn-success fileinput-button">\
-                    <i class="glyphicon glyphicon-plus"></i>\
-                    <span>Upload</span>\
-                    <input class="file-input" id="file_input" type="file" name="files[]" multiple>\
-                </span>\
-                <button type="submit" class="hidden upload-all btn btn-primary start">\
-                    <i class="glyphicon glyphicon-upload"></i>\
-                    <span>Start upload</span>\
-                </button>\
-                <button type="reset" class="hidden cancel-all btn btn-warning cancel">\
-                    <i class="glyphicon glyphicon-ban-circle"></i>\
-                    <span>Cancel upload</span>\
-                </button>\
-                <button type="button" class="hidden delete-all btn btn-danger delete" data-toggle="confirmation" title="Sure?" data-on-confirm="jfu_delete_all">\
-                    <i class="glyphicon glyphicon-trash"></i>\
-                    <span>Delete</span>\
-                </button>\
-                <input type="checkbox" class="check-all hidden toggle">\
-                <span class="fileupload-process"></span>\
-                </div>\
-                <div class="col-lg-5 fileupload-progress fade">\
-                    <div class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100">\
-                    <div class="progress-bar progress-bar-success" style="width:0%;"></div>\
-                </div>\
-                <div class="progress-extended">&nbsp;</div>\
-            </div>\
-        </div>';
-    
-        var file_table = view_buttons + '\
-        <table role="presentation" class="file-table table table-striped"><tbody class="files"></tbody></table>';
-    
-        output = file_table + button_bar;
-    
-    } else { // jquery version
-        output = '\
-            <div class="fileupload-buttonbar">\
-                <div class="fileupload-buttons">\
-                tip\
-                    <span class="fileinput-button">\
-                        <span>Upload</span>\
-                        <input type="file" name="files[]" multiple>\
-                    </span>\
-                    <button type="submit" class="hidden upload-all start">Start upload</button>\
-                    <button type="reset" class="hidden cancel-all cancel">Cancel upload</button>\
-                    <button type="button" class="hidden delete-all delete">Delete</button>\
-                    <input type="checkbox" class="hidden toggle">\
-                    <span class="fileupload-process"></span>\
-                </div>\
-                <div class="fileupload-progress fade" style="display:none">\
-                    <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>\
-                    <div class="progress-extended">&nbsp;</div>\
-                </div>\
-            </div>' + view_buttons + '\
-            <table role="presentation"><tbody class="files"></tbody></table>\
-        ';
-    }
-    //' + view_buttons + '\
-
-    //console.log("Adding Buttonbar to id=" + $uploader.attr("id") + " class=" + $uploader.attr("class") + " len=" + $uploader.length);
-  
-    $(output).appendTo($uploader);
-    var gallery = '\
-        <!-- The blueimp Gallery widget -->\
-        <div id="blueimp-gallery" class="blueimp-gallery blueimp-gallery-controls" data-filter=":even">\
-            <div class="slides"></div>\
-            <h3 class="title"></h3>\
-            <a class="prev">‹</a>\
-            <a class="next">›</a>\
-            <a class="close">×</a>\
-            <a class="play-pause"></a>\
-            <ol class="indicator"></ol>\
+  var output = '';
+  if(version == 'bootstrap')  { // bootstrap version
+    var button_bar = '\
+    <div class="row fileupload-buttonbar">\
+      <div class="col-lg-7">\
+        <span class="btn btn-success fileinput-button">\
+          <i class="glyphicon glyphicon-plus"></i>\
+          <span>Upload</span>\
+          <input class="file-input" type="file" name="files[]" multiple>\
+        </span>\
+        <button type="submit" class="hidden upload-all btn btn-primary start">\
+          <i class="glyphicon glyphicon-upload"></i>\
+          <span>Start upload</span>\
+        </button>\
+        <button type="reset" class="hidden cancel-all btn btn-warning cancel">\
+          <i class="glyphicon glyphicon-ban-circle"></i>\
+          <span>Cancel upload</span>\
+        </button>\
+        <button type="button" class="hidden delete-all btn btn-danger delete" data-toggle="confirmation" title="Sure?" data-on-confirm="jfu_delete_all">\
+          <i class="glyphicon glyphicon-trash"></i>\
+          <span>Delete</span>\
+        </button>\
+        <input type="checkbox" class="check-all hidden toggle">\
+        <span class="fileupload-process"></span>\
+      </div>\
+      <div class="col-lg-5 fileupload-progress fade">\
+        <div class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100">\
+          <div class="progress-bar progress-bar-success" style="width:0%;"></div>\
         </div>\
-    ';
-    $uploader.after(gallery);
+        <div class="progress-extended">&nbsp;</div>\
+      </div>\
+    </div>';
+    
+    var file_table = view_buttons + '\
+    <table role="presentation" class="file-table table table-striped"><tbody class="files"></tbody></table>';
+    
+    output = file_table + button_bar;
+    
+  } else { // jquery version
+    output = '\
+    <div class="fileupload-buttonbar">\
+        <div class="fileupload-buttons">\
+            tip\
+            <span class="fileinput-button">\
+                <span>Upload</span>\
+                <input type="file" name="files[]" multiple>\
+            </span>\
+            <button type="submit" class="hidden upload-all start">Start upload</button>\
+            <button type="reset" class="hidden cancel-all cancel">Cancel upload</button>\
+            <button type="button" class="hidden delete-all delete">Delete</button>\
+            <input type="checkbox" class="hidden toggle">\
+            <span class="fileupload-process"></span>\
+        </div>\
+        <div class="fileupload-progress fade" style="display:none">\
+            <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>\
+            <div class="progress-extended">&nbsp;</div>\
+        </div>\
+    </div>' + view_buttons + '\
+    <table role="presentation"><tbody class="files"></tbody></table>\
+';
+  }
+//' + view_buttons + '\
+
+  //console.log("Adding Buttonbar to id=" + $uploader.attr("id") + " class=" + $uploader.attr("class") + " len=" + $uploader.length);
+  
+  $(output).appendTo($uploader);
+  var gallery = '\
+  <!-- The blueimp Gallery widget -->\
+  <div id="blueimp-gallery" class="blueimp-gallery blueimp-gallery-controls" data-filter=":even">\
+      <div class="slides"></div>\
+      <h3 class="title"></h3>\
+      <a class="prev">‹</a>\
+      <a class="next">›</a>\
+      <a class="close">×</a>\
+      <a class="play-pause"></a>\
+      <ol class="indicator"></ol>\
+  </div>\
+  ';
+  $uploader.after(gallery);
 }
 
 function file_check_dimensions(file, options) {
@@ -8330,7 +8287,7 @@ function file_check_dimensions(file, options) {
     //console.log("max H=" + maxH + " W=" + maxW + " S=" + maxS);
     //console.log("min H=" + minH + " W=" + minW + " S=" + minS);
     //console.log("min Size=");
-    console.log("file_check_dimensions");
+    //console.log(minS);
     //console.log("error=" + file.error);
 
   }
@@ -8408,11 +8365,11 @@ function file_get_exif(file, mediaData) { // By Kjetil
 // Return a helper with preserved width of cells
 // That way draggable table rows keep original width during dragging
 var fixHelper = function(e, ui) {
-  ui.children().each(function() {
-    $(this).width($(this).width());
-    $(this).height($(this).height());
-  });
-  return ui;
+	ui.children().each(function() {
+		$(this).width($(this).width());
+		$(this).height($(this).height());
+	});
+	return ui;
 };
 
 
@@ -8524,6 +8481,7 @@ $(document).on("click", ".suggestion_input, .jq-autocomplete", function (e) {
 /** This handles user pressing enter in autocompletee field w/o selecting from list: 
 Simulate that user selects first */
 /** Hmm, this triggers in all form fields, disabling return to submit...
+
 $(document).on("focusin", ".jq-autocomplete", function () {
   //console.log("focus on autocomplete");
   $(window).keydown(function(event) {
@@ -8656,3 +8614,7 @@ function bounds_obj2json(bounds) {
   var bounds = [[lat0,lng0],[lat1,lng1]];
   return JSON.stringify(bounds);
 }         
+
+           
+
+

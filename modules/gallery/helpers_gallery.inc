@@ -93,7 +93,7 @@ function collection_artist_links($collectionObj_or_id) {
   Data for plugin 
 */
 
-function gallery_get_json($collection_id, $site_id=247) {
+function gallery_get_json($collection_id,$get, $site_id=247) {
   global $__SITE, $u_id;  
   $siteObj = $site_id == $__SITE->id ? $__SITE : get_object('site', $site_id);
 
@@ -139,6 +139,7 @@ function gallery_get_json($collection_id, $site_id=247) {
     $curator['image'] = $curator_image;
     
     $curator['description'] = safe_text($curator['description']);
+    $curator['bio_description'] = safe_text($curatorObj->bio_description);
     
     $jsonObj->curator = $curator;
   }
@@ -175,10 +176,12 @@ function gallery_get_json($collection_id, $site_id=247) {
         if($get_media->original_year)
           $year = '('.$get_media->original_year.'),';
           $artist = user_display_name($get_media->artist_id);
+          $year1=$year !=null ? $year : ',';
+
           if($artist)
-            $name = "$get_media->name $year $get_media->original_technique, by $artist";
+            $name = "$get_media->name $year1 by $artist";
           else
-            $name = "$get_media->name $year $get_media->original_technique";
+            $name = "$get_media->name $year";
       }
       $get_media->comment = $name;
       list($id, $errors) = update_object('media', $get_media, $get_media->id);
@@ -218,6 +221,9 @@ function gallery_get_json($collection_id, $site_id=247) {
       'artist_id');
     
     $items = find_objects('media', array('id' => $media_ids), array('sort' => "FIELD(id, $obj_id_list)", 'fields' => $fields));
+    $selected_artwork_id=end(explode('-',$get['artwork']));
+    $selected_artwork = get_object('artwork', $selected_artwork_id);
+    $jsonObj->ashii=$selected_artwork->title_image;
     foreach($items as &$item) {
       $item->map_id = $map_id = $mapArray[$item->media_id];
       $item->artwork_id = $artwork_id = $mapArtworkArray[$item->media_id];
@@ -226,7 +232,28 @@ function gallery_get_json($collection_id, $site_id=247) {
       //$item->link = "{$artwork_link}{$slug}~{$map_id}";
       $item->link =  $artwork_id  ? "".$_SERVER['HTTP_HOST']."/artwork/{$obj_id}/{$slug}-{$artwork_id}?plugin" : "{$artwork_link}{$slug}~{$map_id}";
 
-      $item->comment = safe_text($item->comment);
+      // $item->comment = safe_text($item->comment);
+      $artworkObj = get_object('artwork', $item->artwork_id);
+      //dump($artworkObj);
+
+      // $artworkObj->description = safe_text($artworkObj->description);
+      $item->description = safe_text($artworkObj->description);
+    
+    // rsort($items);
+
+    // foreach ($items as $key => $item) {
+         if($item->media_id==$selected_artwork->title_image){
+            $jsonObj->ashiif=$selected_artwork->title_image;
+            $item->title_image_true=1;
+            // $title_item = $items[$key];
+            // unset($items[$key]);
+            // array_push($items, $title_item);
+            // break;
+        }else{
+            $item->title_image_true=0;
+
+        }
+    // }
     }
   }
   
@@ -243,6 +270,7 @@ function gallery_get_json($collection_id, $site_id=247) {
     foreach($user_fields as $f) $artist[$f] = $artistObj->$f;
     $artist['image'] = $artist_image;
     $artist['description'] = safe_text($artist['description']);
+    $artist['bio_description'] = safe_text($artistObj->bio_description);
     
     $artists[$artist_id] = $artist;
   }
@@ -264,7 +292,21 @@ function gallery_get_json($collection_id, $site_id=247) {
   $jsonObj->user_name = $u_id ? user_display_name($u_id) : '';
         
   $jsonObj->options = $pluginOptions;
-  
+    // $selected_artwork_id=end(explode('-',$get['artwork']));
+    // $selected_artwork = get_object('artwork', $selected_artwork_id);
+    // $jsonObj->ashii=$selected_artwork->title_image;
+    // rsort($items);
+
+    // foreach ($items as $key => $item) {
+    //      if($item->media_id==$selected_artwork->title_image){
+    //         $jsonObj->ashiif=$selected_artwork->title_image;
+
+    //         $title_item = $items[$key];
+    //         unset($items[$key]);
+    //         array_push($items, $title_item);
+    //         break;
+    //     }
+    // }
   $jsonObj->items = $items;
   
   if($collection_id) {
@@ -284,7 +326,7 @@ function gallery_get_json($collection_id, $site_id=247) {
   return $jsonObj;
 }
 
-function gallery_getrelated_json($collection_id, $site_id=247) {
+function gallery_getrelated_json($collection_id, $get,$site_id=247) {
   global $__SITE, $u_id;  
   $siteObj = $site_id == $__SITE->id ? $__SITE : get_object('site', $site_id);
 
@@ -432,6 +474,23 @@ function gallery_getrelated_json($collection_id, $site_id=247) {
       $jsonObj->user_name = $u_id ? user_display_name($u_id) : '';
             
       $jsonObj->options = $pluginOptions;
+
+      $selected_artwork_id=end(explode('-',$get['artwork']));
+    $selected_artwork = get_object('artwork', $selected_artwork_id);
+
+    foreach ($items as $key => $item) {
+
+         if($item->media_id==$selected_artwork->title_image){
+            $jsonObj->ashiif=$selected_artwork->title_image;
+            $item->title_image_true=1;
+            // $title_item = $items[$key];
+            // unset($items[$key]);
+            // array_push($items, $title_item);
+            // break;
+        }else{
+            $item->title_image_true=1;
+            }
+    }
       
       $jsonObj->items = $items;
       
@@ -457,7 +516,7 @@ function gallery_getrelated_json($collection_id, $site_id=247) {
   return $json_array;
 }
 
-function gallery_getartwork_json($artwork_id, $site_id=247) {
+function gallery_getartwork_json($artwork_id, $get,$site_id=247) {
   global $__SITE, $u_id;  
   $siteObj = $site_id == $__SITE->id ? $__SITE : get_object('site', $site_id);
 
@@ -603,6 +662,18 @@ function gallery_getartwork_json($artwork_id, $site_id=247) {
   $jsonObj->user_name = $u_id ? user_display_name($u_id) : '';
         
   $jsonObj->options = $pluginOptions;
+
+  $selected_artwork_id=end(explode('-',$get['artwork']));
+    $selected_artwork = get_object('artwork', $selected_artwork_id);
+
+    foreach ($items as $key => $item) {
+         if($item->media_id==$selected_artwork->title_image){
+            $title_item = $items[$key];
+            unset($items[$key]);
+            array_push($items, $title_item);
+            break;
+        }
+    }
   
   $jsonObj->items = $items;
   
@@ -4792,7 +4863,10 @@ function artwork2media($artworkObj_or_id) {
     //'original_depth'     => $artworkObj->depth,
     'original_year'      => $artworkObj->primary_year,
     'original_technique' => $artworkObj->technique,
-    'original_count'     => $artworkObj->editions,    
+    'original_count'     => $artworkObj->editions,   
+    'depth'=> $artworkObj->depth,
+    'copyright_name'=> $artworkObj->unit,
+
   ];
 
   if($artworkObj->status == 10) $data['original_available'] = 1;

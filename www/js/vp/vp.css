@@ -1482,3 +1482,17 @@ ul.vp__tabs li a:focus, ul.vp__tabs li a.active {
 
 iframe {border: none !important}
 
+/************ Media Quarry  For 767 ************/
+@media only screen and (max-width: 767px) {
+	.__vp-flip-container.hover .__vp-flip-front, .__vp-flip-container:hover .__vp-flip-front{
+		-webkit-transform: rotateY(0);
+		-ms-transform: rotateY(0);
+	}
+	.__vp-flip-container.hover .__vp-flip-back, .__vp-flip-container:hover .__vp-flip-back{
+		-webkit-transform: rotateY(-180deg);
+		-moz-transform: rotateY(-180deg);
+		-o-transform: rotateY(-180deg);
+		-ms-transform: rotateY(-180deg);
+		transform: rotateY(-180deg);
+	}
+}

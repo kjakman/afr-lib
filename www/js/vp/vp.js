@@ -1202,8 +1202,9 @@
           },
           O = function() {
               var a = document.getElementById("vp__my-modal-content");
-              a.innerHTML = vp_infotabs();
               var b = g_pswp.getCurrentData(g_pswp.cid) || {};
+              a.innerHTML = vp_infotabs(b);
+
               vp_update_info(b);
               var c = document.getElementById("vp__tab1");
               c.click(), console.log("clicking tab1")
@@ -2006,6 +2007,7 @@ function vp_update_info(vpdata) {
           document.getElementById('vp__tab2-content').innerHTML = content = vp_tab_content(artist, 'vp__tab2-inner-content');
           document.getElementById('vp__tab3-content').innerHTML = content = vp_tab_content(collection, 'vp__tab3-inner-content');
           document.getElementById('vp__tab4-content').innerHTML = content = vp_tab_content(curator, 'vp__tab4-inner-content');
+          document.getElementById('vp__tab5-content').innerHTML = content = vp_artwork_description(vpdata, 'vp__tab5-inner-content');
 
           var tab1 = document.getElementById('vp__tab1');
           var tab2 = document.getElementById('vp__tab2');
@@ -2023,6 +2025,9 @@ function vp_update_info(vpdata) {
 }
 
 function vp_tab_content(object, div_id) {
+  console.log("object-------------");
+
+  console.log(object);
   var title = object.display_name || object.title || '';
   var desc = object.description;
   var photo = object.image ? "<br><img src='" + object.image + "' width='150px'><br>" : "";
@@ -2030,6 +2035,8 @@ function vp_tab_content(object, div_id) {
   if (title) content = content + "<h4>" + title + "</h4>";
   if (photo) content = content + photo;
   if (desc) content = content + "<div class='vp__tab-inner-content' id='" + div_id + "'><p>" + desc + "</p></div>";
+  content = content + "<p>" + object.bio_description + "</p>";
+  
   return content;
 }
 
@@ -2042,7 +2049,7 @@ function vp_artwork_info(vpdata) {
 
   var caption = vp_caption(vpdata, item, 1);
 
-  var content = "<h4>" + caption + "</h4><br>";
+  var content = "<h3 class='popup_main_title'>" + caption + "</h3><br>";
 
   /**                       
   if(artist && artist.display_name) {
@@ -2057,30 +2064,55 @@ function vp_artwork_info(vpdata) {
   }
   */
 
-  if (item.original_technique) content = content + "<i>" + item.original_technique + "</i><br>";
+  if (item.original_technique) content = content + "<h5 class='popup_sub_title'><i>" + item.original_technique + "</i></h5>";
 
   var size = vp_size(item);
-  if (size) content = content + "<i>" + size + "</i><br><br>";
+  if (size) content = content + "<h5 class='popup_sub_title'><i>" + size + "</i></h5><br>";
 
-  if (item.original_count > 0) {
-      if (item.original_count == 1) {
-          content = content + "<i>Original of one</i><br>";
-      } else {
-          content = content + "<i>Series of " + item.original_count + "</i><br>";
-      }
-  }
+  
 
-  var price = vp_price(item);
-  if (price) content = content + "<i>" + price + "</i><br>";
+  
   //if(item.original_price && item.original_currency && item.original_price > 0) {
   //  content = content + "<i>" + currency2symbol(item.original_currency) +  numberWithCommas(Math.round(item.original_price)) + "</i><br>";
   //} else {
   //  content = content + "Price on inquiry<br>";
   //}
+  if (item.original_count > 0) {
+      if (item.original_count == 1) {
+          // content = content + "<hr><p>Original of one</p>";
+          content = content + "<hr><p class='popup_desc'>Original of one</p>";
+      } else {
+          // content = content + "<hr><p>Series of " + item.original_count + "</p>";
+          content = content + "<hr><p class='popup_desc'>Series of " + item.original_count + "</p>";
+      }
+  }else{
+      content = content + "<hr><p class='popup_desc'>Unique" + "</p>";
 
-  if (item.comment) content = content + "<hr><p>" + item.comment + "</p><br>";
+  }
+  var price = vp_price(item);
+
+  if (price) content = content + "<p class='popup_desc'>" + price + "</p>";
+
+  // if (item.comment) content = content + "<hr><p>" + item.comment + "</p><br>";
 
   //<div class='vp__tab-content'><p>" + comment + "</p></div>";
+  return content;
+}
+
+function vp_artwork_description(vpdata) {
+  var item = vpdata.item;
+  var content = '';
+
+
+  var artist_id = item.artist_id;
+  var artist = vpdata.artists && artist_id ? vpdata.artists[artist_id] : null;
+
+  var caption = vp_caption(vpdata, item, 1);
+
+  // var content = "<h4>Description</h4><br>";
+
+  content = content + "<i>" + item.description + "</i><br><br>";
+
   return content;
 }
 
@@ -2119,7 +2151,9 @@ function vp_caption(vpdata, item, context) {
   if (context > 0) {
       if (context == 2) dot = ''
       var year = item.original_year ? " (" + item.original_year + ")" : "";
-      return dot + item.title + year + " by " + artist_name; // only used for sharing
+      return dot + item.title; // only used for sharing
+
+      // return dot + item.title + year + " by " + artist_name; // only used for sharing
   }
 
   // (AVAILABILITY DOT) GALLERY/ CURATOR NAME presents ARTWORK NAME(YEAR) TECHNQUE (COMMA)by ARTIST NAME (COMMA) SIZE (COMMA) SERIES OF X, (COMMA)PRICE
@@ -2178,8 +2212,8 @@ function vp_caption(vpdata, item, context) {
   var price = vp_price(item);
 
   var show_size = size && inArray('size', g_popup_title);
-  var show_price = price && inArray('price', g_popup_title);
   var show_series = series && inArray('series', g_popup_title);
+  var show_price = price && inArray('price', g_popup_title);
 
   //console.log("vp_caption " + item.title + " (" + item.media_id + "): available:" + available + " org_price:" + item.original_price + " price:" + price + " show_price:" + show_price + " g_popup_title:", g_popup_title);
 
@@ -2203,7 +2237,7 @@ function vp_price(item) {
   var available = parseInt(item.original_available);
   var price = '';
   if (item.original_price > 0 && item.original_currency) { // price is set
-      price = currency2symbol(item.original_currency) + numberWithCommas(Math.round(item.original_price));
+      price = currency2symbol(item.original_currency) + ' ' + numberWithCommas(Math.round(item.original_price));
   } else { // no price - only show if available
       price = available > 0 ? 'Price on inquiry' : '';
   }
@@ -2217,7 +2251,7 @@ function vp_load(element, data, reload) {
   var plugin_id = data.plugin_id;
 
   var ajax_url = g_site_url + '/ajax.php?oper=get-gallery&jsoncallback=handleStuff';
-  var data_str = "&obj_type=" + data.obj_type + "&obj_id=" + data.obj_id + "&plugin_id=" + data.plugin_id + "&target=" + cid;
+  var data_str = "&obj_type=" + data.obj_type + "&obj_id=" + data.obj_id + "&plugin_id=" + data.plugin_id + "&target=" + cid + "&artwork=" + window.location.href;
   //var key = data.obj_type + "-id_" + data.obj_id + '-share_' + data.plugin_id;
   var key = data.obj_type + '-' + data.obj_id;
   console.log("vpload on el: " + cid + " plugin_id=" + data.plugin_id + " data=", data);
@@ -2913,6 +2947,9 @@ likeBtn.onclick = function() {
 
       vpdata.index = index;
       vpdata.item = psitem.data
+      console.log('vpdata')
+      console.log(vpdata)
+
           //console.log("get current data for cid=" + cid + " index=" + index + " data:", vpdata);
       return vpdata;
   };
@@ -3193,17 +3230,28 @@ function vp_infomap(json) {
   return output;
 }
 
-function vp_infotabs() {
-  var output = '' +
+function vp_infotabs(a) {
+    console.log('Ashii----------')
+    console.log(a.item.description)
+    console.log('Ashii----------')
+
+    var output = '' +
       '  <ul class="w3-pagination w3-white w3-border-bottom vp__tabs" style="width:100%;" id="infoTabs">' +
       '   <li><a id="vp__tab1" class="vp__tab-links active" onclick="return vp_openTab(event, \'vp__tab1-content\')">Art</a></li>' +
-      '   <li><a id="vp__tab2" class="vp__tab-links" onclick="return vp_openTab(event, \'vp__tab2-content\')">Artist</a></li>' +
-      '   <li><a id="vp__tab3" class="vp__tab-links" onclick="return vp_openTab(event, \'vp__tab3-content\')">Exhibition</a></li>' +
+      '   <li><a id="vp__tab2" class="vp__tab-links" onclick="return vp_openTab(event, \'vp__tab2-content\')">Artist</a></li>';
+
+
+    if(a.item.description!="") 
+        output=  output + '   <li><a id="vp__tab5" class="vp__tab-links" onclick="return vp_openTab(event, \'vp__tab5-content\')">About</a></li>';
+
+    output = output +  '   <li><a id="vp__tab3" class="vp__tab-links" onclick="return vp_openTab(event, \'vp__tab3-content\')">Exhibition</a></li>' +
       '   <li><a id="vp__tab4" class="vp__tab-links" onclick="return vp_openTab(event, \'vp__tab4-content\')">Gallery</a></li>' +
       '  </ul>' +
       '  <div id="vp__tab1-content" class="w3-container vp__tab-content">' +
       '  </div>' +
       '  <div id="vp__tab2-content" class="w3-container vp__tab-content">' +
+      '  </div>' +
+      '  <div id="vp__tab5-content" class="w3-container vp__tab-content">' +
       '  </div>' +
       '  <div id="vp__tab3-content" class="w3-container vp__tab-content">' +
       '  </div>' +

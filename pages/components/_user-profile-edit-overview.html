@@ -4,9 +4,16 @@
                     <form id="user_overview_form" class="ajax-submit"  data-handler="save" data-toggle="validator">
                       <input type="hidden" name="obj_type" value="user_profile" />
                       <input type="hidden" name="id"  value="{$profile.profile_id}" />
-                      <input type="hidden" name="user_id" value="{$profile.user_id}" />
+                      <!-- <input type="hidden" name="user_id" id="user_id" value="{$scope.user_id}" /> -->
                       <input type="hidden" name="site_id" value="{$site.id}" />
+                      <!-- <input hidden="1" name="site_url" type="hidden" id="site_url" value="{$scope.site_url}"/> -->
 
+                      <!-- <input hidden="1" name="profile_id" type="hidden" id="profile_id" value="{$scope.user.profile_id}"/> -->
+ <input hidden="1" name="user_id" type="hidden" id="user_id" value="{$user.id}"/>
+
+    <input hidden="1" name="site_url" type="hidden" id="site_url" value="{$scope.site_url}"/>
+
+    <input hidden="1" name="profile_id" type="hidden" id="profile_id" value="{$scope.user.profile_id}"/>
                       <label>Profile Image<span class="control-label-before optional">&nbsp;&nbsp;&nbsp;&nbsp;(Maximum of one image)</span></label>
                       <div class="custom_button_cover">
                         <div class="commonin_row"> 
@@ -26,7 +33,8 @@
 
                       <div class="form-group">
                         <label>About<span class="optional">(Recommended)</span></label>
-                        <textarea name="bio_description" class="summernote form-control" placeholder="Please describe yourself and your interests.">{$scope.profile.bio_description}</textarea>
+                        <textarea id="editor" class="summernote form-control special" data-height="600" name="bio_description">{$scope.profile.bio_description}</textarea>
+                       
                       </div>
 
                       {if ($site.golf_site)}
@@ -51,6 +59,247 @@
                       
                     </form>
 
+                    <!-- Modal -->
+<div class="modal fade xl" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog media" role="dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Select image from your Media Drive</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+          <div class="modal-body " id="media-content">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <!-- <button type="button" class="btn btn-primary">Save changes</button> -->
+          </div>
+      </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+  var HightlightButton = function(context) {  
+    var ui = $.summernote.ui;  
+    var button = ui.button({  
+      contents: ' Get Image From Media Drive',  
+      tooltip: 'Highlight text with red color',  
+      click: function() {  
+        context.invoke('editor.foreColor', 'red');  
+      //  do whatever you want here like open popup  
+      }  
+    });  
+    return button.render();  
+  }  
+
+  $(document).ready(function() { 
+
+    var profile_id=$("#profile_id").val();
+        var user_id=$("#user_id").val();
+        var site_url=$("#site_url").val();
+    
+      $('.summernote').summernote({  
+      toolbar: [  
+        ['style', [ 'bold', 'italic', 'underline', 'clear']],  
+        ['font', ['strikethrough', 'superscript', 'subscript']], 
+        ['fontsize', ['fontsize']],
+        ['color', ['color']], 
+        ['para', ['ul', 'ol', 'paragraph']],  
+        ['height', ['height']],
+        ['insert', ['link', 'picture', 'video']],
+        ['style', ['highlight']],  
+      ]
+      });  
+    
+    $(".modal-body .note-group-select-from-files ").after("<a href='javascript:void(0)' id='media_trigger' class='btn btn-success mt10 mb20'>Choose image from Media Drive</a><p><strong>Or</strong></p>");
+    
+    $(".form-group.note-group-select-from-files").hide();
+    $(".form-group.note-group-image-url .note-form-label").text("Use image URL from the internet");
+
+      $(document).on('click', '.dragme', function (e) {
+          // console.log("dragmeeeeeeeeeeeeeeeeee")
+      e.stopPropagation();
+        e.stopImmediatePropagation();
+        if (!e) {
+        var e = window.event;
+      }
+            if(e.preventDefault) e.preventDefault();
+
+      // IE uses srcElement, others use target
+      var targ = e.target ? e.target : e.srcElement;
+      console.log(targ);
+      if(targ){
+            // var copyText = document.getElementById("site_url");
+            // var as= targ.src + 'as'
+        var els=document.getElementsByClassName("note-image-url")[0];
+            els.value = targ.src;
+              $(".note-image-btn").click(); 
+              $('#exampleModal').modal('hide');
+            }
+
+        });
+
+      $(document).on('click', '.media_folder', function (e) {
+
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        if (!e) {
+        var e = window.event;
+      }
+            if(e.preventDefault) e.preventDefault();
+
+      // IE uses srcElement, others use target
+      var targ = e.target ? e.target : e.srcElement;
+      if(targ){
+            console.log("targ"+targ.folder)
+            folder_id=targ.folder
+            rank=targ.rank
+            $("#exampleModal").modal('show');
+              if(rank==1)
+                var url=site_url+'ajax.php?oper=get-rows&obj_type=media&filters=%7B%22user_id%22%3A21109%2C%22folder_id%22%3A0%2C%22active%22%3A1%7D&search=&order=asc&offset=0&limit=100&_=1640843323249';
+                
+              else if(rank==0)
+                var url=site_url+'ajax.php?oper=get-rows&obj_type=media&&&filters=%7B%22folder_id%22%3A%22'+folder_id+'%22%2C%22active%22%3A1%7D&search=&order=asc&offset=0&limit=10&_=1640843323251';
+        const myNode = document.getElementById("media-content");
+        myNode.innerHTML = '';
+        $.ajax({
+                url: url,
+                data: {
+                    text: $("textarea[name=Status]").val(),
+                },
+                success:function(responsedata){
+                  // console.log(responsedata)
+                  images=responsedata.rows;
+                  images.forEach(async function(image) {
+                    var img = document.createElement('img');
+                    img.src =site_url.slice(0, -1)  + image.path + 'medium/' + image.filename;
+                    img.className="dragme"; 
+
+                    // var x = document.createElement("SPAN");
+                   //    x.innerHTML="&nbsp </br>"+image.filename;
+
+                    // var label = document.createElement('label');
+                   //    label.innerHTML="&nbsp </br>"+image.filename;
+                      
+                    document.getElementById('media-content').appendChild(img);
+                    // document.getElementById('media-content').appendChild(x);
+                    // document.getElementById('media-content').appendChild(label);
+            })
+                 
+                  // for (var i = 0; i < data.length; i++) {
+                  //  var img = document.createElement('img');
+                   //  img.src = data[i].thumbnailUrl;
+                   //  document.getElementById('media-content').appendChild(img);
+                  // }
+              },
+                dataType : 'json'
+
+            });
+      }
+        });
+
+        $('#media_trigger').click(function(e) { 
+            // alert(1);
+            // $("#exampleModal").modal('show');
+            var user_id=$("#user_id").val();
+            var site_url=$("#site_url").val();
+      const myNode = document.getElementById("media-folder");
+      if(myNode!=null)
+      myNode.innerHTML = '';
+            // console.log(user_id);
+            $.ajax({
+              url: site_url+'ajax.php?oper=get-rows&obj_type=media_folder&filters=%7B%22user_id%22%3A'+user_id+'%2C%22active%22%3A1%7D&search=&order=asc&offset=0&limit=10&_=1640687353767',
+              data: {
+                  text: $("textarea[name=Status]").val(),
+              },
+              success:function(responsedata){
+                folders=responsedata.rows;
+                // console.log("folders")
+                console.log(folders)
+          $(".modal-body .note-group-select-from-files ").after("<div id='media-folder'></div>");
+
+                folders.forEach(async function(folder) {
+                    var fold = document.createElement('img');
+                  fold.src =site_url+'img/artist/default.jpg';
+                  fold.alt=folder.id;
+                  fold.title=folder.filename;
+                  fold.className="media_image"; 
+                  fold.folder=folder.id;
+                  fold.rank=folder.rank;
+                  document.getElementById('media-folder').appendChild(fold);
+          });
+          
+          $(".media_image").wrap('<div class="media_folder"></div>');
+          $(".media_folder").prepend('<i class="fa fa-folder-open"></i>');
+          
+          $(".media_folder img.media_image").each(function() {
+            const $img = $(this);
+            const imgtitle = $img.attr("title");
+            setTimeout(function() {
+            $img.after("<p class='media_folder_title'>" + imgtitle + "</p>");
+            }, 100);
+          });
+          
+            },
+              dataType : 'json'
+          });
+        });
+  }); 
+</script>
+
+<style type="text/css">
+    #media-folder{
+        overflow: hidden;
+        margin: 2em 0px 1.5em;
+    }   
+    #media-folder .media_folder{
+        width: 25%;
+        display: block;
+        float: left;
+        text-align: center;
+        position: relative;
+    }   
+    #media-folder .media_folder .media_image {
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        z-index: 99;
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+        padding: 0px;
+        opacity: 0;
+    }   
+    #media-folder .media_folder i{
+        color: #3f859b;
+        font-size: 6em;
+    }
+    #media-folder .media_folder .media_folder_title{
+        color: #000;
+        text-transform: capitalize;
+        margin: 0px;
+    }
+    .modal img{
+        height: 150px;
+        width: auto;
+        padding-left: 15px;
+        padding-right: 15px;
+        padding-top: 15px;
+        padding-bottom: 15px;
+    }
+    .media{
+        width: 90%;
+        margin: 5;
+        padding: 0;
+      }
+    #media-content{
+        height: 500px;
+        overflow-y: scroll;
+    }
+
+</style>
                                    
                     <!--div id="map-canvas" style="width:100%; height:400px;"></div-->
 

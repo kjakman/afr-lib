@@ -6260,7 +6260,7 @@
         } else { 
             /** browse artworks: todo */
         }
-        dump("ashii");
+        // dump("ashii");
         return;
     }
                                
@@ -6393,18 +6393,17 @@
                 $art_id = $data->parent_id;
                 $find = find_object('artwork', array('id' => $art_id));
                 if($find) $b = (array)$find;
-                $find = find_object('artwork', array('id' => $find->id));
-                if($find) $b = (array)$find;
+               
                 else $b = (array)$data;
                 $merge[] = array_merge($a, $b);
             }
             //print_r($merge);
             $scope->artwork = $merge;
             $scope->artworks = $artworks;
-            foreach ($scope->artwork as $current_artwork) {
-                $current_artwork=find_object('artwork', array('id' => $current_artwork->artwork_id));
-            }
-            dump($scope->artwork);
+            // foreach ($scope->artwork as $current_artwork) {
+            //     $current_artwork=find_object('artwork', array('id' => $current_artwork->artwork_id));
+            // }
+            // dump($scope->artwork);
 
             if($collectionObj->type == MEDIA_COLLECTION_TYPE_EXHIBITION) {
                 if($scope->curator_id = $curator_id = $collectionObj->user_id) 

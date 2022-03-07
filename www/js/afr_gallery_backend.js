@@ -1437,6 +1437,7 @@ $(document).on("click", "apply-delete",function (e) {
 });
 
 function show_tabs(tab) {
+  // console.log("ashiiii--------------" + tab)
   if ((tab == 'artist') || (tab == 'artistcontent') || (tab == 'artistpagelayout') || (tab == 'artistsecondpage') || (tab == 'artistcolour')){
     $("#gbe_artist_link").show();
   }else if((tab == 'exhibition') || (tab == 'exhibitioncontent') || (tab == 'exhibitioncolour') || (tab == 'exhibitionpage') || (tab == 'exhibitionlayout')){ 
@@ -1456,6 +1457,9 @@ function show_tabs(tab) {
   }else if(tab == 'extlink'){
     $('#gbe_extlink').show();
   }
+  else if((tab == 'blogPage') || (tab == 'blogContent') || (tab == 'blogColour')){
+    $('#gbe_blogpagelink').show();
+  }
 }
 
 function hidetabs(){
@@ -1468,6 +1472,8 @@ function hidetabs(){
   $('#gbe_extMail_link').hide();
   $('#gbe_extlink').hide();
   $("#gbe_manualexb_link").hide();
+  $('#gbe_blogpagelink').hide();
+
 }
 
 $(document).on("click", ".thumbCont IMG", function() { 

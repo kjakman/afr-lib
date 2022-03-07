@@ -90,6 +90,8 @@
             // 'password_reset' =>       array(USER_LEVEL_SYSTEM, 'user', '', '', NF_NO_ACTIONS, '', '', ''),
             'wishlist' =>             array(USER_LEVEL_SYSTEM, 'user', '', '', 0, '', '', ''),
             'subscribed_users' =>array(USER_LEVEL_SYSTEM, 'user', '', '', 0,'', '', ''),
+            'user_blogs' =>array(USER_LEVEL_SYSTEM, 'user', '', '', 0,'', '', ''),
+
             'subscription_plans' =>array(USER_LEVEL_SYSTEM, 'user', '', '', 0,'', '', ''),
             'subscription_plan_features' =>array(USER_LEVEL_SYSTEM, 'user', '', '', 0,'', '', ''),
     
@@ -1460,6 +1462,20 @@
                 'expire_on'=>array('expire_on','datetime',   ATT_DEFAULT_NULL, AF_HIDE|AF_READONLY, 14 ),
             ),
 
+
+        "user_blogs" => 
+            array(
+                'id'=>array('id','id',0, AF_PRIMARY|AF_AUTOINCREMENT, 11),
+                'user_id'=> array('user_id','link',0, AF_OBLIGATORY, 'user'),
+                'minisite_id'=> array('minisite_id','link',0, AF_OBLIGATORY, 'minisite'),
+                'minisite_page_id'=> array('minisite_page_id','link',0, AF_OBLIGATORY, 'minisite_page'),
+
+                'title'=>array('title','str','', AF_OBLIGATORY, 50 ),
+                'menu_title'=>array('menu_title','str','', AF_OBLIGATORY, 50 ),
+                'content'=>array('content','text','', AF_OBLIGATORY, 50 ),
+                'status'=>array('status','bool',1, 0),
+            ),
+
         "subscription_plans" => 
             array(
                 'id'=>array('id','id',0, AF_PRIMARY|AF_AUTOINCREMENT, 11),
@@ -2616,7 +2632,8 @@
     'width'                =>array('Width'         , 'int', 0, AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY, 11),
 
     // image
-    'depth'                =>array('Bit Depth'     , 'int', 0, AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY, 2),
+     'depth'      => array('depth'    , 'float', 0, AF_HIDE_LIST, '4.1'),
+    // 'depth'                =>array('Bit Depth'     , 'int', 0, AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY, 2),
     'exif'                 =>array('Exif'          , 'json', 0, AF_HIDE_LIST|AF_HIDE_ADD|AF_READONLY, 2),
 
     // image/audio/video
@@ -2714,7 +2731,7 @@
     'title'                 =>array('Title'          , 'str', '', 0, 255),
     'comment'              =>array('Comment'       , 'html', '', 0),
     'short_description'    => array('Short Description', 'str',    '', AF_HIDE_LIST, 200),
-    'description'    =>     array('Description', 'html',    '', AF_HIDE_LIST),
+    'description'    =>    array('description','text','', AF_HIDE, 50 ),
 
                                                                               
     'currency'   => array('Currency' , 'valSelect', 'EUR', AF_HIDE_LIST|AF_READONLY_EDIT, $currencyArray),     
@@ -3009,7 +3026,7 @@
      'last_name'        => array('Last name'     ,     'str',      '', 0, 50 ),
      'gender'           => array('Gender'       ,      'str',      '', 0, 10 ),
      'title'            => array('Title',              'str',      '', 0, 50 ),
-     'bio_description'      => array('Description'  ,      'html',     '', 0),
+     'bio_description'  => array('content','text','', AF_HIDE, 50 ),
      'interests'        => array('Interests'  ,        'text',     '', 0),
      'location'         => array('Where you live',     'str',      '', 0, 100 ),
      'timezone'         => array('Timezone',           'timezone', '', 0, 32),

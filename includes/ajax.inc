@@ -782,7 +782,6 @@
 
 	  	case 'save-minisite-page':
 			extract($obj_data);
-			//dump($obj_data);
 			$obj_type = "minisite_page";
 			$obj_id = $obj_data[obj_id];  
 			$user_id = $obj_data[user_id];
@@ -800,7 +799,9 @@
 			if($col)  json_error($obj_data['slug']." is already used, Please choose a unique menu title"); 
 			
 			if($obj_data[minisite_id]){
-			  if(!$obj_id){                                                       //Adding default values for each page
+
+			  if(!$obj_id){             
+			    //Adding default values for each page
 				if($obj_data[type] == 20){                                        //artist page
 				  $obj_data['page_layout'] = get_layout($obj_data[type], 1);
 				  $obj_data['second_layout'] = 131;
@@ -832,17 +833,61 @@
 				}elseif($obj_data[type] == 90){                                    
 				  $obj_data['template'] = 10;
 				}
+
+				
+				
 				$obj_data['row_order'] = get_rowOrder($minisite_id);
 
 				list($id, $errors) = add_object($obj_type, $obj_data);
+
+				// if($obj_data[type] == 65){     
+				// 	$doc = new DOMDocument();
+				// 	$obj_data[content] = $obj_data[content]; 
+
+				// 	$obj_data[title] = $minisite_page->menu_title; 
+				// 	$obj_data[menu_title] = $minisite_page->menu_title;  
+				// 	$obj_data[user_id] = $minisite_page->user_id;  
+				// 	$obj_data[minisite_id] = $minisite_page->minisite_id;
+				// 	$obj_data[minisite_page_id] = $minisite_page->id;   
+				// 	$obj_data[content] = $obj_data[content]; 
+
+				// 	$obj_type="user_blogs";
+				// 	$blog=find_object($obj_type, ['user_id' => $obj_data[user_id], 'minisite_page_id' => $obj_data[minisite_page_id],'minisite_id' => $obj_data[minisite_id], 'status' => 1]);
+				// 	if(!$blog)
+	   //              	list($id, $errors) = add_object($obj_type, $obj_data);
+	   //              else
+				// 		list($id, $errors) = update_object($obj_type, $obj_data, $blog->id);
+	   //          }
+
 				print_log("save-minisite: added: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
 			  }else{
-				$minisite = get_object('minisite_page', $obj_id);
-				if(($minisite->type == 70) && ($obj_data[data])){
+
+				$minisite_page = get_object('minisite_page', $obj_id);
+
+				if(($minisite_page->type == 70) && ($obj_data[data])){
 				  if (filter_var($obj_data[data], FILTER_VALIDATE_URL) == false)  json_error("Invalid URL");
 				}
-
+				$ash="Ashh";
 				list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
+				if($minisite_page->type == 65){     
+					$doc = new DOMDocument();
+					$obj_data[content] = $obj_data[content]; 
+
+					$obj_data[title] = $minisite_page->menu_title; 
+					$obj_data[menu_title] = $minisite_page->menu_title;  
+					$obj_data[user_id] = $minisite_page->user_id;  
+					$obj_data[minisite_id] = $minisite_page->minisite_id;
+					$obj_data[minisite_page_id] = $minisite_page->id;   
+					$obj_data[content] = $obj_data[content]; 
+
+					$obj_type="user_blogs";
+					$blog=find_object($obj_type, ['user_id' => $obj_data[user_id], 'minisite_page_id' => $obj_data[minisite_page_id],'minisite_id' => $obj_data[minisite_id], 'status' => 1]);
+					if(!$blog)
+	                	list($id, $errors) = add_object($obj_type, $obj_data);
+	                else
+						list($id, $errors) = update_object($obj_type, $obj_data, $blog->id);
+	            }
+
 				print_log("save-ministe: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
 			  }
 			  
@@ -856,7 +901,7 @@
 			$obj->next_tab = $obj_data['next_tab'];
 			$result->success = 1;
 			$result->data = $obj;    
-			$result->message = "OK. Minisite Pages Saved";       
+			$result->message = "OK. Minisite Pages Saved".$minisite->type;       
 			echo(json_encode($result));
 			exit;      
 	  	break;
@@ -1201,7 +1246,8 @@
 		case 'save-collection':
 			$obj_type = 'media_collection';
 			extract($obj_data);
-			//dump($obj_data);
+
+			$obj_data['video']=end(explode('/',$obj_data['video']));
 			$address_formatted = $obj_data['address_formatted'];
 			$type_name = get_object('media_collection_type', $type, 'name'); 
 
@@ -6089,6 +6135,11 @@
 			$id = trim($obj_data['val']);
 			$obj_type = 'minisite_page';
 			$obj = get_object($obj_type, $id);
+			if($obj->type==65){
+				$user_blogs=find_objects('user_blogs', ['minisite_page_id'=> $obj->id, 'status'=>1]);
+				foreach ($user_blogs as $user_blog) 
+					delete_object('user_blogs', $user_blog->id);
+			}
 			$minisite_id = $obj->minisite_id;
 			$del_row = $obj->row_order;
 			if($id)
@@ -7874,7 +7925,7 @@
 
   		case 'get-gallery':
 			extract($_GET);
-
+			// dump($_GET);
 			$user = [];
 			if(!$site_id) $site_id = 247;
 			if($id && !$obj_id) $obj_id = $id; // legacy - prefer obj_id
@@ -7889,11 +7940,11 @@
 			$collection_id = $obj_id;
 
 			if($obj_type == 'artwork_media')   
-			  $jsonObj = gallery_getartwork_json($obj_id);
+			  $jsonObj = gallery_getartwork_json($obj_id,$_GET);
 			elseif($obj_type == 'related_images')
-			  $jsonObj = gallery_getrelated_json($obj_id);
+			  $jsonObj = gallery_getrelated_json($obj_id,$_GET);
 			else
-			  $jsonObj = gallery_get_json($collection_id);
+			  $jsonObj = gallery_get_json($collection_id,$_GET);
 			$jsonObj->container_id = $target;
 			$jsonObj->plugin_id = $plugin_id;
 

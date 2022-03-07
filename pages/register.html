@@ -5,7 +5,8 @@
                   <div class="container">
                     {if ($user.id)}
                     <h2>Welcome {$user.display_name}</h2>
-                    
+                    <span>You are successfully logged into vPatina</span><br><br>
+                    <input class="btn btn-success" style="font-weight: bold; color:white" type="submit" value="Go to Your Profile" onclick="location.href='/login/?ref=%2Fbackend';"/> 
                     {if ($user.user_level >= $smarty.const.USER_LEVEL_OWNER)}
                       {if ($smarty.get.l == 1)}
                         <h3>Register Managed Account</h3>
