@@ -4866,11 +4866,10 @@ function get_template($parts, $minisite_id){
   $parts1_tpls = find_objects('minisite_tpl', ['parts' => 1]);
   $parts2_tpls = find_objects('minisite_tpl', ['parts' => 2]);
 
-
   $count = count($parts);
 
     print_log("get_template parts count=$count ".dump($parts, true), 'minisite', LOG_LEVEL_TEST);  
-
+//return $count;
   if($count) { 
     $slug = '/'.$parts[0].'/';                                                    //to simplify paths
     $page = find_object('minisite_page', ['minisite_id' => $minisite_id, 'slug' => $slug, 'active' => 1]); 
@@ -4883,8 +4882,13 @@ function get_template($parts, $minisite_id){
     }
 
     if($count == 1){
+
       foreach($parts1_tpls as $parts1_tpl){
+//return $count;
+
         if($page->type == $parts1_tpl->type){
+//return $count;
+
           $tpl_values['page'] = $parts1_tpl->template;
           $tpl_values['tpl'] = $parts1_tpl->page;
         }
