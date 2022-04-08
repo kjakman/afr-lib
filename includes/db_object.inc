@@ -4862,85 +4862,85 @@ function update_artist_name($user_id, $artist_name){
 }
 //  ------------------------------------------------- Vignesh ----------- 29-06-2020--------//
 function get_template($parts, $minisite_id){
-  $tpl_values = [];
-  $parts1_tpls = find_objects('minisite_tpl', ['parts' => 1]);
-  $parts2_tpls = find_objects('minisite_tpl', ['parts' => 2]);
+    $tpl_values = [];
+    $parts1_tpls = find_objects('minisite_tpl', ['parts' => 1]);
+    $parts2_tpls = find_objects('minisite_tpl', ['parts' => 2]);
 
 
-  $count = count($parts);
+    $count = count($parts);
 
     print_log("get_template parts count=$count ".dump($parts, true), 'minisite', LOG_LEVEL_TEST);  
 
-  if($count) { 
-    $slug = '/'.$parts[0].'/';                                                    //to simplify paths
-    $page = find_object('minisite_page', ['minisite_id' => $minisite_id, 'slug' => $slug, 'active' => 1]); 
-    $type = $page->type;
+    if($count) { 
+        $slug = '/'.$parts[0].'/';                                                    //to simplify paths
+        $page = find_object('minisite_page', ['minisite_id' => $minisite_id, 'slug' => $slug, 'active' => 1]); 
+        $type = $page->type;
 
-    if($page) {
-      print_log("get_template count=$count type=$type parts: Found page {$page->id} for slug=$slug msid=$minisite_id".dump($page, true), 'minisite', LOG_LEVEL_TEST);  
-    } else {
-      print_log("get_template count=$count parts: No page for slug=$slug msid=$minisite_id", 'minisite', LOG_LEVEL_TEST);  
-    }
-
-    if($count == 1){
-      foreach($parts1_tpls as $parts1_tpl){
-        if($page->type == $parts1_tpl->type){
-          $tpl_values['page'] = $parts1_tpl->template;
-          $tpl_values['tpl'] = $parts1_tpl->page;
+        if($page) {
+            print_log("get_template count=$count type=$type parts: Found page {$page->id} for slug=$slug msid=$minisite_id".dump($page, true), 'minisite', LOG_LEVEL_TEST);  
+        } else {
+            print_log("get_template count=$count parts: No page for slug=$slug msid=$minisite_id", 'minisite', LOG_LEVEL_TEST);  
         }
-      }
 
-    
-    } else {
-      //dump($parts2_tpls);
-      //dump($page);
+        if($count == 1){
+            foreach($parts1_tpls as $parts1_tpl){
+                if($page->type == $parts1_tpl->type){
+                    $tpl_values['page'] = $parts1_tpl->template;
+                    $tpl_values['tpl'] = $parts1_tpl->page;
+                }
+            }
 
-      foreach($parts2_tpls as $parts2_tpl){
+
+        } else {
+        //dump($parts2_tpls);
+        //dump($page);
+
+        foreach($parts2_tpls as $parts2_tpl){
         //dump($parts2_tpl);
-        if($page->type == $parts2_tpl->type){
-          if($page->type == 30){
-            if($parts[1] == 'exhibitions'){
-              $tpl_values['page'] = 'exhibitions';
-              $tpl_values['tpl'] = 'exhibitions';
-            }else{
-              $tpl_values['page'] = 'exhibition';
-              $tpl_values['tpl'] = 'exhibition';
+            if($page->type == $parts2_tpl->type){
+                if($page->type == 30){
+                    if($parts[1] == 'exhibitions'){
+                        $tpl_values['page'] = 'exhibitions';
+                        $tpl_values['tpl'] = 'exhibitions';
+                    }else{
+                        $tpl_values['page'] = 'exhibition';
+                        $tpl_values['tpl'] = 'exhibition';
+                    }
+                    }elseif($page->type == 80){
+                        if($parts[1] == 'manualexbs'){
+                            $tpl_values['page'] = 'manualexbs';
+                            $tpl_values['tpl'] = 'manualexbs';
+                        }else{
+                            $tpl_values['page'] = 'manualexb';
+                            $tpl_values['tpl'] = 'manualexb';
+                        }
+                        }else{
+                            $tpl_values['page'] = $parts2_tpl->template;
+                            $tpl_values['tpl'] = $parts2_tpl->page;
+                        }
+                    }
+                }
             }
-          }elseif($page->type == 80){
-            if($parts[1] == 'manualexbs'){
-              $tpl_values['page'] = 'manualexbs';
-              $tpl_values['tpl'] = 'manualexbs';
-            }else{
-              $tpl_values['page'] = 'manualexb';
-              $tpl_values['tpl'] = 'manualexb';
+
+        } else {
+
+            $get_home = find_object('minisite_page', ['minisite_id' => $minisite_id, 'row_order' => 1, 'active' => 1]);
+
+            if($get_home) {
+                print_log("get_template no parts: Found page {$get_home->id} for msid=$minisite_id", 'minisite', LOG_LEVEL_TEST);  
+            } else {
+                print_log("get_template no parts: No page for msid=$minisite_id", 'minisite', LOG_LEVEL_TEST);  
             }
-          }else{
-            $tpl_values['page'] = $parts2_tpl->template;
-            $tpl_values['tpl'] = $parts2_tpl->page;
+
+        foreach($parts1_tpls as $parts1_tpl){
+            if($get_home->type == $parts1_tpl->type){
+                $tpl_values['page'] = $parts1_tpl->template;
+                $tpl_values['tpl'] = $parts1_tpl->page;
+                $tpl_values['get_slug'] = str_replace('/', '', str_replace('/', '', $get_home->slug));
           }
         }
-      }
     }
-
-  } else {
-
-    $get_home = find_object('minisite_page', ['minisite_id' => $minisite_id, 'row_order' => 1, 'active' => 1]);
-
-    if($get_home) {
-      print_log("get_template no parts: Found page {$get_home->id} for msid=$minisite_id", 'minisite', LOG_LEVEL_TEST);  
-    } else {
-      print_log("get_template no parts: No page for msid=$minisite_id", 'minisite', LOG_LEVEL_TEST);  
-    }
-
-    foreach($parts1_tpls as $parts1_tpl){
-      if($get_home->type == $parts1_tpl->type){
-        $tpl_values['page'] = $parts1_tpl->template;
-        $tpl_values['tpl'] = $parts1_tpl->page;
-        $tpl_values['get_slug'] = str_replace('/', '', str_replace('/', '', $get_home->slug));
-      }
-    }
-  }
-  return $tpl_values;
+    return $tpl_values;
 }
 //  --------------------------- End ---------------------- Vignesh ----------- 29-06-2020--------//
 function get_collection($exhibitions, $page_slug){

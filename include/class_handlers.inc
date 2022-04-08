@@ -1118,7 +1118,13 @@ function pre_add_media($obj_type, $data) {
   $get_media = find_objects('media', ['user_id'=> $user_id]);
 
   $user = get_user($user_id);
-  if($user->subscription_plan_id!=9 || $user->subscription_plan_id!=null){
+
+  if($user->subscription_plan_id==null || $user->subscription_plan_id==10){
+    if((count($get_media) >= 5))
+      return array($data, array('Cannot upload more than 5 images. Upgrade your plan to upload more images.'.$user_id));
+  }
+
+  if($user->subscription_plan_id!=9 && $user->subscription_plan_id!=null){
     $subscription_plan=find_object('subscription_plans', ['id' => $user->subscription_plan_id, 'status' =>1]); // can take user id, role
     if((count($get_media) >= $subscription_plan->image_limit) && ($user->roles != 256))
       return array($data, array('Cannot upload more than ' . $subscription_plan->image_limit.' images. Upgrade your plan to upload more images.'.$user_id));
