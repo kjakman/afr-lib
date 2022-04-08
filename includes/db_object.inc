@@ -4880,6 +4880,7 @@ function get_template($parts, $minisite_id){
             print_log("get_template count=$count type=$type parts: Found page {$page->id} for slug=$slug msid=$minisite_id".dump($page, true), 'minisite', LOG_LEVEL_TEST);  
         } else {
             print_log("get_template count=$count parts: No page for slug=$slug msid=$minisite_id", 'minisite', LOG_LEVEL_TEST);  
+
         }
 
         if($count == 1){
