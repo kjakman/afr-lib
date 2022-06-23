@@ -2750,7 +2750,10 @@
     'height'     => array('height'   , 'float', 0, AF_HIDE_LIST, '4.1'),    
     'width'      => array('width'    , 'float', 0, AF_HIDE_LIST, '4.1'),    
     'depth'      => array('depth'    , 'float', 0, AF_HIDE_LIST, '4.1'),    
-    'unit'       => array('unit'     , 'valSelect', 0, AF_HIDE_LIST, ['','cm','inches','meter','feet']),    
+    'unit'       => array('unit'     , 'valSelect', 0, AF_HIDE_LIST, ['','cm','inches','meter','feet']),   
+    'medium'       => array('medium'     , 'valSelect', 0, AF_HIDE_LIST, ['','Still Image','Animated Image','Video','Audio','3D Model']),    
+    'block_chain'       => array('block_chain'     , 'valSelect', 0, AF_HIDE_LIST, ['','polygon','ethereum']),    
+
     'url'        => array('url'      , 'url', '', AF_HIDE_LIST, 255),   
     //'available'  => array('available', 'bool', 0, AF_HIDE_LIST, 4),    
     'technique'  => array('technique', 'str', '', AF_HIDE_LIST, 255),     
