@@ -221,3 +221,21 @@ tr.ui-sortable-helper:after{
     border: 1px solid #ddd;
     border-radius: 5px 0px 0px 5px;
 }
+/* .subview-nav{
+	background-color: #87BD41 !important;
+}
+.navbar-inverse .navbar-brand {
+    color: white;
+} */
+
+/* custom css */
+nav.navbar.navbar-inverse.sidebar.subview-nav.fixed {
+    background-image: linear-gradient(to right bottom, #8abd3e, #70ab32, #559926, #3a871a, #18750d);
+    border: 0;
+    margin-top: -1px;
+}
+nav.sidebar{width: 225px;}
+.navbar-inverse .navbar-brand,.navbar-inverse .navbar-nav>li>a {color: #fff;}
+nav.sidebar .navbar-nav > li {border-bottom: 0px;}
+body .navbar-nav li.active a {background: #18750d !important;}
+

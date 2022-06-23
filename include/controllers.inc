@@ -5026,6 +5026,21 @@
                 $filter_json = count($filters) ? json_encode($filters) : '';
                 $scope->list_url = "/ajax.php?oper=get-rows&obj_type=cruds".($filter_json ? "&filters=".urlencode($filter_json) : '');
             break;
+
+            case "networks":
+            // dump('Ashii');
+                $scope->section = 'networks';
+                $scope->obj_type = $obj_type = "user_networks";
+                $app->page->itemview = 'user_network';
+                $app->page->listview = 'user_networks';
+                user_networks($app,$scope);
+
+                // $filters = ['active' => 1];
+                // $filter_json = count($filters) ? json_encode($filters) : '';
+                // $scope->list_url = "/ajax.php?oper=get-rows&obj_type=user_networks".($filter_json ? "&filters=".urlencode($filter_json) : '');
+
+                // dump($scope);
+            break;
             case "users":
                 $scope->section = 'user';
                 $scope->obj_type = $obj_type = "users";
@@ -5035,6 +5050,8 @@
                 $filters = ['active' => 1];
                 $filter_json = count($filters) ? json_encode($filters) : '';
                 $scope->list_url = "/ajax.php?oper=get-rows&obj_type=user".($filter_json ? "&filters=".urlencode($filter_json) : '');
+
+
             break;
 
             //---------------------------End Vignesh Implimented------------------//
@@ -7514,6 +7531,25 @@
         // dump(db_query("SELECT id from user where created BETWEEN '".$start."' AND '".$end."'"));
         // dump("asasd");
 
+        return $scope;
+    }
+
+    function user_networks($app,$scope){
+
+        $scope->user->followers=find_objects('user_networks', ['user_id' =>$scope->user->id , 'status' =>1]);
+        $scope->user->followings=find_objects('user_networks', ['followed_by' =>$scope->user->id , 'status' =>1]);
+
+        foreach ($scope->user->followers as $follower) {
+           $follower->profile=find_object('user_profile', ['user_id' =>$follower->user_id ]);
+        }
+
+        foreach ($scope->user->followings as $following) {
+           $following->profile=find_object('user_profile', ['user_id' =>$following->user_id ]);
+        }
+
+
+
+        $scope->user_networks=find_objects('user_networks', ['followed_by' =>$scope->user->id , 'status' =>1]);
         return $scope;
     }
 

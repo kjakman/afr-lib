@@ -393,6 +393,39 @@
 			echo(json_encode($result));
 			exit;      
 		break;  
+
+		case 'save-user-network':
+			extract($obj_data);
+
+			print_log("save-user-network: type: {$obj_type} id: {$obj_id} data:".dump($obj_data,true), 'user-network', LOG_LEVEL_TEST);
+
+			if($obj_id) {
+				list($id, $errors) = update_object($obj_type, $obj_data, $obj_id);
+				print_log("save-user-network: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'user-network', LOG_LEVEL_TEST);
+			}else {
+				list($id, $errors) = add_object($obj_type, $obj_data);
+				print_log("save-user-network: added {$obj_type} id: {$obj_id} errors".dump($errors,true), 'user-network', LOG_LEVEL_TEST);
+			}              
+			  
+			if($errors) json_error($errors);
+		  
+			$obj = get_object($obj_type, $id);
+			//$obj->next_tab = $obj_data['next_tab'];
+		  
+			$result->success = 1;
+			$result->data = $obj;
+			if($obj_id) 
+			{
+				$result->message = "Successfully Update Company";
+			}
+			else
+			{
+				$result->message = "Successfully Inserted Company";
+			}  
+		  
+			echo(json_encode($result));
+			exit;      
+		break;  
 	//------------------------------End Jemima Implemented-------------------//      
 	
 		case 'save-artwork':
@@ -2606,8 +2639,9 @@
 				'uhuru_trial_lesson',
 				'user',
 				'withdrawal',
+				'user_networks'
 				// 'cruds',
-				// 'company'
+				// 'company' 
 			];
 			if(!in_array($obj_type, $allowed_types)) json_error("Listing $obj_type not supported");
 			$options = array();

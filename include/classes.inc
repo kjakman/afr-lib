@@ -93,6 +93,7 @@
             'user_blogs' =>array(USER_LEVEL_SYSTEM, 'user', '', '', 0,'', '', ''),
 
             'subscription_plans' =>array(USER_LEVEL_SYSTEM, 'user', '', '', 0,'', '', ''),
+            'user_networks' =>array(USER_LEVEL_SYSTEM, 'user', '', '', 0,'', '', ''),
             'subscription_plan_features' =>array(USER_LEVEL_SYSTEM, 'user', '', '', 0,'', '', ''),
     
             'org' =>                  array(USER_LEVEL_STAFF,  'user', '', '', 0, 'name', 'name', ''),
@@ -1460,6 +1461,14 @@
                 'email'=>array('email','str','', AF_OBLIGATORY, 50 ),
                 'reference_code'=>array('reference_code','str','', AF_OBLIGATORY, 50 ),
                 'expire_on'=>array('expire_on','datetime',   ATT_DEFAULT_NULL, AF_HIDE|AF_READONLY, 14 ),
+            ),
+
+        "user_networks" => 
+            array(
+                'id'=>array('id','id',0, AF_PRIMARY|AF_AUTOINCREMENT, 11),
+                'status'=>array('status','bool',1, 0),
+                'user_id'=> array('user_id','link',0, AF_OBLIGATORY, 'user'),
+                'followed_by'=> array('user_id','link',0, AF_OBLIGATORY, 'user'),
             ),
 
 
