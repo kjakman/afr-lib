@@ -2141,6 +2141,7 @@ $(document).on("submit", ".searchbar-form", function() {
 });  
 
 $(document).on("submit", ".ajax-submit", function() {
+  //alert("okay2");
   console.log("submitting ajax-submit form...");
   var $form = $(this); 
   return ajax_handler($form);  

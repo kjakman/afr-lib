@@ -4921,14 +4921,46 @@
                 $app->page->listview = 'Analytics';
                 dump($scope->analytics);
                 break;
+
+            case "myNetworks":
+                $scope->section = 'networks';
+                $scope->obj_type = $obj_type = "myNetworks";
+                $app->page->itemview = 'myNetworks';
+                $app->page->listview = 'myNetworks';
+                
+                $app->page->subtemplate = $sub = '_gallery-backend-myNetworks.html';
+                // dump($scope->user);
+                //dump($scope->user->connected_users);
+
+                if($app->page->tab=='connections' || $app->page->tab=='')
+                    user_connections($app,$scope);
+
+                if($app->page->tab=='requests')
+                    user_requests($app,$scope);
+
+                if($app->page->tab=='friend'){
+
+                    $filters = ['active' => 1, 'user.site_id' => $app->site->id];
+                    if($u_level < USER_LEVEL_ADMIN) $filters['user_id'] = $user_ids;
+                    $filter_json = count($filters) ? json_encode($filters) : '';
+                    $scope->list_url = "/ajax.php?oper=get-rows&obj_type=user&amp;sort=id%20desc&amp;".($filter_json ? "&filters=".urlencode($filter_json) : '');
+                }
+
+            break;
             case "ACsettings":
+                dump($app->page);
+
+
                 $scope->section = 'ACsettings';
                 $scope->obj_type = $obj_type = "ACsettings";
                 $id = $app->user_id;
                 $scope->obj_id = $id;
 
-                if($app->page->tab=='subscription')
+                if($app->page->tab=='subscription'){
+                dump($app->page);
+
                     user_subscription($app,$scope);
+                }
 
                 if($app->page->tab=='integration')
                     user_integration($app,$scope);
@@ -5027,20 +5059,7 @@
                 $scope->list_url = "/ajax.php?oper=get-rows&obj_type=cruds".($filter_json ? "&filters=".urlencode($filter_json) : '');
             break;
 
-            case "networks":
-            // dump('Ashii');
-                $scope->section = 'networks';
-                $scope->obj_type = $obj_type = "user_networks";
-                $app->page->itemview = 'user_network';
-                $app->page->listview = 'user_networks';
-                user_networks($app,$scope);
-
-                // $filters = ['active' => 1];
-                // $filter_json = count($filters) ? json_encode($filters) : '';
-                // $scope->list_url = "/ajax.php?oper=get-rows&obj_type=user_networks".($filter_json ? "&filters=".urlencode($filter_json) : '');
-
-                // dump($scope);
-            break;
+           
             case "users":
                 $scope->section = 'user';
                 $scope->obj_type = $obj_type = "users";
@@ -7045,7 +7064,6 @@
     }
 
     function user_subscription($app,$scope){
-        // dump('Ashiii Subscriptions');
 
         $scope->user_detail=get_user($_GET['user_id']);
         if(!$app->user_id) return controller_error($app, "Missing ID");
@@ -7534,22 +7552,23 @@
         return $scope;
     }
 
-    function user_networks($app,$scope){
+    function user_connections($app,$scope){
 
-        $scope->user->followers=find_objects('user_networks', ['user_id' =>$scope->user->id , 'status' =>1]);
-        $scope->user->followings=find_objects('user_networks', ['followed_by' =>$scope->user->id , 'status' =>1]);
+        $scope->user->connected_users=find_objects('user_networks', ['user_id' =>$scope->user->id , 'status' =>1]);
+        foreach ($scope->user->connected_users as $connected_user) {
+           $connected_user->profile=find_object('user_profile', ['user_id' =>$connected_user->followed_by ]);
+           $connected_user->profile->followers=count(find_objects('user_networks', ['followed_by' =>$scope->user->id , 'status' =>1]));
 
-        foreach ($scope->user->followers as $follower) {
-           $follower->profile=find_object('user_profile', ['user_id' =>$follower->user_id ]);
         }
+        return $scope;
+    }
+    function user_requests($app,$scope){
 
-        foreach ($scope->user->followings as $following) {
-           $following->profile=find_object('user_profile', ['user_id' =>$following->user_id ]);
+        $scope->user->requested_users=find_objects('user_networks', ['user_id' =>$scope->user->id , 'status' =>0]);
+        foreach ($scope->user->requested_users as $requested_user) {
+           $requested_user->profile=find_object('user_profile', ['user_id' =>$requested_user->followed_by ]);
+           $requested_user->profile->followers=count(find_objects('user_networks', ['followed_by' =>$scope->user->id , 'status' =>1]));
         }
-
-
-
-        $scope->user_networks=find_objects('user_networks', ['followed_by' =>$scope->user->id , 'status' =>1]);
         return $scope;
     }
 

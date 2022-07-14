@@ -4715,6 +4715,7 @@
 
 			$data = array2obj($obj_data);
 
+
 			$result['input'] = $data;
 
 			$password = $data->pass = $data->password ?: $data->password1;
@@ -4780,7 +4781,6 @@
       		list($user_id, $errors) = user_register($username, $pw1, $profileData, $params);
       		if($errors) json_error($errors);
 
-      
       		$message = $result['message'];
       		
 
@@ -4800,6 +4800,33 @@
 	        	$data->redirect = page_link(PAGE_PROFILE).$user_id;
 	        	if($errors) json_error($errors);        
       		}
+
+      		if(isset($data->relation) && $data->relation==1){
+      			$message='Relation added Successfully';
+      			// echo '<script type="text/JavaScript"> location.reload(); </script>';
+
+	        	$data->redirect = explode($data->redirect,'0');
+	        	$data->uri = explode($data->uri,'0');
+
+	        	$to = "mohamed.hameed@dci.in";
+				$subject = "Invitation form vPatina";
+
+				$message = "<b>Invitation form vPatina</b>";
+				$message .= "<h1>You are invited to vPatina</h1>";
+
+				$header = "From:jemima.shanmuganathan@dci.in \r\n";
+				$header .= "MIME-Version: 1.0\r\n";
+				$header .= "Content-type: text/html\r\n";
+
+				$retval = mail ($to,$subject,$message,$header);
+
+				if( $retval == true ) {
+				$message= "Message sent successfully...";
+				}else {
+				$message= "Message could not be sent...";
+				}
+      		}
+      		
       
 			//$message .= dump($result2, true);
 			$response = new stdClass;
@@ -6263,6 +6290,29 @@
 			echo json_encode($result);exit();                
 	 	break;
 
+	 	
+	  	case 'update-user-network':
+			extract($obj_data);
+
+			// dump($obj_data);
+
+			$obj_type = 'user_networks';
+			$mapData = ['status' => $obj_data['status']];
+			$id=$obj_data['user_network_id'];
+		  	list($id, $errors) = update_object('user_networks', $mapData, $id);
+			if($errors) json_error($errors);
+
+			// $result->data = get_user($user_id);
+			$result->success = 1;
+			$result->message = $obj_data['status']==0 ? "Unfollowed Successfully" : "Accepted Successfully";
+
+			$obj_data['redirect'] = explode($obj_data['redirect'],'/0');
+			// $result->redirect = $obj_data['redirect'];
+			//$result->redirect = $redirect;
+			echo json_encode($result);exit();     
+	  	break;
+
+	 	
 		case 'save-plugin':
 			$obj_type = 'plugin';
 			$pluginData = $obj_data;

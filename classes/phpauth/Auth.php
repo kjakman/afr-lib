@@ -247,7 +247,7 @@ class Auth
     if ($this->isEmailTaken($email, $client_id)) {
       $this->addAttempt();
 
-      $return['message'] = $this->lang["email_taken"];
+      $return['message'] = $this->lang["email_taken"]!=null ? $this->lang["email_taken"] : "Email Already Taken";
       return $return;
     }
 

@@ -1274,8 +1274,13 @@ function bstEndDateFormatter(value, row, index) {
 }
 
 function bstArtistFormatter(value, row, index) {
+  //alert(value);
   if(!value) return '';
   return g_artists[value];
+}
+
+function bstSnoFormatter(value, row, index){
+  return index + 1;
 }
 
 function bstLocationFormatter(value, row, index) {
