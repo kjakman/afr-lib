@@ -9,9 +9,9 @@ $db_db = $db_conf->db;
 
 $_SESSION['db_dev'] = $dev_db = $db_key == 'devdb' ? 1 : 0;
 
-$db_user = $db_conf->user;
-$db_host = $db_conf->host ?: "localhost";
-$db_password = $db_conf->pass;
+$db_user = "patina";
+$db_host = "vpatina-mysql.ccztxxjlttr7.ap-south-1.rds.amazonaws.com";
+$db_password = "R%7Lfc6qXtJ45s&7w";
 $db_dsn = "mysql://$db_user:$db_password@$db_host/$db_db";
 
 // connect to db

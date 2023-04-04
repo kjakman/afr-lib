@@ -94,6 +94,8 @@
 
             'subscription_plans' =>array(USER_LEVEL_SYSTEM, 'user', '', '', 0,'', '', ''),
             'user_networks' =>array(USER_LEVEL_SYSTEM, 'user', '', '', 0,'', '', ''),
+            'share_profiles' =>array(USER_LEVEL_SYSTEM, 'user', '', '', 0,'', '', ''),
+            'share_exhibitions' =>array(USER_LEVEL_SYSTEM, 'user', '', '', 0,'', '', ''),
             'subscription_plan_features' =>array(USER_LEVEL_SYSTEM, 'user', '', '', 0,'', '', ''),
     
             'org' =>                  array(USER_LEVEL_STAFF,  'user', '', '', 0, 'name', 'name', ''),
@@ -3188,6 +3190,28 @@
      'remote_cc'        => array('Country Code',      'many2one', ATT_DEFAULT_CLIENT_CC, AF_HIDE_LIST, 'countries'),
      'data'             => array('data',              'json',     '', AF_HIDE_ADD),
   ),
+  "share_profiles" => 
+  array(
+      'id'=>                array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 3),
+      'code'            => array('code',             'str',      '', 0, 255),
+     'user_id'           => array('user_id',         'int',  ATT_DEFAULT_NULL, AF_HIDE_ADD),
+     'follower_id'           => array('follower_id',         'int',  ATT_DEFAULT_NULL, AF_HIDE_ADD),
+     'status'            => array('status',       'int',  0, AF_HIDE_ADD),
+     'created_at'=>         array('created_at',         'created_at', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD, 14 ),
+     'updated_at'=>         array('updated_at',         'updated_at', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD, 14 ),
+     'deleted_at'=>         array('deleted_at',         'deleted_at', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD, 14 ),
+   ),
+   "share_exhibitions" => 
+  array(
+      'id'=>                array('ID',                'id',   0, AF_PRIMARY|AF_AUTOINCREMENT, 3),
+      'code'            => array('code',             'str',      '', 0, 255),
+     'user_id'           => array('user_id',         'int',  ATT_DEFAULT_NULL, AF_HIDE_ADD),
+     'follower_id'           => array('follower_id',         'int',  ATT_DEFAULT_NULL, AF_HIDE_ADD),
+     'status'            => array('status',       'int',  0, AF_HIDE_ADD),
+     'created_at'=>         array('created_at',         'created_at', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD, 14 ),
+     'updated_at'=>         array('updated_at',         'updated_at', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD, 14 ),
+     'deleted_at'=>         array('deleted_at',         'deleted_at', ATT_DEFAULT_NOW, AF_HIDE_LIST|AF_READONLY|AF_HIDE_ADD, 14 ),
+   ),
   
   "weekday" =>
   array(

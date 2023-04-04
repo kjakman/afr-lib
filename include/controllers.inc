@@ -1,4 +1,6 @@
 <?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
     function controller_mytest($app, $options = []) {
         $scope = $app->page->scope;
@@ -41,6 +43,7 @@
     }
 
     function controller_minisite($app, $options = []) {
+       //echo"thala";die();
         $__header = $app->header;
         $u_id = $app->user_id;
         $pageObj = $app->page;
@@ -49,11 +52,12 @@
         $minisite_id = $msObj->id;
         if($css = $msObj->css) $__header->styles[] = "/css/minisites/{$msObj->url}/{$css}?v={$app->version}";
         $se_title = $se_description = '';
-
+        //print_r($pageObj->path);die();
         $scope->minisite = $minisite = $msObj->url;
         $scope->basepath = $msObj->internal ? "/{$msObj->user_id}/{$minisite}" : '';    
         $scope->minisite_name = $msObj->name;
         $scope->minisite_type = $type = $msObj->type;
+       
         $font_type = $msObj->font_type;
         $scope->fonts= $font_styles = find_object('minisite_font', ['id' => $font_type, 'active' => 1]);
         $scope->minisite_page_type = $minisite_page_type = find_objects('minisite_page_type', ['active'=>1], ['sort'=>'row_order']);
@@ -67,6 +71,10 @@
         /** which page */
         $path = $pageObj->path;
         $parts = array_filter(explode('/', trim($path,'/')));
+        if($pageObj->path == '/shared_profile'){
+        $type = 'shared_profile';
+        }
+      // print_r($type);die();
         //$page = $tpl = pick_first(strtolower($parts[0]), 'home');
 
         // To simplify paths
@@ -74,7 +82,7 @@
 
         if($get_tpl['page']) $page = $get_tpl['page'];
         if($get_tpl['tpl']) $tpl = $get_tpl['tpl'];
-
+       //print_r($type);die();
         //$slug = count($parts) >= 1 ? strtolower($parts[1]) : '';
         $scope->page_name = $slug = count($parts) >= 1 ? strtolower($parts[0]) : '';
 
@@ -99,7 +107,7 @@
         $data = [];
         $today = today();
 
-        $exhibitions = $artists = [];
+        $exhibitions = $artists = $shared_profiles = [];
 
         print_log("type={$type} path: {$path} page:{$page} slug:{$slug} id: {$obj_id} name: {$name} sub:{$subview} options".dump($options,true), 'minisite', LOG_LEVEL_TEST);  
 
@@ -107,11 +115,12 @@
         $se_description = $minisite;
 
         print_log("Returned type=$type page=$page tpl: $minisite_id".dump($get_tpl,true), 'minisite', LOG_LEVEL_TEST);  
-
+        //print_r($type);die();
         switch($type) {
 
           /**
           case 'artist':
+           
             $search = ['user_id' => $user_id, 'active' => 1, 'type' => COLLECTION_TYPE_EXHIBITION, 'subtype' => 40, 'show_website' => 1];
             $scope->artist = $artist = get_user($user_id);
             
@@ -136,14 +145,20 @@
             
             break;
           **/  
+          
           // case ($type == 'gallery' || $type == 'artist'):
 
             case 'gallery':
+             
                 case 'artist':
+                
                     default:
+                    
                     print_log("kj got here page=$page type=$type", 'minisite', LOG_LEVEL_TEST);
+                   // print_r($page);die();
                     if($page == 'artists' || $page == 'artist') {
-                        $scope->page_slug = ($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
+                        
+                     $scope->page_slug = ($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
                         $page_slug = ($parts[0] != '') ? "/".$parts[0]."/" :  "/".$get_tpl['get_slug']."/" ; 
                         $search = find_object('minisite_page', ['user_id' => $user_id, 'active' => 1, 'minisite_id' => $minisite_id,'slug' => $page_slug]);
                         $page_id = $search->id;
@@ -164,10 +179,32 @@
                             foreach($artistAr as $this_artist) $artists1[$this_artist->slug] = $this_artist;
                             $scope->secArtists = $artists1;
                         }
+                        if($collectionObj->search2){
+                            $artist_ids = json_decode($collectionObj->search2, True); 
+                            $artistArs = get_artist($user_id, $artist_ids, $page_slug);
+                            $artistAr = array_sort($artistArs, 'last_name');
+                            foreach($artistAr as $this_artist) $artists2[$this_artist->slug] = $this_artist;
+                            $scope->shared_pro_art = $artists2;
+                        }
 
                         $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'id' => $page_id ,'active' => 1]);
+                       // print_r($scope->minisite_pageObj);die();
+                
+                        $shared_profile_query = find_objects('share_profiles', ['follower_id' => $user_id, 'status' => 1]);
+                         $share_ids1 = [];
+                          foreach($shared_profile_query as $shared){
+                           $share_ids1 [] = $shared->user_id;
+                             }
+                        
+                           // print_r($minisite_pageObj);die();
+                        $artistArs1 = get_artist($user_id, $share_ids1, $page_slug);
+                            $artistAr1 = array_sort($artistArs1, 'last_name');
+                            foreach($artistAr1 as $this_artist1) $artists2[$this_artist1->slug] = $this_artist1;
+                            $scope->shared_Artist = $artists2;
+                        //print_r($minisite_pageObj->second_layout);die();
 
                         if($page == 'artists'){
+                            
                             if($minisite_pageObj->page_layout == '119')           $tpl = $page = 'artists_layout2'; 
                             elseif($minisite_pageObj->page_layout == '124')       $tpl = $page = 'artists_layout1'; 
                             elseif($minisite_pageObj->page_layout == '125')       $tpl = $page = 'artists';
@@ -191,8 +228,9 @@
                             elseif($minisite_pageObj->second_layout == 208)       $tpl = $page = 'artist_layout9';
                             elseif($minisite_pageObj->second_layout == 209)       $tpl = $page = 'artist_layout10';
                         }
+                         
                     }if($page == 'exhibitions' || $page == 'exhibition') {
-                        // dump('ashi');
+                       
 
                         $scope->page_slug = $slugstr =($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
                         $scope->sub_slug = $subviews = ($parts[2] != '') ?  $parts[2] : $get_tpl['get_subviews'];
@@ -201,7 +239,7 @@
 
                         $minisite_id = $msObj->id;
                         $today = today(); 
-                        // dump('ashi');
+                        
                              
                         /** Exhibitions - only do when needed  */
                         /*Filter exhibition by type */
@@ -399,8 +437,9 @@
                             // }
                         }        
                     } 
-
+               
                     if($page == 'manualexbs' || $page == 'manualexb'){
+                        
                         $scope->page_slug = $slugstr =($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
                         $scope->sub_slug = $subviews = ($parts[2] != '') ?  $parts[2] : $get_tpl['get_subviews'];
                         $page_slug =  ($parts[0] != '') ? "/".$parts[0]."/" : "/".$get_tpl['get_slug']."/"; 
@@ -408,7 +447,7 @@
                         $minisite_id = $msObj->id;
 
                         $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'slug' => $page_slug, 'active' => 1]);
-
+                   // print_r($minisite_pageObj);die();
                         if($page == 'manualexbs')
                         {
                             $template = get_exhibition_tpl1($minisite_pageObj->page_layout);
@@ -474,7 +513,7 @@
                             $tpl = $page = 'contact1'; 
                     }   
                     if($page == 'blog'){
-                        // dump("Ashiqq");
+                       
                         $scope->page_slug = ($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
                         $page_slug = ($parts[0] != '') ? "/".$parts[0]."/" :  "/".$get_tpl['get_slug']."/";
                         $minisite_id = $msObj->id;
@@ -497,9 +536,11 @@
                         $page_slug = ($parts[0] != '') ? "/".$parts[0]."/" :  "/".$get_tpl['get_slug']."/"; 
 
                         $scope->minisite_pageObj = $minisite_pageObj = find_object('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'slug' => $page_slug, 'active' => 1]);
-
-                        $bioartist = find_object('user_profile', ['user_id' => $user_id]);
-
+                        if($page_slug3){
+                            $bioartist = find_object('user_profile', ['user_id' => $page_slug3]);
+                        }else{
+                                $bioartist = find_object('user_profile', ['user_id' => $user_id]);
+                        }
                         if($minisite_pageObj->page_layout == 128)       $tpl = $page = 'artist';
                         elseif($minisite_pageObj->page_layout == 129)   $tpl = $page = 'artist_layout1';
                         elseif($minisite_pageObj->page_layout == 130)   $tpl = $page = 'artist_layout2';
@@ -517,7 +558,7 @@
                         elseif($minisite_pageObj->page_layout == 209)   $tpl = $page = 'artist_layout10';
                     }
                     if($page == 'singleExhibitions'){
-                        // dump('Ashiiii');
+                       // print_r('okok');die();
                         $scope->subview = $subview = $parts[2];
                         $scope->page_slug = $slugstr =($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
                         $minisite_id = $msObj->id;
@@ -559,20 +600,28 @@
                         else                          $tpl = $page = 'unstyledMail';
                     }
                     break;
-                }
-          
+                  }
+                //print_r($page);die();
                 /** todo: 404 if slug/subview not allowed or not found */
           
                 switch($page) {
                     case ($page == 'artist' || $page == 'artist_layout1' || $page == 'artist_layout2' || $page == 'artist_layout3' || $page == 'artist_layout4' || $page == 'artist_layout5' || $page == 'artist_layout6' || $page == 'artist_masonry' || $page == 'artist_hanging' || $page == 'artist_standing' || $page == 'artist_masonryExt' || $page == 'artist_layout7' || $page == 'artist_layout8' || $page == 'artist_layout9' || $page == 'artist_layout10'): 
                         $artist = "";
-              
+                        //print_r($page);die();
                         if($bioartist){
                             $scope->artist = $artist = $bioartist;
                             $artist_id = $artist->user_id;
                         }else{
                             $slug = $parts[1];
-                            $artist = $artists[$slug]? $artists[$slug] : $artists1[$slug];
+                           // $artist = $artists[$slug]? $artists[$slug] : $artists2[$slug];
+                           if($artists[$slug]){
+                                $artist = $artists[$slug];
+                           }else if($artists1[$slug]){
+                                $artist = $artists1[$slug];
+                           }else{
+                                $artist = $artists2[$slug];
+                           }
+                            //print_r($artist);die();
                             $scope->artist = $artist;
                             $artist_id = $artist->id;
                         }
@@ -612,10 +661,11 @@
                         break;
                     case ($page == 'classicMail' || $page == 'condensedMail' || $page == 'horizontalMail' || $page == 'unstyledMail'):
                         break;
-            
+                
                     case ($page == 'exhibition' || $page == exhibition1 || $page == exh_masonry || $page == exh_hanging || $page == exh_standing || $page == exh_masonryExt || $page == kyoto_WLoc || $page == seoul_WLoc):
+                    //print_r($slug);die();
                         if($parts[1]) $slug = $parts[1];
-
+                           
                         if(!$slug) return scope_error($app, "Missing slug", '404');
                         $collectionObj = $obj_id ? get_object('media_collection', $obj_id) : $exhibitions[$slug];
                         if(!$parts[1]) $collectionObj->page_slug = $page_title;
@@ -669,9 +719,11 @@
                         } 
                         $search = ['media_collection_id' => $collection_id, 'active' => 1];
                         $scope->artworks = $mapObjs = find_objects('media_collection_map', $search, ['sort' => 'rank']);
+                       // print_r($scope);die();
                     break;
 
                     case ($page == 'singleExh' || $page == 'singleExh_kwLoc' || $page == 'singleExh_sewLoc' ||$page == 'singleExh_1' || $page == 'singleExh_2' || $page == 'singleExh_3' || $page == 'singleExh_4' || $page == 'singleExh_5'):
+                    //print_r($page);die();
                         $slugstr =($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
                         $gallery = $artfair = $others = '0';
                         $data = json_decode($minisite_pageObj->data, True);
@@ -701,7 +753,35 @@
         
                     case 'work':
                         break;
+                    case 'shared_profile':
+                      $shared_profile_query = find_objects('share_profiles', ['follower_id' => $user_id, 'status' => 1]);
+                      $share_ids = [];
+                      foreach($shared_profile_query as $shared){
+                        $share_ids [] = $shared->user_id;
+                        }
+                        $user_details = find_objects('user', ['user_id' => $share_ids]);
+                        foreach($user_details as $user_detail){
+                        $user_displayname [] = $user_detail->display_name;
+                        }
+                        $scope->user_displayname = $user_displayname;
+                        $artist = "";
+                        if($bioartist){
+                            $scope->artist = $artist = $bioartist;
+                            $artist_id = $artist->user_id;
+                        }else{
+                            $slug = $parts[1];
+                            $artist = $artists[$slug]? $artists[$slug] : $artists1[$slug];
+                            $scope->artist = $artist;
+                            $artist_id = $artist->id;
+                        }
+                        $collection_data = find_object('media_collection', ['user_id' => $artist_id, 'type' => '150', 'active' => 1]);
+                        $scope->collection_id = $collection_data->id;
+                        if(collection_data) {
+                            $search = ['media_collection_id' => $collection_data->id, 'active' => 1];
+                            $scope->artworks = $mapObjs = find_objects('media_collection_map', $search);
+                        }
 
+                      break;
                     case 'exhibitions':
                         break;
           
@@ -741,6 +821,7 @@
                         $scope->exhibitions = $exhibitions;
                         $scope->latest_exhibitions = $latestexhibitions;
                     break; 
+                    
 
                     case ($page == 'landscape_3C' || $page == 'landscape_3C_TS' || $page == 'landscape_4C' || $page == 'landscape_time' || $page == 'landscape_3CY' || $page == 'landscape_4CY' || $page == 'landscape_2C' || $page == 'landscape_2C_TS' || $page == 'landscape_2CY'):
                     break; 
@@ -821,7 +902,8 @@
                 print_log("Found custom file {$custom_filename} content={$custom_content}", 'minisite', LOG_LEVEL_TEST);
 
             }
-      
+             $scope->profileobj = $profileobj = find_object('user_profile', ['user_id' => $user_id]);
+            $scope->timings = $timings = db_getAll("select * from opening_hours where user_id='$user_id' ORDER BY `id` ASC");
             $pageObj->template = "minisites/{$tpl}";
             $pageObj->name = $page;
             $scope->page = $page;
@@ -830,8 +912,7 @@
             $scope->title = $title;
             $scope->mObj = $mObj = find_object('minisite', ['id' => $minisite_id, 'user_id' => $user_id, 'active' => 1]);
             $scope->menuObj = $menuObj = find_objects('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'active' => 1], ['sort' => 'row_order asc']);
-            $scope->profileobj = $profileobj = find_object('user_profile', ['user_id' => $user_id]);
-            $scope->timings = $timings = db_getAll("select * from opening_hours where user_id='$user_id' ORDER BY `id` ASC");
+            
 
             $keywords = implode(',', array_filter([$minisite, $display_name, $page, $slug, $subview, $site->name, $page->name, $type, $se_title]));
 
@@ -841,6 +922,7 @@
         
             print_log("page=$page path={$path} slug={$slug} subview={$subview} tpl={$pageObj->template}".dump($parts,true), 'minisite', LOG_LEVEL_TEST);
             // dump($scope->minisite_pageObj);
+            //print_r($scope->shared_pros);
             return;
     }
 
@@ -3186,6 +3268,7 @@
 
 
     function controller_user_account($app, $options = []) {
+        //print_r('thala');die();
         global $u_id, $u_level;
         $__header = $app->header; 
         $__header->scripts[] = "/afr/bower/iban/iban.js";
@@ -3274,7 +3357,7 @@
 
     /** new public: view user profile */
     function controller_user_profile($app, $options = []) {
-        //echo "hi";
+        //echo "hi";die();
         //global $u_id, $u_level;
         $u_id = $app->user->id;
         $__header = $app->header; 
@@ -3505,7 +3588,7 @@
 
     function controller_artist_profile($app, $options = []) {
         // dump("AShii");
-        //echo "addf";
+        //echo "addf";die();
         global $u_id;
         $__header = $app->header; 
         $__header->base_scripts[] = "/afr/js/afr_gallery.js?ver={$app->version}";
@@ -4696,6 +4779,7 @@
 
     /** new backend for vPatina */
     function controller_gallery_backend($app, $options = []) {
+        //print_r('okok');die();
         global $u_id, $u_level;
         $scope = $app->page->scope;
         $errors = $messages = [];  
@@ -4919,19 +5003,21 @@
                 $app->page->subtemplate = $sub = '_gallery-backend-Analytics.html';
                 $app->page->itemview = 'Analytics';
                 $app->page->listview = 'Analytics';
-                dump($scope->analytics);
+                
                 break;
 
             case "myNetworks":
+
+$smtpmail = new PHPMailer(true);
+$smtpmail->isSMTP();
+
                 $scope->section = 'networks';
                 $scope->obj_type = $obj_type = "myNetworks";
                 $app->page->itemview = 'myNetworks';
                 $app->page->listview = 'myNetworks';
                 
                 $app->page->subtemplate = $sub = '_gallery-backend-myNetworks.html';
-                // dump($scope->user);
-                //dump($scope->user->connected_users);
-
+               
                 if($app->page->tab=='connections' || $app->page->tab=='')
                     user_connections($app,$scope);
 
@@ -4939,17 +5025,54 @@
                     user_requests($app,$scope);
 
                 if($app->page->tab=='friend'){
+                    friend_requests($app,$scope);
+                }
 
-                    $filters = ['active' => 1, 'user.site_id' => $app->site->id];
-                    if($u_level < USER_LEVEL_ADMIN) $filters['user_id'] = $user_ids;
-                    $filter_json = count($filters) ? json_encode($filters) : '';
-                    $scope->list_url = "/ajax.php?oper=get-rows&obj_type=user&amp;sort=id%20desc&amp;".($filter_json ? "&filters=".urlencode($filter_json) : '');
+                if($app->page->tab=='emailfriend'){
+ 
+                   $receiverid = $_REQUEST['receiverid'];
+                   $receivername = $_REQUEST['receivername'];
+                   $receivermail = $_REQUEST['receivermail'];
+                   //print_r($scope->user->id);die;
+                   $sendername = $scope->user->username;
+                   $senderid = $scope->user->id;
+                   $usernetworkData = [
+                      'user_id' => $senderid, 
+					  'followed_by' => $receiverid, 
+					  'status' => 0
+					  ];
+			list($id, $errors) = add_object('user_networks', $usernetworkData);
+                //    try {
+                //     //Server settings                                            //Send using SMTP
+                //     $smtpmail->Host       = 'smtp.gmail.com';                     //Set the SMTP server to send through
+                //     $smtpmail->SMTPAuth   = true;                                   //Enable SMTP authentication
+                //     $smtpmail->Username   = 'mohamed.hameed@dci.in';                     //SMTP username
+                //     $smtpmail->Password   = 'Mashaallah123';                               //SMTP password
+                //     $smtpmail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;            //Enable implicit TLS encryption
+                //     $smtpmail->Port       = 465;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+                
+                //     //Recipients
+                //     $smtpmail->setFrom('support@vpatina.com', 'V patina');
+                //     $smtpmail->addAddress($receivermail, 'V patina');     //Add a recipient
+                    
+                //     //Content
+                //     $smtpmail->isHTML(true);                                  //Set email format to HTML
+                //     $smtpmail->Subject = 'V patina';
+                //     $smtpmail->Body    = 'hello '.$receivername.',<br/>You have been received friend request from '.$sendername.'</b>';
+                //     //$mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
+                
+                //     $smtpmail->send();
+                //     $message = 'request has been sent';
+                // } catch (Exception $e) {
+                //     $message =  "Message could not be sent. Mailer Error: {$smtpmail->ErrorInfo}";
+                // }
+                return $scope;
                 }
 
             break;
             case "ACsettings":
-                dump($app->page);
-
+               // dump($app->page);
+    
 
                 $scope->section = 'ACsettings';
                 $scope->obj_type = $obj_type = "ACsettings";
@@ -5016,6 +5139,7 @@
                 $scope->auth_edit_profile = in_array($profile->user_id, $artist_ids) || $scope->auth_edit_user;
                 $app->page->itemview = 'ACsettings';
                 $app->page->listview = 'ACsettings';
+                //print_r($app);die();
                 break;
 
                 //-----------------------vignesh Implimented----------------//
@@ -5443,6 +5567,10 @@
                     foreach($artists1 as $artist){
                         $scope->viewartist1[] = $viewartist1[] = get_user($artist);
                     }
+                    $artists2 = json_decode($collectionobj->search2, True);
+                    foreach($artists2 as $artist){
+                        $scope->viewartist2[] = $viewartist2[] = get_user($artist);
+                    }
 
                     if($exhibition_ids) { // adding single exhibition
                         $singleExb = add_single_exb($exhibition_ids, $page_id);
@@ -5617,7 +5745,7 @@
                 $app->page->itemview = 'profile';
                 $app->page->listview = 'network';
                 $scope->obj_type = $obj_type = "artist"; //Bala
-
+                // print_r($app->site->id);die();
                 $filters = ['active' => 1, 'user.site_id' => $app->site->id];
                 if($u_level < USER_LEVEL_ADMIN) $filters['user_id'] = $user_ids;
                 $filter_json = count($filters) ? json_encode($filters) : '';
@@ -5737,6 +5865,11 @@
                 break;
       
             case "exhibitions":
+            if($_GET['shared_exp'] == 1){
+                $scope->shared_exp = $shared_exp = 1;
+            }else{
+                $scope->shared_exp = 0;
+            }
                 $scope->section = 'exhibition';
                 $scope->obj_type = $obj_type = "media_collection";
                 $app->page->itemview = 'exhibition';
@@ -5746,7 +5879,7 @@
                 if($u_level < USER_LEVEL_ADMIN) $filters['user_id'] = $app->user_id;
                 // dump($filters);
                 $filter_json = count($filters) ? json_encode($filters) : '';
-                $scope->list_url = "/ajax.php?oper=get-rows&obj_type=media_collection&amp;sort=id%20desc&amp;".($filter_json ? "&filters=".urlencode($filter_json) : '');
+                $scope->list_url = "/ajax.php?oper=get-rows&obj_type=media_collection&obj_type=media_collection&shared_exp=$shared_exp&amp;sort=id%20desc&amp;".($filter_json ? "&filters=".urlencode($filter_json) : '');
 
             break;
   
@@ -7569,6 +7702,24 @@
            $requested_user->profile=find_object('user_profile', ['user_id' =>$requested_user->followed_by ]);
            $requested_user->profile->followers=count(find_objects('user_networks', ['followed_by' =>$scope->user->id , 'status' =>1]));
         }
+        return $scope;
+    }
+    function friend_requests($app,$scope){
+
+        // $scope->user->requested_users=find_objects('user_networks', ['user_id' =>$scope->user->id , 'status' =>0]);
+        // $all_users=db_getAll("SELECT id from user WHERE active=1");
+        // $user_networks_id=[];
+        //             $user_id=[];
+        //             foreach($all_user_networks as $all_user_network){
+        //                 $user_networks_id[] = $all_user_network->followed_by;
+        //             }
+        //             foreach($all_users as $all_user){
+        //                 $user_id[] = $all_user->id;
+        //             }
+		// 			$filter_vals = array_diff($user_id,$user_networks_id);
+        //             print_r($filter_vals);die;
+        //             $requested_user->profile=db_getAll("SELECT followed_by FROM `user_networks` WHERE ('followed_by', '!=', $filter_vals)");
+        // print_r($requested_user->profile);die;
         return $scope;
     }
 

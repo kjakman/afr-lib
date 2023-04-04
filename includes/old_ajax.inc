@@ -1,10 +1,4 @@
 <?php
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-//require 'PHPMailer/PHPMailerAutoload.php';
-
-$mail = new PHPMailer(true);
 	//header('Content-type:application/json;charset=utf-8');
 	include_once('set_env.inc');
 	$timer['set_env'] = microtime(true);
@@ -18,7 +12,7 @@ $mail = new PHPMailer(true);
 	//echo("App Lang1: {$_SESSION['language']}<br>");
 
 	//echo("App Lang1: {$__LANG}<br>");
-	//print_r($_REQUEST);die();
+
  
   	if($_REQUEST['type'] == 'artwork') {
 		$obj_type= $_REQUEST['type'];
@@ -28,14 +22,6 @@ $mail = new PHPMailer(true);
 		$obj_data= array('obj_type'=>$obj_type,'obj_id'=>$obj_id,$obj_col=>$data);
 		$result= update_object($obj_type, $obj_data, $obj_id);
 		die("           ");
-  	}
-
-	if($_REQUEST['type'] == 'find-name') {
-		$find_username = find_objects('user_profile', ['user_id' => $_REQUEST['typeid']]);
-		foreach($find_username as $find_usernames){
-			$usernamee = $find_usernames->display_name;
-		}
-		echo($usernamee);die();
   	}
   
 	if($_REQUEST['type'] == 'media_collection') {
@@ -962,9 +948,7 @@ $mail = new PHPMailer(true);
 			  $artist_ids = json_decode($obj_data[artist_ids], True);
 			if($obj_data[artist_ids1])
 			  $artist_ids1 = json_decode($obj_data[artist_ids1], True);
-			  if($obj_data[artist_ids2])
-			  $artist_ids2 = json_decode($obj_data[artist_ids2], True);
-				//json_error($obj_type);
+
 			if($page_id){
 			  $data = find_object($obj_type, ['id' => $page_id, 'user_id' => $user_id, 'active' => '1']);
 
@@ -978,15 +962,10 @@ $mail = new PHPMailer(true);
 				  $obj_data[search1] = json_encode(array_values(array_unique(array_merge(json_decode($data->search1, true),json_decode($obj_data[artist_ids1], true)))));
 				else
 				  $obj_data[search1] = $obj_data[artist_ids1];
-			  }elseif($artist_ids2){
-				if($data->search2)
-				  $obj_data[search2] = json_encode(array_values(array_unique(array_merge(json_decode($data->search2, true),json_decode($obj_data[artist_ids2], true)))));
-				else
-				  $obj_data[search2] = $obj_data[artist_ids2];
 			  }else
 				json_error("Missing Artist ID");
 
-			  if(($obj_data[search] != 'null') || ($obj_data[search1] != 'null') || ($obj_data[search2] != 'null')){
+			  if(($obj_data[search] != 'null') || ($obj_data[search1] != 'null')){
 				list($id, $errors) = update_object($obj_type, $obj_data, $page_id);
 				print_log("save-ministe: updated: {$obj_type} id: {$obj_id} errors".dump($errors,true), 'minisite', LOG_LEVEL_TEST);
 			  }else
@@ -2642,7 +2621,6 @@ $mail = new PHPMailer(true);
 		/** more secure version of 'list' below, with implicit filters and security checks, used by bootstrap-table */
 		case 'get-rows':
 			extract($obj_data);
-			extract($shared_exp);
 			$allowed_types = [
 				'artwork',
 				'dictionary',
@@ -2665,7 +2643,6 @@ $mail = new PHPMailer(true);
 				// 'cruds',
 				// 'company' 
 			];
-
 			if(!in_array($obj_type, $allowed_types)) json_error("Listing $obj_type not supported");
 			$options = array();
 			foreach(array('offset', 'limit', 'sort', 'order', 'fields') as $fld) $options[$fld] = $obj_data[$fld];
@@ -2675,9 +2652,8 @@ $mail = new PHPMailer(true);
 			global $u_id, $u_level;
 		  
 			$tbl = get_object_table($obj_type);
-			
 		  
-			if(in_array('client_id', $class_fields)) $search["{$tbl}.client_id"] = $_SESSION['client_id'];
+			if(in_array('client_id', $class_fields)) $search["{$tbl}.client_id"] = $_SESSION['client_id'];;
 			if($u_level < USER_LEVEL_ADMIN && in_array('host_id', $class_fields)) $search["{$tbl}.host_id"] = user_host_list($userObj);
 
 
@@ -2690,7 +2666,7 @@ $mail = new PHPMailer(true);
 			$search_options = $options;
 			if($_GET['filters']) $search_options['filters'] = $_GET['filters'];
 			if($obj_data['id']) $search_options['id'] = $obj_data['id'];
-//print_r($obj_data['id']);die();
+
 			$vals = explode(' ', $val);
 
 			//$response->total = intVal(count_objects($obj_type, $search));
@@ -2729,37 +2705,9 @@ $mail = new PHPMailer(true);
 				$objs = [];
 				$result = call_user_func_array('array_intersect_key', $assocArrays);
 				foreach($result as $id => $obj) $objs[] = $obj;
-				//print_r($obj);die();
-			}else {
-				//print_r($obj_type);die();
+			}else {   
 				if(!$filter_data){
-					 if($shared_exp){
-						$shared_exp_query = find_objects('share_exhibitions', ['follower_id' => $app->user_id, 'status' => 1]);
-                      $share_ids = [];
-                      foreach($shared_exp_query as $sharedexp){
-                        $exp_ids [] = $sharedexp->user_id;
-                        }
-						$shared_exp_queryy = find_objects('media_collection', ['user_id' => $exp_ids]);
-						foreach($shared_exp_queryy as $sharedexpID){
-                        $exp_id [] = $sharedexpID->id;
-                        }
-						//print_r($shared_exp_query);die();
-						$limit=$search_options['limit'];
-						$search_options['limit']=count($exp_id);
-						//print_r($search_options);die();
-						$search['id'] = $exp_id;
-						$search['type'] = COLLECTION_TYPE_EXHIBITION;
-						$objss = object_site_search($obj_type, $search, $val);
-						$objsss = object_site_search('media_collection', $search, $val, $search_options);
-						if(count($objss)>1){
-						$extra_count = $objss[1];
-						$objs = $objss[0];
-					    }
-						if(empty($objss)){
-							print_r($objss);die();
-						}
-					}else{
-						$limit=$search_options['limit'];
+					 $limit=$search_options['limit'];
 					$objss = object_site_search($obj_type, $search, $val, $search_options);
 					$search_options['limit']=$response->total;
 					$objsss = object_site_search($obj_type, $search, $val, $search_options);
@@ -2797,8 +2745,6 @@ $mail = new PHPMailer(true);
 						$extra_count = $objss[1];
 						$objs = $objss[0];
 					}
-				  }
-					 
 				}else{
 					$objs = object_site_filter($obj_type, $search, $val, $search_options, $filter_data);
 				}
@@ -2814,7 +2760,11 @@ $mail = new PHPMailer(true);
 			}
 		 
 			if(count($sums)) $response->totals = $sums;
+			// $search_options['limit']=$response->total;
+			// $objsss = object_site_search($obj_type, $search, $val, $search_options);
 			$response->search_options = $search_options;
+			// $response->objss = count($objsss[0]);
+			// $response->objsss = $objsss;
 			$total_rows=count($objsss[0]);
 			
 			$terms = array();
@@ -2851,13 +2801,11 @@ $mail = new PHPMailer(true);
 					$row->minisites = count(find_objects('minisite', array('user_id' => $row->id)));;
 					$row->connected_minisites = count(find_objects('minisite', array('user_id' => $row->id,'connect_domain'=>1)));
 				}
-				//print_r($row);die;
+				
 			echo(json_encode($response, JSON_PRETTY_PRINT));exit;
 		  
 		break;
-		case 'get-rowss':
-			echo"thala";die;
-		break;
+	  
 
 		case 'get-vault':
 			extract($obj_data);
@@ -4747,7 +4695,6 @@ $mail = new PHPMailer(true);
 			$response->success = 1;
 			$response->redirect = pick_first($data->redirect, $data->uri, '/');
 			$response->message = $message;
-			setcookie('vpatinalaravelloginaccess', 'allow', time() + 86400, '/', '.dci.in');
 
 			print_log(dump($result, true), "auth", LOG_LEVEL_TEST);
 			echo(json_encode($response));exit;
@@ -4850,8 +4797,6 @@ $mail = new PHPMailer(true);
 	                    'user_id' => $parent_user_id, 
 	                    'permissions' => $perms];
 	        	list($id, $errors) = add_object('user_map', $mapData);
-				dump('haiiii'.$GET['first_name']);
-	        	
 	        	$data->redirect = page_link(PAGE_PROFILE).$user_id;
 	        	if($errors) json_error($errors);        
       		}
@@ -4863,6 +4808,23 @@ $mail = new PHPMailer(true);
 	        	$data->redirect = explode($data->redirect,'0');
 	        	$data->uri = explode($data->uri,'0');
 
+	        	$to = "mohamed.hameed@dci.in";
+				$subject = "Invitation form vPatina";
+
+				$message = "<b>Invitation form vPatina</b>";
+				$message .= "<h1>You are invited to vPatina</h1>";
+
+				$header = "From:jemima.shanmuganathan@dci.in \r\n";
+				$header .= "MIME-Version: 1.0\r\n";
+				$header .= "Content-type: text/html\r\n";
+
+				$retval = mail ($to,$subject,$message,$header);
+
+				if( $retval == true ) {
+				$message= "Message sent successfully...";
+				}else {
+				$message= "Message could not be sent...";
+				}
       		}
       		
       
@@ -4892,57 +4854,6 @@ $mail = new PHPMailer(true);
 			echo($output); 
 			die();
 	  	break;
-
-		case 'invite-register':
-			//echo ($_REQUEST['uri']);die();
-			$network_firstname = $_REQUEST['first_name'];
-			$network_lastname = $_REQUEST['last_name'];
-			$network_email = $_REQUEST['email'];
-			if($network_firstname == ''){
-				$message = 'First name is required';
-			}else if($network_lastname == ''){
-				$message = 'Last name is required';
-			}else if($network_email == ''){
-				$message = 'Email is required';
-			}else {
-
-try {
-    //Server settings
-    $mail->isSMTP();                                            //Send using SMTP
-    $mail->Host       = 'smtp.gmail.com';                     //Set the SMTP server to send through
-    $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
-    $mail->Username   = 'mohamed.hameed@dci.in';                     //SMTP username
-    $mail->Password   = 'Mashaallah123';                               //SMTP password
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;            //Enable implicit TLS encryption
-    $mail->Port       = 465;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
-
-    //Recipients
-    $mail->setFrom('support@vpatina.com', 'V patina');
-    $mail->addAddress($network_email, 'V patina');     //Add a recipient
-    
-    //Content
-    $mail->isHTML(true);                                  //Set email format to HTML
-    $mail->Subject = 'V patina';
-    $mail->Body    = 'hello '.$network_firstname.' '.$network_lastname.',<br/>Welcome to <b>V patina</b>';
-    //$mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
-
-    $mail->send();
-    $message = 'Message has been sent';
-} catch (Exception $e) {
-    $message =  "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
-}
-			}
-$response = new stdClass;
-			$response->success = 1;
-			// $response->redirect = pick_first($_REQUEST['redirect'], $_REQUEST['uri'], '/');
-			$response->message = $message;
-      		echo(json_encode($response));exit;
-
-		break;
-		
-		case 'add-friend':
-		echo ($_REQUEST['uri']);die();
-		break;
 
 		case 'publish-node':
 			$data =  $obj_data;
@@ -6111,43 +6022,6 @@ $response = new stdClass;
 			$result->redirect = $redirect;
 			echo json_encode($result);exit();                
 	  	break;
-
-		case 'find-webbuilder-artists':
-			$val = trim($obj_data['val']);
-			//if($error = check_required($obj_data, array('site_id' => "Site ID", 'user_id' => "User ID"))) json_error("Missing: ".implode(', ', $error));
-				
-			if(!$app->user_id) json_error("not logged in");
-
-			$artist_ids = ($app->user_level < USER_LEVEL_ADMIN) ? user_artist_list($app->user_id) : find_objects('user', ['user.site_id' => $app->site->id, 'roles & '.USER_ROLE_ARTIST => ['>', 0]], ['fields' => 'user.id']); 
-
-			print_log("find-artist ul={$app->user_level} ids:".dump($artist_ids,true), 'backend', LOG_LEVEL_TEST);
-			$rows = [];
-
-			if($val) {
-			$search[DB_LOGICAL_OR] = 
-			array('first_name' => "*$val*", 
-				  'last_name' => "*$val*", 
-				  'display_name' => "*$val*", 
-				  // 'organization' => "*$val*", 
-				  'user_id' => "*$val*");
-			$shared_pro = find_objects('share_profiles', ['user_id' => $app->user_id, 'status' => 1]);
-			$search['site_id'] = $app->site_id;
-			foreach($shared_pro as $k => $shared){
-            $data[] = $shared->follower_id;
-            }
-			//print_r($data);die();
-			$com_artist_sharedart = array_merge($artist_ids, $data);
-			//print_r(array_unique($com_artist_sharedart));die();
-			$search['user_id'] = array_unique($com_artist_sharedart);
-			print_log("artist search artist ids for {$user_id}".dump($search ,true), 'debug', LOG_LEVEL_TEST);
-			print_log("artist ids for {$user_id}".dump($artist_ids,true), 'debug', LOG_LEVEL_TEST);
-			$rows = find_objects('user_profile', $search, ['fields' => ['user_id', 'display_name', 'first_name', 'infix', 'last_name', 'city', 'country']]);
-
-			}
-			$result->data = $rows;
-			$result->success = 1;
-			echo json_encode($result);exit();
-	  	break;
 	  
 		case 'find-artists':
 			$val = trim($obj_data['val']);
@@ -6179,42 +6053,6 @@ $response = new stdClass;
 			echo json_encode($result);exit();
 	  	break;
 
-		case 'find-sharedartists':
-			$val = trim($obj_data['val']);
-			$shared_profile_query = find_objects('share_profiles', ['follower_id' => $app->user_id, 'status' => 1]);
-                      $share_ids = [];
-                      foreach($shared_profile_query as $shared){
-                        $share_ids [] = $shared->user_id;
-                        }
-			//if($error = check_required($obj_data, array('site_id' => "Site ID", 'user_id' => "User ID"))) json_error("Missing: ".implode(', ', $error));
-				
-			if(!$app->user_id) json_error("not logged in");
-
-			//$artist_ids = ($app->user_level < USER_LEVEL_ADMIN) ? user_artist_list($app->user_id) : find_objects('user', ['user.site_id' => $app->site->id, 'roles & '.USER_ROLE_ARTIST => ['>', 0]], ['fields' => 'user.id']); 
-
-			print_log("find-artist ul={$app->user_level} ids:".dump($artist_ids,true), 'backend', LOG_LEVEL_TEST);
-			$rows = [];
-
-			if($val) {
-			$search[DB_LOGICAL_OR] = 
-			array('first_name' => "*$val*", 
-				  'last_name' => "*$val*", 
-				  'display_name' => "*$val*", 
-				  // 'organization' => "*$val*", 
-				  'user_id' => "*$val*");
-			$search['site_id'] = $app->site_id;
-			$search['user_id'] = $share_ids;
-			print_log("artist search artist ids for {$user_id}".dump($search ,true), 'debug', LOG_LEVEL_TEST);
-			print_log("artist ids for {$user_id}".dump($artist_ids,true), 'debug', LOG_LEVEL_TEST);
-			$rows = find_objects('user_profile', $search, ['fields' => ['user_id', 'display_name', 'first_name', 'infix', 'last_name', 'city', 'country']]);
-			
-
-			}
-			$result->data = $rows;
-			$result->success = 1;
-			echo json_encode($result);exit();
-	  	break;
-
 		case 'remove-artist':
 			$artist_id = $obj_data['artist_id'];
 			$page_id = $obj_data['page_id'];
@@ -6222,15 +6060,12 @@ $response = new stdClass;
 
 			if($page_id){
 			$getPage = find_object('minisite_page', ['id' => $page_id, 'active'=>1]);
-			if($primary == 1){
+			if($primary){
 			  $artistArr = json_decode($getPage->search, true);
 			  $getPage->search = json_encode(array_diff($artistArr, array($artist_id)));
-			}else if($primary == 0){
+			}else{
 			  $artistArr = json_decode($getPage->search1, true);
 			  $getPage->search1 = json_encode(array_diff($artistArr, array($artist_id)));
-			}else if($primary == 3){
-			  $artistArr = json_decode($getPage->search2, true);
-			  $getPage->search2 = json_encode(array_diff($artistArr, array($artist_id)));
 			}
 			$output= update_object('minisite_page', $getPage, $getPage->id);
 			if($errors) json_error($errors);

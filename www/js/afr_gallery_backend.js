@@ -145,6 +145,7 @@ function gbe_artists_tagit() {
     var ar = text.split('|');
     var name = ar[0];
     var id = parseInt(ar[1]);
+    console.log('okok'+id);
     //console.log('adding tag text=' + text);
     
     //if(id && ar.length < 2) return true; // not from form
@@ -344,7 +345,7 @@ $(document).on("click", "#sel_add_website", function() {
   var user_id = $link.data('user');
   //console.log("target_id=", artist_id);
   //console.log("g_selections.length=", g_selections.length);
-  if((artist_id) && (g_selections.length == 1)) {
+  if((artist_id) && (g_selections.length)) {
     var href = '/backend/website/' + artist_id + '/edit/singleExhibition?_pv=1&page_id='+ page_id +'&user_id='+user_id + '&' + add_what + '=' + g_selections.join();
     var $link = $("#submit");
     //console.log("Calling soft-load: href=" + href);
@@ -1196,11 +1197,11 @@ function bstUpdateSelection(selections) {
   }  
   //console.log("GSelections = ",g_selections);
   var count = g_selections.length;
-  $("#sel_count").text(count);
+  $("#sel_count1").text(count);
   if(count) {
-    $("#selection").show();
+    $(".show_button").show();
   } else {
-    $("#selection").hide();
+    $(".show_button").hide();
   }
 }
 function getIdSelections() {

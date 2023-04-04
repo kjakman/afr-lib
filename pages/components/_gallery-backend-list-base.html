@@ -3,7 +3,7 @@
 {$page_id = $scope.page_id}
 {$user_id = $scope.user_id}
 {$folders = $scope.folderlist}
-
+{$media_type=$scope.media_type}
 {block name="table"}
   <div id="toolbar" class="">
     {if ((0 && !$scope.add_to) || (0 && !$scope.add_to_profile))}
@@ -53,10 +53,14 @@
           <li><a href="#" id="sel_add_exbart" data-target_id="{$add_to_exbart}">Add to exhibition</a></li>
         {elseif ($add_to_exbtitle)}
           <li><a href="#" id="sel_add_exbtitle" data-target_id="{$add_to_exbtitle}">Add to exhibition</a></li>
-        {elseif (($add_to_folder) && ($folders))}
-          {foreach from=$folders item=folder}
-            <li><a href="#" id="sel_add_folder" data-page = "{$page_id}" data-user = "{$user_id}" data-target_id="{$folder.id}">Add to {$folder.filename}</a></li>
-          {/foreach}
+        {elseif ($media_type=='media')}
+            {foreach from=$folders item=folder}
+                <li><a href="#" id="sel_add_folder" data-page = "{$page_id}" data-user = "{$user_id}" data-target_id="{$folder.id}">Add to {$folder.filename}</a></li>
+
+            {/foreach}
+        {elseif ($media_type=='media_folder')}
+
+            <li></li>
         {else}
           <li><a href="#" id="sel_add" data-target_id="{$add_to}">Add to ...</a></li>
         {/if}
@@ -163,8 +167,22 @@
     var link_class = pv ? 'ajax-loader' : '';
     // console.log("base_link = " + base_link + " pv=" + pv);
     //return '<a href="' + base_link + '/' + row.id + '?_pv=' + pv + '" class="' + link_class + '" data-target="#subview-container">' + print_val + '</a>';
-    return '<span><span type="hidden" class="edit" name="edit" data-col="title" data-value='+row.id+' >'+value+'</span></span>';
+    return '<span> <span  type="hidden" class="edit" name="edit" data-col="title" data-value='+row.id+' >'+value+'</span></span>';
   }
+
+  // function bstSnoFormatter(value, row, index) {
+  //   var print_val = value ? value : "[Untitled]";
+  //   var base_link = row.obj_type == 'media' ? '/backend/medium' : '{$base_link}';
+  //   var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+  //   var link_class = pv ? 'ajax-loader' : '';
+  //   // console.log("base_link = " + base_link + " pv=" + pv);
+  //   //return '<a href="' + base_link + '/' + row.id + '?_pv=' + pv + '" class="' + link_class + '" data-target="#subview-container">' + print_val + '</a>';
+  //   return '<span> <span  type="hidden" data-value='+row.id+' >'+value+'</span></span>';
+  // }
+
+  function bstSnoFormatter(value, row, index){
+  return index + 1;
+}
 
   function bstTitleFormatter(value, row, index) {
     var print_val = value ? value : "[Untitled]";
@@ -176,6 +194,7 @@
     return '<span><span type="hidden" class="edit_exhibition" name="edit_exhibition" data-col="title" data-value='+row.id+' >'+value+'</span></span>';
   
   }
+  
 
   function bstVaultTitleFormatter(value, row, index) {
     if((row.type == 'folder') && ('{$get_str}')){
@@ -205,6 +224,7 @@
   }
 
   function bstTitleNetworkFormatter(value, row, index) {
+    //alert(value);
     var print_val = value ? value : "[Untitled]";
     var base_link = row.obj_type == 'media' ? '/backend/medium' : '{$base_link}';
     var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
@@ -221,7 +241,7 @@
     var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
     var link_class = pv ? 'ajax-loader' : '';
     // console.log("base_link = " + base_link + " pv=" + pv);
-   return '<span><span type="hidden" class="edit" name="edit" data-col="price" data-value='+row.id+' >'+value+'</span></span>';
+   return '<span style = "min-width:84px"><span  type="hidden" class="edit" name="edit" data-col="price" data-value='+row.id+' >'+value+'</span></span>';
   }
 
   function bstYearFormatter(value, row, index) {
@@ -241,9 +261,9 @@
     // console.log("base_link = " + base_link + " pv=" + pv);
     if(row.type == '50'){
       var value = 'N/A';
-      return '<span><span type="hidden" class="edit" name="edit" data-col="height" data-value='+row.id+' style="cursor: default;" >'+value+'</span></span>';
+      return '<span style = "min-width:84px"><span type="hidden" class="edit" name="edit" data-col="height" data-value='+row.id+' style="cursor: default;" >'+value+'</span></span>';
     }else{
-      return '<span><span type="hidden" class="edit" name="edit" data-col="height" data-value='+row.id+' >'+value+'</span></span>';
+      return '<span style = "min-width:84px"><span type="hidden" class="edit" name="edit" data-col="height" data-value='+row.id+' >'+value+'</span></span>';
     }
    
   }
@@ -256,9 +276,9 @@
     // console.log("base_link = " + base_link + " pv=" + pv);
     if(row.type == '50'){
       var value = 'N/A';
-      return '<span><span type="hidden" class="edit" name="edit" data-col="width" data-value='+row.id+' style="cursor: default;" >'+value+'</span></span>';
+      return '<span style = "min-width:84px"><span type="hidden" class="edit" name="edit" data-col="width" data-value='+row.id+' style="cursor: default;" >'+value+'</span></span>';
     }else{
-      return '<span><span type="hidden" class="edit" name="edit" data-col="width" data-value='+row.id+' >'+value+'</span></span>';
+      return '<span style = "min-width:84px"><span type="hidden" class="edit" name="edit" data-col="width" data-value='+row.id+' >'+value+'</span></span>';
     }
     
   }
@@ -283,6 +303,7 @@
   }*/
 
 function bstArtistFormatter(value, row, index) {
+  //alert(value);
   if(!value) return '';
   return '<span class="artist" name="artist" data-col="artist" data-value='+row.id+' style="cursor: default;" >'+g_artists[value]+'</span>';
 }
@@ -497,6 +518,8 @@ function check_status(id) {
     return '<span>'+ buttons + ' ' + pop_btn + '</span>'; 
   }
 
+
+
   //For Websitebuilder page with clone icon
   function bstWebsitebuilderCloneActionFormatter(value, row, index) {
     var base_link = row.obj_type == 'media' ? '/backend/medium' : '{$base_link}';
@@ -537,6 +560,28 @@ function check_status(id) {
     //var plugin_button = '<a href="/backend/plugins?_pt=media_collection&amp;_pid=' + row.id + '&amp;_pv=' + pv + '" class=" ' + link_class + '" data-target="#subview-container"><i class="fa fa-link"></i></a>'; 
 
     return buttons;  
+  }
+  function bstNetworkActionFormatter(value, row, index) {
+    
+    var base_link = row.obj_type == 'user_network' ? '/backend/medium' : '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    // console.log("base_link = " + base_link + " pv=" + pv);
+    var send_button = '<a href="' + base_link + '/' + row.id + '?_pv=' + pv + '" class="btn btn-sm btn-info text-white ' + link_class + '" data-target="#subview-container">Connect</a>';
+    
+    return send_button ; 
+
+  }
+  function bstNetworkActionFormatter(value, row, index) {
+    
+    var base_link = row.obj_type == 'user_network' ? '/backend/medium' : '{$base_link}';
+    var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+    var link_class = pv ? 'ajax-loader' : '';
+    // console.log("base_link = " + base_link + " pv=" + pv);
+    var send_button = '<a href="' + base_link + '/' + row.id + '?_pv=' + pv + '" class="btn btn-sm btn-info text-white ' + link_class + '" data-target="#subview-container">Connect</a>';
+    
+    return send_button ; 
+
   }
 
   function bstVaultActionFormatter(value, row, index) {
@@ -675,6 +720,8 @@ function check_status(id) {
   }
 
   function bstUserPhotoFormatter(value, row, index) {
+    //alert(value);
+    console.log(value);
     return bstMediaJsonFormatter2(value, row, index, 'photo');
   }
   
@@ -793,7 +840,78 @@ function check_status(id) {
     }
 
   //------------------------------ End Vignesh Implemented----------------------------------------//
-
+    function bstUserNameFormatter(value, row, index) {
+        var print_val = value ? value : "[Untitled]";
+        var base_link = row.obj_type == 'user' ? '/backend/medium' : '{$base_link}';
+        var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+        var link_class = pv ? 'ajax-loader' : '';
+        // console.log("base_link = " + base_link + " pv=" + pv);
+        //return '<a href="' + base_link + '/' + row.id + '?_pv=' + pv + '" class="' + link_class + '" data-target="#subview-container">' + print_val + '</a>';
+        return '<span><span type="hidden" class="name" name="name" data-col="name" data-value='+row.id+' >'+row.first_name+'</span></span>';
+    }
+    function bstAccountTypeFormatter(value, row, index) {
+        var print_val = value ? value : "[Untitled]";
+        var base_link = row.obj_type == 'user' ? '/backend/medium' : '{$base_link}';
+        var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+        var link_class = pv ? 'ajax-loader' : '';
+        // console.log("base_link = " + base_link + " pv=" + pv);
+        //return '<a href="' + base_link + '/' + row.id + '?_pv=' + pv + '" class="' + link_class + '" data-target="#subview-container">' + print_val + '</a>';
+        return '<span><span type="hidden" class="name" name="name" data-col="name" data-value='+row.id+' >'+row.subscription_plan[0].name+'</span></span>';
+    }
+    function bstLastLoginFormatter(value, row, index) {
+        var print_val = value ? value : "[Untitled]";
+        var base_link = row.obj_type == 'user' ? '/backend/medium' : '{$base_link}';
+        var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+        var link_class = pv ? 'ajax-loader' : '';
+        // console.log("base_link = " + base_link + " pv=" + pv);
+        //return '<a href="' + base_link + '/' + row.id + '?_pv=' + pv + '" class="' + link_class + '" data-target="#subview-container">' + print_val + '</a>';
+        return '<span><span type="hidden" class="name" name="name" data-col="name" data-value='+row.id+' >'+row.last_login+'</span></span>';
+    }
+    function bstArtworkFormatter(value, row, index) {
+        var print_val = value ? value : "[Untitled]";
+        var base_link = row.obj_type == 'user' ? '/backend/medium' : '{$base_link}';
+        var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+        var link_class = pv ? 'ajax-loader' : '';
+        // console.log("base_link = " + base_link + " pv=" + pv);
+        //return '<a href="' + base_link + '/' + row.id + '?_pv=' + pv + '" class="' + link_class + '" data-target="#subview-container">' + print_val + '</a>';
+        return '<span><span type="hidden" class="name" name="name" data-col="name" data-value='+row.id+' >'+row.artworks+'</span></span>';
+    }
+    function bstMediaFormatter(value, row, index) {
+        var print_val = value ? value : "[Untitled]";
+        var base_link = row.obj_type == 'user' ? '/backend/medium' : '{$base_link}';
+        var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+        var link_class = pv ? 'ajax-loader' : '';
+        // console.log("base_link = " + base_link + " pv=" + pv);
+        //return '<a href="' + base_link + '/' + row.id + '?_pv=' + pv + '" class="' + link_class + '" data-target="#subview-container">' + print_val + '</a>';
+        return '<span><span type="hidden" class="name" name="name" data-col="name" data-value='+row.id+' >'+row.media+'</span></span>';
+    }
+    function bstExhibitionFormatter(value, row, index) {
+        var print_val = value ? value : "[Untitled]";
+        var base_link = row.obj_type == 'user' ? '/backend/medium' : '{$base_link}';
+        var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+        var link_class = pv ? 'ajax-loader' : '';
+        // console.log("base_link = " + base_link + " pv=" + pv);
+        //return '<a href="' + base_link + '/' + row.id + '?_pv=' + pv + '" class="' + link_class + '" data-target="#subview-container">' + print_val + '</a>';
+        return '<span><span type="hidden" class="name" name="name" data-col="name" data-value='+row.id+' >'+row.exhibitions+'</span></span>';
+    }
+    function bstMinisiteFormatter(value, row, index) {
+        var print_val = value ? value : "[Untitled]";
+        var base_link = row.obj_type == 'user' ? '/backend/medium' : '{$base_link}';
+        var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+        var link_class = pv ? 'ajax-loader' : '';
+        // console.log("base_link = " + base_link + " pv=" + pv);
+        //return '<a href="' + base_link + '/' + row.id + '?_pv=' + pv + '" class="' + link_class + '" data-target="#subview-container">' + print_val + '</a>';
+        return '<span><span type="hidden" class="name" name="name" data-col="name" data-value='+row.id+' >'+row.minisites+'</span></span>';
+    }
+    function bstConnectedMinisiteFormatter(value, row, index) {
+        var print_val = value ? value : "[Untitled]";
+        var base_link = row.obj_type == 'user' ? '/backend/medium' : '{$base_link}';
+        var pv = base_link.indexOf('/plugin') > -1 ? 0 : 1; // no partial view for view plugin
+        var link_class = pv ? 'ajax-loader' : '';
+        // console.log("base_link = " + base_link + " pv=" + pv);
+        //return '<a href="' + base_link + '/' + row.id + '?_pv=' + pv + '" class="' + link_class + '" data-target="#subview-container">' + print_val + '</a>';
+        return '<span><span type="hidden" class="name" name="name" data-col="name" data-value='+row.id+' >'+row.connected_minisites+'</span></span>';
+    }
   // --------------- For Crud page for Sample Testing Vignesh Implemented---------------------// 
   function bstCrudEditFormatter(value, row, index) {
     var base_link = row.obj_type == 'cruds' ? '/backend/medium' : '{$base_link}';

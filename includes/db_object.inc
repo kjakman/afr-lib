@@ -4862,6 +4862,7 @@ function update_artist_name($user_id, $artist_name){
 }
 //  ------------------------------------------------- Vignesh ----------- 29-06-2020--------//
 function get_template($parts, $minisite_id){
+  //print_r($parts);die();
     $tpl_values = [];
     $parts1_tpls = find_objects('minisite_tpl', ['parts' => 1]);
     $parts2_tpls = find_objects('minisite_tpl', ['parts' => 2]);
@@ -4941,6 +4942,11 @@ function get_template($parts, $minisite_id){
           }
         }
     }
+    if($parts[0] == 'shared_profile'){
+      $tpl_values['page'] = 'shared_profile';
+      $tpl_values['tpl'] = 'shared_profile';
+    } 
+    //print_r($tpl_values);die();
     return $tpl_values;
 }
 //  --------------------------- End ---------------------- Vignesh ----------- 29-06-2020--------//

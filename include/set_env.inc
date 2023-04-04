@@ -50,6 +50,7 @@ $cookie_hash = $_COOKIE['authID'];
 $session_hash = $_SESSION['hash']; /** need this for phpauth logout below, before session is destroyed */
 
 if(strpos($_SERVER['REQUEST_URI'], 'act=logout')) {
+  setcookie('vpatinalaravelloginaccess', 'notallow', time() + 86400, '/', '.dci.in');
   $user_id = $_SESSION['u_id'];
   $filename = "./user/manifest/manifest_".$user_id.".json";
   if (file_exists($filename)){

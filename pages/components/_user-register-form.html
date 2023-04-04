@@ -1,40 +1,56 @@
+<link rel="stylesheet" type="text/js" href="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js">
+<script src="jquery-3.6.0.min.js"></script>
 
-          <form class="ajax-submit signup-form" method="get" data-handler="user-register">
-            <div class="form-group form-group-icon-left"><i class="fa fa-user input-icon"></i>
-              <label>First Name</label>
-              <input name="first_name" class="form-control" placeholder="e.g. John" type="text" />
-            </div>
-            <div class="form-group form-group-icon-left"><i class="fa fa-user input-icon"></i>
-              <label>Last Name</label>
-              <input name="last_name" class="form-control" placeholder="e.g. Doe" type="text" />
-            </div>
-            <div class="form-group form-group-icon-left"><i class="fa fa-envelope input-icon"></i>
-              <label>Email</label>
-              <input name="username" class="form-control" placeholder="e.g. johndoe@gmail.com" type="text" />
-                <!-- <span class="form-group form-group-icon-left help-block" style="color: red;">* If you are already subscribed, please use the same email here *</span> -->
-                <span class="form-group form-group-icon-left help-block" ><b><i>* If you have just bought a subscription (basic, professional, premium or VIP), please register/ sign up with the same e-mail you used to create that subscription. If you haven't created a subscription yet, you can register for free for our free version, or buy a subscription <a style="color: orange;" target="_blank" class='fancybox-noscroll fancybox.ajax' href="https://vpatina.com/pricing-plan">here </a>.
-                 *</i></b></span>
+<form class="ajax-submit signup-form" method="get" data-handler="user-register">
+  <div class="form-group form-group-icon-left"><i class="fa fa-user input-icon"></i>
+    <label>First Name</label>
+    <input name="first_name" id="first_name" class="form-control" placeholder="e.g. John" value="a" type="text" />
+  </div>
+  <div class="form-group form-group-icon-left"><i class="fa fa-user input-icon"></i>
+    <label>Last Name</label>
+    <input name="last_name" id="last_name" class="form-control" placeholder="e.g. Doe" type="text" />
+  </div>
+  <div class="form-group form-group-icon-left"><i class="fa fa-envelope input-icon"></i>
+    <label>Email</label>
+    <input name="username" id="username" class="form-control" placeholder="e.g. johndoe@gmail.com" type="text" />
+      <!-- <span class="form-group form-group-icon-left help-block" style="color: red;">* If you are already subscribed, please use the same email here *</span> -->
+      <span class="form-group form-group-icon-left help-block" ><b><i>* If you have just bought a subscription (basic, professional, premium or VIP), please register/ sign up with the same e-mail you used to create that subscription. If you haven't created a subscription yet, you can register for free for our free version, or buy a subscription <a style="color: orange;" target="_blank" class='fancybox-noscroll fancybox.ajax' href="https://vpatina.com/pricing-plan">here </a>.
+       *</i></b></span>
 
-            </div>
-            <div class="form-group form-group-icon-left"><i class="fa fa-lock input-icon"></i>
-              <label>Password</label>
-              <input name="password1" class="form-control" type="password" placeholder="my secret password" />
-            </div>
-            <div class="form-group form-group-icon-left"><i class="fa fa-lock input-icon"></i>
-              <label>Repeat Password</label>
-              <input name="password2" class="form-control" type="password" placeholder="my secret password" />
-            </div>
-            <input class="btn" style="background-color:#32CD32; font-weight: bold; color:white" type="submit" value="Sign up for {$site.name}" />
-            <div class='gap gap-small'></div>                      
-            <input name="redirect" type="hidden" class="form-control login-redirect" value="{$get.ref|remove_query_var:'act'}" />
-            <input name="uri" type="hidden" class="form-control" value="{$this_url|remove_query_var:'act'}" />
-            <input name="user_terms" type="hidden" value="1" />By signing up, I agree to the <a class='fancybox-noscroll fancybox.ajax' href="/terms-and-conditions">Terms &amp; Conditions</a><br><br>
-            <a class='fancybox-noscroll fancybox.ajax' href="/privacy-policy">Privacy Policy </a>
+  </div>
+  <div class="form-group form-group-icon-left"><i class="fa fa-lock input-icon"></i>
+    <label>Password</label>
+    <input name="password1" class="form-control" type="password" placeholder="my secret password" />
+  </div>
+  <div class="form-group form-group-icon-left"><i class="fa fa-lock input-icon"></i>
+    <label>Repeat Password</label>
+    <input name="password2" class="form-control" type="password" placeholder="my secret password" />
+  </div>
+  <input class="btn" style="background-color:#32CD32; font-weight: bold; color:white" type="submit" value="Sign up for {$site.name}" />
+  <div class='gap gap-small'></div>                      
+  <input name="redirect" type="hidden" class="form-control login-redirect" value="{$get.ref|remove_query_var:'act'}" />
+  <input name="uri" type="hidden" class="form-control" value="{$this_url|remove_query_var:'act'}" />
+  <input name="user_terms" type="hidden" value="1" />By signing up, I agree to the <a class='fancybox-noscroll fancybox.ajax' href="/terms-and-conditions">Terms &amp; Conditions</a><br><br>
+  <a class='fancybox-noscroll fancybox.ajax' href="/privacy-policy">Privacy Policy </a>
 
-            <div class='gap gap-small'></div>   
+  <div class='gap gap-small'></div>   
 
-            <input name="site_id" type="hidden" value="{$site.id}" /> 
+  <input name="site_id" type="hidden" value="{$site.id}" /> 
 
-          </form>
+</form>
 
-            
+<script type="text/javascript">
+    console.log("asdasdasdsad");
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const first_name = urlParams.get('first_name');
+    const last_name = urlParams.get('last_name');
+    const sender_mail = urlParams.get('sender_mail');
+    document.getElementById("last_name").value = "Johnny Bravo";
+
+    $("#first_name").val(first_name);
+    $("#last_name").val(last_name);
+    $("#username").val(sender_mail);
+</script>
+
+

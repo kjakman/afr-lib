@@ -239,3 +239,28 @@ nav.sidebar{width: 225px;}
 nav.sidebar .navbar-nav > li {border-bottom: 0px;}
 body .navbar-nav li.active a {background: #18750d !important;}
 
+/*new changes*/
+.navbar-inverse .navbar-brand, .navbar-inverse .navbar-nav>li>a {
+    color: #575757;
+}
+nav.sidebar .navbar-nav > li:first-child {
+    border-top: 0px;
+}
+.navbar-inverse .navbar-nav>li>a:focus, .navbar-inverse .navbar-nav>li>a:hover {
+    color: #F9B035;
+    background-color: transparent;
+}
+.navbar-inverse .navbar-nav>.active>a, .navbar-inverse .navbar-nav>.active>a:focus, .navbar-inverse .navbar-nav>.active>a:hover {
+    color: #F9B035;    
+}
+body .navbar-nav li.active a {
+    background: transparent !important;
+}
+nav.navbar.navbar-inverse.sidebar.subview-nav.fixed {
+    background: #f0f0f0;
+}
+.navbar-inverse .navbar-brand:focus, .navbar-inverse .navbar-brand:hover {
+    color: #575757;
+    background-color: transparent;
+}
+/*new changes*/
