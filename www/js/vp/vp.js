@@ -2360,7 +2360,7 @@ function vp_load(element, data, reload) {
 }
 
 function vp_process_json(json, cid, reload, data) {
-
+console.log('from vp_process_json');
   var plugin_id = data.plugin_id;
   var obj_type = data.obj_type;
   var obj_id = data.obj_id;
@@ -2380,6 +2380,7 @@ function vp_process_json(json, cid, reload, data) {
   }
   var button_id = "__vp-view-button-" + plugin_id;
   var view_button = document.getElementById(button_id);
+  //alert('--->'+view_button);
   if (view_button) {
       console.log("Done loading set to view on button: " + button_id + " cid=" + cid);
       view_button.innerHTML = "View";
@@ -2470,13 +2471,14 @@ function vp_process_json(json, cid, reload, data) {
 
 /** Open PhotoSwipe Gallery */
 var openPhotoSwipe = function(cid, index, galleryElement, disableAnimation, fromURL) {
+  console.log("From photo swipe..");
   var pswpElement = document.querySelectorAll('.pswp')[0],
       gallery,
       options,
       items;
 
   var data = vp_element_data(cid);
-  console.log("pradeepa " + data);
+  console.log("pradeepass " + data);
   var plugin_id = data.plugin_id;
   var key = vp_element_key(data);
 
@@ -2504,10 +2506,10 @@ var openPhotoSwipe = function(cid, index, galleryElement, disableAnimation, from
 
   console.log("open PhotoSwipe cid=" + cid);
 
-  //console.log("open PhotoSwipe cid=" + cid + " plugin_id" + plugin_id + " key=" + key + " index=" + index + " data:", data);
-  //console.log("g_list cid=" + cid + ":",g_list);
-  //console.log("calendar event count for plugin_id: " + plugin_id + "=" + event_count + " collection_id=" + json.collection_id);
-  //console.log("data:",json);
+  console.log("open PhotoSwipe cid=" + cid + " plugin_id" + plugin_id + " key=" + key + " index=" + index + " data:", data);
+  console.log("g_list cid=" + cid + ":",g_list);
+  console.log("calendar event count for plugin_id: " + plugin_id + "=" + event_count + " collection_id=" + json.collection_id);
+  console.log("data:",json);
 
   g_cid = cid;
   items = json.psitems;
@@ -2986,7 +2988,7 @@ function reloadPhotoswipe(cid, index, galleryElement, disableAnimation, fromURL)
 
 // triggers when user clicks on thumbnail
 var onThumbnailsClick = function(e) {
-
+console.log('okok1');
   e = e || window.event;
   e.preventDefault ? e.preventDefault() : e.returnValue = false;
 
@@ -3011,8 +3013,8 @@ var onThumbnailsClick = function(e) {
   console.log("buttons for " + cid + " = ", g_popup_buttons);
   console.log("tabs for " + cid + " = ", g_popup_tabs);
   zoomOutMobile();
-
-  openPhotoSwipe(cid, index, clickedListItem);
+let rand_num = Math.random() * 10;
+  openPhotoSwipe(cid, index, clickedListItem, rand_num);
 
   return;
 };

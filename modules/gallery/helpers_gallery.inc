@@ -810,13 +810,14 @@ function gallery_unique_artworks($collection_ids, $options) {
 
 function gallery_selected_artworks($user_id, $options) {
   $get_id = find_object('media_collection', array('user_id' => $user_id, 'type' =>150, 'active' =>1));
+
   if($get_id == 0)
   {
     $mapObjs = find_objects('media_collection_map', array('media_collection_id' => $get_id->id));
   }
   else
   {
-    $mapObjs = db_getAll("select *,a.media_id from media_collection_map as a join artwork b on a.artwork_id = b.id where a.media_collection_id = $get_id->id");
+    $mapObjs = db_getAll("select *,a.media_id from media_collection_map as a join artwork b on a.artwork_id = b.id where a.media_collection_id = $get_id->id ORDER By `rank` asc");
   }
   
   $objs = array();

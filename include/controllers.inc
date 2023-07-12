@@ -15,16 +15,16 @@ use PHPMailer\PHPMailer\Exception;
 
         foreach($sql as $val)
         {
-            $sql1 = db_getAll("SELECT  *,min(original_year) as year FROM media_collection_map WHERE media_collection_id=".$val->id." AND original_year != '' GROUP BY media_collection_id");
+            $sql1 = db_getAll("SELECT  *,min(original_year) as year FROM media_collection_map WHERE media_collection_id=".$val->id."AND original_year != ''GROUP BY media_collection_id");
             if(count($sql1) == 1){
                 foreach($sql1 as $mval)
                 {
                     $year = "".$mval->year."-01-01";
-                    update_object('media_collection', ['exhibition_sequence' => $year], $mval->media_collection_id);
+                    update_object('media_collection', ['exhibition_sequence' => $year],$mval->media_collection_id);
                 }
             }else{
                 $year = "1000-01-01";
-                update_object('media_collection', ['exhibition_sequence' => $year], $val->id);
+                update_object('media_collection', ['exhibition_sequence' => $year],$val->id);
             }
         }
         $scope = $app->page->scope;
@@ -326,10 +326,12 @@ use PHPMailer\PHPMailer\Exception;
                         $tpl = $page = $template;
                 
                         /** Filter by gallery, Art, Other events */
-                        if($data[show_recent] == 1 )
-                            $exhibitionObjs = find_objects('media_collection', $search, ['sort' => 'exhibition_sequence desc']) ?: [];
-                        else
-                            $exhibitionObjs = find_objects('media_collection', $search, ['sort' => 'exhibition_sequence asc']) ?: [];
+                        if($data[show_recent] == 1 ){
+                            $exhibitionObjs = find_objectser('media_collection', $search, ['sort' => 'exhibition_sequence desc']) ?: [];
+                        }
+                        else{
+                            $exhibitionObjs = find_objectser('media_collection', $search, ['sort' => 'exhibition_sequence asc']) ?: [];
+                        }
                             //dump(count($exhibitionObjs));   
                 
                         $exhibition_ids = $exhibitions = $latestexhibition = $data_exist = [];
@@ -399,8 +401,9 @@ use PHPMailer\PHPMailer\Exception;
                         if($latest_view){
                             unset($search['exhibition_sequence']);
                             unset($search['end_date']);
-                            $latestexhibition = find_objects('media_collection', $search, ['sort' => 'exhibition_sequence desc', 'limit' => 1]) ?: []; 
-                            //dump($latestexhibition);
+                            
+                            $latestexhibition = find_objects('media_collection', $search, ['sort' => 'exhibition_sequence DESC', 'limit' => 1]) ?: []; 
+                            
                             // if(($latestexhibition) ){
                                 foreach($latestexhibition as $exhibition) {
                                     if($exhibition->exhibition_sequence || $exhibition->end_date){
@@ -460,7 +463,7 @@ use PHPMailer\PHPMailer\Exception;
 
                         $tpl = $page = $template;
                         
-                        $exb_ids = find_objects('exhibition_map', ['page_id' =>$minisite_pageObj->id, 'active'=>1, 'type'=>'manual'], ['sort' => 'rank asc']);
+                        $exb_ids = find_objectser('exhibition_map', ['page_id' =>$minisite_pageObj->id, 'active'=>1, 'type'=>'manual'], ['sort' => 'rank ASC']);
                
                         foreach($exb_ids as $exb_id){
                             $exhibitionObjs[] = find_object('media_collection', ['id'=>$exb_id->media_collection_id, 'active'=>1]) ?: [];
@@ -605,6 +608,7 @@ use PHPMailer\PHPMailer\Exception;
                 /** todo: 404 if slug/subview not allowed or not found */
           
                 switch($page) {
+                   // print($page);die();
                     case ($page == 'artist' || $page == 'artist_layout1' || $page == 'artist_layout2' || $page == 'artist_layout3' || $page == 'artist_layout4' || $page == 'artist_layout5' || $page == 'artist_layout6' || $page == 'artist_masonry' || $page == 'artist_hanging' || $page == 'artist_standing' || $page == 'artist_masonryExt' || $page == 'artist_layout7' || $page == 'artist_layout8' || $page == 'artist_layout9' || $page == 'artist_layout10'): 
                         $artist = "";
                         //print_r($page);die();
@@ -718,7 +722,7 @@ use PHPMailer\PHPMailer\Exception;
                             }
                         } 
                         $search = ['media_collection_id' => $collection_id, 'active' => 1];
-                        $scope->artworks = $mapObjs = find_objects('media_collection_map', $search, ['sort' => 'rank']);
+                        $scope->artworks = $mapObjs = find_objects('media_collection_map', $search, ['sort' => '`rank`']);
                        // print_r($scope);die();
                     break;
 
@@ -747,7 +751,7 @@ use PHPMailer\PHPMailer\Exception;
                             $scope->collection->slug = slugify($collection[0]->title);
                             $scope->collection->page_slug = $slugstr;
                             $search = ['media_collection_id' => $collection_id, 'active' => 1];
-                            $scope->artworks = $mapObjs = find_objects('media_collection_map', $search, ['sort' => 'rank']);
+                            $scope->artworks = $mapObjs = find_objects('media_collection_map', $search, ['sort' => '`rank`']);
                             //$scope->related_artwork_id = $related_artwork_id = explode('~', $parts[2])[1];
                     break;
         
@@ -810,7 +814,7 @@ use PHPMailer\PHPMailer\Exception;
                                 $collectionObj->event = $eventObj;
                             }      
                             $search = ['media_collection_id' => $collection_id, 'active' => 1];
-                            $scope->artworks = $mapObjs = find_objects('media_collection_map', $search, ['sort' => 'rank']);
+                            $scope->artworks = $mapObjs = find_objects('media_collection_map', $search, ['sort' => '`rank`']);
                             $data[] = $collectionObj;
                         }
                         $scope->collection_data = $data;
@@ -911,7 +915,7 @@ use PHPMailer\PHPMailer\Exception;
             $scope->subview = $subview;
             $scope->title = $title;
             $scope->mObj = $mObj = find_object('minisite', ['id' => $minisite_id, 'user_id' => $user_id, 'active' => 1]);
-            $scope->menuObj = $menuObj = find_objects('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'active' => 1], ['sort' => 'row_order asc']);
+            $scope->menuObj = $menuObj = find_objectser('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id, 'active' => 1], ['sort' => 'row_order ASC']);
             
 
             $keywords = implode(',', array_filter([$minisite, $display_name, $page, $slug, $subview, $site->name, $page->name, $type, $se_title]));
@@ -3742,7 +3746,7 @@ use PHPMailer\PHPMailer\Exception;
             }
 
             $scope->artist_artworks = gallery_selected_artworks($user_id, ['start' => $start, 'limit' => $limit]);
-            
+           // print_r($scope->artist_artworks);die();
             /* Hidden for tym being by pradeepa
             $artist_exhibitions_ids = find_objects('media_collection_map', 
               array('artist_id' => $artist_id, 'user_id' => ['!=', $curator_id], 'collection_type' =>MEDIA_COLLECTION_TYPE_EXHIBITION, 'active' => 1), 
@@ -5504,7 +5508,7 @@ $smtpmail->isSMTP();
                 $app->page->itemview = 'plugin';
                 $app->page->listview = 'plugins';
                     
-                $scope->images = $images = find_objects('media_collection_map', ['media_collection_id' => $pid, 'active' => 1], ['sort' => 'rank']);
+                $scope->images = $images = find_objects('media_collection_map', ['media_collection_id' => $pid, 'active' => 1], ['sort' => '`rank`']);
                 break;
 
             case "plugins":
@@ -5620,7 +5624,8 @@ $smtpmail->isSMTP();
                 $scope->hover = $hover = find_objects('minisite_hover', ['active'=>1], ['sort' => 'rank asc']); 
 
                 $colSearch = ['minisite_id' => $id ,'user_id' => $obj->user_id, 'active' => 1];
-                $scope->pagelist = $pagelist = find_objects('minisite_page', $colSearch, ['sort' => 'row_order asc']);
+                $scope->pagelist = $pagelist = find_objectser('minisite_page', $colSearch, ['sort' => 'row_order ASC']);
+                //print_r();die()
 
                 $scope->exhibition_layout_organic = $exhibition_organic = find_objects('minisite_parent_layout', ['page_type' => 30, 'page_subtype' => 1, layout_type=>10, 'active' => 1], ['sort' => 'row_order asc']);
                 $scope->exhibition_layout_landscape = $exhibition_landscape = find_objects('minisite_parent_layout', ['page_type' => 30, 'page_subtype' => 1, layout_type=>20, 'active' => 1], ['sort' => 'row_order asc']);
@@ -5634,7 +5639,7 @@ $smtpmail->isSMTP();
                 $scope->exhibition_singlelayout_art = $exhibition_art = find_objects('minisite_parent_layout', ['page_type' => 60, 'page_subtype' => 2, layout_type=>20, 'active' => 1], ['sort' => 'row_order asc']);
 
                 $scope->single_exhibition = $single_exhibition = find_object('exhibition_map', ['page_id' => $page_id, 'active' => 1, 'type'=>'single'] );
-                $scope->manual_exhibition = $manual_exhibition = find_objects('exhibition_map', ['page_id' => $page_id, 'active' => 1, 'type'=>'manual'], ['sort' => 'rank asc'] );
+                $scope->manual_exhibition = $manual_exhibition = find_objectser('exhibition_map', ['page_id' => $page_id, 'active' => 1, 'type'=>'manual'], ['sort' => 'rank ASC'] );
 
                 $scope->artist_layout = $artist_layout = find_objects('minisite_parent_layout', ['page_type' => 20, 'page_subtype' => 1, 'active'=>1], ['sort' => 'row_order asc']);
                 $scope->artist_sub_layout = $artist_sub_layout = find_objects('minisite_layout', ['type' => 20,'subtype' => 1, 'active' => 1]);
@@ -5708,7 +5713,8 @@ $smtpmail->isSMTP();
                 if($_GET['folder'])
                 $scope->folder = $_GET['folder'];
                 else{
-                    $folder = find_object('media_folder', ['user_id'=> $app->user_id, 'rank' => 1]);
+                   // print_r('ok');die();
+                    $folder = find_object('media_folder', ['user_id'=> $app->user_id, '`rank`' => 1]);
                     $scope->folder = $folder->id;
                 }
                 if(!$add) {      
@@ -5824,7 +5830,7 @@ $smtpmail->isSMTP();
                             $artist_id = $mapObj->artist_id;
                             if(!in_array($artist_id, $artist_ids)) $artist_ids[] = $artist_id;
                         }
-                                
+                              //echo($changed);die();  
                         switch($changed) { // reload
                             case 'artwork':
                                 $art = find_objects('media_collection_map', ['user_id' => $user_id, 'artwork_id' => ['>', 0]]);
@@ -5919,11 +5925,12 @@ $smtpmail->isSMTP();
                     $collection = get_object('media_collection', $id);
                     $collection_id = $collection->id;
 
-                    $art = find_objects('media_collection_map', ['media_collection_id' => $collection_id, 'artwork_id' => ['>', 0]]);
+                    $art = find_objectser('media_collection_map', ['media_collection_id' => $collection_id, 'artwork_id' => ['>', 0]], ['sort' => 'rank ASC']);
+                    //print_r($art);die();
                     $scope->images = $art;
-                    $media = find_objects('media_collection_map', ['media_collection_id' => $collection_id, 'artwork_id' => ATT_DEFAULT_NULL]);
+                    $media = find_objectser('media_collection_map', ['media_collection_id' => $collection_id, 'artwork_id' => ATT_DEFAULT_NULL], ['sort' => 'rank ASC']);
 
-                    $scope->related_images = $related_images =find_objects('media_collection_map', ['media_collection_id' => $collection_id, 'active' => 1]);
+                    $scope->related_images = $related_images =find_objectser('media_collection_map', ['media_collection_id' => $collection_id, 'active' => 1], ['sort' => 'rank ASC']);
                     $scope->description_type = get_objects('artwork_related_type');
 
                     $art_ids = array_find_key($art, 'artwork_id');
@@ -5937,7 +5944,7 @@ $smtpmail->isSMTP();
                     print_log("map: artist id: ".implode(',', $artist_ids), 'gallery', LOG_LEVEL_TEST);
 
                     if(!$collection->artist_ids) {
-                        $collection_artist_ids = find_objects('media_collection_map', ['active' => 1, 'media_collection_id' => $collection_id], ['fields' => 'distinct artist_id']);
+                        $collection_artist_ids = find_objectser('media_collection_map', ['active' => 1, 'media_collection_id' => $collection_id], ['fields' => 'distinct artist_id','sort' => 'rank ASC']);
                         if($collection_artist_ids) {          
                             $artists_json = $collection->artist_ids = json_encode($collection_artist_ids);
                             update_object('media_collection', ['artist_id' => $artist_ids[0], 'artist_ids' => $artists_json], $collection->id);
@@ -5984,7 +5991,7 @@ $smtpmail->isSMTP();
                             if(!in_array($artist_id, $artist_ids)) $artist_ids[] = $artist_id;
                         }
                         /** update artist list: keep existing artists NOT in the list that were explicitly added */
-                        $artist_ids = find_objects('media_collection_map', ['active' => 1, 'media_collection_id' => $collection_id, 'artwork_id' => ['>', 0]], ['fields' => 'distinct artist_id']);
+                        $artist_ids = find_objectser('media_collection_map', ['active' => 1, 'media_collection_id' => $collection_id, 'artwork_id' => ['>', 0]], ['fields' => 'distinct artist_id','sort' => 'rank ASC']);
                         if($artist_ids) {   
                             $existing_artist_ids = json_decode($collection->artist_ids) ?: [];
                             
@@ -6003,7 +6010,7 @@ $smtpmail->isSMTP();
                             $media_collection = db_getAll("SELECT id FROM media_collection WHERE id=".$collection_id." AND subtype IN (40,50)");   
                             //dump($media_collection);exit;
                             foreach($media_collection as $val){
-                                //echo "SELECT  *,min(original_year) as year FROM media_collection_map WHERE media_collection_id=".$val->id." AND original_year != '' GROUP BY media_collection_id";die;
+                                //echo "SELECT  *,min(original_year) as year FROM media_collection_map WHERE media_collection_id=".$val->id." AND original_year != ''GROUP BY media_collection_id";die;
                                 $media_collection_map = db_getAll("SELECT  *,min(original_year) as year FROM media_collection_map WHERE media_collection_id=".$val->id." AND original_year != '' GROUP BY media_collection_id");
                                 //dump(count($media_collection_map));exit;
                                 if(count($media_collection_map) == 1)
@@ -6026,10 +6033,10 @@ $smtpmail->isSMTP();
                     
                         switch($changed) { // reload
                             case 'artwork':
-                            $art = find_objects('media_collection_map', ['media_collection_id' => $collection_id, 'artwork_id' => ['>', 0]]);
+                            $art = find_objectser('media_collection_map', ['media_collection_id' => $collection_id, 'artwork_id' => ['>', 0]], ['sort' => 'rank ASC']);
                             break;
                             case 'media':
-                                $media = find_objects('media_collection_map', ['media_collection_id' => $collection_id, 'artwork_id' => ATT_DEFAULT_NULL]);
+                                $media = find_objectser('media_collection_map', ['media_collection_id' => $collection_id, 'artwork_id' => ATT_DEFAULT_NULL], ['sort' => 'rank ASC']);
                             break;
                             default:
                             break;
@@ -6197,7 +6204,7 @@ $smtpmail->isSMTP();
             //$scope->exh_id = $scope->obj_id = $collection_ids = $obj_id;
 
             /** find artwork in collection */
-            $artworks = find_objects('media_collection_map', array('media_collection_id' => $exh_id, 'active' => 1), array('sort' => 'rank'));
+            $artworks = find_objects('media_collection_map', array('media_collection_id' => $exh_id, 'active' => 1), array('sort' => '`rank`'));
 
             //echo "SELECT * from  media_collection_map LEFT JOIN artwork on media_collection_map.artwork_id = artwork.id where media_collection_map.media_collection_id=$collection_id and media_collection_map.active = 1";
             //$sql = db_getAll("SELECT * from  media_collection_map LEFT JOIN artwork on media_collection_map.artwork_id = artwork.id where media_collection_map.media_collection_id=$collection_id and media_collection_map.active = 1");
@@ -6474,7 +6481,7 @@ $smtpmail->isSMTP();
                 $scope->preview = plugin_javascript(['shid' => $plugin->id]);
                 $scope->preview_html = sharing_output(['shid' => $plugin->id]);
 
-                $scope->images = $images = find_objects('media_collection_map', ['media_collection_id' => $parent_id, 'active' => 1], ['sort' => 'rank']);
+                $scope->images = $images = find_objects('media_collection_map', ['media_collection_id' => $parent_id, 'active' => 1], ['sort' => '`rank`']);
             }
         }
         return;
@@ -6547,7 +6554,7 @@ $smtpmail->isSMTP();
             $scope->mail_controller = 'gallery_collections';
             //print_r($scope);
             /** find artwork in collection */
-            $artworks = find_objects('media_collection_map', array('media_collection_id' => $collection_id, 'active' => 1), array('sort' => 'rank'));
+            $artworks = find_objectser('media_collection_map', array('media_collection_id' => $collection_id, 'active' => 1), array('sort' => 'rank ASC'));
 
             //print_r($artworks);
             //echo "SELECT * from  media_collection_map LEFT JOIN artwork on media_collection_map.artwork_id = artwork.id where media_collection_map.media_collection_id=$collection_id and media_collection_map.active = 1";
@@ -7334,16 +7341,16 @@ $smtpmail->isSMTP();
     }
 
     function analytics_overview($app,$scope){
-        $total_users=db_getAll("SELECT id from user WHERE active=1  ");;
+        $total_users=db_getAll("SELECT id from `user` WHERE active=1  ");;
         $scope->analytics->total_users=count($total_users);
 
-        $free_users=db_getAll("SELECT id from user WHERE active=1 AND subscription_plan_id=1  "); 
+        $free_users=db_getAll("SELECT id from `user` WHERE active=1 AND subscription_plan_id=1  "); 
         $scope->analytics->free_users=count($free_users);
 
-        $basic_users=db_getAll("SELECT id from user WHERE active=1 AND subscription_plan_id=2 AND'subscription_plan_id' =3  "); 
+        $basic_users=db_getAll("SELECT id from `user` WHERE active=1 AND subscription_plan_id=2 AND'subscription_plan_id' =3  "); 
         $scope->analytics->basic_users=count($basic_users);
 
-        $pro_users=db_getAll("SELECT id from user WHERE active=1 AND subscription_plan_id=4 AND'subscription_plan_id' =5  "); 
+        $pro_users=db_getAll("SELECT id from `user` WHERE active=1 AND subscription_plan_id=4 AND'subscription_plan_id' =5  "); 
         $scope->analytics->pro_users=count($pro_users);
 
         $premium_users=db_getAll("SELECT id from user WHERE active=1 AND subscription_plan_id=6 AND'subscription_plan_id' =7  "); 
@@ -7383,41 +7390,41 @@ $smtpmail->isSMTP();
         $free_artwork_users=db_getAll("SELECT * FROM artwork LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND subscription_plan_id=1 ");
         $scope->analytics->free_artwork_users=count($free_artwork_users);
 
-        $monthly_basic_artwork_users=db_getAll("SELECT * FROM artwork LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND subscription_plan_id=2 ");
-        $yearly_basic_artwork_users=db_getAll("SELECT * FROM artwork LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND subscription_plan_id=3 ");
+        $monthly_basic_artwork_users=db_getAll("SELECT * FROM `artwork` LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND subscription_plan_id=2 ");
+        $yearly_basic_artwork_users=db_getAll("SELECT * FROM `artwork` LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND subscription_plan_id=3 ");
         $scope->analytics->basic_artwork_users=count($monthly_basic_artwork_users)+count($yearly_basic_artwork_users);
 
-        $monthly_pro_artwork_users=db_getAll("SELECT * FROM artwork LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND subscription_plan_id=4  ");
-        $yearly_pro_artwork_users=db_getAll("SELECT * FROM artwork LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND  subscription_plan_id=5 ");
+        $monthly_pro_artwork_users=db_getAll("SELECT * FROM `artwork` LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND subscription_plan_id=4  ");
+        $yearly_pro_artwork_users=db_getAll("SELECT * FROM `artwork` LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND  subscription_plan_id=5 ");
         $scope->analytics->pro_artwork_users=count($monthly_pro_artwork_users)+count($yearly_pro_artwork_users);
 
-        $monthly_premium_artwork_users=db_getAll("SELECT * FROM artwork LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND subscription_plan_id=6  ");
-        $yearly_premium_artwork_users=db_getAll("SELECT * FROM artwork LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND  subscription_plan_id=7 ");
+        $monthly_premium_artwork_users=db_getAll("SELECT * FROM `artwork` LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND subscription_plan_id=6  ");
+        $yearly_premium_artwork_users=db_getAll("SELECT * FROM `artwork` LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND  subscription_plan_id=7 ");
         $scope->analytics->premium_artwork_users=count($monthly_premium_artwork_users)+count($yearly_premium_artwork_users);
 
-        $monthly_vip_artwork_users=db_getAll("SELECT * FROM artwork LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND subscription_plan_id=8  ");
-        $yearly_vip_artwork_users=db_getAll("SELECT * FROM artwork LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND subscription_plan_id=9 ");
+        $monthly_vip_artwork_users=db_getAll("SELECT * FROM `artwork` LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND subscription_plan_id=8  ");
+        $yearly_vip_artwork_users=db_getAll("SELECT * FROM `artwork` LEFT JOIN user ON artwork.user_id = user.id where user.active =1 AND subscription_plan_id=9 ");
         $scope->analytics->vip_artwork_users=count($monthly_vip_artwork_users)+count($yearly_vip_artwork_users);
 
 
 
-        $total_media_users=db_getAll("SELECT * FROM media LEFT JOIN user ON media.user_id = user.id where user.active =1 ");
+        $total_media_users=db_getAll("SELECT * FROM `media` LEFT JOIN user ON media.user_id = user.id where user.active =1 ");
         $scope->analytics->total_media_users=count($total_media_users);
 
-        $free_media_users=db_getAll("SELECT * FROM media LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=1 ");
+        $free_media_users=db_getAll("SELECT * FROM `media` LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=1 ");
         $scope->analytics->free_media_users=count($free_media_users);
 
 
-        $monthly_basic_media_users=db_getAll("SELECT * FROM media LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=2  ");
-        $yearly_basic_media_users=db_getAll("SELECT * FROM media LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=3 ");
+        $monthly_basic_media_users=db_getAll("SELECT * FROM `media` LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=2  ");
+        $yearly_basic_media_users=db_getAll("SELECT * FROM `media` LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=3 ");
         $scope->analytics->basic_media_users=count($monthly_basic_media_users)+count($yearly_basic_media_users);
 
-        $monthly_pro_media_users=db_getAll("SELECT * FROM media LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=4  ");
-        $yearly_pro_media_users=db_getAll("SELECT * FROM media LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=5 ");
+        $monthly_pro_media_users=db_getAll("SELECT * FROM `media` LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=4  ");
+        $yearly_pro_media_users=db_getAll("SELECT * FROM `media` LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=5 ");
         $scope->analytics->pro_media_users=count($monthly_pro_media_users)+count($yearly_pro_media_users);
 
-        $monthly_premium_media_users=db_getAll("SELECT * FROM media LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=6  ");
-        $yearly_premium_media_users=db_getAll("SELECT * FROM media LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=7 ");
+        $monthly_premium_media_users=db_getAll("SELECT * FROM `media` LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=6  ");
+        $yearly_premium_media_users=db_getAll("SELECT * FROM `media` LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=7 ");
         $scope->analytics->premium_media_users=count($monthly_premium_media_users)+count($yearly_premium_media_users);
 
         $monthly_vip_media_users=db_getAll("SELECT * FROM media LEFT JOIN user ON media.user_id = user.id where user.active =1 AND subscription_plan_id=8  ");

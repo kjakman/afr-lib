@@ -34,6 +34,9 @@ $mail = new PHPMailer(true);
 		$find_username = find_objects('user_profile', ['user_id' => $_REQUEST['typeid']]);
 		foreach($find_username as $find_usernames){
 			$usernamee = $find_usernames->display_name;
+			if(empty($usernamee)){
+				$usernamee = $find_usernames->first_name;
+			}
 		}
 		echo($usernamee);die();
   	}
@@ -280,7 +283,7 @@ $mail = new PHPMailer(true);
 			if(is_array($lat) && is_array($lng) && $loc_types) { // search is geographically restricted, add other location types
 
 			$locSearchArray = array('active' => 1, 'location_lat' => $lat, 'location_long' => $lng);  
-			$locOptions = array("limit" => $loc_limit, "sort" => "priority DESC");        
+			$locOptions = array("limit" => $loc_limit, "sort" => "`priority` DESC");        
 			$locSearchArray['parent_type'] = explode(',', $loc_types);
 
 			$locObjs = find_objects('location', $locSearchArray, $locOptions);
@@ -1164,7 +1167,9 @@ $mail = new PHPMailer(true);
 			$obj->path = "/user/".$obj_data[user_id]."/vault/".$id;
 			list($id1, $errors) = update_object($obj_type, $obj, $id);
 			}
+
 			$obj1 = get_object($obj_type, $id1);
+			//print_r($obj1);die();
 			$result->success = 1;
 			$result->data = $obj1;
 			$result->message = "OK. Saved folder"; 
@@ -1217,11 +1222,11 @@ $mail = new PHPMailer(true);
 
 			if($obj_data['parent_id']){
 			if($obj_data['level'] == 1){
-			  $get_datas = find_objects($obj_type, ['parent_id' => $parent_id, 'level_2'=>0], ['sort' => 'row_order asc']);
+			  $get_datas = find_objects($obj_type, ['parent_id' => $parent_id, 'level_2'=>0], ['sort' => '`row_order` asc']);
 			}elseif($obj_data['level'] == 2){
-			  $get_datas = find_objects($obj_type, ['parent_id' => $parent_id, 'level_2'=>$obj_data['level1_id']], ['sort' => 'row_order asc']);
+			  $get_datas = find_objects($obj_type, ['parent_id' => $parent_id, 'level_2'=>$obj_data['level1_id']], ['sort' => '`row_order` asc']);
 			}elseif($obj_data['level'] == 3){
-			  $get_datas = find_objects('minisite_layout', ['parent_id' => $parent_id, 'level1_id' =>$obj_data['level1_id']], ['sort' => 'row_order asc']);
+			  $get_datas = find_objects('minisite_layout', ['parent_id' => $parent_id, 'level1_id' =>$obj_data['level1_id']], ['sort' => '`row_order` asc']);
 			}
 			if($get_datas){
 			 $i = 0;
@@ -2669,7 +2674,6 @@ $mail = new PHPMailer(true);
 			if(!in_array($obj_type, $allowed_types)) json_error("Listing $obj_type not supported");
 			$options = array();
 			foreach(array('offset', 'limit', 'sort', 'order', 'fields') as $fld) $options[$fld] = $obj_data[$fld];
-		  
 			$search = array();
 			// $fields = database_fields($obj_type);
 			global $u_id, $u_level;
@@ -2690,7 +2694,7 @@ $mail = new PHPMailer(true);
 			$search_options = $options;
 			if($_GET['filters']) $search_options['filters'] = $_GET['filters'];
 			if($obj_data['id']) $search_options['id'] = $obj_data['id'];
-//print_r($obj_data['id']);die();
+
 			$vals = explode(' ', $val);
 
 			//$response->total = intVal(count_objects($obj_type, $search));
@@ -2729,10 +2733,10 @@ $mail = new PHPMailer(true);
 				$objs = [];
 				$result = call_user_func_array('array_intersect_key', $assocArrays);
 				foreach($result as $id => $obj) $objs[] = $obj;
-				//print_r($obj);die();
-			}else {
-				//print_r($obj_type);die();
+			}else {	
+
 				if(!$filter_data){
+
 					 if($shared_exp){
 						$shared_exp_query = find_objects('share_exhibitions', ['follower_id' => $app->user_id, 'status' => 1]);
                       $share_ids = [];
@@ -2743,10 +2747,8 @@ $mail = new PHPMailer(true);
 						foreach($shared_exp_queryy as $sharedexpID){
                         $exp_id [] = $sharedexpID->id;
                         }
-						//print_r($shared_exp_query);die();
 						$limit=$search_options['limit'];
 						$search_options['limit']=count($exp_id);
-						//print_r($search_options);die();
 						$search['id'] = $exp_id;
 						$search['type'] = COLLECTION_TYPE_EXHIBITION;
 						$objss = object_site_search($obj_type, $search, $val);
@@ -2759,11 +2761,12 @@ $mail = new PHPMailer(true);
 							print_r($objss);die();
 						}
 					}else{
-						$limit=$search_options['limit'];
+					$limit=$search_options['limit'];
 					$objss = object_site_search($obj_type, $search, $val, $search_options);
 					$search_options['limit']=$response->total;
 					$objsss = object_site_search($obj_type, $search, $val, $search_options);
 					// output headers so that the file is downloaded rather than displayed
+					//print_r($objsss);die();
 					header('Content-type: text/csv');
 					header('Content-Disposition: attachment; filename="demo.csv"');
 					 
@@ -2800,7 +2803,34 @@ $mail = new PHPMailer(true);
 				  }
 					 
 				}else{
+					if($shared_exp){
+						$shared_exp_query = find_objects('share_exhibitions', ['follower_id' => $app->user_id, 'status' => 1]);
+                      $share_ids = [];
+                      foreach($shared_exp_query as $sharedexp){
+                        $exp_ids [] = $sharedexp->user_id;
+                        }
+						$shared_exp_queryy = find_objects('media_collection', ['user_id' => $exp_ids]);
+						foreach($shared_exp_queryy as $sharedexpID){
+                        $exp_id [] = $sharedexpID->id;
+                        }
+						//print_r($shared_exp_query);die();
+						$limit=$search_options['limit'];
+						$search_options['limit']=count($exp_id);
+						//print_r($search_options);die();
+						$search['id'] = $exp_id;
+						$search['type'] = COLLECTION_TYPE_EXHIBITION;
+						$objss = object_site_search($obj_type, $search, $val);
+						$objsss = object_site_search('media_collection', $search, $val, $search_options);
+						if(count($objss)>1){
+						$extra_count = $objss[1];
+						$objs = $objss[0];
+					    }
+						if(empty($objss)){
+							print_r($objss);die();
+						}
+					}else{
 					$objs = object_site_filter($obj_type, $search, $val, $search_options, $filter_data);
+				     }
 				}
 			}
 
@@ -2867,7 +2897,7 @@ $mail = new PHPMailer(true);
 			$data = find_objects($obj_type, $search );
 			}else{
 			$media = find_objects($obj_type, array('user_id'=>$obj_data[user_id], 'active'=>1, 'folder_id'=> 0) );
-			$folder = find_objects('media_folder', array('user_id'=>$obj_data[user_id], 'active'=>1), ['sort' => 'created DESC'] );
+			$folder = find_objects('media_folder', array('user_id'=>$obj_data[user_id], 'active'=>1), ['sort' => '`created` DESC'] );
 			$data = array_merge($folder,$media);
 			}
 			$response->rows  = $data;
@@ -4747,8 +4777,8 @@ $mail = new PHPMailer(true);
 			$response->success = 1;
 			$response->redirect = pick_first($data->redirect, $data->uri, '/');
 			$response->message = $message;
-			setcookie('vpatinalaravelloginaccess', 'allow', time() + 86400, '/', '.dci.in');
-
+			$okay = setcookie('vpatina_dev_$$nage$$', 'allow', time() + 86400, '/', '.vpatina.com');
+//print_r($okay);die();
 			print_log(dump($result, true), "auth", LOG_LEVEL_TEST);
 			echo(json_encode($response));exit;
 	  	break;
@@ -4800,7 +4830,7 @@ $mail = new PHPMailer(true);
 			/*Automatically make a new user as curator - For Now*/  
 				$params = ['site_id' => $site_id, 'roles' => USER_ROLE_ARTIST, 'user_level' => 20];
 			}
-
+             setcookie('vpatina_dev_$$nage$$', 'allow', time() + 86400, '/', '.vpatina.com');
 			$subscribed_user=find_object('subscribed_users', ['email' => $username, 'status' =>1]);
 			if($subscribed_user!=null){	
 				// echo "if";
@@ -4859,7 +4889,7 @@ $mail = new PHPMailer(true);
       		if(isset($data->relation) && $data->relation==1){
       			$message='Relation added Successfully';
       			// echo '<script type="text/JavaScript"> location.reload(); </script>';
-
+      			setcookie('vpatina_dev_$$nage$$', 'allow', time() + 86400, '/', '.vpatina.com');
 	        	$data->redirect = explode($data->redirect,'0');
 	        	$data->uri = explode($data->uri,'0');
 
@@ -6130,10 +6160,11 @@ $response = new stdClass;
 				  'display_name' => "*$val*", 
 				  // 'organization' => "*$val*", 
 				  'user_id' => "*$val*");
-			$shared_pro = find_objects('share_profiles', ['user_id' => $app->user_id, 'status' => 1]);
+			$shared_pro = find_objects('share_profiles', ['follower_id' => $app->user_id, 'status' => 1]);
+			
 			$search['site_id'] = $app->site_id;
 			foreach($shared_pro as $k => $shared){
-            $data[] = $shared->follower_id;
+            $data[] = $shared->user_id;
             }
 			//print_r($data);die();
 			$com_artist_sharedart = array_merge($artist_ids, $data);
@@ -6275,10 +6306,12 @@ $response = new stdClass;
 			$i = 1;
 			foreach($row as $rows) {
 			$data = find_object($obj_type, ['id' => $rows]);
-			if(($obj_type == 'media_collection_map') || ($obj_type == 'exhibition_map') )
+			if(($obj_type == 'media_collection_map') || ($obj_type == 'exhibition_map')){
 			  $data->rank = $i;
-			else
+			}
+			else{
 			  $data->row_order = $i;
+			}
 
 			$output = update_object($obj_type, $data, $data->id);
 			$i++;
@@ -6331,7 +6364,7 @@ $response = new stdClass;
 			  list($delete_media, $errors) = delete_object('media', $media_id);
 			  list($delete_artwork, $errors) = delete_object($obj_type, $id);
 			  //=====================Update Exhibition Sequence=====vignesh 03-09-2020======================//
-				$media_collection = db_getAll("SELECT id FROM media_collection WHERE id=".$collection_id." and subtype IN (40,50)");   
+				$media_collection = db_getAll("SELECT id FROM `media_collection` WHERE id=".$collection_id." and subtype IN (40,50)");   
 				//dump($media_collection);exit;
 				foreach($media_collection as $val)
 				{
@@ -6964,7 +6997,7 @@ $response = new stdClass;
 			}elseif($parent_type == 'user' && $parent_field == 'map_profile'){
 
 				$getMedia = find_object('media_collection', ['user_id' => $parent_id, 'active'=>1, 'type'=>150]);
-				$mapObjs = db_getAll("select * from media_collection_map where media_collection_id= '$getMedia->id' OR media_collection_id= '1' AND active= '1' AND user_id= '$parent_id' ORDER by rank");
+				$mapObjs = db_getAll("select * from media_collection_map where media_collection_id= '$getMedia->id' OR media_collection_id= '1' AND active= '1' AND user_id= '$parent_id' ORDER by `rank`");
 				$edit_url = "edit-url";
 				// dump($getMedia);
 				$files = [];
@@ -8080,7 +8113,7 @@ $response = new stdClass;
 
 			if(in_array($returntype, array('artist','curator','exhibition','media_collection'))) { /** todo: don't do this for user, media_collection_map */
 			  $collection_id = $obj_id;
-			  $sort = $collection_id == $user_collection_id ? "id DESC" : "rank";
+			  $sort = $collection_id == $user_collection_id ? "`id` DESC" : "`rank`";
 			  $mapObjs = find_objects('media_collection_map', array('media_collection_id' => $collection_id, 'active' => 1), array('sort' => $sort));
 			  $media_ids = array_find_key($mapObjs, 'media_id');
 			  $all_collection_ids = find_objects('media_collection_map', array('media_id' => $media_ids), array('fields' => 'distinct media_collection_id'));
@@ -8350,6 +8383,7 @@ $response = new stdClass;
 			  $oper_str = ucfirst($oper);
 			  break;
 		}
+		//print_r($obj_type);die();
 		$descriptor = $descriptor ?: get_select_value2($obj_type, $id);
 		//$log = $out = $message = "OK: $oper_str $obj_name $id ($descriptor)";
 		$log = $out = $message = "OK: $oper_str $obj_name ".$descriptor; // ?: $id;

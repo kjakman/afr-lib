@@ -9,9 +9,20 @@ $db_db = $db_conf->db;
 
 $_SESSION['db_dev'] = $dev_db = $db_key == 'devdb' ? 1 : 0;
 
-$db_user = "patina";
-$db_host = "vpatina-mysql.ccztxxjlttr7.ap-south-1.rds.amazonaws.com";
-$db_password = "R%7Lfc6qXtJ45s&7w";
+//dev server
+// $db_user = "devvpatina";
+// $db_host = "devvpatina.cf4eiwr9grf9.eu-west-2.rds.amazonaws.com";
+// $db_password = "cNAnmRbXr4z3nbIuTZVj";
+// $db_dsn = "mysql://$db_user:$db_password@$db_host/$db_db";
+//print_r($db_conf->user);die();Patinad3v!
+// $db_user = "vpatina";
+// $db_host = "vpatina.czeu7zb0fmsv.eu-central-1.rds.amazonaws.com";
+// $db_password = "d9TJABpgpBftCPGnT3yj";
+// $db_dsn = "mysql://$db_user:$db_password@$db_host/$db_db";
+
+$db_user = "doadmin";
+$db_host = "testprod-do-user-14078323-0.b.db.ondigitalocean.com:25060";
+$db_password = "AVNS_DcJgGc91cceDZE1uA0j";
 $db_dsn = "mysql://$db_user:$db_password@$db_host/$db_db";
 
 // connect to db
@@ -85,8 +96,8 @@ function setNextId($sequence, $id) {
 // set live to true for actual sync, otherwise dryrun (useful to see differences)
 /** unsused - automatic comment added on  */
 function sync_live2dev_schema($live=false) {
-	global $db_dev;         // aptdb_v16
-	global $db_live;        // aptdb_v14
+  global $db_dev;         // aptdb_v16
+  global $db_live;        // aptdb_v14
   return sync_db_schema($db_live, $db_dev, $live=false);
 }
 
@@ -95,18 +106,18 @@ function sync_live2dev_schema($live=false) {
 // set live to true for actual sync, otherwise dryrun (useful to see differences)
 /** unsused - automatic comment added on  */
 function sync_dev2live_schema($live=false) {
-	global $db_dev;         // aptdb_v16
-	global $db_live;        // aptdb_v14
+  global $db_dev;         // aptdb_v16
+  global $db_live;        // aptdb_v14
   return sync_db_schema($db_dev, $db_live, $live=false);
 }
 
 
 function sync_db_schema($from, $to, $live=false) {
-	global $db_local_host;  // local
-	global $db_user;
-	global $db_password;
+  global $db_local_host;  // local
+  global $db_user;
+  global $db_password;
 
-	$time_start = microtime_float();
+  $time_start = microtime_float();
   include 'db_schema_sync/class.dbsync.php';
 
   $dbsync = new DBSync();
@@ -116,9 +127,9 @@ function sync_db_schema($from, $to, $live=false) {
 
   $ok = true;
   if ($dbsync->Sync($live)) {
-		$time_end = microtime_float();
-		$diff = $time_end - $time_start;
-		echo("<b>Done Synchronizing database schema in $diff seconds</b><br>");
+    $time_end = microtime_float();
+    $diff = $time_end - $time_start;
+    echo("<b>Done Synchronizing database schema in $diff seconds</b><br>");
   } else {
     echo('Something went wrong with synchronising...');
   }
@@ -130,16 +141,16 @@ function sync_db_schema($from, $to, $live=false) {
 // syncs schema with slave (alter table, drop table, add table, etc)
 /** unsused - automatic comment added on  */
 function sync_slave_schema($live=false, $live_db=false) {
-	global $db_local_host;  // local
-	global $db_master_host; // tango
-	global $db_slave_host;  // diz
-	global $db_user;
-	global $db_password;
-	global $db_dev;         // aptdb_v16
-	global $db_live;        // aptdb_v14
-	$db_db = $live_db ? $db_live : $db_dev;
+  global $db_local_host;  // local
+  global $db_master_host; // tango
+  global $db_slave_host;  // diz
+  global $db_user;
+  global $db_password;
+  global $db_dev;         // aptdb_v16
+  global $db_live;        // aptdb_v14
+  $db_db = $live_db ? $db_live : $db_dev;
 
-	$time_start = microtime_float();
+  $time_start = microtime_float();
   include 'db_schema_sync/class.dbsync.php';
 
   $dbsync = new DBSync($live);
@@ -149,9 +160,9 @@ function sync_slave_schema($live=false, $live_db=false) {
 
   $ok = true;
   if ($dbsync->Sync()) {
-		$time_end = microtime_float();
-		$diff = $time_end - $time_start;
-		echo("<b>Done Synchronizing database schema in $diff seconds</b><br>");
+    $time_end = microtime_float();
+    $diff = $time_end - $time_start;
+    echo("<b>Done Synchronizing database schema in $diff seconds</b><br>");
   } else {
     echo('Something went wrong with synchronising...');
   }
@@ -163,48 +174,48 @@ function sync_slave_schema($live=false, $live_db=false) {
 
 /** unsused - automatic comment added on  */
 function sync_slave($live=false) {
-	include "db_sync.php"; 
+  include "db_sync.php"; 
 
-	global $db_master_host;
-	global $db_slave_host;
-	global $db_user;
-	global $db_password;
-	global $db_dev;
-	global $db_live;
-	$db_db = $live ? $db_live : $db_dev;
+  global $db_master_host;
+  global $db_slave_host;
+  global $db_user;
+  global $db_password;
+  global $db_dev;
+  global $db_live;
+  $db_db = $live ? $db_live : $db_dev;
 
-	$time_start = microtime_float();
-	$sync = new SyncronizeDB(); 
-		
-	$n=0;
-	$classes = get_classes();
+  $time_start = microtime_float();
+  $sync = new SyncronizeDB(); 
+    
+  $n=0;
+  $classes = get_classes();
 
-	// add db sequence
-	$db_sequence->key 	= 'seq_name';
-	$db_sequence->table = 'db_sequence';
+  // add db sequence
+  $db_sequence->key   = 'seq_name';
+  $db_sequence->table = 'db_sequence';
   $classes[] = $db_sequence;
 
-	$test->key 	= 'id';
-	$test->table = 'agent';
-	$classes = array($test); 
+  $test->key  = 'id';
+  $test->table = 'agent';
+  $classes = array($test); 
 
-	foreach($classes as $class) {
-		$table = $class->table;
-		$key= $class->key;
+  foreach($classes as $class) {
+    $table = $class->table;
+    $key= $class->key;
 
-		echo("<h3>Syncing table=$table (key=$key)</h3>");		
-		//masterSet(dbserver,user,password,db,table,index) 
-		$sync->masterSet($db_master_host,$db_user,$db_password,$db_db,$table,$key); 
-		$sync->slaveSet($db_slave_host,$db_user,$db_password,$db_db,$table,$key); 
-		
-		//syncronizing the slave table with the master table (at row level) 
-		$sync->slaveSyncronization();
-		$n++;
-	}
-	$time_end = microtime_float();
-	$diff = $time_end - $time_start;
-	
-	echo("<b>Done Synchronizing $n tables in $diff seconds</b><br>");
+    echo("<h3>Syncing table=$table (key=$key)</h3>");   
+    //masterSet(dbserver,user,password,db,table,index) 
+    $sync->masterSet($db_master_host,$db_user,$db_password,$db_db,$table,$key); 
+    $sync->slaveSet($db_slave_host,$db_user,$db_password,$db_db,$table,$key); 
+    
+    //syncronizing the slave table with the master table (at row level) 
+    $sync->slaveSyncronization();
+    $n++;
+  }
+  $time_end = microtime_float();
+  $diff = $time_end - $time_start;
+  
+  echo("<b>Done Synchronizing $n tables in $diff seconds</b><br>");
 }
 
 /** unsused - automatic comment added on  */
@@ -393,11 +404,12 @@ function db_getRow($query_str, $values = array(), $options=array()) {
 
 function db_getAll($query_str, $values = array(), $options=array()) {
   global $db;
-  //dump($query_str);
+  //dump($query_str);die();
   $logOptions = array();
   if($_SESSION['log_db']) $time_start = microtime(true);
 
   try {
+    //print_r($query_str);die();
     $stmt = $db->prepare($query_str);    
     $stmt->execute($values);
     $fetchmode = $options['fetchmode'] ? db_fetchmode($options['fetchmode']) : PDO::FETCH_OBJ;
@@ -431,7 +443,8 @@ function db_query($query_str, $values=array(), $options=NULL) {
     $time_start = microtime(true);
     $logOptions = array();
   }
-  
+  // print_r($query_str);
+  // print_r($values);die();
   try {
     $stmt = $db->prepare($query_str);    
     $result->affected = $stmt->execute($values);    
@@ -439,6 +452,7 @@ function db_query($query_str, $values=array(), $options=NULL) {
     pdo_exception($ex, $query_str, $values);
     $result->error = $error = $ex->getMessage(); 
   }
+
 
   if($options['debug'] || $options['debug_query'] || $_SESSION['debug_db']) echo("db_query: $query_str result=".dump($result, true));
 
@@ -1019,7 +1033,7 @@ function agent_xml_login($login, $password) {
 // rank functions used to maintain ranking of rows in a table
 
 // takes an ID list (comma separated), sets rank in that order
-function rank_update_list($obj_type, $list, $rank_field='rank') {
+function rank_update_list($obj_type, $list, $rank_field='`rank`') {
     $table = get_object_table($obj_type);
     $query = "set @row_num=0";
     db_query($query);
@@ -1059,7 +1073,7 @@ function rank_update_list($obj_type, $list, $rank_field='rank') {
 
 
 // selects all rows matching search, orders by rank, updates rank or each row from 1 - NUM_ROWS
-function rank_update($obj_type, $search='', $rank_field='rank') {
+function rank_update($obj_type, $search='', $rank_field='`rank`') {
   $table = get_object_table($obj_type);
   $query = "set @row_num=0";
   $where_str = is_array($search) ? search2where($search) : $search; 
@@ -1071,7 +1085,7 @@ function rank_update($obj_type, $search='', $rank_field='rank') {
 }
 
 // rank functions used to maintain ranking of rows in a table
-function rank_next($obj_type, $search='', $rank_field='rank') {
+function rank_next($obj_type, $search='', $rank_field='`rank`') {
   global $db;
   $table = get_object_table($obj_type);
   $query = "SELECT max(abs($rank_field)) FROM $table".($search ? " WHERE ".search2where($search) : '');
@@ -1081,7 +1095,7 @@ function rank_next($obj_type, $search='', $rank_field='rank') {
   return  $max + 1;
 }
 
-function rank_set($obj_type, $id, $rank, $rank_field='rank') {
+function rank_set($obj_type, $id, $rank, $rank_field='`rank`') {
   global $db;
   $table = get_object_table($obj_type);
   $key = get_object_key($obj_type);
@@ -1089,7 +1103,7 @@ function rank_set($obj_type, $id, $rank, $rank_field='rank') {
   return db_getOne($query);
 }
   
-function rank_get($obj_type, $id, $rank_field='rank') {
+function rank_get($obj_type, $id, $rank_field='`rank`') {
   global $db;
   $table = get_object_table($obj_type);
   $key = get_object_key($obj_type);
@@ -1098,7 +1112,7 @@ function rank_get($obj_type, $id, $rank_field='rank') {
 }
 
 // used to move object up 1 in list
-function rank_up($obj_type, $id, $search='', $rank_field='rank') {
+function rank_up($obj_type, $id, $search='', $rank_field='`rank`') {
   rank_update($obj_type, $search); // make sure they're sequential
   $table = get_object_table($obj_type);
   $key = get_object_key($obj_type);
@@ -1108,7 +1122,7 @@ function rank_up($obj_type, $id, $search='', $rank_field='rank') {
 }
 
 // used to move object down 1 in list
-function rank_down($obj_type, $id, $search='', $rank_field='rank') { 
+function rank_down($obj_type, $id, $search='', $rank_field='`rank`') { 
   rank_update($obj_type, $search); // make sure they're sequential
   $table = get_object_table($obj_type);
   $key = get_object_key($obj_type);
@@ -1123,7 +1137,7 @@ function rank_down($obj_type, $id, $search='', $rank_field='rank') {
 }
 
 // used to move object after target in list
-function rank_after($obj_type, $id, $target, $search='', $rank_field='rank') {
+function rank_after($obj_type, $id, $target, $search='', $rank_field='`rank`') {
   $table = get_object_table($obj_type);
   $key = get_object_key($obj_type);
   $target_rank = get_object($obj_type, $target, $rank_field);
@@ -1133,7 +1147,7 @@ function rank_after($obj_type, $id, $target, $search='', $rank_field='rank') {
 }
 
 // used to move object before target in list
-function rank_before($obj_type, $id, $target, $search='', $rank_field='rank') {
+function rank_before($obj_type, $id, $target, $search='', $rank_field='`rank`') {
   $table = get_object_table($obj_type);
   $key = get_object_key($obj_type);
   $target_rank = $target ? get_object($obj_type, $target, $rank_field) : 0;

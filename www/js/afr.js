@@ -8229,7 +8229,7 @@ function jfu_buttons($uploader, ui) {
   
   $(output).appendTo($uploader);
   var gallery = '\
-  <!-- The blueimp Gallery widget -->\
+  <!-- The blueimp Gallery widget ssssdd-->\
   <div id="blueimp-gallery" class="blueimp-gallery blueimp-gallery-controls" data-filter=":even">\
       <div class="slides"></div>\
       <h3 class="title"></h3>\

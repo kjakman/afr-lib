@@ -1310,6 +1310,7 @@ function get_objects_assoc($obj_type, $filters='', $options = array()) {
 function find_object($obj_type, $search, $field='', $options = array()) {
   $options['field'] = $field;
   $options['limit'] = 1;
+  //print_r($options);die();
   $objs = find_objects($obj_type, $search, $options);
   $result = is_array($objs) ? $objs[0] : $objs; // might return just one value if $field is singular: todo: check for multiple fields
   return $result;
@@ -1317,15 +1318,17 @@ function find_object($obj_type, $search, $field='', $options = array()) {
 
 // returns all objects that match filters;
 //function find_objects($obj_type, $searchArray='', $sort=0, $order=0, $start=0, $limit=0, $selected_fields='') {  
-function find_objects($obj_type, $search=array(), $options = array()) {
+function find_objects($obj_type, $search=array(),  $options=array()) {
+//print_r($obj_type);die();
   $debug = $options['debug_query'];
   if($search && count($search) == 1 && (array_keys($search))[0] == 'id') {
     $tbl = get_object_table($obj_type);
     $search = ["{$tbl}.id" => (array_values($search))[0]]; // we need tablename.id to avoid ambigiuity
   }
   list($filters, $values) = search2pdo($search);
+
   $options['values'] = $values;
-  
+  //$options['sort'] = 'row_order asc';
   if($options['debug_query'] || $_SESSION['debug_db']) {
     $stack = caller_stack();
     echo("search $obj_type in $stack: ".dump($search,true));
@@ -1336,13 +1339,39 @@ function find_objects($obj_type, $search=array(), $options = array()) {
     print_log("terms: ".dump($filters,true), 'debug', LOG_LEVEL_TEST);
     print_log("values: ".dump($values,true), 'debug', LOG_LEVEL_TEST);    
   }
+
   return get_objects($obj_type, $filters, $options);
-}                                      
+}       
 
+//Nagendhiran
 
-//function get_objects($obj_type, $filters='', $sort=0, $order=0, $start=0, $limit=0, $selected_fields='') {
-// for more than one fields, use array('field1', 'field2')
-function get_objects($obj_type, $filters=array(), $options = array()) {
+function find_objectser($obj_type, $search=array(),  $options=array()) {
+
+  $debug = $options['debug_query'];
+  if($search && count($search) == 1 && (array_keys($search))[0] == 'id') {
+    $tbl = get_object_table($obj_type);
+    $search = ["{$tbl}.id" => (array_values($search))[0]]; // we need tablename.id to avoid ambigiuity
+  }
+  list($filters, $values) = search2pdo($search);
+
+  $options['values'] = $values;
+  //$options['sort'] = 'row_order asc';
+  if($options['debug_query'] || $_SESSION['debug_db']) {
+    $stack = caller_stack();
+    echo("search $obj_type in $stack: ".dump($search,true));
+    echo("terms: ".dump($filters,true));
+    echo("values: ".dump($values,true));
+    
+    print_log("search $obj_type in $stack: ".dump($search,true), 'debug', LOG_LEVEL_TEST);
+    print_log("terms: ".dump($filters,true), 'debug', LOG_LEVEL_TEST);
+    print_log("values: ".dump($values,true), 'debug', LOG_LEVEL_TEST);    
+  }
+
+  return get_objectsdd($obj_type, $filters, $options);
+}                                    
+
+function get_objectsdd($obj_type, $filters=array(), $options = array()) {
+  //print_r($options);die();
   $sort  = $options['sort'] ?: get_object_sort_clause($obj_type);
   $order = $options['order'] ?: 0;
   $start = $options['start'] ?: $options['offset'];
@@ -1350,7 +1379,7 @@ function get_objects($obj_type, $filters=array(), $options = array()) {
   $assoc = $options['assoc'] ?: 0;
   $group = $options['group'] ?: '';
   $values = $options['values'] ?: array();
-  
+  //print_r($sort);die();
   if(strtolower($order) == 'asc') $order = 0; // allow 0 or 'asc' for ascending
   elseif(strtolower($order) == 'desc') $order = 1; // allow 1 or 'desc' for descending
   
@@ -1374,16 +1403,111 @@ function get_objects($obj_type, $filters=array(), $options = array()) {
   
   $explicit_order = strpos(strtolower($sort), ' desc') || strpos(strtolower($sort), ' asc'); // sort direction already specifiect in $sort var.    
 
-  if($group) $query_str .= " GROUP BY $group";
+  if($group) $query_str .= "GROUP BY $group";
+  
+    if($sort == 'rank '){
+        $sort = '`rank`'; 
+       }
 
-  $query_str = $query_str.($sort ? " ORDER BY $sort":"").(($sort && $order && !$explicit_order) ? " DESC" : "");
+  if($sort == 'rank ASC'){
+    $query_str = $query_str." ORDER BY `rank` ASC ";
+  }
+  else if($sort == 'row_order ASC'){
+    $query_str = $query_str." ORDER BY `row_order` ASC ";
+  }else if($sort == 'exhibition_sequence desc'){
+      $query_str = $query_str." ORDER BY `exhibition_sequence` desc "; 
+  }else if($sort == 'exhibition_sequence asc'){
+      $query_str = $query_str." ORDER BY `exhibition_sequence` ASC "; 
+  }else{
+    $query_str = $query_str.($sort ? " ORDER BY $sort " : "").(($sort && $order && !$explicit_order) ? "DESC" : "");
+  }
+  //print_r($query_str);die();title
+ // $query_str = $query_str.($sort ? " ORDER BY $sort " : "").(($sort && $order && !$explicit_order) ? "DESC" : "");
   if($start || $limit) {
     if($start && $limit) { // start and limit
-      $query_str = $query_str." LIMIT $start, $limit";
+      $query_str = $query_str." LIMIT $start,$limit ";
     } elseif($limit) { // limit only
-      $query_str = $query_str." LIMIT $limit";
+      $query_str = $query_str." LIMIT $limit ";
     } else { // start only
-      $query_str = $query_str." LIMIT $start, 18446744073709551615";
+      $query_str = $query_str." LIMIT $start,18446744073709551615 ";
+    }
+  }
+//
+  
+  if($debug) {
+    echo($query_str.html_break());
+    echo("result=".dump($result, true));
+    echo("method=$method<br>");
+  }
+    
+  //print_r($query_str);die();
+  if(!$selected_fields || is_array($selected_fields)) {   
+    $result = db_getAll($query_str, $values, $options);
+    $method = "db_getAll";
+  } else {
+    $result = db_getCol($query_str, $values, $options); // just one field
+    
+    $count = count($result);
+    if($options['format'] == "list") return implode(",", $result); // comma separated list
+    $method = "db_getCol";
+  }
+
+  $count = count($result);
+
+  check_db_result($result);
+  //echo "<pre>";
+    //print_r($query_str);
+    //print_r($values);
+  
+  return $result ?: array();
+}
+
+//Nagendhiran
+
+//function get_objects($obj_type, $filters='', $sort=0, $order=0, $start=0, $limit=0, $selected_fields='') {
+// for more than one fields, use array('field1', 'field2')
+function get_objects($obj_type, $filters=array(), $options = array()) {
+  $sort  = $options['sort'] ?: get_object_sort_clause($obj_type);
+  $order = $options['order'] ?: 0;
+  $start = $options['start'] ?: $options['offset'];
+  $limit = $options['limit'] ?: 0;
+  $assoc = $options['assoc'] ?: 0;
+  $group = $options['group'] ?: '';
+  $values = $options['values'] ?: array();
+  //print_r($sort);die();
+  if(strtolower($order) == 'asc') $order = 0; // allow 0 or 'asc' for ascending
+  elseif(strtolower($order) == 'desc') $order = 1; // allow 1 or 'desc' for descending
+  
+  $selected_fields = $options['fields'] ?: $options['field'];
+  $debug = $options['debug_query'];
+  
+  if(!$obj_type) {dump($filters); mydie("get_objects: missing type.");};
+  $query_str = get_object_query($obj_type, '__none', $selected_fields, $options);
+
+  /** apply class_filters() */
+  if(!is_array($filters) && strlen($filters)) $filters = [$filters];
+  
+  // add mandatory class filters
+  $class_filters = class_filters($obj_type) ?: [];
+  if($class_filters) $filters = array_merge($class_filters, $filters); 
+  
+  if($filter_str = is_array($filters) ? implode(" AND ", $filters) : $filters) $query_str .= strpos($query_str, ' WHERE ') ? " AND ($filter_str)" : " WHERE $filter_str";
+  
+  $having = isset($options['having']) ? $options['having'] : ''; // used in where clause for computed columns, e.g "concat(a,b,c) as foo"
+  if($having) $query_str  .= " HAVING $having";
+  
+  $explicit_order = strpos(strtolower($sort), 'desc') || strpos(strtolower($sort), ' asc'); // sort direction already specifiect in $sort var.    
+
+  if($group) $query_str .= "GROUP BY $group";
+
+  //$query_str = $query_str.($sort ? "ORDER BY $sort":"").(($sort && $order && !$explicit_order) ? "DESC" : "");
+  if($start || $limit) {
+    if($start && $limit) { // start and limit
+      $query_str = $query_str." LIMIT $start,$limit ";
+    } elseif($limit) { // limit only
+      $query_str = $query_str." LIMIT $limit ";
+    } else { // start only
+      $query_str = $query_str." LIMIT $start,18446744073709551615 ";
     }
   }
 
@@ -1394,8 +1518,9 @@ function get_objects($obj_type, $filters=array(), $options = array()) {
     echo("method=$method<br>");
   }
     
-  
-  if(!$selected_fields || is_array($selected_fields) /*|| strpos($selected_fields, ',') */) { // 2 or more fields    
+  //print_r($query_str);die();
+  if(!$selected_fields || is_array($selected_fields)) {   
+   // dump($values.'--->'.$options);die();
     $result = db_getAll($query_str, $values, $options);
     $method = "db_getAll";
   } else {
@@ -1728,22 +1853,28 @@ function get_object_value_query($obj_type, $target_fields, $filters="", $sort=""
   if(count($where)) $where_str = "WHERE ".implode(" AND ", $where);
     
   //echo("sort for $obj_type preset to '$sort' - ");
+//print_r(get_object_sort_clause($obj_type));die();
   $sort_clause = $sort ? $sort : get_object_sort_clause($obj_type);
+ //print_r($sort_clause);die();
+if($sort_clause == 'rank '){
+ $sort_clause = '`rank`'; 
+}
   //echo("now '$sort_clause'<br>");
 
-  $sort = $sort_clause ? "ORDER BY $sort_clause": "";
+  $sort = $sort_clause ? " ORDER BY $sort_clause": "";
   //echo("fields='$fields'<br>");
   $qs = $fields ? "SELECT $key, $fields FROM $tables $where_str $sort" : "SELECT $key FROM $tables $where_str $sort";
   //$qs = $fields ? "SELECT $fields FROM $tables $where $sort" : "SELECT $key FROM $tables $where $sort";
   //$qs = "SELECT $fields FROM $tables $where";
   print_debug("get_object: $qs<br>");
+
   return $qs;
 }
 
 
+
 // function save_object_query($obj_type, $data, $id=0, $parent_id=0, $preset_id=0, $parent_type='') {
 function save_object_query($obj_type, $data, $options = array()) {
-  //print_r($data);exit;
   $time_start = microtime(true);
   $debug = $options['debug_query'] ? 1 : 0;
   
@@ -1768,6 +1899,7 @@ function save_object_query($obj_type, $data, $options = array()) {
   if($debug) print_log("soq: $obj_type id=$id data:".dump($data,true)." options:".dump($options, true), "soq", LOG_LEVEL_ALWAYS);
   
   if($_SESSION['readonly']) return array(0, "System is in readonly mode.");
+
   if(!$obj_type) {
     if($_SESSION['dev']) {
       mydie("Soq: missing object type");
@@ -1778,6 +1910,7 @@ function save_object_query($obj_type, $data, $options = array()) {
   }
   
   $orgObj = $id ? get_object($obj_type, $id) : NULL;
+
   //print_r($orgObj);exit;
   $new = $id ? false : true;
 
@@ -1794,7 +1927,7 @@ function save_object_query($obj_type, $data, $options = array()) {
   $fields = get_object_attributes($obj_type, 0);
  // print_r($fields);exit;    
   $obj_keys = array_keys($fields);
-  
+ 
 
   // pre-processing: pre_ handlers need proper dates, not "+1 day" etc
   foreach($data as $k => $v) {
@@ -2031,7 +2164,7 @@ function save_object_query($obj_type, $data, $options = array()) {
       $flds[] = '`'.$field.'`';
       $vals[] = $binding;
     }
-    $values[] = $att_val;
+    $values[$binding] = $att_val;
   }
 
   if($debug) print_log("soq: gh4", "soq", LOG_LEVEL_ALWAYS);
@@ -2061,7 +2194,7 @@ function save_object_query($obj_type, $data, $options = array()) {
 
   $id_term = $id;
   if($id && !count($ids)) {
-    $values[] = $id;
+    $values[':ID'] = $id;
     $id_term = ":ID";
   } 
   
@@ -2089,13 +2222,15 @@ function save_object_query($obj_type, $data, $options = array()) {
     if($debug) print_log("soq gh5 terms=".dump($terms,true), "soq", LOG_LEVEL_ALWAYS);
     
     $num_terms = sizeof($terms);
+
     if(!$num_terms)   return array(0, ["Cannot update, missing terms"]);
     //echo("There are $num_terms terms in query for update $obj_type $id<br>");
     
     $terms_string = implode(",", $terms);
-    $query_str = "UPDATE $table
+    $query_str = "UPDATE `$table`
                   SET $terms_string
-                  WHERE ".(count($ids) ? "`$key` IN ($id_list)" : "`$key`=$id_term");
+                  WHERE ".(count($ids) ? "`$key` IN ($id_list)" : "`$key`=$id_term" );
+                  
 
 
   }
@@ -2104,7 +2239,7 @@ function save_object_query($obj_type, $data, $options = array()) {
   if($debug) print_log("soq: gh6 qs={$query_str}", "soq", LOG_LEVEL_ALWAYS);
 
   $res = db_query($query_str, $values, $options);
-
+//print_r($values);die();
   if($debug) print_log("soq: gh7 res=".dump($res,true), "soq", LOG_LEVEL_ALWAYS);
   
   if(!$_SESSION['live'] && $options['debug_query']) {
@@ -2519,6 +2654,8 @@ function object_select($name, $obj_type, $options = NULL) {
   
   // not ajax chooser, use form_select
   $sort = $options['sort'] ?: get_object_sort($obj_type);
+  //print_r($sort);die()
+  //$sort =
   $data = $options['data'];
   if($data && !is_array($data)) $data = array($data);
   $options['rows'] = get_object_descriptor_list($obj_type, $search, $sort, $data);
@@ -2547,13 +2684,13 @@ function object_ajax_chooser($name, $obj_type, $options=NULL) {
   foreach($search_options as $k => $v) unset($options[$k]);
   
   $options['debug'] = true;
-  //dump($search_options);  
+  dump($search_options);  
   return form_autocomplete($name, $search_options, $options);  
 }
 
 function get_object_descriptor_list($obj_type, $filters="", $sort="", $extra_fields="") {
   $descriptor = get_object_descriptor($obj_type);
-  //dump($filters);
+  //dump($sort);
   return get_object_value_list($obj_type, $descriptor, $filters, $sort, $extra_fields);
 }
 
@@ -2583,8 +2720,11 @@ function get_object_value($obj_type, $desc_fields, $id) {
   if($id == '') mydie ("get_object_value: missing id");
   
   $target_fields = explode(',', $desc_fields);  
+
   $query = get_object_value_query($obj_type, $target_fields, "", "", $id);
+  //print_r($query);die();
   $count = count($target_fields);
+  //print_r($query);die();
   $row = $count>0 ? db_getRow($query, array(), array('fetchmode' => 'ordered')) : db_getOne($query);
   return $row;
 }
@@ -2592,6 +2732,7 @@ function get_object_value($obj_type, $desc_fields, $id) {
 function get_object_descriptor_string($obj_type, $id) {
   $descriptor = get_object_descriptor($obj_type);
   $value = get_object_value($obj_type, $descriptor, $id);
+  //print_r($value);die();
   return $value;
 }
 
@@ -2604,6 +2745,7 @@ function get_select_value($type, $selected_key) {
 function get_select_value2($obj_type, $selected_key) {
   if(!$selected_key) return "";
   $row = get_object_descriptor_string($obj_type, $selected_key);
+
   if(count($row) > 1) array_shift($row); // don't want the ID
 
   $result = is_array($row) ? implode(" ", $row) : $row;
@@ -4598,11 +4740,12 @@ function object_site_search($obj_type, $search, $val, $options = []) {
   print_log("get-rows {$obj_type} filters: ".dump($filters, true), 'debug', LOG_LEVEL_TEST);
   print_log("get-rows {$obj_type} search: ".dump($search, true), 'debug', LOG_LEVEL_TEST);
 
-  $key = get_object_key($obj_type);      
+  $key = get_object_key($obj_type);  
+
   if(!$options['sort']) $options['sort'] = get_object_sort($obj_type) ?: "{$key} desc";
 
-  $objs = find_objects($obj_type, $search, $options);
-
+  $objs = find_objectser($obj_type, $search, $options);
+//print_r($objs);die();
   $count = count($objs);
   print_log("get-rows $obj_type val=$val count=$count", 'debug', LOG_LEVEL_TEST);
   //print_log("First:".dump($objs[0], true), 'debug', LOG_LEVEL_TEST);
