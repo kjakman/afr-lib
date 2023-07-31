@@ -738,7 +738,7 @@ use PHPMailer\PHPMailer\Exception;
 
                         if($data['eType'] == 1){
                             $search = ['user_id' => $user_id, 'type' => COLLECTION_TYPE_EXHIBITION, 'active' => 1, 'subtype' => [$gallery,$artfair, $others, $selection] ];
-                            $collection = find_objects('media_collection', $search, ['sort' => 'exhibition_sequence desc', 'limit' => 1]);
+                            $collection = find_objectser('media_collection', $search, ['sort' => 'exhibition_sequence desc', 'limit' => 1]);
                         }else{
                             $find_page = find_object('minisite_page', ['user_id' => $user_id, 'minisite_id' => $minisite_id ,'active' => 1, 'slug' => $page_slug]);
                             $page_id = $find_page->id;
@@ -5084,7 +5084,7 @@ $smtpmail->isSMTP();
                 $scope->obj_id = $id;
 
                 if($app->page->tab=='subscription'){
-                dump($app->page);
+                //dump($app->page);
 
                     user_subscription($app,$scope);
                 }

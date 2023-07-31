@@ -3000,9 +3000,13 @@ console.log('okok1');
   });
 
   var cid = clickedListItem.getAttribute('data-pswp-uid');
+  console.log("cid-=-->"+cid);
   var index = clickedListItem.getAttribute('data-index') || 0;
+  console.log("index-->"+index);
   var plugin_options = clickedListItem.getAttribute('data-plugin_options');
+  console.log("data-plugin_options-->"+plugin_options);
   var popup_options = clickedListItem.getAttribute('data-popup_options');
+  console.log("data-popup_options-->"+popup_options);
   g_plugin_options = plugin_options ? JSON.parse(plugin_options) : {};
   g_popup_options = popup_options ? JSON.parse(popup_options) : {};
 
