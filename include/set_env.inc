@@ -50,7 +50,7 @@ $cookie_hash = $_COOKIE['authID'];
 $session_hash = $_SESSION['hash']; /** need this for phpauth logout below, before session is destroyed */
 
 if(strpos($_SERVER['REQUEST_URI'], 'act=logout')) {
-  setcookie('vpatina_dev_$$nage$$', 'notallow', time() + 86400, '/', '.vpatina.com');
+  setcookie('%vpatina%_#live#_$$nage$$', 'notallow', time() + 86400, '/', '.vpatina.com');
   $user_id = $_SESSION['u_id'];
   $filename = "./user/manifest/manifest_".$user_id.".json";
   if (file_exists($filename)){
@@ -112,7 +112,7 @@ $live = $_SESSION['live'] = !($dev || $test || $beta || $staging|| $staging_live
 $_SESSION['deployment'] = $live ? 'live' : $host_sub;
 if($local) $_SESSION['deployment'] = 'local'; 
 $_SESSION['send_mail'] = ['live' => 1, 'test' => 0, 'dev' => 0, 'staging' => 0, 'beta' => 0, 'local' => 0]; // whether to send if not live
-if(!$_SESSION['live']) $version = $_SESSION['version'] = date('mdHis');
+if($_SESSION['live']) $version = $_SESSION['version'] = date('mdHis');
 $_SESSION['log_db'] = !$_SESSION['live'] && isset($_GET['log_db']) ? 1 : 0;
 $__header = ['end_scripts' => [], 'scripts' => [], 'styles' => []];
 

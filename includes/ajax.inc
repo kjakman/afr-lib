@@ -4777,7 +4777,7 @@ $mail = new PHPMailer(true);
 			$response->success = 1;
 			$response->redirect = pick_first($data->redirect, $data->uri, '/');
 			$response->message = $message;
-			$okay = setcookie('vpatina_dev_$$nage$$', 'allow', time() + 86400, '/', '.vpatina.com');
+			$okay = setcookie('%vpatina%_#live#_$$nage$$', 'allow', time() + 86400, '/', '.vpatina.com');
 //print_r($okay);die();
 			print_log(dump($result, true), "auth", LOG_LEVEL_TEST);
 			echo(json_encode($response));exit;
@@ -4830,7 +4830,7 @@ $mail = new PHPMailer(true);
 			/*Automatically make a new user as curator - For Now*/  
 				$params = ['site_id' => $site_id, 'roles' => USER_ROLE_ARTIST, 'user_level' => 20];
 			}
-             setcookie('vpatina_dev_$$nage$$', 'allow', time() + 86400, '/', '.vpatina.com');
+             setcookie('%vpatina%_#live#_$$nage$$', 'allow', time() + 86400, '/', '.vpatina.com');
 			$subscribed_user=find_object('subscribed_users', ['email' => $username, 'status' =>1]);
 			if($subscribed_user!=null){	
 				// echo "if";
@@ -4889,7 +4889,7 @@ $mail = new PHPMailer(true);
       		if(isset($data->relation) && $data->relation==1){
       			$message='Relation added Successfully';
       			// echo '<script type="text/JavaScript"> location.reload(); </script>';
-      			setcookie('vpatina_dev_$$nage$$', 'allow', time() + 86400, '/', '.vpatina.com');
+      			setcookie('%vpatina%_#live#_$$nage$$', 'allow', time() + 86400, '/', '.vpatina.com');
 	        	$data->redirect = explode($data->redirect,'0');
 	        	$data->uri = explode($data->uri,'0');
 
@@ -6166,10 +6166,13 @@ $response = new stdClass;
 			foreach($shared_pro as $k => $shared){
             $data[] = $shared->user_id;
             }
-			//print_r($data);die();
-			$com_artist_sharedart = array_merge($artist_ids, $data);
-			//print_r(array_unique($com_artist_sharedart));die();
-			$search['user_id'] = array_unique($com_artist_sharedart);
+            //print_r(count($data));die();
+			if(count($data) > 0){
+				$com_artist_sharedart = array_merge($artist_ids, $data);
+				$search['user_id'] = array_unique($com_artist_sharedart);
+			}else{
+				$search['user_id'] = $artist_ids;
+			}			
 			print_log("artist search artist ids for {$user_id}".dump($search ,true), 'debug', LOG_LEVEL_TEST);
 			print_log("artist ids for {$user_id}".dump($artist_ids,true), 'debug', LOG_LEVEL_TEST);
 			$rows = find_objects('user_profile', $search, ['fields' => ['user_id', 'display_name', 'first_name', 'infix', 'last_name', 'city', 'country']]);
