@@ -944,6 +944,7 @@ use PHPMailer\PHPMailer\Exception;
 
     function controller_register($app, $options = []) {
         $scope = $app->page->scope;
+        $scope->email = $_GET['email'];
         return;
     }
 
