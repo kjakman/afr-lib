@@ -633,7 +633,7 @@ use PHPMailer\PHPMailer\Exception;
                         $scope->collection_id = $collection_data->id;
                         if(collection_data) {
                             $search = ['media_collection_id' => $collection_data->id, 'active' => 1];
-                            $scope->artworks = $mapObjs = find_objects('media_collection_map', $search);
+                            $scope->artworks = $mapObjs = find_objectser('media_collection_map', $search, ['sort' => 'rank ASC']);
                         } 
                         $page_slug = ($parts[0] != '') ? $parts[0] :  $get_tpl['get_slug'];
 
@@ -722,7 +722,7 @@ use PHPMailer\PHPMailer\Exception;
                             }
                         } 
                         $search = ['media_collection_id' => $collection_id, 'active' => 1];
-                        $scope->artworks = $mapObjs = find_objects('media_collection_map', $search, ['sort' => '`rank`']);
+                        $scope->artworks = $mapObjs = find_objectser('media_collection_map', $search, ['sort' => 'rank ASC']);
                        // print_r($scope);die();
                     break;
 

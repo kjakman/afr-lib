@@ -94,6 +94,8 @@ function collection_artist_links($collectionObj_or_id) {
 */
 
 function gallery_get_json($collection_id,$get, $site_id=247) {
+  //print_r($get);die();
+
   global $__SITE, $u_id;  
   $siteObj = $site_id == $__SITE->id ? $__SITE : get_object('site', $site_id);
 
@@ -155,7 +157,19 @@ function gallery_get_json($collection_id,$get, $site_id=247) {
   print_log("cid: $curator_id name: $curator_name email: $curator_email".dump($curatorObj,true), 'gallery', LOG_LEVEL_ALWAYS);
 
   $media_ids = [];
-  $mapObjs = find_objects('media_collection_map', array('media_collection_id' => $collection_id, 'active' => 1), array('fields' => ['id', 'media_id', 'type', 'description', 'artwork_id', 'media_id', 'artist_id'], 'sort' => 'rank'));;
+  
+
+   $link_array = explode('/',$get['artwork']);
+  $last_part = end($link_array);
+    $lastpart_str = explode("~",$last_part);
+    $selected_lastpart_str = $lastpart_str[0];
+   if(!empty($selected_lastpart_str) && $selected_lastpart_str == 'artwork'){
+    $explode_str = explode("_",$get['target']);
+    $selected_Artworkss = $explode_str[1];
+    $mapObjs = find_objectser('media_collection_map', array('artwork_id ' => $selected_Artworkss,'active' => 1), array('fields' => ['id', 'media_id', 'type', 'description', 'artwork_id', 'media_id', 'artist_id'], 'sort' => 'rank ASC'));
+   }else{
+    $mapObjs = find_objectser('media_collection_map', array('media_collection_id' => $collection_id, 'artwork_id' => ['>', 0], 'active' => 1), array('fields' => ['id', 'media_id', 'type', 'description', 'artwork_id', 'media_id', 'artist_id'], 'sort' => 'rank ASC'));
+   }
   if($mapObjs){
     foreach($mapObjs as $mapObj) {
      if($mapObj->media_id != '0' && $mapObj->artist_id != '0'){
@@ -219,42 +233,12 @@ function gallery_get_json($collection_id,$get, $site_id=247) {
       'height as h'    ,
       'width as w'     ,
       'artist_id');
+    if(!empty($selected_lastpart_str) && $selected_lastpart_str == 'artwork'){
+    $items = find_objectser('media', array('id' => $media_ids), array('sort' => "FIELD (id, $obj_id_list) ASC", 'fields' => $fields));
+  }else{
+    $items = find_objectser('media', array('id' => $media_ids), array('sort' => "FIELD (id, $obj_id_list) ASC", 'fields' => $fields));
+  }
     
-    $items = find_objects('media', array('id' => $media_ids), array('sort' => "FIELD(id, $obj_id_list)", 'fields' => $fields));
-    $selected_artwork_id=end(explode('-',$get['artwork']));
-    $selected_artwork = get_object('artwork', $selected_artwork_id);
-    $jsonObj->ashii=$selected_artwork->title_image;
-    foreach($items as &$item) {
-      $item->map_id = $map_id = $mapArray[$item->media_id];
-      $item->artwork_id = $artwork_id = $mapArtworkArray[$item->media_id];
-
-      $slug = slugify($item->title);
-      //$item->link = "{$artwork_link}{$slug}~{$map_id}";
-      $item->link =  $artwork_id  ? "".$_SERVER['HTTP_HOST']."/artwork/{$obj_id}/{$slug}-{$artwork_id}?plugin" : "{$artwork_link}{$slug}~{$map_id}";
-
-      // $item->comment = safe_text($item->comment);
-      $artworkObj = get_object('artwork', $item->artwork_id);
-      //dump($artworkObj);
-
-      // $artworkObj->description = safe_text($artworkObj->description);
-      $item->description = safe_text($artworkObj->description);
-    
-    // rsort($items);
-
-    // foreach ($items as $key => $item) {
-         if($item->media_id==$selected_artwork->title_image){
-            $jsonObj->ashiif=$selected_artwork->title_image;
-            $item->title_image_true=1;
-            // $title_item = $items[$key];
-            // unset($items[$key]);
-            // array_push($items, $title_item);
-            // break;
-        }else{
-            $item->title_image_true=0;
-
-        }
-    // }
-    }
   }
   
   //dump($media_ids);
@@ -389,7 +373,7 @@ function gallery_getrelated_json($collection_id, $get,$site_id=247) {
     print_log("cid: $curator_id name: $curator_name email: $curator_email".dump($curatorObj,true), 'gallery', LOG_LEVEL_ALWAYS);
 
     $media_ids = [];
-    $mapObjs = find_objects('artwork_media', array('artwork_id' => $artwork_id), array('fields' => ['id', 'media', 'artwork_id', 'description', 'type'], 'sort' => 'row_order'));
+    $mapObjs = find_objectser('artwork_media', array('artwork_id' => $artwork_id), array('fields' => ['id', 'media', 'artwork_id', 'description', 'type'], 'sort' => 'row_order ASC'));
     if($mapObjs){
       foreach($mapObjs as $mapObj) {
         $mapArray[$mapObj->media] = $mapObj->id; 
@@ -437,7 +421,7 @@ function gallery_getrelated_json($collection_id, $get,$site_id=247) {
         'width as w'     ,
         'artist_id');
       
-      $items = find_objects('media', array('id' => $media_ids), array('sort' => "FIELD(id, $obj_id_list)", 'fields' => $fields));
+      $items = find_objectser('media', array('id' => $media_ids), array('sort' => "FIELD (id, $obj_id_list) desc", 'fields' => $fields));
 
       foreach($items as &$item) {
         $item->map_id = $map_id = $mapArray[$item->media];
@@ -572,7 +556,7 @@ function gallery_getartwork_json($artwork_id, $get,$site_id=247) {
   print_log("cid: $curator_id name: $curator_name email: $curator_email".dump($curatorObj,true), 'gallery', LOG_LEVEL_ALWAYS);
 
   $media_ids = [];
-  $mapObjs = find_objects('artwork_media', array('artwork_id' => $artwork_id), array('fields' => ['id', 'media', 'artwork_id', 'description', 'type'], 'sort' => 'row_order'));
+  $mapObjs = find_objectser('artwork_media', array('artwork_id' => $artwork_id), array('fields' => ['id', 'media', 'artwork_id', 'description', 'type'], 'sort' => 'row_order ASC'));
   foreach($mapObjs as $mapObj) {
     $mapArray[$mapObj->media] = $mapObj->id; 
     $get_media = get_object('media', $mapObj->media);
@@ -621,7 +605,7 @@ function gallery_getartwork_json($artwork_id, $get,$site_id=247) {
     'width as w'     ,
     'artist_id');
   
-  $items = find_objects('media', array('id' => $media_ids), array('sort' => "FIELD(id, $obj_id_list)", 'fields' => $fields));
+  $items = find_objectser('media', array('id' => $media_ids), array('sort' => "FIELD (id, $obj_id_list) desc", 'fields' => $fields));
 
   foreach($items as &$item) {
     $item->map_id = $map_id = $mapArray[$item->media];
@@ -3668,22 +3652,22 @@ function gallery_frame($photos, $trash) {
   if(is_array($trash)) $trash = implode("\n", $trash);
   $show_empty_link = $trash ? '' : 'hidden';
   $output = '
-	<div id="gallery_frame" class="demo ui-widget ui-helper-clearfix">
-		<ul id="gallery" class="gallery ui-helper-reset ui-helper-clearfix">
+  <div id="gallery_frame" class="demo ui-widget ui-helper-clearfix">
+    <ul id="gallery" class="gallery ui-helper-reset ui-helper-clearfix">
       '.$photos.'
-		</ul>
-		<div id="trash" class="ui-widget-content ui-state-default">
+    </ul>
+    <div id="trash" class="ui-widget-content ui-state-default">
       <h4 class="ui-widget-header">
         <span class="ui-icon ui-icon-trash">Trash</span>
         Trash
-				<a href="link/to/empty/trash/script/when/we/have/js/off" id="gallery_empty_trash" class="'.$show_empty_link.'" title="Empty Trash"> [ Empty Trash ]</a>
+        <a href="link/to/empty/trash/script/when/we/have/js/off" id="gallery_empty_trash" class="'.$show_empty_link.'" title="Empty Trash"> [ Empty Trash ]</a>
       </h4>
       <ul class="gallery ui-helper-reset">
-			'.$trash.'
-  		</ul>
-		</div>
-	</div>
-	';
+      '.$trash.'
+      </ul>
+    </div>
+  </div>
+  ';
   return $output;
 }
 
@@ -3725,7 +3709,7 @@ function gallery_photo($row, $options, $trash=false) {
     $title = pick_first($options['title'], $row->name, $row->title, $row->src, $row->filename);
     //echo("title=$title");
 
-    $info_fields = $options['info_fields'] ?: array();  	  
+    $info_fields = $options['info_fields'] ?: array();      
     foreach($info_fields as $fld => $array) {
       list($name, $type, $max, $readonly) = $array;
       $data[$fld] = $row->$fld;
@@ -3740,12 +3724,12 @@ function gallery_photo($row, $options, $trash=false) {
                            '<a href="#" title="Delete this image" class="ui-icon ui-icon-trash">Delete image</a>';
     return 
 '
-    	<li id="li_'.$row->id.'" class="ui-widget-content ui-corner-tr float_left '.$class.'"'.$li_style.'>
-    		<h5 id="lih_'.$row->id.'" class="ui-widget-header overflow_hidden">'.$title.'</h5>
-    		<img id="img_'.$row->id.'" src="'.$thumb.'" alt="'.$filename.'" width="96" height="72"'.$img_style.' '.$data_str.'/>
-    		<a id="mag_'.$row->id.'" href="'.$big.'" target="pic" title="'.$title.'" class="preview ui-icon ui-icon-zoomin">View larger</a>
-    		'.$trash_link.'
-    	</li>
+      <li id="li_'.$row->id.'" class="ui-widget-content ui-corner-tr float_left '.$class.'"'.$li_style.'>
+        <h5 id="lih_'.$row->id.'" class="ui-widget-header overflow_hidden">'.$title.'</h5>
+        <img id="img_'.$row->id.'" src="'.$thumb.'" alt="'.$filename.'" width="96" height="72"'.$img_style.' '.$data_str.'/>
+        <a id="mag_'.$row->id.'" href="'.$big.'" target="pic" title="'.$title.'" class="preview ui-icon ui-icon-zoomin">View larger</a>
+        '.$trash_link.'
+      </li>
 ';
 }
 
@@ -4101,8 +4085,8 @@ function site_gallery($siteObj, $options='') {
         $format = 'image';
         $viewer_script = '
         $(".fancybox").fancybox({
-          openEffect	: "none",
-          closeEffect	: "none"
+          openEffect  : "none",
+          closeEffect : "none"
         });
         //$.fancybox.open($(".fancybox"));
         var $items = $("DIV #'.$container_id.' [rel='.$item_rel.']");

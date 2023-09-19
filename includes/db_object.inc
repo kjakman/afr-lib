@@ -4,15 +4,15 @@
 /** todo: use initially for invoice/res/etc */
 /** return false for not authorized, 0 for not yet authorized */
 function auth_object($obj_type, $obj_or_id, $userObj_or_id=0, $options=[]) {  
-	global $__USER, $_SITE, $__CLIENT_ID;
+  global $__USER, $_SITE, $__CLIENT_ID;
 
-	if(!$obj_type) die("auth_object: missing object type");
-	$obj = any2obj($obj_type, $obj_or_id);
-	if(!$obj) return 0;
+  if(!$obj_type) die("auth_object: missing object type");
+  $obj = any2obj($obj_type, $obj_or_id);
+  if(!$obj) return 0;
 
 
-	$user = $userObj_or_id ? get_user($userObj_or_id) : $__USER;
-	if($user) {
+  $user = $userObj_or_id ? get_user($userObj_or_id) : $__USER;
+  if($user) {
     $user_level = $user->user_level;
     $user_id = $user->id;
     if($user_level == USER_LEVEL_SYSTEM) return USER_LEVEL_SYSTEM;
@@ -25,16 +25,16 @@ function auth_object($obj_type, $obj_or_id, $userObj_or_id=0, $options=[]) {
 
   /** todo: use pin_code in every cladss and _pc in every request */
   $pin_code = isset($options['pin_code']) ? $options['pin_code'] : $_GET['_pc'];
-	if(isset($obj->pin_code) && $obj->pin_code && $pin_code) {
-	  if($pin_code == $obj->pin_code) return 1;
-	  if($pin_code == myhash($obj->pin_code)) return 1;
-	}
+  if(isset($obj->pin_code) && $obj->pin_code && $pin_code) {
+    if($pin_code == $obj->pin_code) return 1;
+    if($pin_code == myhash($obj->pin_code)) return 1;
+  }
     
-	if(isset($obj->parent_type) && isset($obj->parent_id) && $obj->parent_type && $obj->parent_id) {
-	  return auth_object($obj->parent_type, $obj->parent_id);
-	}
-	
-	return 0;
+  if(isset($obj->parent_type) && isset($obj->parent_id) && $obj->parent_type && $obj->parent_id) {
+    return auth_object($obj->parent_type, $obj->parent_id);
+  }
+  
+  return 0;
 }
 
 
@@ -708,8 +708,8 @@ function admin_menu_items($siteObj, $options=NULL) {
 
 /** unsused - automatic comment added on  */
 function print_admin_menu($siteObj, $options=NULL) {
-	$menu_items = admin_menu_items($siteObj, $options);		
-	return jquery_menu($menu_items, phrase('objects', CAPITALIZE), $jqOptions, array('id' => 'admin_menu'));
+  $menu_items = admin_menu_items($siteObj, $options);   
+  return jquery_menu($menu_items, phrase('objects', CAPITALIZE), $jqOptions, array('id' => 'admin_menu'));
 }
 
 
@@ -835,7 +835,7 @@ function add_object($obj_type, $data, $options = array()) {
   $errors = $child_errors = array();
   $messages = array();
   
-	// for new objects, let's first recursively process children, as we don't want to add parent object if there are child errors 
+  // for new objects, let's first recursively process children, as we don't want to add parent object if there are child errors 
 
   $fields = get_object_attributes($obj_type, 0);
   foreach($fields as $field => $class) {
@@ -1057,17 +1057,17 @@ function copy_object_vars($obj_type, $source, $dest=NULL, $overwrite=true) {
 
 // performs shallow copy (no relations)
 function copy_object($obj_type, $src_id, $dest_id=0) {
-	$src_obj = get_object($obj_type, $src_id);
+  $src_obj = get_object($obj_type, $src_id);
   $key = get_object_key($obj_type);
-	unset($src_obj->$key);
-	if($dest_id) {
-	  //echo("copy_object: updating $dest_id<br>");
-	  list($new_id, $errors) = update_object($obj_type, obj2array($src_obj), $dest_id);
-	} else {
-	  //echo("copy_object: fresh copy<br>");
-	  list($new_id, $errors) = add_object($obj_type, obj2array($src_obj));
-	}
-	return array($new_id, $errors);		
+  unset($src_obj->$key);
+  if($dest_id) {
+    //echo("copy_object: updating $dest_id<br>");
+    list($new_id, $errors) = update_object($obj_type, obj2array($src_obj), $dest_id);
+  } else {
+    //echo("copy_object: fresh copy<br>");
+    list($new_id, $errors) = add_object($obj_type, obj2array($src_obj));
+  }
+  return array($new_id, $errors);   
 }
 
 // return false if object should not be cached, true otherwise
@@ -1371,7 +1371,7 @@ function find_objectser($obj_type, $search=array(),  $options=array()) {
 }                                    
 
 function get_objectsdd($obj_type, $filters=array(), $options = array()) {
-  //print_r($options);die();
+  //print_r($sort);die();
   $sort  = $options['sort'] ?: get_object_sort_clause($obj_type);
   $order = $options['order'] ?: 0;
   $start = $options['start'] ?: $options['offset'];
@@ -1411,13 +1411,20 @@ function get_objectsdd($obj_type, $filters=array(), $options = array()) {
 
   if($sort == 'rank ASC'){
     $query_str = $query_str." ORDER BY `rank` ASC ";
-  }
-  else if($sort == 'row_order ASC'){
+  }else if($sort == 'rank desc'){
+    $query_str = $query_str." ORDER BY `rank` desc ";
+  }else if($sort == 'row_order ASC'){
     $query_str = $query_str." ORDER BY `row_order` ASC ";
   }else if($sort == 'exhibition_sequence desc'){
       $query_str = $query_str." ORDER BY `exhibition_sequence` desc "; 
   }else if($sort == 'exhibition_sequence asc'){
       $query_str = $query_str." ORDER BY `exhibition_sequence` ASC "; 
+  }else if($sort == 'media_id desc'){
+      $query_str = $query_str." ORDER BY `media_id` desc "; 
+  }else if($sort == 'media_id ASC'){
+      $query_str = $query_str." ORDER BY `media_id` ASC "; 
+  }else if($sort == 'id ASC'){
+      $query_str = $query_str." ORDER BY `id` ASC "; 
   }else{
     $query_str = $query_str.($sort ? " ORDER BY $sort " : "").(($sort && $order && !$explicit_order) ? "DESC" : "");
   }
@@ -1635,37 +1642,37 @@ function delete_object($obj_type, $id, $check_relations=true, $options=false) {
   if(!$table) return array(0, array("delete_object: couldn't delete $obj_type id $id, no table found for $obj_type."));
   if(!$obj) return array(0, array("delete_object: couldn't delete $obj_type id $id, object not found."));
 
-	list($messages, $errors) = pre_delete($obj_type, $obj);
-	if($errors) return array(0, $errors);
+  list($messages, $errors) = pre_delete($obj_type, $obj);
+  if($errors) return array(0, $errors);
 
-	if($check_relations) {
-	  print_debug(" ... checking dependents");
-	  $fields = get_object_attributes($obj_type, 0);
-	  foreach($fields as $field=>$attributes) {
-	    $att_type = $attributes[ATT_TYPE];
-	    $att_flags = $attributes[ATT_FLAGS];
-	    $att_options = $attributes[ATT_RELATION_TYPE];
-	    $att_args = $attributes[ATT_ARGS];
-	    $att_args2 = $attributes[ATT_ARGS2];
+  if($check_relations) {
+    print_debug(" ... checking dependents");
+    $fields = get_object_attributes($obj_type, 0);
+    foreach($fields as $field=>$attributes) {
+      $att_type = $attributes[ATT_TYPE];
+      $att_flags = $attributes[ATT_FLAGS];
+      $att_options = $attributes[ATT_RELATION_TYPE];
+      $att_args = $attributes[ATT_ARGS];
+      $att_args2 = $attributes[ATT_ARGS2];
 
-	    if($att_type == 'dummy' || $att_flags & AF_DUMMY) continue;
-	    if($att_type == 'one2one' && (($att_flags & AF_CASCADE_DELETE) || ($att_flags & AF_OBLIGATORY))) {
-	      $child_table = get_object_table($att_options);
-	      $child_id = db_getOne("SELECT $field FROM $table WHERE $key='$id'");
-	      if($child_id) {
-	        print_debug("type $obj_type has one2one $field of type $att_options, id=$child_id with Cascade Delete - deleting $att_options id=$child_id<br>");
-	        list($c_count, $c_errors) = delete_object($att_options, $child_id);
+      if($att_type == 'dummy' || $att_flags & AF_DUMMY) continue;
+      if($att_type == 'one2one' && (($att_flags & AF_CASCADE_DELETE) || ($att_flags & AF_OBLIGATORY))) {
+        $child_table = get_object_table($att_options);
+        $child_id = db_getOne("SELECT $field FROM $table WHERE $key='$id'");
+        if($child_id) {
+          print_debug("type $obj_type has one2one $field of type $att_options, id=$child_id with Cascade Delete - deleting $att_options id=$child_id<br>");
+          list($c_count, $c_errors) = delete_object($att_options, $child_id);
           $count += $c_count;
           $errors = array_merge($errors, $c_errors);
-	      } else {
-	        print_debug("type $obj_type has one2one $field of type $att_options, id=$child_id with Cascade Delete - ID is NULL, not deleting $att_options id=$child_id<br>");
-	      }
-	    } else if($att_type == 'one2many' && ($att_flags & AF_CASCADE_DELETE)) {
+        } else {
+          print_debug("type $obj_type has one2one $field of type $att_options, id=$child_id with Cascade Delete - ID is NULL, not deleting $att_options id=$child_id<br>");
+        }
+      } else if($att_type == 'one2many' && ($att_flags & AF_CASCADE_DELETE)) {
         $child_type = parse_filter($att_options, $obj);
-	      $child_table = get_object_table($child_type);
-	      $child_key = get_object_key($child_type);
+        $child_table = get_object_table($child_type);
+        $child_key = get_object_key($child_type);
 
-	      list($parent_type, $parent_key) = get_object_parent($child_type);
+        list($parent_type, $parent_key) = get_object_parent($child_type);
         print_debug("type $obj_type has one2many $field of child-type=$child_type child-key=$child_key child_table = $child_table pt=$parent_type pk=$parent_key arg1=$att_args arg2=$att_args2<br>");
         $child_filter = "";
         if(!$parent_key && $att_args) $parent_key = $att_args;
@@ -1688,20 +1695,20 @@ function delete_object($obj_type, $id, $check_relations=true, $options=false) {
             $count += $delete_count;
           }
         }
-	    }
-	  }
-	} else {
-	  print_debug(" ... ignoring dependents");
-	}
+      }
+    }
+  } else {
+    print_debug(" ... ignoring dependents");
+  }
 
   if($errors) return array($count, $errors);
   $count++;
 
   $qs = "DELETE from $table WHERE $key='$id'";
-	if(!$dryrun) $result = db_query($qs);
-	post_delete($obj_type, $obj);
+  if(!$dryrun) $result = db_query($qs);
+  post_delete($obj_type, $obj);
 
-	// loggin
+  // loggin
   $flags = get_object_flags($obj_type);
   if($flags & NF_LOG && $id && !$errors) add_object('changelog', array('obj_type' => $obj_type, 'parent_id' => $id, 'action' => "Delete $obj_type $id"));
   if($flags & NF_CACHE && $id && !$errors) object_cache_delete($obj_type, $id);
@@ -1710,7 +1717,7 @@ function delete_object($obj_type, $id, $check_relations=true, $options=false) {
     print_log(" delete: $obj_type $id", 'set_env', LOG_LEVEL_TEST);
   }
   
-	return array($count, $errors);
+  return array($count, $errors);
 }
 
 // returns first handler of type (add/edit/delete) for give object, or else blank
@@ -1952,18 +1959,18 @@ function save_object_query($obj_type, $data, $options = array()) {
 
   if($debug) print_log("soq: gh1 data:".dump($data,true), "soq", LOG_LEVEL_ALWAYS);
   
-	// generic handlers  
+  // generic handlers  
   if($new) {
-		list($data, $errors) = pre_add($obj_type, $data);
-		$handler = "pre_add_{$obj_type}";
-	} elseif($id || count($ids)) {
-	  //if($orgObj) foreach($orgObj as $f => $v) if(!isset($data[$f])) $data[$f] = $v; // copy from original if not set or handler might get confused	  
-		list($data, $errors) = pre_edit($obj_type, $data, $orgObj);
-		$handler = "pre_edit_{$obj_type}";
-	}
-	
-	if($errors) return array(0, $errors);
-	if(!is_array($data) || !count($data)) return [0, ["{$handler} did not return data"]];
+    list($data, $errors) = pre_add($obj_type, $data);
+    $handler = "pre_add_{$obj_type}";
+  } elseif($id || count($ids)) {
+    //if($orgObj) foreach($orgObj as $f => $v) if(!isset($data[$f])) $data[$f] = $v; // copy from original if not set or handler might get confused   
+    list($data, $errors) = pre_edit($obj_type, $data, $orgObj);
+    $handler = "pre_edit_{$obj_type}";
+  }
+  
+  if($errors) return array(0, $errors);
+  if(!is_array($data) || !count($data)) return [0, ["{$handler} did not return data"]];
 
 
   $data_keys = array_keys($data);
@@ -2292,72 +2299,72 @@ function save_object_query($obj_type, $data, $options = array()) {
 // cannot depend on input values
 /** unsused - automatic comment added on  */
 function defaulter($obj_type, $data) {
-	$fn_name = "defaulter_".$obj_type;
-	if(function_exists($fn_name)) return call_user_func($fn_name, $obj_type, $data);
-	return $data;
+  $fn_name = "defaulter_".$obj_type;
+  if(function_exists($fn_name)) return call_user_func($fn_name, $obj_type, $data);
+  return $data;
 }
 
 // pre add and edit ran after submit, but before DB update
 // can depend on input values
 function pre_add($obj_type, $data) {
   $errors = array();
-	$fn_name = "pre_add_".$obj_type;
-	if(function_exists($fn_name)) list($data, $errors) = call_user_func($fn_name, $obj_type, $data);
-	
+  $fn_name = "pre_add_".$obj_type;
+  if(function_exists($fn_name)) list($data, $errors) = call_user_func($fn_name, $obj_type, $data);
+  
   return array($data, $errors);
 }
 
 function pre_edit($obj_type, $data, $orgObj) {
   $errors = array();
-	$fn_name = "pre_edit_".$obj_type;
-	if(function_exists($fn_name)) list($data, $errors) =  call_user_func($fn_name, $obj_type, $data, $orgObj);
-	
+  $fn_name = "pre_edit_".$obj_type;
+  if(function_exists($fn_name)) list($data, $errors) =  call_user_func($fn_name, $obj_type, $data, $orgObj);
+  
   return array($data, $errors);
 }
 
 function pre_delete($obj_type, $obj) {
-	$fn_name = "pre_delete_".$obj_type;
-	if(function_exists($fn_name)) return call_user_func($fn_name, $obj_type, $obj);
+  $fn_name = "pre_delete_".$obj_type;
+  if(function_exists($fn_name)) return call_user_func($fn_name, $obj_type, $obj);
   return array(array(), array());
 }
 
 function post_add($obj_type, $id) {
-	$fn_name = "post_add_".$obj_type;
-	if(function_exists($fn_name)) return call_user_func($fn_name, $id);
+  $fn_name = "post_add_".$obj_type;
+  if(function_exists($fn_name)) return call_user_func($fn_name, $id);
 }
 
 function post_edit($obj_type, $id, $orgObj) {
   
-	$obj = get_object($obj_type, $id); // gets newly saved object
+  $obj = get_object($obj_type, $id); // gets newly saved object
 
   $changes = compare_objects($obj_type, $orgObj, $obj, true, true, true); // compare, return changes, log changes, include  relations  
 
-	$fn_name = "post_edit_".$obj_type;
-	$exists = function_exists($fn_name) ? "yes" : "no";
+  $fn_name = "post_edit_".$obj_type;
+  $exists = function_exists($fn_name) ? "yes" : "no";
 
   if(function_exists($fn_name)) return call_user_func($fn_name, $id, $changes);
 }
 
 function post_delete($obj_type, $obj) {
-	$fn_name = "post_delete_".$obj_type;
-	if(function_exists($fn_name)) return call_user_func($fn_name, $obj_type, $obj);
+  $fn_name = "post_delete_".$obj_type;
+  if(function_exists($fn_name)) return call_user_func($fn_name, $obj_type, $obj);
 }
 
 // returns array of links or buttons with custom actions for this object in given context (record, recordset, etc)
 function class_actions($obj_type, $data, $context='recordset', $ref_name='', $ref_link='') {
-	$fn_name = "class_actions_".$obj_type;
-	if(function_exists($fn_name)) return call_user_func($fn_name, $obj_type, $data, $context, $ref_name, $ref_link);  
+  $fn_name = "class_actions_".$obj_type;
+  if(function_exists($fn_name)) return call_user_func($fn_name, $obj_type, $data, $context, $ref_name, $ref_link);  
 }
-					
+          
 function object_validators($obj_type, $data, $id=0) {
-	$fn_name = "validator_".$obj_type;
-	if(function_exists($fn_name)) return call_user_func($fn_name, $obj_type, $data, $id);
+  $fn_name = "validator_".$obj_type;
+  if(function_exists($fn_name)) return call_user_func($fn_name, $obj_type, $data, $id);
 }
 
 /** unsused - automatic comment added on  */
 function action_button($action, $obj_type, $parent_type, $parent_id) {
-	$fn_name = "button_".$action."_".$obj_type;
-	if(function_exists($fn_name)) return call_user_func($fn_name, $obj_type, $parent_type, $parent_id);
+  $fn_name = "button_".$action."_".$obj_type;
+  if(function_exists($fn_name)) return call_user_func($fn_name, $obj_type, $parent_type, $parent_id);
   return '';
 }  
 
@@ -2374,10 +2381,10 @@ function get_attribute_value_string($obj_type, $obj, $fld, $class, $fld_type='')
  //if($fld_type=='valSelect') {dump($rel_type); die();}
   switch($fld_type) {
     case 'dummy':
-		  $val_str = get_dummy_value($obj, $rel_type);
+      $val_str = get_dummy_value($obj, $rel_type);
       break;
 //    case 'color':
-//		  $val_str = show_color($fld_val);
+//      $val_str = show_color($fld_val);
 //      break;
     case 'many2one':
       if($rel_type && $fld_val) {
@@ -2440,15 +2447,15 @@ function back_button($ref_link, $ref_name) {
     $back_link = $ref_link; $back_name = $ref_name;
   } elseif(count($_SESSION['stack']) > 1) {
     list($lobj, $lid, $laction) = $_SESSION['stack'][1];
-		$back_link  = get_object_link($lobj, $lid, $laction)."&amp;__ps";
+    $back_link  = get_object_link($lobj, $lid, $laction)."&amp;__ps";
     $back_name = "$laction ".get_object_name($lobj).($lid=='' ? " list" : " $lid");
   } else { // no referer set, stack is empty, use http referer
-		$back_link  = $_SERVER['HTTP_REFERER'];
+    $back_link  = $_SERVER['HTTP_REFERER'];
     $back_name = phrase('previous_page');
-		$back_link  = '';
-  }		
-	return $back_link ? 
-	  html_link($back_link, html_i('', 'fa fa-arrow-circle-left'), array('title' => phrase('back_to', CAPITALIZE)." ".$back_name)) : // add back button
+    $back_link  = '';
+  }   
+  return $back_link ? 
+    html_link($back_link, html_i('', 'fa fa-arrow-circle-left'), array('title' => phrase('back_to', CAPITALIZE)." ".$back_name)) : // add back button
     html_i('', 'fa fa-arrow-circle-left'); // disabled button
 }
 
@@ -2512,7 +2519,7 @@ function auth_action($node, $action='', $id=0, $user_level=0, $use_custom_handle
 //  if($propertyTypeArray[$node] && $u_property_types && !in_array($node, $u_property_types)) return false;
   if($propertyTypeArray[$node] && $u_property_types && !in_array($node, $u_property_types)) {if($debug) print_log("Security failed for $action $node $id: Property type array<br>", 'debug', LOG_LEVEL_TEST);return false;}
     
-	// this should be in class_handlers (custom auth)
+  // this should be in class_handlers (custom auth)
   if($id && $use_custom_handlers) { // if id of object is given, check if this particular user can $action this object using custom handlers
     $fn_name = 'auth_action_'.$node;
     if(function_exists($fn_name)) {                                                                   
@@ -2809,29 +2816,29 @@ function get_class_def($type, $get_relations=0) {
 function get_object_link($type='', $id=0, $action='', $parent_id='', $parent_type='', $section='',$ref_name='', $ref_link='') {
   $host = $_SERVER['HTTP_HOST'];
   $app_link = get_page_link(PAGE_ADMIN);
-	$link = "http://$host".$app_link;
-	
-	if(!$type) return $link;
+  $link = "http://$host".$app_link;
+  
+  if(!$type) return $link;
   $fn_name = 'object_'.$action.'_link_'.$type;
   if(function_exists($fn_name)) {
     // echo("<br>$fn_name exists, calling $fn_name($id)<br>");
     $link = call_user_func($fn_name, $id); // custom link
-  } else {	// generic link
-  	$link .= "?obj_type=$type";
-  	if($id) $link .= "&amp;id=$id";
-  	if($action && $action!='view') $link .= "&amp;ac=$action";
-  	if($parent_id && $parent_type) { // todo: doesn't work if id is zero
-  		if(!$parent_type) echo("get_object_link: type=$type id=$id action=$action pid='$parent_id' pt='$parent_type'; parent_id set but not type<br>");
-  		$link .= "&amp;__parent_id=$parent_id";
-  		$link .= "&amp;__parent_type=$parent_type";
-  		$last = "&amp;sc=$type#$type"; // hash must come last
-  	} elseif($section) {
-  		$link .= "&amp;sc=$section#$section"; // expand child recordset and go there
-  	}
+  } else {  // generic link
+    $link .= "?obj_type=$type";
+    if($id) $link .= "&amp;id=$id";
+    if($action && $action!='view') $link .= "&amp;ac=$action";
+    if($parent_id && $parent_type) { // todo: doesn't work if id is zero
+      if(!$parent_type) echo("get_object_link: type=$type id=$id action=$action pid='$parent_id' pt='$parent_type'; parent_id set but not type<br>");
+      $link .= "&amp;__parent_id=$parent_id";
+      $link .= "&amp;__parent_type=$parent_type";
+      $last = "&amp;sc=$type#$type"; // hash must come last
+    } elseif($section) {
+      $link .= "&amp;sc=$section#$section"; // expand child recordset and go there
+    }
   }
-	if($ref_name && $ref_link) $link .= "&amp;ref_name=$ref_name&amp;ref_link=$ref_link";
-	  
-	return $link.$last;
+  if($ref_name && $ref_link) $link .= "&amp;ref_name=$ref_name&amp;ref_link=$ref_link";
+    
+  return $link.$last;
 }
 
 function get_field_default($fld_default) {
@@ -2886,15 +2893,15 @@ function get_field_default($fld_default) {
 }
 
 function get_dummy_value($row, $fld_options) {
-	$display_val_array = array();
-	$dummy_fields = explode(' ', $fld_options);
-	foreach($dummy_fields as $dummy_field) {
-		$display_val_array[]= $row->$dummy_field;
-	}
-	$display_val = implode(' ', $display_val_array);
-	//dump($row); echo($fld_options);echo("res=$display_val");
-	return $display_val;
-}	
+  $display_val_array = array();
+  $dummy_fields = explode(' ', $fld_options);
+  foreach($dummy_fields as $dummy_field) {
+    $display_val_array[]= $row->$dummy_field;
+  }
+  $display_val = implode(' ', $display_val_array);
+  //dump($row); echo($fld_options);echo("res=$display_val");
+  return $display_val;
+} 
 
 
 
@@ -2918,7 +2925,7 @@ function record_fields($class_def, $row, $this_id, $action, $parent_id=0, $paren
   $key        = $class_def->key;
   $id = $row->$key;
   
-	$hidden_fields = "";
+  $hidden_fields = "";
   if(count($fields)) { // pick out the fields we care about in the same order as the $fields argument
     foreach($fields as $field => $overrides) {
       $newClassVars[$field] = $classVars[$field];
@@ -2933,7 +2940,7 @@ function record_fields($class_def, $row, $this_id, $action, $parent_id=0, $paren
   foreach($classVars as $fld =>$class) {
     if($action == 'copy' && $fld == $key) continue; // copy is basically same as edit, but w/o the key, results in add with prefilled data
 
-  	$record_str = "";
+    $record_str = "";
     $fld_default = 0;
 
     $level=0; $prefix='';
@@ -2973,8 +2980,8 @@ function record_fields($class_def, $row, $this_id, $action, $parent_id=0, $paren
 
     if($edit && $fld_type=='one2many' && $att_flags & AF_READONLY_EDIT) continue; // don't show lists in edit mode if readonly flag is set
 
-  	
-  	// locked, readonly, hide 
+    
+    // locked, readonly, hide 
     $locked = $att_flags & AF_LOCKED ? "readonly = 'readonly'" : "";
     $readonly = $att_flags & AF_READONLY
             || ($action=='edit' && $att_flags & AF_PRIMARY)
@@ -2993,61 +3000,61 @@ function record_fields($class_def, $row, $this_id, $action, $parent_id=0, $paren
 
     if(!$fld_name) $fld_name = phrase($fld);
     $fld_name = $prefix.$fld_name;
-    		  
+          
     $fld_edit=$edit;
 
     $search_len = 30;
 
-		// value to display 
-    if($fld_type=='date' || $fld_type=='datetime') {							
+    // value to display 
+    if($fld_type=='date' || $fld_type=='datetime') {              
       $display_val = sql2human($fld_val);
       $time = substr($fld_val, 11);
       if($time != "00:00:00") $display_val .= " $time";
-		} elseif($fld_type == 'one2one' || $fld_type == 'many2one') {
-			$display_val = get_select_value2($fld_options, $val);
-		} elseif($fld_type == 'dummy') {
-			$display_val = get_dummy_value($row, $fld_options);
-		} elseif($fld_type == 'password') {
-			$display_val = "*****";
-		} elseif($fld_type == 'color' && is_color($val)) {
-		  $display_val = show_color($val);
-		} elseif($fld_type == 'crypt') {
-		  global $crypt_file;
-		  $pwd = read_file($crypt_file);
-		} elseif($fld_type == 'cc') {
-		  global $crypt_file;
-		  $pwd = read_file($crypt_file);
+    } elseif($fld_type == 'one2one' || $fld_type == 'many2one') {
+      $display_val = get_select_value2($fld_options, $val);
+    } elseif($fld_type == 'dummy') {
+      $display_val = get_dummy_value($row, $fld_options);
+    } elseif($fld_type == 'password') {
+      $display_val = "*****";
+    } elseif($fld_type == 'color' && is_color($val)) {
+      $display_val = show_color($val);
+    } elseif($fld_type == 'crypt') {
+      global $crypt_file;
+      $pwd = read_file($crypt_file);
+    } elseif($fld_type == 'cc') {
+      global $crypt_file;
+      $pwd = read_file($crypt_file);
 
-			$display_val = $val ? "xxxx-xxxx-xxxx-".substr($val,12) : "";
-			if($val) {
-				include_once("cc_check.inc");
-				$cardname = get_select_value2('cc_type', $row->cc_type);
-				$valid = checkCreditCard($val, $cardname, $errornumber,$errortext);				
-				$display_val .=	$valid ? " &#10004; " : " &#10008; ";
-			}
-		} else {
-			$display_val = $val;
-		}
-			
+      $display_val = $val ? "xxxx-xxxx-xxxx-".substr($val,12) : "";
+      if($val) {
+        include_once("cc_check.inc");
+        $cardname = get_select_value2('cc_type', $row->cc_type);
+        $valid = checkCreditCard($val, $cardname, $errornumber,$errortext);       
+        $display_val .= $valid ? " &#10004; " : " &#10008; ";
+      }
+    } else {
+      $display_val = $val;
+    }
+      
     if($fld_edit) { // edit or add
-			$max_input_len = 40;
+      $max_input_len = 40;
 
-			// blank and adding - try to set default value
+      // blank and adding - try to set default value
       if($action=='add' && !$val) { 
-      	if($fld_type=='parent' && $parent_id) { // use parent id
-      		$val = $parent_id;
-      	} else {
-	      	$val = $fld_default ? $fld_default : ""; // use default value when adding
-	      	$display_val = $val;
+        if($fld_type=='parent' && $parent_id) { // use parent id
+          $val = $parent_id;
+        } else {
+          $val = $fld_default ? $fld_default : ""; // use default value when adding
+          $display_val = $val;
 
-	      	// special handler for default values
-	      	$user_type_array = $_SESSION['user_type_array'];
-	      	if($fld=='user_level' && ($ul_def = $user_type_array[ucfirst($obj_type)])) {
-	      		$val = $ul_def;	
-	      		$display_val = 	ucfirst($obj_type);
-	      	}
-	      }
-	    }
+          // special handler for default values
+          $user_type_array = $_SESSION['user_type_array'];
+          if($fld=='user_level' && ($ul_def = $user_type_array[ucfirst($obj_type)])) {
+            $val = $ul_def; 
+            $display_val =  ucfirst($obj_type);
+          }
+        }
+      }
 
       if($fld_type=='one2many') {        
         if($action == 'add') continue; // don't show child record sets in add mode
@@ -3095,19 +3102,19 @@ function record_fields($class_def, $row, $this_id, $action, $parent_id=0, $paren
         $postfix = $fld_options[3];
 
         $record_str.=  select_from_array($fld, num_array($min, $max, $step, $postfix), $val);
-		  } elseif($fld_type == 'dummy') {
-		  	continue;
+      } elseif($fld_type == 'dummy') {
+        continue;
 
-		  } elseif($fld_type == 'media' || $fld_type == 'image') {
-		    if(!$id) continue; // only allow for existing objects
-		    $record_str = object_media_uploader($obj_type, $id, $fld);
-		  } elseif($fld_type == 'file') {
-		    if($obj_type == 'media') { // special case, get options from parent
-		      if(!$id) continue; // only allow for existing objects
+      } elseif($fld_type == 'media' || $fld_type == 'image') {
+        if(!$id) continue; // only allow for existing objects
+        $record_str = object_media_uploader($obj_type, $id, $fld);
+      } elseif($fld_type == 'file') {
+        if($obj_type == 'media') { // special case, get options from parent
+          if(!$id) continue; // only allow for existing objects
           $mediaObj = $row;
           if($mediaObj && is_object($mediaObj)) {
             $parent_id = $mediaObj->parent_id;
-            $parent_type = $mediaObj->parent_type;		      
+            $parent_type = $mediaObj->parent_type;          
             $parent_field = $mediaObj->parent_field;
             if($parent_type && $parent_id && $parent_field) {
               if($parentObj = get_object($parent_type, $parent_id)) {
@@ -3124,16 +3131,16 @@ function record_fields($class_def, $row, $this_id, $action, $parent_id=0, $paren
               }
             }
           }
-		      
-		    } else {
-		      $upload_options = $fld_options;
-		    }
-  		  
-  		  if(!$upload_options) $record_str .= "Could not find upload options";
-  		  elseif(!is_array($upload_options)) $record_str .= "Upload options not array";
-  		  else $record_str .= jquery_file_uploader("$obj_type-$id-$fld", $val, $upload_options);
-  		} elseif($fld_type == 'color') {
-  		   $record_str.= show_color($val, $fld);
+          
+        } else {
+          $upload_options = $fld_options;
+        }
+        
+        if(!$upload_options) $record_str .= "Could not find upload options";
+        elseif(!is_array($upload_options)) $record_str .= "Upload options not array";
+        else $record_str .= jquery_file_uploader("$obj_type-$id-$fld", $val, $upload_options);
+      } elseif($fld_type == 'color') {
+         $record_str.= show_color($val, $fld);
 
       } elseif($fld_type=='location_picker') { // widget, no data
         $max = 1; // default len is 20
@@ -3215,21 +3222,21 @@ function record_fields($class_def, $row, $this_id, $action, $parent_id=0, $paren
         $name = $target_description ? $target_description : $val;
         $record_str.= $val ? html_link(get_object_link($child_type, $fld_val, 'add', $this_id, $obj_type), $name, array('title' => $target_description)) : $val;
         $record_str.= "<input type='hidden' name='$fld' id='$full_fld' value='$val' maxlength='$max' size='$len' $locked $disabled $st>";
-	    } elseif($fld_type=='date' || $fld_type=='datetime') {
+      } elseif($fld_type=='date' || $fld_type=='datetime') {
         
         $date = is_datetime($val) || is_date($val) ? date("d-m-Y", strtotime($val)) : '';
         $record_str.= form_input($fld, "text", $date, array('class' => 'datepicker', 'data-date' => $val));
         
-	    } elseif($fld_type=='time') {
-				$record_str.= timepicker($fld, array(), $fld_val);
+      } elseif($fld_type=='time') {
+        $record_str.= timepicker($fld, array(), $fld_val);
       } else {
         $input_type = $fld_type == 'password' ? 'password' : 'text';      
         $max = $fld_len ? $fld_len : 20; // default len is 20
         $len = $search ? $search_len : max(round($max/3), 10);
         if($len > $max_input_len) $len = $max_input_len;
         $record_str.= "<input type='$input_type' name='$fld' id='$full_fld' value='$val' maxlength='$max' size='$len' $locked $disabled $st>";
-	    }
-			
+      }
+      
 
     } else { // view
       if(($att_flags & AF_HIDE) || ($att_flags & AF_HIDE_VIEW)) continue; // this field is hidden or hidden in detail view
@@ -3246,14 +3253,14 @@ function record_fields($class_def, $row, $this_id, $action, $parent_id=0, $paren
         $record_val = strlen($val) ? ($val ? "Yes" : "No") : '?';
       } elseif($fld_type=='bool') {
         $record_val = $val ? "Yes" : "No";
-		  } elseif($fld_type == 'mail_subject') {
-				$record_val = parse_mail_subject($row->headers);
+      } elseif($fld_type == 'mail_subject') {
+        $record_val = parse_mail_subject($row->headers);
       } elseif($fld_type=='valSelect') {
         $record_val = $fld_options[$val];
-		  } elseif($fld_type == 'mail_body') {
-				$record_val = parse_mail_body($val);
-		  } elseif($fld_type == 'dummy') {
-				$record_val = get_dummy_value($row, $fld_options);
+      } elseif($fld_type == 'mail_body') {
+        $record_val = parse_mail_body($val);
+      } elseif($fld_type == 'dummy') {
+        $record_val = get_dummy_value($row, $fld_options);
       } elseif($fld_type=='file') {
         $record_val = file_list($val, $fld);
       } elseif($fld_type=='link') {
@@ -3284,9 +3291,9 @@ function record_fields($class_def, $row, $this_id, $action, $parent_id=0, $paren
           $record_val = show_hide_div($child_recordset, phrase('show', CAPITALIZE). " $fld_name", $show_child);
         } else {
           if(auth_action($fld_options, 'add')) {
-  				  $add_url = get_object_link($child_type, '', 'add', $this_id, $obj_type);
+            $add_url = get_object_link($child_type, '', 'add', $this_id, $obj_type);
             $add_text = phrase('add', CAPITALIZE)." $fld_name";
-        	  $add_link = html_link($add_url, $add_text);
+            $add_link = html_link($add_url, $add_text);
             $record_val = $add_link;
           } else {
             $record_val = "No $fld_name records";
@@ -3441,14 +3448,14 @@ function recordset_buttons_inline($obj_type, $id, $fields='', $options=NULL) {
   //dump($options);
   $options['context'] = 'recordset';
   if(auth_action($obj_type, 'edit', $id)) {
-  	$buttons[] = edit_object_inline($obj_type, $id, $fields, $options); // add edit-link
+    $buttons[] = edit_object_inline($obj_type, $id, $fields, $options); // add edit-link
   }
   
   if(auth_action($obj_type, 'del', $id)) {
     $buttons[] = delete_object_inline($obj_type, $id, $fields, $options); // add edit-link
   }
-	$output = count($buttons) ? implode(" ", $buttons) : '';
-	return $output;
+  $output = count($buttons) ? implode(" ", $buttons) : '';
+  return $output;
 }
 
 function delete_object_inline($obj_type, $id, $fields='', $options=NULL) {    
@@ -3476,7 +3483,7 @@ function edit_object_inline($obj_type, $id, $fields='', $options=NULL) {
   $context = $options['context'];
   $data = $options['data'] = $options['data'] ?: array();
   $fields = $options['fields'] = $fields ?: array();
-	$big_class = $context == 'recordset' ? "" : " fa-4x";
+  $big_class = $context == 'recordset' ? "" : " fa-4x";
 
   if(!isset($options['reload'])) $options['reload'] = 1; // reload by default 
   $options_json = json_encode($options);
@@ -4858,21 +4865,21 @@ function object_site_filter($obj_type, $search, $val, $options = [], $filter_dat
 
 class db
 {
-	public function find() {
-	  return $this;
-	}
+  public function find() {
+    return $this;
+  }
 
-	public function limit() {
-	  return $this;
-	}
+  public function limit() {
+    return $this;
+  }
 
-	public function sort() {
-	  return $this;
-	}
+  public function sort() {
+    return $this;
+  }
 
-	public function order() {
-	  return $this;
-	}
+  public function order() {
+    return $this;
+  }
 }
 */
 

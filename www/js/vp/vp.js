@@ -2303,7 +2303,7 @@ function vp_load(element, data, reload) {
                   'obj_id': json.obj_id
               };
               var key = vp_element_key(data);
-
+              console.log("key.....", key);
               var elapsed = new Date().getTime() - g_start;
               var this_time = new Date().getTime() - g_timer[plugin_id];
 
@@ -2315,7 +2315,8 @@ function vp_load(element, data, reload) {
 
               //console.log("Done. Loaded plugin " + plugin_id + " ('" + cid + "') in " + elapsed + "ms (" + this_time + "ms) status=" + status + " data:", data, " g_cids", g_cids, " key=" + key + " plugin ids:", plugin_ids);        
               //console.log("Done. Loaded plugin " + plugin_id + " len=" + len + " ids:", plugin_ids);
-              console.log("Done. Data:", json);
+              console.log("Done. Data:", json.items);
+
 
               if (len > 1) {
                   // alert("More than one plugin for this data");
