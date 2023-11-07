@@ -20,9 +20,9 @@ $_SESSION['db_dev'] = $dev_db = $db_key == 'devdb' ? 1 : 0;
 // $db_password = "d9TJABpgpBftCPGnT3yj";
 // $db_dsn = "mysql://$db_user:$db_password@$db_host/$db_db";
 
-$db_user = "production";
-$db_host = "production-do-user-14078323-0.b.db.ondigitalocean.com:25060";
-$db_password = "AVNS_QTW1c0x_wo4BwbDREn5";
+$db_user = "doadmin";
+$db_host = "vpatina-db-do-user-14078323-0.b.db.ondigitalocean.com:25060";
+$db_password = "AVNS_loI8MrduOiSr_cTSeEk";
 $db_dsn = "mysql://$db_user:$db_password@$db_host/$db_db";
 
 // connect to db

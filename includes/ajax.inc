@@ -160,7 +160,7 @@ $mail = new PHPMailer(true);
 			'rental-calendar-events', 'rental-calendar-availability', 'calendar-availability', 'agenda-calendar-events', 'reservation-request', 'property-slider', 'cal-picker', 
 			'property-calendar', 'add-sharing', 'preview-sharing', 'price-breakdown', 
 			'load-page-content', 'reset-password', 'edit-password', 'register-newsletter', 'interhome-price', 'test',
-			'est-mapping', 'est-mapping-helper'
+			'est-mapping', 'est-mapping-helper', 'thala-ajith', 'button-check'
 	  	);
 	
 		if(!in_array($oper, $no_security)) { // no security required for these
@@ -4700,7 +4700,50 @@ $mail = new PHPMailer(true);
 			echo(json_encode($response));exit;
 	  
 	  	break;
-	  
+	  	case 'button-check':
+	  		print_r('okay');
+	  	break;
+		 case 'thala-ajith':
+		  	$_SESSION['hash'] = $_GET['hash'];
+		  	$_SESSION['u_id'] = $_GET['user_id'];
+		  	$user_id = $_GET['user_id'];
+		  	$log_id = $_GET['log_id'];
+		  	$site_id = $_GET['site_id'];
+
+		  	/** Media Folder Starts -if user has no default Uploads folder. by Jemima on 05-02-2021 */
+
+			$obj_data[type] = "folder";
+			$obj_data[user_id] = $user_id;
+			$obj_data[filename] = "Uploads";
+			$obj_data[rank] = 1;
+			$obj_data[tags] = $obj_data[tags] ? json_encode($obj_data[tags]) : '';
+			$obj_type='media_folder';
+			$get_duplicate = find_objects('media_folder', ['user_id'=>$user_id, 'filename'=>'Uploads']);
+			
+			if(empty($get_duplicate)){
+				list($id, $errors) = add_object($obj_type, $obj_data);
+				$obj = get_object($obj_type, $id);
+				if($obj){
+					$obj->path = "/user/".$user_id."/vault/".$id;
+					list($id1, $errors) = update_object($obj_type, $obj, $id);
+				}
+			}
+			// Media Folder Ends .
+
+		  	if($log_id && $user_id){
+			$site_url = site_full_url($site_id);
+			$update = create_manifest($user_id, $site_url);
+			}
+		  	$response = new stdClass;
+			$response->success = 1;
+			$response->redirect = '/backend';
+			$response->message = 'You are now logged in.';
+			setcookie('authID', $_GET['hash'], time() + 86400, '/');
+			setcookie('PHPSESSID', session_id(), time() + 86400, '/');
+			setcookie('vpatina_new_demo_#dci&_$$nage$$', 'allow', time() + 86400, '/', '.dci.in');
+			print_log(dump($result, true), "auth", LOG_LEVEL_TEST);
+		  	header("Location: https://new.vpatina.dci.in/backend");
+		  break;
 		case 'user-login':
 			$errors = array();
 			$result = array();
@@ -4732,7 +4775,8 @@ $mail = new PHPMailer(true);
 			'remote_cc' => client_cc(),
 			'remote_agent' => $_SERVER['HTTP_USER_AGENT'],
 			'message' => $result['message'],
-			'status' => $result['status']];
+			'status' => $result['status']
+			];
 
 			if($user_id = $result['user_id']) {
 			$userObj = get_object('user', $user_id);
@@ -4777,8 +4821,8 @@ $mail = new PHPMailer(true);
 			$response->success = 1;
 			$response->redirect = pick_first($data->redirect, $data->uri, '/');
 			$response->message = $message;
-			$okay = setcookie('%vpatina%_#live#_$$nage$$', 'allow', time() + 86400, '/', '.vpatina.com');
-//print_r($okay);die();
+			$okay = setcookie('vpatina_new_demo_#dci&_$$nage$$', 'allow', time() + 86400, '/', '.dci.in');
+
 			print_log(dump($result, true), "auth", LOG_LEVEL_TEST);
 			echo(json_encode($response));exit;
 	  	break;
@@ -4830,7 +4874,7 @@ $mail = new PHPMailer(true);
 			/*Automatically make a new user as curator - For Now*/  
 				$params = ['site_id' => $site_id, 'roles' => USER_ROLE_ARTIST, 'user_level' => 20];
 			}
-             setcookie('%vpatina%_#live#_$$nage$$', 'allow', time() + 86400, '/', '.vpatina.com');
+             setcookie('vpatina_new_demo_#dci&_$$nage$$', 'allow', time() + 86400, '/', '.dci.in');
 			$subscribed_user=find_object('subscribed_users', ['email' => $username, 'status' =>1]);
 			if($subscribed_user!=null){	
 				// echo "if";
@@ -4889,7 +4933,7 @@ $mail = new PHPMailer(true);
       		if(isset($data->relation) && $data->relation==1){
       			$message='Relation added Successfully';
       			// echo '<script type="text/JavaScript"> location.reload(); </script>';
-      			setcookie('%vpatina%_#live#_$$nage$$', 'allow', time() + 86400, '/', '.vpatina.com');
+      			setcookie('vpatina_new_demo_#dci&_$$nage$$', 'allow', time() + 86400, '/', '.dci.in');
 	        	$data->redirect = explode($data->redirect,'0');
 	        	$data->uri = explode($data->uri,'0');
 
