@@ -27,7 +27,9 @@ function route($app) {
 
   $uri_path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
   $seg2 = explode('/',$uri_path);
-  
+  // if($uri_path == "/login/"){
+  //   header("Location: https://laravel-vpatina.dci.in/login");die();
+  // }
   $router = new AltoRouter();
   $router->addMatchTypes(array('n' => '[a-zA-Z0-9-_]+'));
 

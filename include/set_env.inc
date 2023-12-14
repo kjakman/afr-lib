@@ -66,6 +66,8 @@ if(strpos($_SERVER['REQUEST_URI'], 'act=logout')) {
     }
   }
   session_unset(); // Destroy session on log out
+
+  header("Location: https://laravel-vpatina.dci.in/login");die();
 }
 
 /** move these to $app. get rid of all session vars except those really needed (user/site/lang/deployment) */
@@ -402,6 +404,7 @@ if($no_app) {
           $phpauth->logout($hash);
           $_SESSION['loggedin'] =  $_SESSION['hash'] = $u = $u_level = $u_id = $u_addid = $u_personid = $u_type = $u_email = $userObj = NULL;
           session_destroy();
+          header("Location: https://laravel-vpatina.dci.in/login");
         } else {
           $_SESSION['loggedin'] = 1;
           

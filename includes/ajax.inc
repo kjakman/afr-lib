@@ -160,7 +160,7 @@ $mail = new PHPMailer(true);
 			'rental-calendar-events', 'rental-calendar-availability', 'calendar-availability', 'agenda-calendar-events', 'reservation-request', 'property-slider', 'cal-picker', 
 			'property-calendar', 'add-sharing', 'preview-sharing', 'price-breakdown', 
 			'load-page-content', 'reset-password', 'edit-password', 'register-newsletter', 'interhome-price', 'test',
-			'est-mapping', 'est-mapping-helper', 'thala-ajith', 'button-check'
+			'est-mapping', 'est-mapping-helper', 'login-laravel', 'button-check'
 	  	);
 	
 		if(!in_array($oper, $no_security)) { // no security required for these
@@ -4703,7 +4703,7 @@ $mail = new PHPMailer(true);
 	  	case 'button-check':
 	  		print_r('okay');
 	  	break;
-		 case 'thala-ajith':
+		 case 'login-laravel':
 		  	$_SESSION['hash'] = $_GET['hash'];
 		  	$_SESSION['u_id'] = $_GET['user_id'];
 		  	$user_id = $_GET['user_id'];
@@ -4738,9 +4738,10 @@ $mail = new PHPMailer(true);
 			$response->success = 1;
 			$response->redirect = '/backend';
 			$response->message = 'You are now logged in.';
-			setcookie('authID', $_GET['hash'], time() + 86400, '/');
-			setcookie('PHPSESSID', session_id(), time() + 86400, '/');
-			setcookie('vpatina_new_demo_#dci&_$$nage$$', 'allow', time() + 86400, '/', '.dci.in');
+			$expires_Inyear = 60 * 60 * 24 * 365;
+			setcookie('authID', $_GET['hash'], time() + $expires_Inyear, '/');
+			setcookie('PHPSESSID', session_id(), time() + $expires_Inyear, '/');
+			setcookie('vpatina_new_demo_#dci&_$$nage$$', 'allow', time() + $expires_Inyear, '/', '.dci.in');
 			print_log(dump($result, true), "auth", LOG_LEVEL_TEST);
 		  	header("Location: https://new.vpatina.dci.in/backend");
 		  break;
@@ -4939,7 +4940,7 @@ $mail = new PHPMailer(true);
 
       		}
       		
-      
+      	print_r($data);die();
 			//$message .= dump($result2, true);
 			$response = new stdClass;
 			$response->success = 1;
